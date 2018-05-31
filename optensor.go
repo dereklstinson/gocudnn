@@ -1,4 +1,4 @@
-package cudnn
+package gocudnn
 
 /*
 #include <cudnn.h>
@@ -26,47 +26,40 @@ const (
 
 //OPTensorD holds OP Tensor information
 type OPTensorD struct {
-	opTensorDesc     C.cudnnOpTensorDescriptor_t
-	opTensOp         C.cudnnOpTensorOp_t
-	opTensorCompType C.cudnnDataType_t
-	opTensorNanOpt   C.cudnnNanPropagation_t
+	descriptor C.cudnnOpTensorDescriptor_t
 }
 
-//CreateOpTensorDescriptor creates the optensor descriptor
-func CreateOpTensorDescriptor(opTensOp OpTensorOp, opTensorCompType DataType, opTensorNanOpt PropagationNAN) (OPTensorD, error) {
-	var optensor OPTensorD
-	optensor.opTensOp = C.cudnnOpTensorOp_t(opTensOp)
-	optensor.opTensorCompType = C.cudnnDataType_t(opTensorCompType)
-	optensor.opTensorNanOpt = C.cudnnNanPropagation_t(opTensorNanOpt)
-	x := C.cudnnCreateOpTensorDescriptor(&optensor.opTensorDesc)
-	return optensor, Status(x).error("CreateOpTensorDescriptor")
+//NewOpTensorDescriptor creates and sets an OpTensor
+func NewOpTensorDescriptor(opTensOp OpTensorOp, opTensorCompType DataType, opTensorNanOpt PropagationNAN) (*OPTensorD, error) {
+	var descriptor C.cudnnOpTensorDescriptor_t
+	err := Status(C.cudnnCreateOpTensorDescriptor(&descriptor)).error("NewOpTensorDescriptor-Create")
+	if err != nil {
+		return nil, err
+	}
+	err = Status(C.cudnnSetOpTensorDescriptor(descriptor, C.cudnnOpTensorOp_t(opTensOp), C.cudnnDataType_t(opTensorCompType), C.cudnnNanPropagation_t(opTensorNanOpt))).error("NewOpTensorDescriptor-set")
+	if err != nil {
+		return nil, err
+	}
+	return &OPTensorD{descriptor: descriptor}, nil
 }
 
-//SetOpTensorDescriptor sets the OPTensor Descriptor
-func (t *OPTensorD) SetOpTensorDescriptor() error {
-	x := C.cudnnSetOpTensorDescriptor(t.opTensorDesc, t.opTensOp, t.opTensorCompType, t.opTensorNanOpt)
-	return Status(x).error("SetOpTensorDescriptor")
-}
+//GetDescriptor returns the descriptor information with error
+func (t *OPTensorD) GetDescriptor() (OpTensorOp, OpTensorOp, PropagationNAN, error) {
+	var tensop C.cudnnOpTensorOp_t
+	var datatype C.cudnnDataType_t
+	var nanprop C.cudnnNanPropagation_t
 
-//GetOpTensorDescriptor returns a copy of the information of OPTensor ...(It uses the built in function and not the struct that was created on the go side)
-func (t *OPTensorD) GetOpTensorDescriptor() (OPTensorD, error) {
-	var some OPTensorD
-	some.opTensorDesc = t.opTensorDesc
-
-	x := C.cudnnGetOpTensorDescriptor(some.opTensorDesc, &some.opTensOp, &some.opTensorCompType, &some.opTensorNanOpt)
-	return some, Status(x).error("GetOpTensorDescriptor")
+	x := C.cudnnGetOpTensorDescriptor(t.descriptor, &tensop, &datatype, &nanprop)
+	return OpTensorOp(tensop), OpTensorOp(datatype), PropagationNAN(nanprop), Status(x).error("GetOpTensorDescriptor")
 }
 
 //OpTensor performs an operation on some tensors
-func (h *Handle) OpTensor(t *OPTensorD, alpha1 float64, aDesc TensorD, A Memer,
+func (h *Handle) OpTensor(data DataType, t *OPTensorD, alpha1 float64, aDesc TensorD, A Memer,
 	alpha2 float64, bDesc TensorD, B Memer,
 	beta float64, cDesc TensorD, Ce Memer) error {
 
-	if DataType(aDesc.data) != DataType(bDesc.data) || DataType(aDesc.data) != DataType(cDesc.data) {
-		return errors.New("The Data Types Don't Match in the TransformTensor")
-	}
 	var alpha1u, alpha2u, betau unsafe.Pointer
-	switch DataType(aDesc.data) {
+	switch data {
 
 	case DataTypeInt32:
 		a1 := C.int(alpha1)
@@ -94,6 +87,6 @@ func (h *Handle) OpTensor(t *OPTensorD, alpha1 float64, aDesc TensorD, A Memer,
 	default:
 		return errors.New("Should have never reached this place we are in trouble")
 	}
-	x := C.cudnnOpTensor(h.x, t.opTensorDesc, alpha1u, aDesc.descriptor, A.Ptr(), alpha2u, bDesc.descriptor, B.Ptr(), betau, cDesc.descriptor, Ce.Ptr())
+	x := C.cudnnOpTensor(h.x, t.descriptor, alpha1u, aDesc.descriptor, A.Ptr(), alpha2u, bDesc.descriptor, B.Ptr(), betau, cDesc.descriptor, Ce.Ptr())
 	return Status(x).error("OpTensor")
 }

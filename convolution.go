@@ -1,4 +1,4 @@
-package cudnn
+package gocudnn
 
 /*
 #include <cudnn.h>
@@ -22,10 +22,8 @@ const (
 //FilterD is the struct holding discriptor information for cudnnFilterDescriptor_t
 type FilterD struct {
 	descriptor C.cudnnFilterDescriptor_t
-	datatype   C.cudnnDataType_t
-	format     C.cudnnTensorFormat_t
-	shape      []C.int
 	dims       C.int
+	flags      descflag
 }
 
 //CreateFilterDescriptor creates a filter distriptor
@@ -35,119 +33,128 @@ type FilterD struct {
 					   shape[2] = height of each filter
 					   shape[3] = width of each input filter
 */
-func CreateFilterDescriptor(data DataType, format TensorFormat, shape []int) (FilterD, error) {
-	var x error
-	var filter FilterD
-	if len(shape) < 4 || len(shape) > DimMax {
-		return filter, errors.New("shape is less than 4 or greater than DimMax")
+
+//NewFilter4dDescriptor Creates and sets an Filter 4d Descpripter
+func NewFilter4dDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
+	if len(shape) != 4 {
+		return nil, errors.New("length of shape != 4")
 	}
-	filter.datatype = C.cudnnDataType_t(data)
-	filter.shape = intTocint(shape)
-	filter.format = C.cudnnTensorFormat_t(format)
-	filter.dims = C.int(len(filter.shape))
-	x = Status(C.cudnnCreateFilterDescriptor(&filter.descriptor)).error("CreateFilterDescriptor")
-	if x != nil {
-		return filter, x
+	var descriptor C.cudnnFilterDescriptor_t
+	err := Status(C.cudnnCreateFilterDescriptor(&descriptor)).error("NewFilter4dDescriptor-create")
+	if err != nil {
+		return nil, err
 	}
-	if len(shape) == 4 {
-		x = filter.setFilter4dDescriptor()
+	cshape := int32Tocint(shape)
+	err = Status(C.cudnnSetFilter4dDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), cshape[0], cshape[1], cshape[2], cshape[3])).error("NewFilter4dDescriptor-set")
+	if err != nil {
+		return nil, err
+	}
+	return &FilterD{descriptor: descriptor, dims: C.int(4), flags: t4d}, nil
+}
+
+//NewFilterNdDescriptor creates and sets an FilterNDDescriptor
+func NewFilterNdDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
+	if len(shape) < 4 {
+		return nil, errors.New("length of shape >= 4")
+	}
+	var descriptor C.cudnnFilterDescriptor_t
+	err := Status(C.cudnnCreateFilterDescriptor(&descriptor)).error("NewFilter4dDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	cshape := int32Tocint(shape)
+	dims := C.int(len(shape))
+	err = Status(C.cudnnSetFilterNdDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), dims, &cshape[0])).error("NewFilter4dDescriptor-set")
+	if err != nil {
+		return nil, err
+	}
+	return &FilterD{descriptor: descriptor, dims: dims, flags: tnd}, nil
+}
+
+//GetDeiscriptor returns a copy of the ConvolutionD
+func (f *FilterD) GetDeiscriptor() (DataType, TensorFormat, []int32, error) {
+	var data C.cudnnDataType_t
+	var format C.cudnnTensorFormat_t
+	var err error
+	shape := make([]C.int, f.dims)
+	if f.flags == t4d {
+		err = Status(C.cudnnGetFilter4dDescriptor(f.descriptor, &data, &format, &shape[0], &shape[1], &shape[2], &shape[3])).error("GetFilter4dDescriptor")
+	} else if f.flags == tnd {
+		var holder C.int
+		err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, &data, &format, &holder, &shape[0])).error("GetFilterNdDescriptor")
 	} else {
-		x = filter.setFilterNdDescriptor()
+		err = errors.New("Unsupported flag for descriptor")
 	}
-	return filter, x
+
+	return DataType(data), TensorFormat(format), cintToint32(shape), err
 }
-
-//SetFilter4dDescriptor sets the info passed in the create filter descriptor
-func (f *FilterD) setFilter4dDescriptor() error {
-	x := Status(C.cudnnSetFilter4dDescriptor(f.descriptor, f.datatype, f.format, f.shape[0], f.shape[1], f.shape[2], f.shape[3]))
-	return x.error("SetFilter4dDescriptor")
-}
-
-//DataType returns the Datatype flag
-func (f *FilterD) DataType() DataType { return DataType(f.datatype) }
-
-//TensorFormat returns the tensor format for FilterD
-func (f *FilterD) TensorFormat() TensorFormat { return TensorFormat(f.format) }
-
-//Shape returns the shape arrayh of the filterD
-func (f *FilterD) Shape() []int { return cintToint(f.shape) }
-
-/*
-//GetFilter4dDescriptor returns a copy of the ConvolutionD
-func (f *FilterD) GetFilter4dDescriptor() (FilterD, error) {
-	var filter FilterD
-	filter.descriptor = f.descriptor
-	filter.shape = make([]C.int, len(f.shape))
-	x := Status(C.cudnnGetFilter4dDescriptor(filter.descriptor, &filter.datatype, &filter.format, &filter.shape[0], &filter.shape[1], &filter.shape[2], &filter.shape[3]))
-	return filter, x.error("GetFilter4dDescriptor")
-}
-*/
-
-//SetFilterNdDescriptor sets the FilterNdDescriptor
-func (f *FilterD) setFilterNdDescriptor() error {
-	x := Status(C.cudnnSetFilterNdDescriptor(f.descriptor, f.datatype, f.format, f.dims, &f.shape[0]))
-	return x.error("SetFilter4dDescriptor")
-}
-
-/*
-//GetFilterNdDescriptor returns a copy of the ConvolutionD
-func (f *FilterD) GetFilterNdDescriptor() (FilterD, error) {
-	var filter FilterD
-	dimsreq := C.int(len(f.shape))
-	filter.descriptor = f.descriptor
-	x := Status(C.cudnnGetFilterNdDescriptor(filter.descriptor, dimsreq, &filter.datatype, &filter.format, &filter.dims, &filter.shape[0]))
-	return filter, x.error("GetFilterNdDescriptor")
-}
-*/
 
 //DestroyFilterDescriptor Destroys Filter Descriptor
-func (f *FilterD) DestroyFilterDescriptor() error {
+func (f *FilterD) DestroyDescriptor() error {
 	return Status(C.cudnnDestroyFilterDescriptor(f.descriptor)).error("DestroyConvolutionDescriptor")
 }
 
 //ConvolutionD sets all the convolution info
 type ConvolutionD struct {
 	descriptor C.cudnnConvolutionDescriptor_t
-	mathtype   C.cudnnMathType_t
-	mode       C.cudnnConvolutionMode_t
-	data       C.cudnnDataType_t
-	groupCount C.int
-	pad        []C.int
-	stride     []C.int
-	dialation  []C.int
 	dims       C.int
+	flag       descflag
 }
 
 //Pads is a convienence func
-func Pads(pad ...int) []int {
+func Pads(pad ...int32) []int32 {
 	return pad
 }
 
 //Dialation is a convienence func
-func Dialation(dialation ...int) []int {
+func Dialation(dialation ...int32) []int32 {
 	return dialation
 }
 
-//MathType returns convolutionD's mathtype
-func (c *ConvolutionD) MathType() MathType { return MathType(c.mathtype) }
+//NewConvolution2dDescriptor creates and sets a 2d convolution descriptor
+func NewConvolution2dDescriptor(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) (*ConvolutionD, error) {
+	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) != 2 {
+		return nil, errors.New("pad stride and dialation need to be size 2")
+	}
+	var descriptor C.cudnnConvolutionDescriptor_t
+	err := Status(C.cudnnCreateConvolutionDescriptor(&descriptor)).error("NewConvolution2dDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	cdata := C.cudnnDataType_t(data)
+	cmode := C.cudnnConvolutionMode_t(mode)
+	cpad := int32Tocint(pad)
+	cstride := int32Tocint(stride)
+	cdialation := int32Tocint(dialation)
 
-//GroupCount returns convoltionD's GroupCount
-func (c *ConvolutionD) GroupCount() int { return int(c.groupCount) }
-
-//ConvolutionMode returns the convolutionMode
-func (c *ConvolutionD) ConvolutionMode() ConvolutionMode { return ConvolutionMode(c.mode) }
-
-//DataType returns the ConvolutionD datatype
-func (c *ConvolutionD) DataType() DataType { return DataType(c.data) }
-
-//Pads returns the padding array
-func (c *ConvolutionD) Pads() []int { return cintToint(c.pad) }
-
-//Strides returns the stride array
-func (c *ConvolutionD) Strides() []int { return cintToint(c.stride) }
-
-//Dialations returns the dialation array
-func (c *ConvolutionD) Dialations() []int { return cintToint(c.dialation) }
+	err = Status(C.cudnnSetConvolution2dDescriptor(descriptor, cpad[0], cpad[1], cstride[0], cstride[1], cdialation[0], cdialation[1], cmode, cdata)).error("NewConvolution2dDescriptor-set")
+	if err != nil {
+		return nil, err
+	}
+	return &ConvolutionD{descriptor: descriptor, dims: 2, flag: t2d}, nil
+}
+func NewConvolutionNdDescriptor(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) (*ConvolutionD, error) {
+	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) < 2 {
+		return nil, errors.New("pad stride and dialation need to be size 2 or greater")
+	}
+	var descriptor C.cudnnConvolutionDescriptor_t
+	err := Status(C.cudnnCreateConvolutionDescriptor(&descriptor)).error("NewConvolution2dDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	cdata := C.cudnnDataType_t(data)
+	cmode := C.cudnnConvolutionMode_t(mode)
+	cpad := int32Tocint(pad)
+	cstride := int32Tocint(stride)
+	cdialation := int32Tocint(dialation)
+	//var holder C.int
+	dims := C.int(len(pad))
+	err = Status(C.cudnnSetConvolutionNdDescriptor(descriptor, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
+	if err != nil {
+		return nil, err
+	}
+	return &ConvolutionD{descriptor: descriptor, dims: dims, flag: tnd}, nil
+}
 
 /*
 func NewConvoltuion(mode ConvolutionMode, data DataType, pad, stride, dialation []int) (*ConvolutionD, error) {
@@ -159,83 +166,39 @@ func NewConvoltuion(mode ConvolutionMode, data DataType, pad, stride, dialation 
 	}
 }
 */
-//CreateConvolutionDescriptor Creats a ConvolutionD struct
-func CreateConvolutionDescriptor(mode ConvolutionMode,
-	data DataType, pad, stride, dialation []int) (ConvolutionD, error) {
-
-	var c ConvolutionD
-	if len(pad) != len(stride) || len(pad) != len(dialation) {
-		return c, errors.New("pad,stride,dialation dims not same size")
-	}
-	if len(pad) < 2 || len(pad) > DimMax || len(stride) < 2 || len(stride) > DimMax || len(dialation) < 2 || len(dialation) > DimMax {
-		return c, errors.New("length of pad || stride ||dialation arrays not correrct sizes")
-	}
-	c.data = C.cudnnDataType_t(data)
-	c.pad = intTocint(pad)
-	c.stride = intTocint(stride)
-	c.dialation = intTocint(dialation)
-
-	c.mode = C.cudnnConvolutionMode_t(mode)
-	c.dims = C.int(len(stride))
-	x := Status(C.cudnnCreateConvolutionDescriptor(&c.descriptor)).error("CreateConvolutionDescriptor,cudnnCreateConvolutionDescriptor")
-	if x != nil {
-		return c, x
-	}
-	if len(pad) == 2 {
-		x = c.setConvolution2dDescriptor()
-		return c, x
-	}
-	x = c.setConvolutionNdDescriptor()
-	return c, x
-
-}
 
 //SetGroupCount sets the Group Count
-func (c *ConvolutionD) SetGroupCount(groupCount int) error {
+func (c *ConvolutionD) SetGroupCount(groupCount int32) error {
 
-	c.groupCount = C.int(groupCount)
-	err := Status(C.cudnnSetConvolutionGroupCount(c.descriptor, c.groupCount)).error("SetGroupCountandMathtype-Group")
+	err := Status(C.cudnnSetConvolutionGroupCount(c.descriptor, C.int(groupCount))).error("SetGroupCountandMathtype-Group")
 	return err
 
 }
 
 //SetMathType sets the mathtype
 func (c *ConvolutionD) SetMathType(mathtype MathType) error {
-	c.mathtype = C.cudnnMathType_t(mathtype)
-	x := Status(C.cudnnSetConvolutionMathType(c.descriptor, c.mathtype))
+
+	x := Status(C.cudnnSetConvolutionMathType(c.descriptor, C.cudnnMathType_t(mathtype)))
 	return x.error("SetGroupCountandMathtype-Math")
 }
 
-//SetConvolution2dDescriptor sets the 2dDescriptor
-func (c *ConvolutionD) setConvolution2dDescriptor() error {
-
-	x := Status(C.cudnnSetConvolution2dDescriptor(c.descriptor, c.pad[0], c.pad[1], c.stride[0], c.stride[1], c.dialation[0], c.dialation[1], c.mode, c.data))
-	return x.error("SetConvolution2dDescriptor")
-}
-
 //GetConvolution2dForwardOutputDim is a helper func that will output the shape of the convolution
-func (c *ConvolutionD) GetConvolution2dForwardOutputDim(input *TensorD, filter *FilterD) ([]int, error) {
+func (c *ConvolutionD) GetConvolution2dForwardOutputDim(input *TensorD, filter *FilterD) ([]int32, error) {
 	var shape [4]C.int
 	x := Status(C.cudnnGetConvolution2dForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor,
 		&shape[0], &shape[1], &shape[2], &shape[3]))
-	retshap := make([]int, 4)
-	for i := 0; i < 4; i++ {
-		retshap[i] = int(shape[i])
-	}
+	retshap := cintToint32(shape[:4])
+
 	return retshap, x.error("GetConvolution2dForwardOutputDim")
 
 }
-func (c *ConvolutionD) setConvolutionNdDescriptor() error {
-	x := Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, c.dims, &c.pad[0], &c.stride[0], &c.dialation[0], c.mode, c.data)).error("error")
-	return x
-}
 
 //GetConvolutionNdForwardOutputDim is a helper function to give the size of the output of of a COnvolutionNDForward
-func (c *ConvolutionD) GetConvolutionNdForwardOutputDim(input *TensorD, filter *FilterD) ([]int, error) {
-	dims := make([]C.int, int(c.dims))
+func (c *ConvolutionD) GetConvolutionNdForwardOutputDim(input *TensorD, filter *FilterD) ([]int32, error) {
+	dims := make([]C.int, int32(c.dims))
 	x := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, c.dims, &dims[0])).error("GetConvolutionNdForwardOutputDim")
 
-	return cintToint(dims), x
+	return cintToint32(dims), x
 }
 
 //DestroyConvolutionDescriptor destroys the ConvolutionDescriptor
@@ -305,7 +268,7 @@ func (algoPerf ConvolutionFwdAlgoPerformance) PrintReadable(index int) {
 	fmt.Println("")
 	holder := make([]interface{}, 7)
 	holder[0] = algoPerf.Algo.toString()
-	holder[1] = algoPerf.Status.GetErrorString()
+	holder[1] = algoPerf.Stat.GetErrorString()
 	holder[2] = algoPerf.Time
 	holder[3] = algoPerf.Memory
 	holder[4] = algoPerf.Determinism.string()
@@ -321,44 +284,44 @@ func (algoPerf ConvolutionFwdAlgoPerformance) PrintReadable(index int) {
 //ConvolutionFwdAlgoPerformance is a struct that holds the performance of the algorithm
 type ConvolutionFwdAlgoPerformance struct {
 	Algo        ConvolutionFwdAlgo
-	Status      Status
+	Stat        Status
 	Time        float32
 	Memory      uint64
 	Determinism Determinism
 	Mathtype    MathType
-	Reserved    [3]int
+	Reserved    [3]int32
 }
 
 func convertConvolutionFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvolutionFwdAlgoPerformance {
 	var x ConvolutionFwdAlgoPerformance
 	x.Algo = ConvolutionFwdAlgo(input.algo)
-	x.Status = Status(input.status)
+	x.Stat = Status(input.status)
 	x.Time = float32(input.time)
 	x.Memory = uint64(input.memory)
 	x.Determinism = Determinism(input.determinism)
 	x.Mathtype = MathType(input.mathType)
 	for i := 0; i < 3; i++ {
-		x.Reserved[i] = int(input.reserved[i])
+		x.Reserved[i] = int32(input.reserved[i])
 	}
 	return x
 }
 
 //GetConvolutionForwardAlgorithmMaxCount returns the max number of algos
-func (handle *Handle) GetConvolutionForwardAlgorithmMaxCount() (int, error) {
+func (handle *Handle) GetConvolutionForwardAlgorithmMaxCount() (int32, error) {
 	var count C.int
 	x := Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionForwardAlgorithmMaxCount")
-	return int(count), x
+	return int32(count), x
 
 }
 
 //FindConvolutionForwardAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvolutionFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (handle *Handle) FindConvolutionForwardAlgorithm(x *TensorD, w *FilterD, c *ConvolutionD, y *TensorD, requestedAlgoCount int) ([]ConvolutionFwdAlgoPerformance, error) {
+func (handle *Handle) FindConvolutionForwardAlgorithm(x *TensorD, w *FilterD, c *ConvolutionD, y *TensorD, requestedAlgoCount int32) ([]ConvolutionFwdAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
 	err := Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x, x.descriptor, w.descriptor, c.descriptor, y.descriptor, C.int(requestedAlgoCount), &actualalgocount, &perfResults[0])).error("FindConvolutionForwardAlgorithm")
-	results := make([]ConvolutionFwdAlgoPerformance, int(actualalgocount))
-	for i := 0; i < int(actualalgocount); i++ {
+	results := make([]ConvolutionFwdAlgoPerformance, int32(actualalgocount))
+	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertConvolutionFwdAlgoPerformance(perfResults[i])
 
 	}
@@ -366,13 +329,13 @@ func (handle *Handle) FindConvolutionForwardAlgorithm(x *TensorD, w *FilterD, c 
 }
 
 //FindConvolutionForwardAlgorithmEx finds some algorithms with memory
-func (handle *Handle) FindConvolutionForwardAlgorithmEx(xDesc *TensorD, xMem Memer, wDesc *FilterD, wMem Memer, conDesc *ConvolutionD, yDesc *TensorD, yMem Memer, reqAlgoCount int, wspace Memer, wspacebytes SizeT) ([]ConvolutionFwdAlgoPerformance, error) {
+func (handle *Handle) FindConvolutionForwardAlgorithmEx(xDesc *TensorD, xMem Memer, wDesc *FilterD, wMem Memer, conDesc *ConvolutionD, yDesc *TensorD, yMem Memer, reqAlgoCount int32, wspace Memer, wspacebytes SizeT) ([]ConvolutionFwdAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, reqAlgoCount)
 	var actualalgocount C.int
 	err := Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xDesc.descriptor, xMem.Ptr(), wDesc.descriptor, wMem.Ptr(), conDesc.descriptor, yDesc.descriptor, yMem.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacebytes))).error("FindConvolutionForwardAlgorithmEx")
 
-	results := make([]ConvolutionFwdAlgoPerformance, int(actualalgocount))
-	for i := 0; i < int(actualalgocount); i++ {
+	results := make([]ConvolutionFwdAlgoPerformance, int32(actualalgocount))
+	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertConvolutionFwdAlgoPerformance(perfResults[i])
 
 	}

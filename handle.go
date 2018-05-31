@@ -1,4 +1,4 @@
-package cudnn
+package gocudnn
 
 /*
 
@@ -22,16 +22,18 @@ func (handle *Handle) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(handle.x)
 }
 
-//CreateHandle creates a handle its basically a Context
+//NewHandle creates a handle its basically a Context
 func NewHandle() *Handle {
-	var handle Handle
-	//	var handle C.cudnnHandle_t
-	err := Status(C.cudnnCreate(&handle.x)).error("NewHandle")
+
+	//var handle Handle
+	var handle C.cudnnHandle_t
+	err := Status(C.cudnnCreate(&handle)).error("NewHandle")
 	if err != nil {
 		panic(err)
 	}
-	runtime.SetFinalizer(&handle, destroyhandle)
-	return &handle
+	var handler = &Handle{x: handle}
+	runtime.SetFinalizer(handler, destroyhandle)
+	return handler
 }
 func destroyhandle(handle *Handle) {
 	C.cudnnDestroy(handle.x)

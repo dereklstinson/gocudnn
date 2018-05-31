@@ -1,4 +1,4 @@
-package cudnn
+package gocudnn
 
 /*
 #include <cudnn.h>
@@ -134,13 +134,11 @@ func (handle *Handle) GetReductionWorkspaceSize(reducer *ReduceTensor, aDesc, cD
 //ReduceTensorOp Tensor operation : C = reduce op( alpha * A ) + beta * C */
 /* The NaN propagation enum applies to only the min and max reduce ops; the other reduce ops propagate NaN as usual. */
 /* The indices space is ignored for reduce ops other than min or max. */
-func (handle *Handle) ReduceTensorOp(reducer *ReduceTensor, indices, workspace Memer,
+func (handle *Handle) ReduceTensorOp(data DataType, reducer *ReduceTensor, indices, workspace Memer,
 	alpha float64, aDesc *TensorD, A Memer, beta float64, cDesc *TensorD, Ce Memer) error {
 	var alphau, betau unsafe.Pointer
-	if DataType(aDesc.data) != DataType(cDesc.data) {
-		return errors.New("The Data Types Don't Match in the TransformTensor")
-	}
-	switch DataType(aDesc.data) {
+
+	switch data {
 
 	case DataTypeInt32:
 		a := C.int(alpha)
@@ -167,10 +165,10 @@ func (handle *Handle) ReduceTensorOp(reducer *ReduceTensor, indices, workspace M
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func (handle *Handle) SetTensor(yDesc TensorD, y Memer, v float64) error {
+func (handle *Handle) SetTensor(data DataType, yDesc TensorD, y Memer, v float64) error {
 	var vu unsafe.Pointer
 
-	switch DataType(yDesc.data) {
+	switch data {
 
 	case DataTypeInt32:
 		b := C.int(v)
@@ -189,10 +187,10 @@ func (handle *Handle) SetTensor(yDesc TensorD, y Memer, v float64) error {
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func (handle *Handle) ScaleTensor(yDesc TensorD, y Memer, alpha float64) error {
+func (handle *Handle) ScaleTensor(data DataType, yDesc TensorD, y Memer, alpha float64) error {
 	var vu unsafe.Pointer
 
-	switch DataType(yDesc.data) {
+	switch data {
 
 	case DataTypeInt32:
 		b := C.int(alpha)

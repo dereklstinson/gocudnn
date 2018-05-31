@@ -1,4 +1,4 @@
-package cudnn
+package gocudnn
 
 /*
 #include <cudnn.h>
@@ -6,8 +6,21 @@ package cudnn
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 )
+
+//chewxy was having int problems with c and go.  I am going to check this to see if it is causing me problems
+var golangintsize, clangintsize, golangintsize32 int
+
+func init() {
+	clangintsize = int(C.sizeof_int)
+	golangintsize = int(unsafe.Sizeof(int(1)))
+	golangintsize32 = int(unsafe.Sizeof(int32(1)))
+
+}
+
+const DimMax = int32(8)
 
 //SizeT is a type used by cudnn
 type SizeT C.size_t
@@ -53,4 +66,14 @@ func (handle *Handle) QueryRuntimeError(mode ErrQueryMode, tag *RuntimeTag) (Sta
 
 	return Status(rstatus), errors.New("Tag flags not supported")
 
+}
+
+//IntigersizePrint prints the sizes of the ints
+func IntigersizePrint() {
+	x := clangintsize
+	y := golangintsize
+	z := golangintsize32
+	fmt.Println("C.int size:", x)
+	fmt.Println("int size  :", y)
+	fmt.Println("int32 size  :", z)
 }

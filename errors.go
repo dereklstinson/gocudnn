@@ -1,4 +1,4 @@
-package cudnn
+package gocudnn
 
 /*
 #include <cuda.h>
