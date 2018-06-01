@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dereklstinson/cuda/cudnn"
+	"github.com/dereklstinson/GoCudnn"
 )
 
 func TestTensors(t *testing.T) {
-	var shape = []int{3, 64, 32, 32}
-	var slide = []int{1, 1, 1, 1}
-	TheTensor, err := cudnn.NewTensor(cudnn.DataTypeFloat, cudnn.TensorFormatNCHW, shape, slide)
+
+	TheTensor, err := gocudnn.NewTensor4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNCHW, gocudnn.Shape(20, 20, 20, 20))
 
 	if err != nil {
 		t.Error(err)

@@ -5,9 +5,9 @@ package gocudnn
 #include <cuda_runtime_api.h>
 
 // Needed to check for NULL from Cgo.
-const char * nullMessagecudnn = NULL;
+const char * nullMessage = NULL;
 
-const char * go_cuda_cudnn_err(CUresult res) {
+const char * go_cuda_cu_err(CUresult res) {
 	switch (res) {
 	case CUDA_SUCCESS:
 		return NULL;
@@ -103,7 +103,7 @@ type Error struct {
 //
 // If e is CUDA_SUCCESS, nil is returned.
 func newErrorDriver(context string, e C.CUresult) error {
-	return newErrorCStr(context, C.go_cuda_cudnn_err(e))
+	return newErrorCStr(context, C.go_cuda_cu_err(e))
 }
 
 // newErrorRuntime creates an Error from the result of a
@@ -118,7 +118,7 @@ func newErrorRuntime(context string, e C.cudaError_t) error {
 }
 
 func newErrorCStr(context string, cstr *C.char) error {
-	if cstr == C.nullMessagecudnn {
+	if cstr == C.nullMessage {
 		return nil
 	}
 	name := C.GoString(cstr)
@@ -133,3 +133,13 @@ func newErrorCStr(context string, cstr *C.char) error {
 func (e *Error) Error() string {
 	return e.Context + ": " + e.Message
 }
+
+/*
+//NewErrorRuntime was made public for other packages like cudnn that use the cuda_runtime_api
+func NewErrorRuntime(context string, e C.cudaError_t) error {
+	if e == C.cudaSuccess {
+		return nil
+	}
+	return newErrorCStr(context, C.cudaGetErrorString(e))
+}
+*/

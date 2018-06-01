@@ -24,6 +24,8 @@ const (
 	OpTensorOpNot  OpTensorOp = C.CUDNN_OP_TENSOR_NOT
 )
 
+func (o OpTensorOp) c() C.cudnnOpTensorOp_t { return C.cudnnOpTensorOp_t(o) }
+
 //OPTensorD holds OP Tensor information
 type OPTensorD struct {
 	descriptor C.cudnnOpTensorDescriptor_t
@@ -36,7 +38,7 @@ func NewOpTensorDescriptor(opTensOp OpTensorOp, opTensorCompType DataType, opTen
 	if err != nil {
 		return nil, err
 	}
-	err = Status(C.cudnnSetOpTensorDescriptor(descriptor, C.cudnnOpTensorOp_t(opTensOp), C.cudnnDataType_t(opTensorCompType), C.cudnnNanPropagation_t(opTensorNanOpt))).error("NewOpTensorDescriptor-set")
+	err = Status(C.cudnnSetOpTensorDescriptor(descriptor, opTensOp.c(), C.cudnnDataType_t(opTensorCompType), C.cudnnNanPropagation_t(opTensorNanOpt))).error("NewOpTensorDescriptor-set")
 	if err != nil {
 		return nil, err
 	}

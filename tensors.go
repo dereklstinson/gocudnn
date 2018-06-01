@@ -27,6 +27,8 @@ const (
 	DataTypeerror DataType = 100
 )
 
+func (d DataType) c() C.cudnnDataType_t { return C.cudnnDataType_t(d) }
+
 //MathType are flags to set for cudnnMathType_t
 type MathType C.cudnnMathType_t
 
@@ -35,6 +37,8 @@ const (
 	MathTypeDefault MathType = iota
 	MathTypeTensorOP
 )
+
+func (math MathType) c() C.cudnnMathType_t { return C.cudnnMathType_t(math) }
 
 func (math MathType) string() string {
 	if math == MathTypeDefault {
@@ -52,6 +56,8 @@ const (
 	PropagateNan
 )
 
+func (p PropagationNAN) c() C.cudnnNanPropagation_t { return C.cudnnNanPropagation_t(p) }
+
 //Determinism is the type for flags that set Determinism
 type Determinism C.cudnnDeterminism_t
 
@@ -61,6 +67,7 @@ const (
 	Deterministic
 )
 
+func (d Determinism) c() C.cudnnDeterminism_t { return C.cudnnDeterminism_t(d) }
 func (d Determinism) string() string {
 	if d == DeterministicNON {
 		return "Non Deterministic"
@@ -77,6 +84,8 @@ const (
 	TensorFormatNHWC      TensorFormat = C.CUDNN_TENSOR_NHWC
 	TensorFormatNCHWVectC TensorFormat = C.CUDNN_TENSOR_NCHW_VECT_C
 )
+
+func (t TensorFormat) c() C.cudnnTensorFormat_t { return C.cudnnTensorFormat_t(t) }
 
 type descflag uint32
 
@@ -220,31 +229,32 @@ func (t *TensorD) DestroyTensorD() error {
 
 //TransformTensor does something like this --> Tensor layout conversion helper (y = alpha * x + beta * y)
 //Will have to play around with this layer to figure it out
-func (h *Handle) TransformTensor(data DataType, alpha float64, tx TensorD, x Memer, beta float64, ty TensorD, y Memer) error {
+func (h *Handle) TransformTensor(data DataType, alpha Memer, tx TensorD, x Memer, beta Memer, ty TensorD, y Memer) error {
 	var s Status
-	var alphau, betau unsafe.Pointer
+	/*	var alphau, betau unsafe.Pointer
 
-	switch data {
+		switch data {
 
-	case DataTypeInt32:
-		a := C.int(alpha)
-		b := C.int(beta)
-		alphau = unsafe.Pointer(&a)
-		betau = unsafe.Pointer(&b)
-	case DataTypeFloat:
-		a := C.float(alpha)
-		b := C.float(beta)
-		alphau = unsafe.Pointer(&a)
-		betau = unsafe.Pointer(&b)
-	case DataTypeDouble:
-		a := C.double(alpha)
-		b := C.double(beta)
-		alphau = unsafe.Pointer(&a)
-		betau = unsafe.Pointer(&b)
-	default:
-		return errors.New("Should have never reached this place we are in trouble")
-	}
-	s = Status(C.cudnnTransformTensor(h.x, alphau, tx.descriptor, x.Ptr(), betau, ty.descriptor, y.Ptr()))
+		case DataTypeInt32:
+			a := C.int(alpha)
+			b := C.int(beta)
+			alphau = unsafe.Pointer(&a)
+			betau = unsafe.Pointer(&b)
+		case DataTypeFloat:
+			a := C.float(alpha)
+			b := C.float(beta)
+			alphau = unsafe.Pointer(&a)
+			betau = unsafe.Pointer(&b)
+		case DataTypeDouble:
+			a := C.double(alpha)
+			b := C.double(beta)
+			alphau = unsafe.Pointer(&a)
+			betau = unsafe.Pointer(&b)
+		default:
+			return errors.New("Should have never reached this place we are in trouble")
+		}
+	*/
+	s = Status(C.cudnnTransformTensor(h.x, alpha.Ptr(), tx.descriptor, x.Ptr(), beta.Ptr(), ty.descriptor, y.Ptr()))
 	return s.error("TransformTensor")
 }
 
