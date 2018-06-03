@@ -52,7 +52,6 @@ I am thinking about returning the Memer interface of the memory that gets update
 
 Also, I was thinking about adding the clips of the documentation commented out next to the functions. I think it would be easier to code if one is able to see what everything does without having to search for it in the documentation.  
 
-Moving all of the enums/flags for each type of descpriptor to its own package.  I think it would be easier to program on something like vscode making the go extention work better/cleaner on stuff like Completion Lists.  The downside would be that a ton of packages would need to be imported, and I would have to edit a ton of code.  
 
 
 
