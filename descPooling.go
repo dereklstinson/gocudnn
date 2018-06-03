@@ -10,6 +10,7 @@ import "errors"
 /*
  *  pooling mode
  */
+
 //PoolingMode is used for flags in pooling
 type PoolingMode C.cudnnPoolingMode_t
 
@@ -23,11 +24,13 @@ const (
 
 func (p PoolingMode) c() C.cudnnPoolingMode_t { return C.cudnnPoolingMode_t(p) }
 
+//PoolingD handles the pooling descriptor
 type PoolingD struct {
 	descriptor C.cudnnPoolingDescriptor_t
 	dims       C.int
 }
 
+//NewPooling2dDescriptor creates and sets a pooling 2d Descriptor
 func NewPooling2dDescriptor(
 	mode PoolingMode,
 	nan PropagationNAN,
@@ -93,4 +96,76 @@ func (p *PoolingD) GetPoolingDescriptor() (PoolingMode, PropagationNAN, []int32,
 		&stride[0],
 	)).error("GetPoolingDescriptor-nd")
 	return PoolingMode(mode), PropagationNAN(nan), cintToint32(window), cintToint32(padding), cintToint32(stride), err
+}
+
+//CreatePoolingNdDescriptor Creates and sets a pooling nd descriptor
+func CreatePoolingNdDescriptor(
+	mode PoolingMode,
+	nan PropagationNAN,
+	dims int32,
+	window []int32, // height and wideth
+	padding []int32, //height and width
+	stride []int32, //height and width
+) (*PoolingD, error) {
+	if len(window) != len(padding) || len(window) != len(stride) || len(window) < 3 {
+		return nil, errors.New("Window Padding and Stride array lengths need to be equal and 3 or greater")
+	}
+	var desc C.cudnnPoolingDescriptor_t
+	err := Status(C.cudnnCreatePoolingDescriptor(&desc)).error("NewPoolingNdDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	cwindow := int32Tocint(window)
+	cpadding := int32Tocint(padding)
+	cstride := int32Tocint(stride)
+	err = Status(C.cudnnSetPoolingNdDescriptor(
+		desc,
+		mode.c(),
+		nan.c(),
+		C.int(dims),
+		&cwindow[0],
+		&cpadding[0],
+		&cstride[0],
+	)).error("NewPoolingNdDescriptor-set")
+	if err != nil {
+		return nil, err
+	}
+	return &PoolingD{
+		descriptor: desc,
+		dims:       C.int(dims),
+	}, nil
+}
+
+//GetPoolingForwardOutputDim will return the forward output dims from the pooling desc, and the tensor passed
+func (p *PoolingD) GetPoolingForwardOutputDim(
+	input TensorD,
+) ([]int32, error) {
+	if input.dims != p.dims {
+		return nil, errors.New("input dims != pooling dims")
+	}
+
+	outputdims := make([]C.int, p.dims)
+	if p.dims > 2 {
+		err := Status(C.cudnnGetPoolingNdForwardOutputDim(
+			p.descriptor,
+			input.descriptor,
+			p.dims,
+			&outputdims[0],
+		)).error("GetPoolingForwardOutputDim-nd")
+		return cintToint32(outputdims), err
+	}
+	err := Status(C.cudnnGetPooling2dForwardOutputDim(
+		p.descriptor,
+		input.descriptor,
+		&outputdims[0],
+		&outputdims[1],
+		&outputdims[2],
+		&outputdims[3],
+	)).error("GetPoolingForwardOutputDim-2d")
+	return cintToint32(outputdims), err
+}
+
+//DestroyDescriptor destroys the pooling descriptor
+func (p *PoolingD) DestroyDescriptor() error {
+	return Status(C.cudnnDestroyPoolingDescriptor(p.descriptor)).error("DestroyDescriptor")
 }

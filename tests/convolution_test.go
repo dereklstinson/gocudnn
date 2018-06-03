@@ -35,8 +35,10 @@ func TestConvolution(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	handle := cudnn.NewHandle()
-
+	handle, err := cudnn.CreateHandle()
+	if err != nil {
+		t.Error(err)
+	}
 	top5performers, err := handle.FindConvolutionForwardAlgorithm(&tens, &filts, &convd, &tensout, 5)
 	if err != nil {
 		t.Error(err)
