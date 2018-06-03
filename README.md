@@ -14,9 +14,13 @@ For the least amount of hassle use Ubuntu 16.04.  This can work on Ubuntu 18.04,
 Will need to set the environmental variables to something along the lines as below.  
 
 export LD_LIBRARY_PATH=/usr/local/cuda-9.2/lib64
+
 export CUDA_PATH=/usr/local/cuda
+
 export CPATH="$CUDA_PATH/include/"
+
 export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so $CUDA_PATH/lib64/libcudnn.so"
+
 export PATH=$PATH:/usr/local/cuda-9.2/bin
 
 
