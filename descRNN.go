@@ -77,6 +77,7 @@ func CreateRNNDescriptor() (*RNND, error) {
 	}, nil
 }
 
+//DestroyDescriptor destroys the descriptor
 func (r *RNND) DestroyDescriptor() error {
 	return Status(C.cudnnDestroyRNNDescriptor(r.descriptor)).error("DestroyDescriptor-rnn")
 }

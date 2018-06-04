@@ -1,50 +1,61 @@
 package tests
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/dereklstinson/cuda/cudnn"
+	"github.com/dereklstinson/GoCudnn"
 )
 
 func TestConvolution(t *testing.T) {
 
-	tens, err := cudnn.NewTensor(cudnn.DataTypeFloat, cudnn.TensorFormatNHWC, cudnn.Shape(1, 3, 32, 32), nil)
+	tens, err := gocudnn.NewTensor4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNHWC, gocudnn.Shape(1, 3, 32, 32))
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(tens)
-	filts, err := cudnn.CreateFilterDescriptor(cudnn.DataTypeFloat, cudnn.TensorFormatNHWC, cudnn.Shape(3, 3, 3, 3))
+	//fmt.Println(tens)
+	filts, err := gocudnn.NewFilter4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNHWC, gocudnn.Shape(3, 3, 3, 3))
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(filts)
+	//fmt.Println(filts)
 
-	convd, err := cudnn.CreateConvolutionDescriptor(cudnn.CrossCorrelation, cudnn.DataTypeFloat,
-		cudnn.Pads(1, 1), cudnn.Strides(1, 1), cudnn.Dialation(1, 1))
+	convd, err := gocudnn.NewConvolution2dDescriptor(gocudnn.CrossCorrelation, gocudnn.DataTypeFloat,
+		gocudnn.Pads(1, 1), gocudnn.Strides(1, 1), gocudnn.Dialation(1, 1))
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(convd)
-	dims, err := convd.GetConvolution2dForwardOutputDim(&tens, &filts)
+	//fmt.Println(convd)
+	dims, err := convd.GetConvolution2dForwardOutputDim(tens, filts)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(dims)
-	tensout, err := cudnn.NewTensor(cudnn.DataTypeFloat, cudnn.TensorFormatNCHW, dims, nil)
+	//fmt.Println(dims)
+	tensout, err := gocudnn.NewTensor4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNHWC, dims)
 	if err != nil {
 		t.Error(err)
 	}
-	handle, err := cudnn.CreateHandle()
+	handle := gocudnn.NewHandle()
+
+	top5performers, err := handle.FindConvolutionForwardAlgorithm(tens, filts, convd, tensout, 5)
 	if err != nil {
 		t.Error(err)
 	}
-	top5performers, err := handle.FindConvolutionForwardAlgorithm(&tens, &filts, &convd, &tensout, 5)
-	if err != nil {
-		t.Error(err)
-	}
+	flaggers := make([]bool, len(top5performers))
 	for i := 0; i < len(top5performers); i++ {
-		fmt.Println(top5performers[i])
+		//fmt.Println(top5performers[i])
+		flaggers[i] = true
+		if top5performers[i].Stat != gocudnn.StatusSuccess {
+			flaggers[i] = false
+			//	t.Error(top5performers[i].Stat.GetErrorString())
+		}
 	}
-
+	var checkflag bool
+	for i := 0; i < len(flaggers); i++ {
+		if flaggers[i] == true {
+			checkflag = true
+		}
+	}
+	if checkflag != true {
+		t.Error("one of these should have been true")
+	}
 }

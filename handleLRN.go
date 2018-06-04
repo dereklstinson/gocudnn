@@ -25,13 +25,13 @@ func (d DivNormMode) c() C.cudnnDivNormMode_t { return C.cudnnDivNormMode_t(d) }
 
 //LRNCrossChannelForward  LRN cross-channel forward computation. Double parameters cast to tensor data type
 func (handle *Handle) LRNCrossChannelForward(
-	norm LRND,
+	norm *LRND,
 	mode LRNmode,
 	alpha CScaler,
-	xD TensorD,
+	xD *TensorD,
 	x Memer,
 	beta CScaler,
-	yD TensorD,
+	yD *TensorD,
 	y Memer,
 ) error {
 	return Status(C.cudnnLRNCrossChannelForward(
@@ -49,17 +49,17 @@ func (handle *Handle) LRNCrossChannelForward(
 
 //LRNCrossChannelBackward  LRN cross-channel backward computation. Double parameters cast to tensor data type
 func (handle *Handle) LRNCrossChannelBackward(
-	norm LRND,
+	norm *LRND,
 	mode LRNmode,
 	alpha CScaler,
-	yD TensorD,
+	yD *TensorD,
 	y Memer,
-	dyD TensorD,
+	dyD *TensorD,
 	dy Memer,
-	xD TensorD,
+	xD *TensorD,
 	x Memer,
 	beta CScaler,
-	dxD TensorD,
+	dxD *TensorD,
 	dx Memer,
 ) error {
 	return Status(C.cudnnLRNCrossChannelBackward(
@@ -111,17 +111,17 @@ func (handle *Handle) DivisiveNormalizationForward(
 
 //DivisiveNormalizationBackward  LRN cross-channel backward computation. Double parameters cast to tensor data type
 func (handle *Handle) DivisiveNormalizationBackward(
-	norm LRND,
+	norm *LRND,
 	mode DivNormMode,
 	alpha CScaler,
-	xD TensorD, /* same desc for x, means, dy, temp, temp2 */
+	xD *TensorD, /* same desc for x, means, dy, temp, temp2 */
 	x Memer,
 	means Memer, /* if NULL, means are assumed to be zero */
 	dy Memer,
 	temp Memer,
 	temp2 Memer,
 	beta CScaler,
-	dXdMeansDesc TensorD, /* same desc for dx, dMeans */
+	dXdMeansDesc *TensorD, /* same desc for dx, dMeans */
 	dx Memer, /* output x differential */
 	dMeans Memer, /* output means differential, can be NULL */
 ) error {

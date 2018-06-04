@@ -7,7 +7,7 @@ import "C"
 
 //SpatialTfGridGeneratorForward This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
 func (handle *Handle) SpatialTfGridGeneratorForward(
-	st SpatialTransformerD,
+	st *SpatialTransformerD,
 	theta Memer, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
 	grid Memer, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
 	h, w is specified in stDesc . In the 4th dimension, the first coordinate is x, and the
@@ -24,7 +24,7 @@ func (handle *Handle) SpatialTfGridGeneratorForward(
 
 //SpatialTfGridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
 func (handle *Handle) SpatialTfGridGeneratorBackward(
-	st SpatialTransformerD,
+	st *SpatialTransformerD,
 	grid Memer,
 	theta Memer,
 
@@ -39,13 +39,13 @@ func (handle *Handle) SpatialTfGridGeneratorBackward(
 
 //SpatialTfSamplerForward performs the spatialtfsampleforward
 func (handle *Handle) SpatialTfSamplerForward(
-	st SpatialTransformerD,
+	st *SpatialTransformerD,
 	alpha CScaler,
-	xD TensorD,
+	xD *TensorD,
 	x Memer,
 	grid Memer,
 	beta CScaler,
-	yD TensorD,
+	yD *TensorD,
 	y Memer,
 ) error {
 	return Status(C.cudnnSpatialTfSamplerForward(
@@ -63,15 +63,15 @@ func (handle *Handle) SpatialTfSamplerForward(
 
 //SpatialTfSamplerBackward does the spatial Tranform Sample Backward
 func (handle *Handle) SpatialTfSamplerBackward(
-	st SpatialTransformerD,
+	st *SpatialTransformerD,
 	alpha CScaler,
-	xD TensorD,
+	xD *TensorD,
 	x Memer,
 	beta CScaler,
-	dxD TensorD,
+	dxD *TensorD,
 	dx Memer,
 	alphaDgrid CScaler,
-	dyD TensorD,
+	dyD *TensorD,
 	dy Memer,
 	grid Memer,
 	betaDgrid CScaler,
@@ -95,22 +95,3 @@ func (handle *Handle) SpatialTfSamplerBackward(
 		dGrid.Ptr(),
 	)).error("SpatialTfSamplerBackward")
 }
-
-/*
-
-cudnnStatus_t CUDNNWINAPI cudnnSpatialTfSamplerBackward(
-	cudnnHandle_t                              handle,
-	cudnnSpatialTransformerDescriptor_t        stDesc,
-	const void                                *alpha,
-	const cudnnTensorDescriptor_t              xDesc,
-	const void                                *x,
-	const void                                *beta,
-	const cudnnTensorDescriptor_t              dxDesc,
-	void                                      *dx,
-	const void                                *alphaDgrid,
-	const cudnnTensorDescriptor_t              dyDesc,
-	const void                                *dy,
-	const void                                *grid,
-	const void                                *betaDgrid,
-	void                                      *dgrid);
-*/

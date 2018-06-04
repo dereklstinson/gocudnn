@@ -79,9 +79,9 @@ func (handle *Handle) BatchNormalizationForwardTraining(
 	mode BatchNormMode,
 	alpha CScaler, /* alpha[0] = result blend factor */
 	beta CScaler, /* beta[0] = dest layer blend factor */
-	xD TensorD,
+	xD *TensorD,
 	x Memer,
-	yD TensorD,
+	yD *TensorD,
 	y Memer,
 	/* Shared desc for the next 6 tensors in the argument list.
 	   Data type to be set as follows:
@@ -91,7 +91,7 @@ func (handle *Handle) BatchNormalizationForwardTraining(
 		(normalization is performed across NxHxW)
 	   - Per-Activation Normalization : tensors are expected to have dims of 1xCxHxW
 		(normalization is performed across N) */
-	bnScaleBiasMeanVar TensorD,
+	bnScaleBiasMeanVar *TensorD,
 	/* 'Gamma' and 'Beta' respectively in Ioffe and Szegedy's paper's notation */
 	bnscale Memer,
 	bnBias Memer,
@@ -205,11 +205,11 @@ func (handle *Handle) BatchNormalizationForwardInference(
 	mode BatchNormMode,
 	alpha CScaler, /* alpha[0] = result blend factor */
 	beta CScaler, /* beta[0] = dest layer blend factor */
-	xD TensorD,
+	xD *TensorD,
 	x Memer, /* NxCxHxW */
-	yD TensorD,
+	yD *TensorD,
 	y Memer, /* NxCxHxW */
-	bnScaleBiasMeanVarDesc TensorD,
+	bnScaleBiasMeanVarDesc *TensorD,
 	bnscale Memer,
 	bnBias Memer,
 	estimatedMean Memer, //same descriptor as bias and scale
@@ -245,14 +245,14 @@ func (handle *Handle) BatchNormalizationBackward(
 	betaDataDiff CScaler,
 	alphaParamDiff CScaler,
 	betaParamDiff CScaler,
-	xD TensorD, /* same desc for x, dx, dy */
+	xD *TensorD, /* same desc for x, dx, dy */
 	x Memer,
-	dyD TensorD,
+	dyD *TensorD,
 	dy Memer,
-	dxD TensorD,
+	dxD *TensorD,
 	dx Memer,
 	/* Shared tensor desc for the 4 tensors below */
-	dBnScaleBiasDesc TensorD,
+	dBnScaleBiasDesc *TensorD,
 	bnScale Memer, /* bnBias doesn't affect backpropagation */
 	/* scale and bias diff are not backpropagated below this layer */
 	dBnScaleResult Memer,

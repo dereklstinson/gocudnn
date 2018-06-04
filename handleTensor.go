@@ -6,39 +6,13 @@ package gocudnn
 
 */
 import "C"
-import (
-	"errors"
-	"unsafe"
-)
 
 //TransformTensor does something like this --> Tensor layout conversion helper (y = alpha * x + beta * y)
 //Will have to play around with this layer to figure it out
-func (h *Handle) TransformTensor(data DataType, alpha Memer, tx TensorD, x Memer, beta Memer, ty TensorD, y Memer) error {
+func (h *Handle) TransformTensor(data DataType, alpha CScaler, tx *TensorD, x Memer, beta CScaler, ty *TensorD, y Memer) error {
 	var s Status
-	/*	var alphau, betau unsafe.Pointer
 
-		switch data {
-
-		case DataTypeInt32:
-			a := C.int(alpha)
-			b := C.int(beta)
-			alphau = unsafe.Pointer(&a)
-			betau = unsafe.Pointer(&b)
-		case DataTypeFloat:
-			a := C.float(alpha)
-			b := C.float(beta)
-			alphau = unsafe.Pointer(&a)
-			betau = unsafe.Pointer(&b)
-		case DataTypeDouble:
-			a := C.double(alpha)
-			b := C.double(beta)
-			alphau = unsafe.Pointer(&a)
-			betau = unsafe.Pointer(&b)
-		default:
-			return errors.New("Should have never reached this place we are in trouble")
-		}
-	*/
-	s = Status(C.cudnnTransformTensor(h.x, alpha.Ptr(), tx.descriptor, x.Ptr(), beta.Ptr(), ty.descriptor, y.Ptr()))
+	s = Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), ty.descriptor, y.Ptr()))
 	return s.error("TransformTensor")
 }
 
@@ -50,30 +24,8 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (h *Handle) AddTensor(data DataType, alpha float64, tx TensorD, x Memer, beta float64, tc TensorD, c Memer) error {
+func (h *Handle) AddTensor(data DataType, alpha CScaler, tx *TensorD, x Memer, beta CScaler, tc *TensorD, c Memer) error {
 
-	var alphau, betau unsafe.Pointer
-
-	switch data {
-
-	case DataTypeInt32:
-		a := C.int(alpha)
-		b := C.int(beta)
-		alphau = unsafe.Pointer(&a)
-		betau = unsafe.Pointer(&b)
-	case DataTypeFloat:
-		a := C.float(alpha)
-		b := C.float(beta)
-		alphau = unsafe.Pointer(&a)
-		betau = unsafe.Pointer(&b)
-	case DataTypeDouble:
-		a := C.double(alpha)
-		b := C.double(beta)
-		alphau = unsafe.Pointer(&a)
-		betau = unsafe.Pointer(&b)
-	default:
-		return errors.New("Should have never reached this place we are in trouble")
-	}
-	s := Status(C.cudnnTransformTensor(h.x, alphau, tx.descriptor, x.Ptr(), betau, tc.descriptor, c.Ptr()))
+	s := Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), tc.descriptor, c.Ptr()))
 	return s.error("TransformTensor")
 }

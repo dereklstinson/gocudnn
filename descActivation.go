@@ -4,6 +4,73 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
+import (
+	"sync"
+)
+
+type activationModeF struct {
+	sigmoid     ActivationMode
+	relu        ActivationMode
+	tanH        ActivationMode
+	clippedRelu ActivationMode
+	elu         ActivationMode
+	identity    ActivationMode
+}
+
+var mutex sync.RWMutex
+
+//ActivationModeFlag is a package global var (unfortunatly I wish I could make it a global constant) flags for the activation mode.
+//It makes it easier when programing on something like VScode.  I will probably convert all the flags to this if it is concurency safe.
+var ActivationModeFlag = activationModeF{
+	sigmoid:     ActivationMode(C.CUDNN_ACTIVATION_SIGMOID),
+	relu:        ActivationMode(C.CUDNN_ACTIVATION_RELU),
+	tanH:        ActivationMode(C.CUDNN_ACTIVATION_TANH),
+	clippedRelu: ActivationMode(C.CUDNN_ACTIVATION_CLIPPED_RELU),
+	elu:         ActivationMode(C.CUDNN_ACTIVATION_ELU),
+	identity:    ActivationMode(C.CUDNN_ACTIVATION_IDENTITY),
+}
+
+//Sigmoid returns the sigmoid activation flag
+func (f activationModeF) Sigmoid() ActivationMode {
+	mutex.RLock()
+	defer mutex.RUnlock()
+	return f.sigmoid
+}
+
+//Relu returns Relu
+func (f activationModeF) Relu() ActivationMode {
+	mutex.RLock()
+	defer mutex.RUnlock()
+	return f.relu
+}
+
+//Tanh returns tanh
+func (f activationModeF) Tanh() ActivationMode {
+	mutex.RLock()
+	defer mutex.RUnlock()
+	return f.tanH
+}
+
+//ClippedRelu returns ClippedRelu
+func (f activationModeF) ClippedRelu() ActivationMode {
+	mutex.RLock()
+	defer mutex.RUnlock()
+	return f.clippedRelu
+}
+
+//Elu returns Elu
+func (f activationModeF) Elu() ActivationMode {
+	mutex.RLock()
+	defer mutex.RUnlock()
+	return f.elu
+}
+
+//Identity returns Identity
+func (f activationModeF) Identity() ActivationMode {
+	mutex.RLock()
+	defer mutex.RUnlock()
+	return f.identity
+}
 
 //ActivationMode is used for activation discriptor flags
 type ActivationMode C.cudnnActivationMode_t

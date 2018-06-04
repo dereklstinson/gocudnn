@@ -235,15 +235,15 @@ func (handle *Handle) GetConvolutionBackwardDataWorkspaceSize(
 //ConvolutionBackwardData does the backwards convolution on data
 func (handle *Handle) ConvolutionBackwardData(
 	alpha CScaler,
-	wDesc FilterD,
+	wDesc *FilterD,
 	w Memer,
-	dyDesc TensorD,
+	dyDesc *TensorD,
 	dy Memer,
-	convDesc ConvolutionD,
+	convDesc *ConvolutionD,
 	algo ConvBwdDataAlgo,
 	wspace Memer,
 	beta CScaler,
-	dxDesc TensorD,
+	dxDesc *TensorD,
 	dx Memer,
 ) error {
 	return Status(C.cudnnConvolutionBackwardData(
@@ -265,10 +265,10 @@ func (handle *Handle) ConvolutionBackwardData(
 
 //Im2Col transformes the multiDim tensors into 2d tensors for speed up in calculation at the cost of memory.
 func (handle *Handle) Im2Col(
-	xDesc TensorD,
+	xDesc *TensorD,
 	x Memer,
-	wDesc FilterD,
-	convDesc ConvolutionD,
+	wDesc *FilterD,
+	convDesc *ConvolutionD,
 	buffer Memer,
 ) error {
 	return Status(C.cudnnIm2Col(

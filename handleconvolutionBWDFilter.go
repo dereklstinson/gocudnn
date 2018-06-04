@@ -120,7 +120,13 @@ func (handle *Handle) GetConvolutionBackwardAlgorithmMaxCount() (int32, error) {
 
 //FindConvolutionBackwardFilterAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvolutionFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (handle *Handle) FindConvolutionBackwardFilterAlgorithm(x *TensorD, dy *TensorD, c *ConvolutionD, dw *FilterD, requestedAlgoCount int32) ([]ConvBwdFiltAlgoPerf, error) {
+func (handle *Handle) FindConvolutionBackwardFilterAlgorithm(
+	x *TensorD,
+	dy *TensorD,
+	c *ConvolutionD,
+	dw *FilterD,
+	requestedAlgoCount int32,
+) ([]ConvBwdFiltAlgoPerf, error) {
 	perfResults := make([]C.cudnnConvolutionBwdFilterAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
 	err := Status(C.cudnnFindConvolutionBackwardFilterAlgorithm(
@@ -213,10 +219,10 @@ func (handle *Handle) GetConvolutionBackwardFilterAlgorithmV7(
 
 //GetConvolutionBackwardFilterWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
 func (handle *Handle) GetConvolutionBackwardFilterWorkspaceSize(
-	x TensorD,
-	dy TensorD,
-	c ConvolutionD,
-	grad FilterD,
+	x *TensorD,
+	dy *TensorD,
+	c *ConvolutionD,
+	grad *FilterD,
 	algo ConvBwdFiltAlgo) (SizeT, error) {
 	var sizebytes C.size_t
 	err := Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
@@ -233,15 +239,15 @@ func (handle *Handle) GetConvolutionBackwardFilterWorkspaceSize(
 //ConvolutionBackwardFilter does the backwards convolution
 func (handle *Handle) ConvolutionBackwardFilter(
 	alpha CScaler,
-	xDesc TensorD,
+	xDesc *TensorD,
 	x Memer,
-	dyDesc TensorD,
+	dyDesc *TensorD,
 	dy Memer,
-	convDesc ConvolutionD,
+	convDesc *ConvolutionD,
 	algo ConvBwdFiltAlgo,
 	wspace Memer,
 	beta CScaler,
-	dwDesc FilterD,
+	dwDesc *FilterD,
 	dw Memer,
 ) error {
 	return Status(C.cudnnConvolutionBackwardFilter(

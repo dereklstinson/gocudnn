@@ -135,4 +135,7 @@ func main() {
 	}
 	fmt.Println(x)
 
+	fmt.Println(gocudnn.ActivationModeFlag.Relu())
+	activation, err := gocudnn.NewActivationDescriptor(gocudnn.ActivationModeFlag.Relu(), gocudnn.PropagateNanNot, gocudnn.CDouble(4))
+	fmt.Println(activation)
 }

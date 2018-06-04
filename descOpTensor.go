@@ -6,10 +6,6 @@ package gocudnn
 import (
 	"C"
 )
-import (
-	"errors"
-	"unsafe"
-)
 
 //OpTensorOp is used for flags for the Optensor functions
 type OpTensorOp C.cudnnOpTensorOp_t
@@ -46,49 +42,11 @@ func NewOpTensorDescriptor(opTensOp OpTensorOp, opTensorCompType DataType, opTen
 }
 
 //GetDescriptor returns the descriptor information with error
-func (t *OPTensorD) GetDescriptor() (OpTensorOp, OpTensorOp, PropagationNAN, error) {
+func (t *OPTensorD) GetDescriptor() (OpTensorOp, DataType, PropagationNAN, error) {
 	var tensop C.cudnnOpTensorOp_t
 	var datatype C.cudnnDataType_t
 	var nanprop C.cudnnNanPropagation_t
 
 	x := C.cudnnGetOpTensorDescriptor(t.descriptor, &tensop, &datatype, &nanprop)
-	return OpTensorOp(tensop), OpTensorOp(datatype), PropagationNAN(nanprop), Status(x).error("GetOpTensorDescriptor")
-}
-
-//OpTensor performs an operation on some tensors
-func (h *Handle) OpTensor(data DataType, t *OPTensorD, alpha1 float64, aDesc TensorD, A Memer,
-	alpha2 float64, bDesc TensorD, B Memer,
-	beta float64, cDesc TensorD, Ce Memer) error {
-
-	var alpha1u, alpha2u, betau unsafe.Pointer
-	switch data {
-
-	case DataTypeInt32:
-		a1 := C.int(alpha1)
-		a2 := C.int(alpha2)
-		b := C.int(beta)
-		alpha1u = unsafe.Pointer(&a1)
-		alpha2u = unsafe.Pointer(&a2)
-		betau = unsafe.Pointer(&b)
-	case DataTypeFloat:
-
-		a1 := C.float(alpha1)
-		a2 := C.float(alpha2)
-		b := C.float(beta)
-		alpha1u = unsafe.Pointer(&a1)
-		alpha2u = unsafe.Pointer(&a2)
-		betau = unsafe.Pointer(&b)
-	case DataTypeDouble:
-
-		a1 := C.double(alpha1)
-		a2 := C.double(alpha2)
-		b := C.double(beta)
-		alpha1u = unsafe.Pointer(&a1)
-		alpha2u = unsafe.Pointer(&a2)
-		betau = unsafe.Pointer(&b)
-	default:
-		return errors.New("Should have never reached this place we are in trouble")
-	}
-	x := C.cudnnOpTensor(h.x, t.descriptor, alpha1u, aDesc.descriptor, A.Ptr(), alpha2u, bDesc.descriptor, B.Ptr(), betau, cDesc.descriptor, Ce.Ptr())
-	return Status(x).error("OpTensor")
+	return OpTensorOp(tensop), DataType(datatype), PropagationNAN(nanprop), Status(x).error("GetOpTensorDescriptor")
 }

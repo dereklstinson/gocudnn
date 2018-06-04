@@ -36,10 +36,10 @@ func (handle *Handle) SoftMaxForward(
 	algo SoftMaxAlgorithm,
 	mode SoftMaxMode,
 	alpha CScaler,
-	xD TensorD,
+	xD *TensorD,
 	x Memer,
 	beta CScaler,
-	yD TensorD,
+	yD *TensorD,
 	y Memer) error {
 	return Status(C.cudnnSoftmaxForward(
 		handle.x,
@@ -59,12 +59,12 @@ func (handle *Handle) SoftMaxBackward(
 	algo SoftMaxAlgorithm,
 	mode SoftMaxMode,
 	alpha CScaler,
-	yD TensorD,
+	yD *TensorD,
 	y Memer,
-	dyD TensorD,
+	dyD *TensorD,
 	dy Memer,
 	beta CScaler,
-	dxD TensorD,
+	dxD *TensorD,
 	dx Memer,
 ) error {
 	return Status(C.cudnnSoftmaxBackward(
