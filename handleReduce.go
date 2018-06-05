@@ -33,10 +33,10 @@ func (handle *Handle) ReduceTensorOp(
 	reducer *ReduceTensor,
 	indices,
 	workspace Memer,
-	alpha CScaler,
+	alpha CScalar,
 	aDesc *TensorD,
 	A Memer,
-	beta CScaler,
+	beta CScalar,
 	cDesc *TensorD,
 	Ce Memer) error {
 
@@ -47,14 +47,14 @@ func (handle *Handle) ReduceTensorOp(
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func (handle *Handle) SetTensor(data DataType, yDesc *TensorD, y Memer, v CScaler) error {
+func (handle *Handle) SetTensor(data DataType, yDesc *TensorD, y Memer, v CScalar) error {
 
 	x := C.cudnnSetTensor(handle.x, yDesc.descriptor, y.Ptr(), v.CPtr())
 	return Status(x).error("SetTensor")
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func (handle *Handle) ScaleTensor(data DataType, yDesc *TensorD, y Memer, alpha CScaler) error {
+func (handle *Handle) ScaleTensor(data DataType, yDesc *TensorD, y Memer, alpha CScalar) error {
 
 	x := C.cudnnScaleTensor(handle.x, yDesc.descriptor, y.Ptr(), alpha.CPtr())
 	return Status(x).error("ScaleTensor")

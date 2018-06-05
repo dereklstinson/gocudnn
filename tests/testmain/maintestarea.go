@@ -76,23 +76,24 @@ func main() {
 		fmt.Println(algoPerflist[i])
 	}
 
-	gocudnn.IntigersizePrint()
 	//Group 0
 	handle := gocudnn.NewHandle()
-
+	DataTypeFlag := gocudnn.DataTypeFlag().Float()
+	TensorFormatFlag := gocudnn.TensorFormatFlag().NCHW()
 	//Group1
-	tens, err := gocudnn.NewTensor4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNCHW, gocudnn.Shape(1, 3, 32, 32))
+	tens, err := gocudnn.NewTensor4dDescriptor(DataTypeFlag, TensorFormatFlag, gocudnn.Shape(1, 3, 32, 32))
 	if err != nil {
 		fmt.Println(err)
 	}
 	//Group 2
-	filts, err := gocudnn.NewFilter4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNCHW, gocudnn.Shape(3, 3, 5, 5))
+	filts, err := gocudnn.NewFilter4dDescriptor(DataTypeFlag, TensorFormatFlag, gocudnn.Shape(3, 3, 5, 5))
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	//Group 3
-	convd, err := gocudnn.NewConvolution2dDescriptor(gocudnn.Convolution, gocudnn.DataTypeFloat,
+	ConvMode := gocudnn.ConvolutionModeFlag().CrossCorrelation()
+	convd, err := gocudnn.NewConvolution2dDescriptor(ConvMode, DataTypeFlag,
 		gocudnn.Pads(1, 1), gocudnn.Strides(1, 1), gocudnn.Dialation(1, 1))
 	if err != nil {
 		fmt.Println(err)
@@ -103,7 +104,7 @@ func main() {
 	}
 
 	//Group4
-	tensout, err := gocudnn.NewTensor4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNCHW, dims)
+	tensout, err := gocudnn.NewTensor4dDescriptor(DataTypeFlag, TensorFormatFlag, dims)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -135,7 +136,6 @@ func main() {
 	}
 	fmt.Println(x)
 
-	fmt.Println(gocudnn.ActivationModeFlag.Relu())
-	activation, err := gocudnn.NewActivationDescriptor(gocudnn.ActivationModeFlag.Relu(), gocudnn.PropagateNanNot, gocudnn.CDouble(4))
+	activation, err := gocudnn.NewActivationDescriptor(gocudnn.ActivationModeFlag().Relu(), gocudnn.PropagationNANFlag().NotPropagateNan(), gocudnn.CDouble(4))
 	fmt.Println(activation)
 }

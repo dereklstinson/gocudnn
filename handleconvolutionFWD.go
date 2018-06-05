@@ -207,7 +207,7 @@ func (handle *Handle) GetConvolutionForwardWorkspaceSize(
 
 //ConvolutionForward Function to perform the forward pass for batch convolution
 func (handle *Handle) ConvolutionForward(
-	alpha CScaler,
+	alpha CScalar,
 	xD *TensorD,
 	x Memer,
 	wD *FilterD,
@@ -215,7 +215,7 @@ func (handle *Handle) ConvolutionForward(
 	cD *ConvolutionD,
 	algo ConvolutionFwdAlgo,
 	wspace Memer,
-	beta CScaler,
+	beta CScalar,
 	yD *TensorD,
 	y Memer) error {
 	return Status(C.cudnnConvolutionForward(handle.x, alpha.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
@@ -226,7 +226,7 @@ func (handle *Handle) ConvolutionForward(
 //ConvolutionBiasActivationForward passes a lot of stuff so be carefull
 /* Fused conv/bias/activation operation : y = Act( alpha1 * conv(x) + alpha2 * z + bias ) */
 func (handle *Handle) ConvolutionBiasActivationForward(
-	alpha1 CScaler,
+	alpha1 CScalar,
 	xD *TensorD,
 	x Memer,
 	wD *FilterD,
@@ -234,7 +234,7 @@ func (handle *Handle) ConvolutionBiasActivationForward(
 	cD *ConvolutionD,
 	algo ConvolutionFwdAlgo,
 	wspace Memer,
-	alpha2 CScaler,
+	alpha2 CScalar,
 	zD *TensorD,
 	z Memer,
 	biasD *TensorD,

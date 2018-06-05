@@ -9,7 +9,7 @@ import "C"
 
 //TransformTensor does something like this --> Tensor layout conversion helper (y = alpha * x + beta * y)
 //Will have to play around with this layer to figure it out
-func (h *Handle) TransformTensor(data DataType, alpha CScaler, tx *TensorD, x Memer, beta CScaler, ty *TensorD, y Memer) error {
+func (h *Handle) TransformTensor(data DataType, alpha CScalar, tx *TensorD, x Memer, beta CScalar, ty *TensorD, y Memer) error {
 	var s Status
 
 	s = Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), ty.descriptor, y.Ptr()))
@@ -24,7 +24,7 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (h *Handle) AddTensor(data DataType, alpha CScaler, tx *TensorD, x Memer, beta CScaler, tc *TensorD, c Memer) error {
+func (h *Handle) AddTensor(data DataType, alpha CScalar, tx *TensorD, x Memer, beta CScalar, tc *TensorD, c Memer) error {
 
 	s := Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), tc.descriptor, c.Ptr()))
 	return s.error("TransformTensor")

@@ -6,19 +6,8 @@ package gocudnn
 import "C"
 import (
 	"errors"
-	"fmt"
 	"unsafe"
 )
-
-//chewxy was having int problems with c and go.  I am going to check this to see if it is causing me problems
-var golangintsize, clangintsize, golangintsize32 int
-
-func init() {
-	clangintsize = int(C.sizeof_int)
-	golangintsize = int(unsafe.Sizeof(int(1)))
-	golangintsize32 = int(unsafe.Sizeof(int32(1)))
-
-}
 
 //DimMax is the max dims for tensors
 const DimMax = int32(8)
@@ -34,8 +23,8 @@ type Memer interface {
 	ByteSize() SizeT
 }
 
-//CScaler is used for scalar multiplications with cudnn.  They have to be Ctypes. It could have easily been called voider
-type CScaler interface {
+//CScalar is used for scalar multiplications with cudnn.  They have to be Ctypes. It could have easily been called voider
+type CScalar interface {
 	CPtr() unsafe.Pointer
 }
 
@@ -69,12 +58,25 @@ type RuntimeTag C.cudnnRuntimeTag_t
 // ErrQueryMode are basically flags that are used for different modes
 type ErrQueryMode C.cudnnErrQueryMode_t
 
-// enums for cudnnerrquerymode
-const (
-	ErrqueryRawcode ErrQueryMode = iota
-	ErrQueryNonblocking
-	ErrQueryBlocking
-)
+//ErrQueryModeFlag returns the default flag of ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE) can be changed with methods
+func ErrQueryModeFlag() ErrQueryMode {
+	return ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE)
+}
+
+//RawCode return  ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE)
+func (e ErrQueryMode) RawCode() ErrQueryMode {
+	return ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE)
+}
+
+//NonBlocking return  ErrQueryMode(C.CUDNN_ERRQUERY_NONBLOCKING)
+func (e ErrQueryMode) NonBlocking() ErrQueryMode {
+	return ErrQueryMode(C.CUDNN_ERRQUERY_NONBLOCKING)
+}
+
+//Blocking 	return  ErrQueryMode(C.CUDNN_ERRQUERY_BLOCKING)
+func (e ErrQueryMode) Blocking() ErrQueryMode {
+	return ErrQueryMode(C.CUDNN_ERRQUERY_BLOCKING)
+}
 
 func (e ErrQueryMode) c() C.cudnnErrQueryMode_t { return C.cudnnErrQueryMode_t(e) }
 
@@ -100,14 +102,4 @@ func (handle *Handle) QueryRuntimeError(mode ErrQueryMode, tag *RuntimeTag) (Sta
 
 	return Status(rstatus), errors.New("Tag flags not supported")
 
-}
-
-//IntigersizePrint prints the sizes of the ints
-func IntigersizePrint() {
-	x := clangintsize
-	y := golangintsize
-	z := golangintsize32
-	fmt.Println("C.int size:", x)
-	fmt.Println("int size  :", y)
-	fmt.Println("int32 size  :", z)
 }

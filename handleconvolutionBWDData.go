@@ -234,7 +234,7 @@ func (handle *Handle) GetConvolutionBackwardDataWorkspaceSize(
 
 //ConvolutionBackwardData does the backwards convolution on data
 func (handle *Handle) ConvolutionBackwardData(
-	alpha CScaler,
+	alpha CScalar,
 	wDesc *FilterD,
 	w Memer,
 	dyDesc *TensorD,
@@ -242,7 +242,7 @@ func (handle *Handle) ConvolutionBackwardData(
 	convDesc *ConvolutionD,
 	algo ConvBwdDataAlgo,
 	wspace Memer,
-	beta CScaler,
+	beta CScalar,
 	dxDesc *TensorD,
 	dx Memer,
 ) error {

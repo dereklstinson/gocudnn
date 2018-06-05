@@ -10,13 +10,13 @@ import (
 //OpTensor performs an operation on some tensors
 func (handle *Handle) OpTensor(data DataType,
 	t *OPTensorD,
-	alpha1 CScaler,
+	alpha1 CScalar,
 	aDesc *TensorD,
 	A Memer,
-	alpha2 CScaler,
+	alpha2 CScalar,
 	bDesc *TensorD,
 	B Memer,
-	beta CScaler,
+	beta CScalar,
 	cDesc *TensorD,
 	Ce Memer) error {
 

@@ -8,38 +8,118 @@ import "C"
 //ReduceTensorOp used for flags for reduce tensor functions
 type ReduceTensorOp C.cudnnReduceTensorOp_t
 
-//Flags for ReduceTensorOp
+//ReduceTensorOpFlag func for ReduceTensorOp flags it defaults with ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_ADD) can be changed with methods
+func ReduceTensorOpFlag() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_ADD)
+}
+
+// This will go away...eventually ... maybe.  I will pass the C.<flag> through methods (like above) instead of how it is done below
 const (
-	ReduceTensorAdd        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_ADD
-	ReduceTensorMul        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MUL
-	ReduceTensorMin        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MIN
-	ReduceTensorMax        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MAX
-	ReduceTensorAmax       ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_AMAX
-	ReduceTensorAvg        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_AVG
-	ReduceTensorNorm1      ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_NORM1
-	ReduceTensorNorm2      ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_NORM2
-	ReduceTensorMulNoZeros ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MUL_NO_ZEROS
+	reduceTensorAdd        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_ADD
+	reduceTensorMul        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MUL
+	reduceTensorMin        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MIN
+	reduceTensorMax        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MAX
+	reduceTensorAmax       ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_AMAX
+	reduceTensorAvg        ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_AVG
+	reduceTensorNorm1      ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_NORM1
+	reduceTensorNorm2      ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_NORM2
+	reduceTensorMulNoZeros ReduceTensorOp = C.CUDNN_REDUCE_TENSOR_MUL_NO_ZEROS
 )
+
+//Add returns reduceTensorAdd flag
+func (r ReduceTensorOp) Add() ReduceTensorOp {
+	return reduceTensorAdd
+}
+
+//Mul returns reduceTensorMul flag
+func (r ReduceTensorOp) Mul() ReduceTensorOp {
+	return reduceTensorMul
+}
+
+//Min returns reduceTensorMin flag
+func (r ReduceTensorOp) Min() ReduceTensorOp {
+	return reduceTensorMin
+}
+
+//Max returns reduceTensorMax flag
+func (r ReduceTensorOp) Max() ReduceTensorOp {
+	return reduceTensorMax
+}
+
+//Amax returns reduceTensorAmax flag
+func (r ReduceTensorOp) Amax() ReduceTensorOp {
+	return reduceTensorAmax
+}
+
+//Avg returns reduceTensorAvg flag
+func (r ReduceTensorOp) Avg() ReduceTensorOp {
+	return reduceTensorAvg
+}
+
+//Norm1 returns reduceTensorNorm1 flag
+func (r ReduceTensorOp) Norm1() ReduceTensorOp {
+	return reduceTensorNorm1
+}
+
+//Norm2 returns reduceTensorNorm2 flag
+func (r ReduceTensorOp) Norm2() ReduceTensorOp {
+	return reduceTensorNorm2
+}
+
+//MulNoZeros returns reduceTensorMulNoZeros flag
+func (r ReduceTensorOp) MulNoZeros() ReduceTensorOp {
+	return reduceTensorMulNoZeros
+}
 
 //ReduceTensorIndices are used for flags
 type ReduceTensorIndices C.cudnnReduceTensorIndices_t
 
-//flags for Reduce Indicies
-const (
-	ReduceTensorNoIndices         ReduceTensorIndices = C.CUDNN_REDUCE_TENSOR_NO_INDICES
-	ReduceTensorFlattenedIndicies ReduceTensorIndices = C.CUDNN_REDUCE_TENSOR_FLATTENED_INDICES
-)
+//ReduceTensorIndicesFlag used to pass reduce tensor indices through methods it defaults with reduceTensorNoIndices
+const ReduceTensorIndicesFlag ReduceTensorIndices = C.CUDNN_REDUCE_TENSOR_NO_INDICES
+
+//NoIndices returns reduceTensorNoIndices flag
+func (r ReduceTensorIndices) NoIndices() ReduceTensorIndices {
+
+	return ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_NO_INDICES)
+}
+
+//FlattenedIndicies returns reduceTensorFlattenedIndicies flag
+func (r ReduceTensorIndices) FlattenedIndicies() ReduceTensorIndices {
+
+	return ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_FLATTENED_INDICES)
+}
+
+func (r ReduceTensorIndices) c() C.cudnnReduceTensorIndices_t {
+	return C.cudnnReduceTensorIndices_t(r)
+}
 
 //IndiciesType are flags
 type IndiciesType C.cudnnIndicesType_t
 
-//Flags for Indicies Type
-const (
-	IndiciesType32Bit IndiciesType = C.CUDNN_32BIT_INDICES
-	IndiciesType64Bit IndiciesType = C.CUDNN_64BIT_INDICES
-	IndiciesType16Bit IndiciesType = C.CUDNN_16BIT_INDICES
-	IndiciesType8Bit  IndiciesType = C.CUDNN_8BIT_INDICES
-)
+//IndiciesTypeFlag is used to pass IndiciesType flags through methods defaults at indiciesType32Bit
+func IndiciesTypeFlag() IndiciesType {
+	return IndiciesType(C.CUDNN_32BIT_INDICES)
+}
+
+//Type32Bit returns  IndiciesType( C.CUDNN_32BIT_INDICES) flag
+func (i IndiciesType) Type32Bit() IndiciesType {
+	return IndiciesType(C.CUDNN_32BIT_INDICES)
+}
+
+//Type64Bit returns  IndiciesType( C.CUDNN_64BIT_INDICES) flag
+func (i IndiciesType) Type64Bit() IndiciesType {
+	return IndiciesType(C.CUDNN_64BIT_INDICES)
+}
+
+//Type16Bit returns IndiciesType( C.CUDNN_16BIT_INDICES) flag
+func (i IndiciesType) Type16Bit() IndiciesType {
+	return IndiciesType(C.CUDNN_16BIT_INDICES)
+}
+
+//Type8Bit returns  IndiciesType( C.CUDNN_8BIT_INDICES) flag
+func (i IndiciesType) Type8Bit() IndiciesType {
+	return IndiciesType(C.CUDNN_8BIT_INDICES)
+}
 
 //ReduceTensor is the struct that is used for reduce tensor ops
 type ReduceTensor struct {

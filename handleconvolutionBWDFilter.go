@@ -8,7 +8,7 @@ import "C"
 import "fmt"
 
 //ConvolutionBackwardBias Function to compute the bias gradient for batch convolution db is returned
-func (handle *Handle) ConvolutionBackwardBias(alpha CScaler, dyD TensorD, dy Memer, beta CScaler, dbD TensorD, db Memer) error {
+func (handle *Handle) ConvolutionBackwardBias(alpha CScalar, dyD TensorD, dy Memer, beta CScalar, dbD TensorD, db Memer) error {
 	return Status(C.cudnnConvolutionBackwardBias(handle.x, alpha.CPtr(), dyD.descriptor, dy.Ptr(), beta.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
 }
 
@@ -238,7 +238,7 @@ func (handle *Handle) GetConvolutionBackwardFilterWorkspaceSize(
 
 //ConvolutionBackwardFilter does the backwards convolution
 func (handle *Handle) ConvolutionBackwardFilter(
-	alpha CScaler,
+	alpha CScalar,
 	xDesc *TensorD,
 	x Memer,
 	dyDesc *TensorD,
@@ -246,7 +246,7 @@ func (handle *Handle) ConvolutionBackwardFilter(
 	convDesc *ConvolutionD,
 	algo ConvBwdFiltAlgo,
 	wspace Memer,
-	beta CScaler,
+	beta CScalar,
 	dwDesc *FilterD,
 	dw Memer,
 ) error {

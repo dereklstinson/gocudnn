@@ -10,14 +10,34 @@ type RNNMode C.cudnnRNNMode_t
 
 func (r RNNMode) c() C.cudnnRNNMode_t { return C.cudnnRNNMode_t(r) }
 
-//flags for RNNMode
+//RNNModeFlag constant used to pass flags through methods
+const RNNModeFlag RNNMode = C.CUDNN_RNN_RELU
 const (
-	RnnRelu RNNMode = C.CUDNN_RNN_RELU /* Stock RNN with ReLu activation */
-	RnnTanh RNNMode = C.CUDNN_RNN_TANH /* Stock RNN with tanh activation */
-	RnnLstm RNNMode = C.CUDNN_LSTM     /* LSTM with no peephole connections */
-	RnnGru  RNNMode = C.CUDNN_GRU      /* Using h' = tanh(r * Uh(t-1) + Wx) and h = (1 - z) * h' + z * h(t-1); */
-
+	rnnRelu RNNMode = C.CUDNN_RNN_RELU /* Stock RNN with ReLu activation */
+	rnnTanh RNNMode = C.CUDNN_RNN_TANH /* Stock RNN with tanh activation */
+	rnnLstm RNNMode = C.CUDNN_LSTM     /* LSTM with no peephole connections */
+	rnnGru  RNNMode = C.CUDNN_GRU      /* Using h' = tanh(r * Uh(t-1) + Wx) and h = (1 - z) * h' + z * h(t-1); */
 )
+
+//Relu returns rnnRelu
+func (r RNNMode) Relu() RNNMode {
+	return rnnRelu
+}
+
+//Tanh returns rnnTanh
+func (r RNNMode) Tanh() RNNMode {
+	return rnnTanh
+}
+
+//Lstm returns rnnLstm
+func (r RNNMode) Lstm() RNNMode {
+	return rnnLstm
+}
+
+//Gru returns rnnGru
+func (r RNNMode) Gru() RNNMode {
+	return rnnGru
+}
 
 //DirectionMode is a type used for flags
 type DirectionMode C.cudnnDirectionMode_t
@@ -25,10 +45,21 @@ type DirectionMode C.cudnnDirectionMode_t
 func (r DirectionMode) c() C.cudnnDirectionMode_t { return C.cudnnDirectionMode_t(r) }
 
 //flags for DirectionMode
+const DirectionModeFlag DirectionMode = C.CUDNN_UNIDIRECTIONAL
 const (
-	UniDirectional DirectionMode = C.CUDNN_UNIDIRECTIONAL
-	BiDirectional  DirectionMode = C.CUDNN_BIDIRECTIONAL
+	uniDirectional DirectionMode = C.CUDNN_UNIDIRECTIONAL
+	biDirectional  DirectionMode = C.CUDNN_BIDIRECTIONAL
 )
+
+//Uni returns uniDirectional flag
+func (r DirectionMode) Uni() DirectionMode {
+	return uniDirectional
+}
+
+//Bi returns biDirectional flag
+func (r DirectionMode) Bi() DirectionMode {
+	return biDirectional
+}
 
 //RNNInputMode is used for flags
 type RNNInputMode C.cudnnRNNInputMode_t
@@ -45,12 +76,32 @@ const (
 type RNNAlgo C.cudnnRNNAlgo_t
 
 //flags for RNNAlgo
-const (
-	RNNAlgoStandard       RNNAlgo = C.CUDNN_RNN_ALGO_STANDARD
-	RNNAlgoPersistStatic  RNNAlgo = C.CUDNN_RNN_ALGO_PERSIST_STATIC
-	RNNAlgoPersistDynamic RNNAlgo = C.CUDNN_RNN_ALGO_PERSIST_DYNAMIC
-	RNNAlgocCount         RNNAlgo = C.CUDNN_RNN_ALGO_COUNT
-)
+
+//RNNAlgoFlag is a function that returns an Flag that defaults to RNNAlgo(C.CUDNN_RNN_ALGO_STANDARD)
+//It has methods to switch the flag
+func RNNAlgoFlag() RNNAlgo {
+	return RNNAlgo(C.CUDNN_RNN_ALGO_STANDARD)
+}
+
+//Standard returns RNNAlgo( C.CUDNN_RNN_ALGO_STANDARD) flag
+func (r RNNAlgo) Standard() RNNAlgo {
+	return RNNAlgo(C.CUDNN_RNN_ALGO_STANDARD)
+}
+
+//PersistStatic returns RNNAlgo( C.CUDNN_RNN_ALGO_PERSIST_STATIC) flag
+func (r RNNAlgo) PersistStatic() RNNAlgo {
+	return RNNAlgo(C.CUDNN_RNN_ALGO_PERSIST_STATIC)
+}
+
+//PersistDynamic returns RNNAlgo( C.CUDNN_RNN_ALGO_PERSIST_DYNAMIC) flag
+func (r RNNAlgo) PersistDynamic() RNNAlgo {
+	return RNNAlgo(C.CUDNN_RNN_ALGO_PERSIST_DYNAMIC)
+}
+
+//Count returns RNNAlgo( C.CUDNN_RNN_ALGO_COUNT) flag
+func (r RNNAlgo) Count() RNNAlgo {
+	return RNNAlgo(C.CUDNN_RNN_ALGO_COUNT)
+}
 
 func (r RNNAlgo) c() C.cudnnRNNAlgo_t { return C.cudnnRNNAlgo_t(r) }
 
@@ -150,6 +201,6 @@ func (r *RNND) SetRNNAlgorithmDescriptor(
 }
 
 //GetRNNDescriptor gets algo desctiptor values
-func (r *RNND) GetRNNDescriptor(){
-	
+func (r *RNND) GetRNNDescriptor() {
+
 }

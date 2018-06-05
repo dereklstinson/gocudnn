@@ -21,6 +21,26 @@ const (
 	lrnminBeta = float64(0.01)
 )
 
+//MinN returns the constant lrminN
+func (l LRND) MinN() uint32 {
+	return lrnminN
+}
+
+//MaxN returns the constant lrnmaxN
+func (l LRND) MaxN() uint32 {
+	return lrnmaxN
+}
+
+//MinK returns lrnminK constant
+func (l LRND) MinK() float64 {
+	return lrnminK
+}
+
+//MinBeta returns lrnminBeta constant
+func (l LRND) MinBeta() float64 {
+	return lrnminBeta
+}
+
 //NewLRNDecriptor creates and sets and returns an LRN descriptor
 func NewLRNDecriptor(
 	lrnN uint32,
@@ -52,12 +72,12 @@ func NewLRNDecriptor(
 }
 
 //GetDescriptor returns the descriptor values
-func (lrn *LRND) GetDescriptor() (uint32, float64, float64, float64, error) {
+func (l *LRND) GetDescriptor() (uint32, float64, float64, float64, error) {
 	var N C.unsigned
 	var Al, Bet, K C.double
 
 	err := Status(C.cudnnGetLRNDescriptor(
-		lrn.descriptor,
+		l.descriptor,
 		&N,
 		&Al,
 		&Bet,
@@ -67,6 +87,6 @@ func (lrn *LRND) GetDescriptor() (uint32, float64, float64, float64, error) {
 }
 
 //DestroyDescriptor destroys the descriptor
-func (lrn *LRND) DestroyDescriptor() error {
-	return Status(C.cudnnDestroyLRNDescriptor(lrn.descriptor)).error("DestroyDescriptor")
+func (l *LRND) DestroyDescriptor() error {
+	return Status(C.cudnnDestroyLRNDescriptor(l.descriptor)).error("DestroyDescriptor")
 }

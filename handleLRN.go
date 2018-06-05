@@ -27,10 +27,10 @@ func (d DivNormMode) c() C.cudnnDivNormMode_t { return C.cudnnDivNormMode_t(d) }
 func (handle *Handle) LRNCrossChannelForward(
 	norm *LRND,
 	mode LRNmode,
-	alpha CScaler,
+	alpha CScalar,
 	xD *TensorD,
 	x Memer,
-	beta CScaler,
+	beta CScalar,
 	yD *TensorD,
 	y Memer,
 ) error {
@@ -51,14 +51,14 @@ func (handle *Handle) LRNCrossChannelForward(
 func (handle *Handle) LRNCrossChannelBackward(
 	norm *LRND,
 	mode LRNmode,
-	alpha CScaler,
+	alpha CScalar,
 	yD *TensorD,
 	y Memer,
 	dyD *TensorD,
 	dy Memer,
 	xD *TensorD,
 	x Memer,
-	beta CScaler,
+	beta CScalar,
 	dxD *TensorD,
 	dx Memer,
 ) error {
@@ -83,13 +83,13 @@ func (handle *Handle) LRNCrossChannelBackward(
 func (handle *Handle) DivisiveNormalizationForward(
 	norm LRND,
 	mode DivNormMode,
-	alpha CScaler,
+	alpha CScalar,
 	xD TensorD, /* same desc for means, temp, temp2 */
 	x Memer,
 	means Memer, /* if NULL, means are assumed to be zero */
 	temp Memer,
 	temp2 Memer,
-	beta CScaler,
+	beta CScalar,
 	yD TensorD,
 	y Memer,
 ) error {
@@ -113,14 +113,14 @@ func (handle *Handle) DivisiveNormalizationForward(
 func (handle *Handle) DivisiveNormalizationBackward(
 	norm *LRND,
 	mode DivNormMode,
-	alpha CScaler,
+	alpha CScalar,
 	xD *TensorD, /* same desc for x, means, dy, temp, temp2 */
 	x Memer,
 	means Memer, /* if NULL, means are assumed to be zero */
 	dy Memer,
 	temp Memer,
 	temp2 Memer,
-	beta CScaler,
+	beta CScalar,
 	dXdMeansDesc *TensorD, /* same desc for dx, dMeans */
 	dx Memer, /* output x differential */
 	dMeans Memer, /* output means differential, can be NULL */

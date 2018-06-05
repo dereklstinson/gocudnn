@@ -35,10 +35,10 @@ func (sm SoftMaxMode) c() C.cudnnSoftmaxMode_t { return C.cudnnSoftmaxMode_t(sm)
 func (handle *Handle) SoftMaxForward(
 	algo SoftMaxAlgorithm,
 	mode SoftMaxMode,
-	alpha CScaler,
+	alpha CScalar,
 	xD *TensorD,
 	x Memer,
-	beta CScaler,
+	beta CScalar,
 	yD *TensorD,
 	y Memer) error {
 	return Status(C.cudnnSoftmaxForward(
@@ -58,12 +58,12 @@ func (handle *Handle) SoftMaxForward(
 func (handle *Handle) SoftMaxBackward(
 	algo SoftMaxAlgorithm,
 	mode SoftMaxMode,
-	alpha CScaler,
+	alpha CScalar,
 	yD *TensorD,
 	y Memer,
 	dyD *TensorD,
 	dy Memer,
-	beta CScaler,
+	beta CScalar,
 	dxD *TensorD,
 	dx Memer,
 ) error {

@@ -77,8 +77,8 @@ CUDNN_STATUS_BAD_PARAM
 /* Computes y = BN(x). Also accumulates moving averages of mean and inverse variances */
 func (handle *Handle) BatchNormalizationForwardTraining(
 	mode BatchNormMode,
-	alpha CScaler, /* alpha[0] = result blend factor */
-	beta CScaler, /* beta[0] = dest layer blend factor */
+	alpha CScalar, /* alpha[0] = result blend factor */
+	beta CScalar, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
 	x Memer,
 	yD *TensorD,
@@ -203,8 +203,8 @@ CUDNN_STATUS_BAD_PARAM
  */
 func (handle *Handle) BatchNormalizationForwardInference(
 	mode BatchNormMode,
-	alpha CScaler, /* alpha[0] = result blend factor */
-	beta CScaler, /* beta[0] = dest layer blend factor */
+	alpha CScalar, /* alpha[0] = result blend factor */
+	beta CScalar, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
 	x Memer, /* NxCxHxW */
 	yD *TensorD,
@@ -241,10 +241,10 @@ func (handle *Handle) BatchNormalizationForwardInference(
 * bnScale gradient and bnBias gradient */
 func (handle *Handle) BatchNormalizationBackward(
 	mode BatchNormMode,
-	alphaDataDiff CScaler,
-	betaDataDiff CScaler,
-	alphaParamDiff CScaler,
-	betaParamDiff CScaler,
+	alphaDataDiff CScalar,
+	betaDataDiff CScalar,
+	alphaParamDiff CScalar,
+	betaParamDiff CScalar,
 	xD *TensorD, /* same desc for x, dx, dy */
 	x Memer,
 	dyD *TensorD,

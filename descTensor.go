@@ -15,32 +15,60 @@ import (
 //DataType is used for flags for the tensor layer structs
 type DataType C.cudnnDataType_t
 
-//There are more constants that are supported with cudnn but since these types are supported with go that is what I am going to use
-const (
-	DataTypeFloat  DataType = 0
-	DataTypeDouble DataType = 1
-	//DataTypeInt8   DataType = 3
-	DataTypeInt32 DataType = 4
-	//DataTypeUint8  DataType = 6
-	//This is added in by me so for error checking
-	DataTypeerror DataType = 100
-)
+//DataTypeFlag returns a datatype with default being the DataType(C.CUDNN_DATA_FLOAT) flag
+func DataTypeFlag() DataType {
+	return DataType(C.CUDNN_DATA_FLOAT)
+}
+
+// Float return DataType(C.CUDNN_DATA_FLOAT)
+func (d DataType) Float() DataType {
+	return DataType(C.CUDNN_DATA_FLOAT)
+}
+
+// Double return DataType(C.CUDNN_DATA_DOUBLE)
+func (d DataType) Double() DataType {
+	return DataType(C.CUDNN_DATA_DOUBLE)
+}
+
+// Int8 return DataType(C.CUDNN_DATA_INT8)
+func (d DataType) Int8() DataType {
+	return DataType(C.CUDNN_DATA_INT8)
+}
+
+// Int32 return DataType(C.CUDNN_DATA_INT32)
+func (d DataType) Int32() DataType {
+	return DataType(C.CUDNN_DATA_INT32)
+}
+
+// UInt8 return DataType(C.CUDNN_DATA_INT8)
+func (d DataType) UInt8() DataType {
+	return DataType(C.CUDNN_DATA_UINT8)
+}
 
 func (d DataType) c() C.cudnnDataType_t { return C.cudnnDataType_t(d) }
 
 //MathType are flags to set for cudnnMathType_t
 type MathType C.cudnnMathType_t
 
-//Flags for cudnnMathType
-const (
-	MathTypeDefault MathType = iota
-	MathTypeTensorOP
-)
+//MathTypeFlag returns MathType(C.CUDNN_DEFAULT_MATH) can be changed with methods
+func MathTypeFlag() MathType {
+	return MathType(C.CUDNN_DEFAULT_MATH)
+}
+
+//Default return MathType(C.CUDNN_DEFAULT_MATH)
+func (math MathType) Default() MathType {
+	return MathType(C.CUDNN_DEFAULT_MATH)
+}
+
+//TensorOpMath return MathType(C.CUDNN_TENSOR_OP_MATH)
+func (math MathType) TensorOpMath() MathType {
+	return MathType(C.CUDNN_TENSOR_OP_MATH)
+}
 
 func (math MathType) c() C.cudnnMathType_t { return C.cudnnMathType_t(math) }
 
 func (math MathType) string() string {
-	if math == MathTypeDefault {
+	if math == MathType(C.CUDNN_DEFAULT_MATH) {
 		return "Math Type Default"
 	}
 	return "Math Type Tensor OP"
@@ -49,11 +77,20 @@ func (math MathType) string() string {
 //PropagationNAN  is type for C.cudnnNanPropagation_t used for flags
 type PropagationNAN C.cudnnNanPropagation_t
 
-//Flags for cudnnNanPropagation
-const (
-	PropagateNanNot PropagationNAN = iota
-	PropagateNan
-)
+//PropagationNANFlag return PropagationNAN(CUDNN_NOT_PROPAGATE_NAN) that can be changed through methods
+func PropagationNANFlag() PropagationNAN {
+	return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN)
+}
+
+//NotPropagateNan return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN) flag
+func (p PropagationNAN) NotPropagateNan() PropagationNAN {
+	return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN)
+}
+
+//PropagateNan return PropagationNAN(C.CUDNN_PROPAGATE_NAN) flag
+func (p PropagationNAN) PropagateNan() PropagationNAN {
+	return PropagationNAN(C.CUDNN_PROPAGATE_NAN)
+}
 
 func (p PropagationNAN) c() C.cudnnNanPropagation_t { return C.cudnnNanPropagation_t(p) }
 
@@ -84,6 +121,25 @@ const (
 	TensorFormatNCHWVectC TensorFormat = C.CUDNN_TENSOR_NCHW_VECT_C
 )
 
+//TensorFormat returns a flag that defaults with  TensorFormat(C.CUDNN_TENSOR_NCHW) can be changed with methods
+func TensorFormatFlag() TensorFormat {
+	return TensorFormat(C.CUDNN_TENSOR_NCHW)
+}
+
+//NCHW return TensorFormat(C.CUDNN_TENSOR_NCHW)
+func (t TensorFormat) NCHW() TensorFormat {
+	return TensorFormat(C.CUDNN_TENSOR_NCHW)
+}
+
+//NHWC return TensorFormat(C.CUDNN_TENSOR_NHWC)
+func (t TensorFormat) NHWC() TensorFormat {
+	return TensorFormat(C.CUDNN_TENSOR_NHWC)
+}
+
+//NCHWvectC return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
+func (t TensorFormat) NCHWvectC() TensorFormat {
+	return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
+}
 func (t TensorFormat) c() C.cudnnTensorFormat_t { return C.cudnnTensorFormat_t(t) }
 
 type descflag uint32
@@ -224,21 +280,4 @@ func (t *TensorD) DestroyTensorD() error {
 	x := Status(C.cudnnDestroyTensorDescriptor(t.descriptor))
 
 	return x.error("GetTensorNdDescriptor")
-}
-
-func datatypecheck(input interface{}) (DataType, error) {
-	switch input.(type) {
-
-	case int32:
-		return DataTypeInt32, nil
-	case float32:
-		return DataTypeFloat, nil
-
-	case float64:
-		return DataTypeDouble, nil
-	default:
-		return DataTypeerror, errors.New("Unsupported DataType")
-
-	}
-
 }

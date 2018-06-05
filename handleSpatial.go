@@ -40,11 +40,11 @@ func (handle *Handle) SpatialTfGridGeneratorBackward(
 //SpatialTfSamplerForward performs the spatialtfsampleforward
 func (handle *Handle) SpatialTfSamplerForward(
 	st *SpatialTransformerD,
-	alpha CScaler,
+	alpha CScalar,
 	xD *TensorD,
 	x Memer,
 	grid Memer,
-	beta CScaler,
+	beta CScalar,
 	yD *TensorD,
 	y Memer,
 ) error {
@@ -64,17 +64,17 @@ func (handle *Handle) SpatialTfSamplerForward(
 //SpatialTfSamplerBackward does the spatial Tranform Sample Backward
 func (handle *Handle) SpatialTfSamplerBackward(
 	st *SpatialTransformerD,
-	alpha CScaler,
+	alpha CScalar,
 	xD *TensorD,
 	x Memer,
-	beta CScaler,
+	beta CScalar,
 	dxD *TensorD,
 	dx Memer,
-	alphaDgrid CScaler,
+	alphaDgrid CScalar,
 	dyD *TensorD,
 	dy Memer,
 	grid Memer,
-	betaDgrid CScaler,
+	betaDgrid CScalar,
 	dGrid Memer,
 
 ) error {

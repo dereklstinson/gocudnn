@@ -11,10 +11,10 @@ import "C"
 //PoolingForward does the poolingForward operation
 func (handle *Handle) PoolingForward(
 	p *PoolingD,
-	alpha CScaler,
+	alpha CScalar,
 	xD *TensorD,
 	x Memer,
-	beta CScaler,
+	beta CScalar,
 	yD *TensorD,
 	y Memer,
 ) error {
@@ -33,14 +33,14 @@ func (handle *Handle) PoolingForward(
 //PoolingBackward does the backward pooling operation
 func (handle *Handle) PoolingBackward(
 	p *PoolingD,
-	alpha CScaler,
+	alpha CScalar,
 	yD *TensorD,
 	y Memer,
 	dyD *TensorD,
 	dy Memer,
 	xD *TensorD,
 	x Memer,
-	beta CScaler,
+	beta CScalar,
 	dxD *TensorD,
 	dx Memer,
 ) error {

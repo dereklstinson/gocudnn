@@ -12,11 +12,24 @@ import (
 //ConvolutionMode is the type to describe the convolution mode flags
 type ConvolutionMode C.cudnnConvolutionMode_t
 
-//flags for convolution mode
-const (
-	Convolution      ConvolutionMode = C.CUDNN_CONVOLUTION
-	CrossCorrelation ConvolutionMode = C.CUDNN_CROSS_CORRELATION
-)
+//ConvolutionModeFlag returns the defalut flag ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
+//can be changed through methods
+func ConvolutionModeFlag() ConvolutionMode {
+
+	return ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
+}
+
+//Convolution returns  ConvolutionMode(C.CUDNN_CONVOLUTION)
+func (c ConvolutionMode) Convolution() ConvolutionMode {
+	return ConvolutionMode(C.CUDNN_CONVOLUTION)
+}
+
+// CrossCorrelation returns ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
+func (c ConvolutionMode) CrossCorrelation() ConvolutionMode {
+	return ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
+}
+
+func (c ConvolutionMode) c() C.cudnnConvolutionMode_t { return C.cudnnConvolutionMode_t(c) }
 
 //ConvolutionD sets all the convolution info
 type ConvolutionD struct {
@@ -45,8 +58,8 @@ func NewConvolution2dDescriptor(mode ConvolutionMode, data DataType, pad, stride
 	if err != nil {
 		return nil, err
 	}
-	cdata := C.cudnnDataType_t(data)
-	cmode := C.cudnnConvolutionMode_t(mode)
+	cdata := data.c()
+	cmode := mode.c()
 	cpad := int32Tocint(pad)
 	cstride := int32Tocint(stride)
 	cdialation := int32Tocint(dialation)

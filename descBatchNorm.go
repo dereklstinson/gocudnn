@@ -9,22 +9,26 @@ import "errors"
 //BatchNormMode used for BatchNormMode Flags
 type BatchNormMode C.cudnnBatchNormMode_t
 
-//Flags for batchnormmode
-const (
+// BatchNormModeFlag is the func that  BatchNormMode flag that defualts at  BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION)
+//in which methods can change that flag
+func BatchNormModeFlag() BatchNormMode {
+	return BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION)
+}
 
-	/* bnScale, bnBias tensor dims are 1xCxHxWx.. (one value per CHW...-slice, normalized over N slice) */
-	BatchNormPerActivation BatchNormMode = C.CUDNN_BATCHNORM_PER_ACTIVATION
+//PerActivation return  BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION) flag
+func (bnm BatchNormMode) PerActivation() BatchNormMode {
+	return BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION)
+}
 
-	/* bnScale, bnBias tensor dims are 1xCx1x1 (one value per C-dim normalized over Nx1xHxW subtensors) */
-	BatchNormSpacial BatchNormMode = C.CUDNN_BATCHNORM_SPATIAL
+//Spacial returns  BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL) flag
+func (bnm BatchNormMode) Spacial() BatchNormMode {
+	return BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL)
+}
 
-	/*
-	 * bnScale, bnBias tensor dims are 1xCx1x1 (one value per C-dim normalized over Nx1xHxW subtensors).
-	 * May be faster than CUDNN_BATCHNORM_SPATIAL but imposes some limits on the range of values
-	 */
-	BatchNormSpatialPersistent BatchNormMode = C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT
-)
-
+// SpatialPersistent returns  BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT) flag
+func (bnm BatchNormMode) SpatialPersistent() BatchNormMode {
+	return BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT)
+}
 func (bnm BatchNormMode) c() C.cudnnBatchNormMode_t { return C.cudnnBatchNormMode_t(bnm) }
 
 const bnMinEpsilon = float64(1e-5)

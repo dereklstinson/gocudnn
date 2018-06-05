@@ -8,8 +8,11 @@ import (
 )
 
 func TestTensors(t *testing.T) {
+	dtf := gocudnn.DataTypeFlag().Double()
+	tff := gocudnn.TensorFormatFlag().NCHW()
+	shape := gocudnn.Shape
 
-	TheTensor, err := gocudnn.NewTensor4dDescriptor(gocudnn.DataTypeFloat, gocudnn.TensorFormatNCHW, gocudnn.Shape(20, 20, 20, 20))
+	TheTensor, err := gocudnn.NewTensor4dDescriptor(dtf, tff, shape(20, 20, 20, 20))
 
 	if err != nil {
 		t.Error(err)
