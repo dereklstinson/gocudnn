@@ -52,6 +52,8 @@ const (
 	RNNAlgocCount         RNNAlgo = C.CUDNN_RNN_ALGO_COUNT
 )
 
+func (r RNNAlgo) c() C.cudnnRNNAlgo_t { return C.cudnnRNNAlgo_t(r) }
+
 //AlgorithmD holds the C.cudnnAlgorithmDescriptor_t
 type AlgorithmD struct {
 	descriptor C.cudnnAlgorithmDescriptor_t
@@ -80,4 +82,74 @@ func CreateRNNDescriptor() (*RNND, error) {
 //DestroyDescriptor destroys the descriptor
 func (r *RNND) DestroyDescriptor() error {
 	return Status(C.cudnnDestroyRNNDescriptor(r.descriptor)).error("DestroyDescriptor-rnn")
+}
+
+//SetRNNDescriptor sets the rnndesctiptor
+func (r *RNND) SetRNNDescriptor(
+	handle *Handle,
+	hiddenSize int32,
+	numLayers int32,
+	doD *DropOutD,
+	inputmode RNNInputMode,
+	direction DirectionMode,
+	rnnmode RNNMode,
+	rnnalg RNNAlgo,
+	data DataType,
+
+) error {
+	return Status(C.cudnnSetRNNDescriptor(
+		handle.x,
+		r.descriptor,
+		C.int(hiddenSize),
+		C.int(numLayers),
+		doD.descriptor,
+		inputmode.c(),
+		direction.c(),
+		rnnmode.c(),
+		rnnalg.c(),
+		data.c(),
+	)).error("SetRNNDescriptor")
+}
+
+//SetRNNProjectionLayers sets the rnnprojection layers
+func (r *RNND) SetRNNProjectionLayers(
+	handle *Handle,
+	recProjsize int32,
+	outProjSize int32,
+) error {
+	return Status(C.cudnnSetRNNProjectionLayers(
+		handle.x,
+		r.descriptor,
+		C.int(recProjsize),
+		C.int(outProjSize),
+	)).error("SetRNNProjectionLayers")
+}
+
+//GetRNNProjectionLayers sets the rnnprojection layers
+func (r *RNND) GetRNNProjectionLayers(
+	handle *Handle,
+
+) (int32, int32, error) {
+	var rec, out C.int
+
+	err := Status(C.cudnnGetRNNProjectionLayers(
+		handle.x,
+		r.descriptor,
+		&rec,
+		&out,
+	)).error("SetRNNProjectionLayers")
+	return int32(rec), int32(out), err
+}
+
+//SetRNNAlgorithmDescriptor sets the RNNalgorithm
+func (r *RNND) SetRNNAlgorithmDescriptor(
+	handle *Handle,
+	algo *AlgorithmD,
+) error {
+	return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error("SetRNNAlgorithmDescriptor")
+}
+
+//GetRNNDescriptor gets algo desctiptor values
+func (r *RNND) GetRNNDescriptor(){
+	
 }
