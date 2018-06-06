@@ -4,18 +4,21 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
+import (
+	"unsafe"
+)
 
 //rnnmode is used for flags
 type rnnmode C.cudnnRNNMode_t
 
-//RNNModeFlag is a nil struct that is used to pass the RNN flags which are unexported.
+//RNNModeFlags is a nil struct that is used to pass the RNN flags which are unexported.
 //I wanted a way to force the user to use methods in passing the flags so that nothin was passed on accident.
 type RNNModeFlags struct {
 }
 
 func (r rnnmode) c() C.cudnnRNNMode_t { return C.cudnnRNNMode_t(r) }
 
-//RNNModeFlag func pass an RNNMode type that is used for flags default is RNN_RELU, but it can be changed with RNNMode methods
+//CreateRNNModeFlager func pass an RNNMode type that is used for flags default is RNN_RELU, but it can be changed with RNNMode methods
 func CreateRNNModeFlager() RNNModeFlags {
 	return RNNModeFlags{}
 }
@@ -117,6 +120,14 @@ type AlgorithmPerformance C.cudnnAlgorithmPerformance_t
 //RNND  holdes Rnn descriptor
 type RNND struct {
 	descriptor C.cudnnRNNDescriptor_t
+}
+
+func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
+	array := make([]C.cudnnRNNDescriptor_t, len(input))
+	for i := 0; i < len(input); i++ {
+		array[i] = input[i].descriptor
+	}
+	return array
 }
 
 //CreateRNNDescriptor creates an RNND descriptor
@@ -239,4 +250,172 @@ func (r *RNND) GetRNNMatrixMathType() (MathType, error) {
 	var math C.cudnnMathType_t
 	err := Status(C.cudnnGetRNNMatrixMathType(r.descriptor, &math)).error("SetRNNMatrixMathType")
 	return MathType(math), err
+}
+
+/* dataType in the RNN descriptor is used to determine math precision */
+/* dataType in weight descriptors and input descriptors is used to describe storage */
+
+//GetRNNWorkspaceSize gets the RNN workspace size (WOW!)
+func (r *RNND) GetRNNWorkspaceSize(
+	handle *Handle,
+	seqLength int32,
+	xD []*TensorD,
+) (SizeT, error) {
+	tocxD := tensorDArrayToC(xD)
+	var sizeinbytes C.size_t
+	err := Status(C.cudnnGetRNNWorkspaceSize(
+		handle.x,
+		r.descriptor,
+		C.int(seqLength),
+		&tocxD[0],
+		&sizeinbytes,
+	)).error("GetRNNWorkspaceSize")
+	return SizeT(sizeinbytes), err
+}
+
+//GetRNNTrainingReserveSize gets the training reserve size
+func (r *RNND) GetRNNTrainingReserveSize(
+	handle *Handle,
+	seqLength int32,
+	xD []*TensorD,
+) (SizeT, error) {
+	tocxD := tensorDArrayToC(xD)
+	var sizeinbytes C.size_t
+	err := Status(C.cudnnGetRNNTrainingReserveSize(
+		handle.x,
+		r.descriptor,
+		C.int(seqLength),
+		&tocxD[0],
+		&sizeinbytes,
+	)).error("GetRNNTrainingReserveSize")
+	return SizeT(sizeinbytes), err
+}
+
+//GetRNNParamsSize gets the training reserve size
+func (r *RNND) GetRNNParamsSize(
+	handle *Handle,
+	xD *TensorD,
+	data *DataType,
+) (SizeT, error) {
+	var sizeinbytes C.size_t
+	err := Status(C.cudnnGetRNNParamsSize(
+		handle.x,
+		r.descriptor,
+		xD.descriptor,
+		&sizeinbytes,
+		data.c(),
+	)).error("GetRNNParamsSize")
+	return SizeT(sizeinbytes), err
+}
+
+//GetRNNLinLayerMatrixParams gets the parameters of the layer matrix
+func (r *RNND) GetRNNLinLayerMatrixParams(
+	handle *Handle,
+	pseudoLayer int32,
+	/*
+	   The pseudo-layer to query.
+	   In uni-directional RNN-s, a pseudo-layer is the same as a "physical" layer
+	   (pseudoLayer=0 is the RNN input layer, pseudoLayer=1 is the first hidden layer).
+
+	   In bi-directional RNN-s there are twice as many pseudo-layers in comparison to "physical" layers
+	   (pseudoLayer=0 and pseudoLayer=1 are both input layers;
+	   pseudoLayer=0 refers to the forward part and pseudoLayer=1 refers to the backward part
+	    of the "physical" input layer; pseudoLayer=2 is the forward part of the first hidden layer, and so on).
+
+	*/
+	xD *TensorD,
+	wD *FilterD,
+	w Memer,
+	linlayerID int32,
+	/*
+	   Input. The linear layer to obtain information about:
+
+	   If mode in rnnDesc was set to CUDNN_RNN_RELU or CUDNN_RNN_TANH a value of 0 references the matrix multiplication applied to the input from the previous layer,
+	   a value of 1 references the matrix multiplication applied to the recurrent input.
+
+	   If mode in rnnDesc was set to CUDNN_LSTM values of 0-3 reference matrix multiplications applied to the input from the previous layer, value of 4-7 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 4 reference the input gate.
+	       Values 1 and 5 reference the forget gate.
+	       Values 2 and 6 reference the new memory gate.
+	       Values 3 and 7 reference the output gate.
+	       Value 8 references the "recurrent" projection matrix when enabled by the cudnnSetRNNProjectionLayers() function.
+
+	   If mode in rnnDesc was set to CUDNN_GRU values of 0-2 reference matrix multiplications applied to the input from the previous layer, value of 3-5 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 3 reference the reset gate.
+	       Values 1 and 4 reference the update gate.
+	       Values 2 and 5 reference the new memory gate.
+
+	*/
+
+) (FilterD, unsafe.Pointer, error) {
+	var linLayerMatDesc FilterD
+	var linLayerMat unsafe.Pointer
+	err := Status(C.cudnnGetRNNLinLayerMatrixParams(
+		handle.x,
+		r.descriptor,
+		C.int(pseudoLayer),
+		xD.descriptor,
+		wD.descriptor,
+		w.Ptr(),
+		C.int(linlayerID),
+		linLayerMatDesc.descriptor,
+		&linLayerMat,
+	)).error("GetRNNLinLayerMatrixParams")
+	return linLayerMatDesc, linLayerMat, err
+}
+
+//GetRNNLinLayerBiasParams gets the parameters of the layer bias
+func (r *RNND) GetRNNLinLayerBiasParams(
+	handle *Handle,
+	pseudoLayer int32,
+	/*
+	   The pseudo-layer to query.
+	   In uni-directional RNN-s, a pseudo-layer is the same as a "physical" layer
+	   (pseudoLayer=0 is the RNN input layer, pseudoLayer=1 is the first hidden layer).
+
+	   In bi-directional RNN-s there are twice as many pseudo-layers in comparison to "physical" layers
+	   (pseudoLayer=0 and pseudoLayer=1 are both input layers;
+	   pseudoLayer=0 refers to the forward part and pseudoLayer=1 refers to the backward part
+	    of the "physical" input layer; pseudoLayer=2 is the forward part of the first hidden layer, and so on).
+
+	*/
+	xD *TensorD,
+	wD *FilterD,
+	w Memer,
+	linlayerID int32,
+	/*
+	   Input. The linear layer to obtain information about:
+
+	   If mode in rnnDesc was set to CUDNN_RNN_RELU or CUDNN_RNN_TANH a value of 0 references the matrix multiplication applied to the input from the previous layer,
+	   a value of 1 references the matrix multiplication applied to the recurrent input.
+
+	   If mode in rnnDesc was set to CUDNN_LSTM values of 0-3 reference matrix multiplications applied to the input from the previous layer, value of 4-7 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 4 reference the input gate.
+	       Values 1 and 5 reference the forget gate.
+	       Values 2 and 6 reference the new memory gate.
+	       Values 3 and 7 reference the output gate.
+	       Value 8 references the "recurrent" projection matrix when enabled by the cudnnSetRNNProjectionLayers() function.
+
+	   If mode in rnnDesc was set to CUDNN_GRU values of 0-2 reference matrix multiplications applied to the input from the previous layer, value of 3-5 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 3 reference the reset gate.
+	       Values 1 and 4 reference the update gate.
+	       Values 2 and 5 reference the new memory gate.
+
+	*/
+
+) (FilterD, unsafe.Pointer, error) {
+	var linLayerBiasDesc FilterD
+	var linLayerBias unsafe.Pointer
+	err := Status(C.cudnnGetRNNLinLayerBiasParams(
+		handle.x,
+		r.descriptor,
+		C.int(pseudoLayer),
+		xD.descriptor,
+		wD.descriptor,
+		w.Ptr(),
+		C.int(linlayerID),
+		linLayerBiasDesc.descriptor,
+		&linLayerBias,
+	)).error("GetRNNLinLayerBiasParams")
+	return linLayerBiasDesc, linLayerBias, err
 }

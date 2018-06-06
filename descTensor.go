@@ -157,6 +157,14 @@ type TensorD struct {
 	flag       descflag
 }
 
+func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
+	descs := make([]C.cudnnTensorDescriptor_t, len(input))
+	for i := 0; i < len(input); i++ {
+		descs[i] = input[i].descriptor
+	}
+	return descs
+}
+
 //Shape basically takes some arguments and makes a slice out of them. This is made out of convenience to the user when building a tensor. It will not return an error
 func Shape(nums ...int32) []int32 {
 	return nums
