@@ -5,38 +5,39 @@ package gocudnn
 */
 import "C"
 
-//RNNMode is used for flags
-type RNNMode C.cudnnRNNMode_t
+//rnnmode is used for flags
+type rnnmode C.cudnnRNNMode_t
 
-func (r RNNMode) c() C.cudnnRNNMode_t { return C.cudnnRNNMode_t(r) }
+//RNNModeFlag is a nil struct that is used to pass the RNN flags which are unexported.
+//I wanted a way to force the user to use methods in passing the flags so that nothin was passed on accident.
+type RNNModeFlags struct {
+}
 
-//RNNModeFlag constant used to pass flags through methods
-const RNNModeFlag RNNMode = C.CUDNN_RNN_RELU
-const (
-	rnnRelu RNNMode = C.CUDNN_RNN_RELU /* Stock RNN with ReLu activation */
-	rnnTanh RNNMode = C.CUDNN_RNN_TANH /* Stock RNN with tanh activation */
-	rnnLstm RNNMode = C.CUDNN_LSTM     /* LSTM with no peephole connections */
-	rnnGru  RNNMode = C.CUDNN_GRU      /* Using h' = tanh(r * Uh(t-1) + Wx) and h = (1 - z) * h' + z * h(t-1); */
-)
+func (r rnnmode) c() C.cudnnRNNMode_t { return C.cudnnRNNMode_t(r) }
 
-//Relu returns rnnRelu
-func (r RNNMode) Relu() RNNMode {
-	return rnnRelu
+//RNNModeFlag func pass an RNNMode type that is used for flags default is RNN_RELU, but it can be changed with RNNMode methods
+func CreateRNNModeFlager() RNNModeFlags {
+	return RNNModeFlags{}
+}
+
+//Relu return RNNMode(C.CUDNN_RNN_RELU)
+func (r RNNModeFlags) Relu() rnnmode {
+	return rnnmode(C.CUDNN_RNN_RELU)
 }
 
 //Tanh returns rnnTanh
-func (r RNNMode) Tanh() RNNMode {
-	return rnnTanh
+func (r RNNModeFlags) Tanh() rnnmode {
+	return rnnmode(C.CUDNN_RNN_TANH)
 }
 
 //Lstm returns rnnLstm
-func (r RNNMode) Lstm() RNNMode {
-	return rnnLstm
+func (r RNNModeFlags) Lstm() rnnmode {
+	return rnnmode(C.CUDNN_LSTM)
 }
 
 //Gru returns rnnGru
-func (r RNNMode) Gru() RNNMode {
-	return rnnGru
+func (r RNNModeFlags) Gru() rnnmode {
+	return rnnmode(C.CUDNN_GRU)
 }
 
 //DirectionMode is a type used for flags
@@ -143,7 +144,7 @@ func (r *RNND) SetRNNDescriptor(
 	doD *DropOutD,
 	inputmode RNNInputMode,
 	direction DirectionMode,
-	rnnmode RNNMode,
+	rnnmode rnnmode,
 	rnnalg RNNAlgo,
 	data DataType,
 
@@ -200,7 +201,42 @@ func (r *RNND) SetRNNAlgorithmDescriptor(
 	return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error("SetRNNAlgorithmDescriptor")
 }
 
-//GetRNNDescriptor gets algo desctiptor values
-func (r *RNND) GetRNNDescriptor() {
+//GetRNNDescriptor gets algo desctiptor values returns a ton of stuff
+func (r *RNND) GetRNNDescriptor(
+	handle *Handle,
+) (int32, int32, *DropOutD, RNNInputMode, DirectionMode, rnnmode, RNNAlgo, DataType, error) {
+	var hiddensize C.int
+	var numLayers C.int
+	var dropoutdescriptor C.cudnnDropoutDescriptor_t
+	var inputMode C.cudnnRNNInputMode_t
+	var direction C.cudnnDirectionMode_t
+	var mode C.cudnnRNNMode_t
+	var algo C.cudnnRNNAlgo_t
+	var dataType C.cudnnDataType_t
+	err := Status(C.cudnnGetRNNDescriptor(
+		handle.x,
+		r.descriptor,
+		&hiddensize,
+		&numLayers,
+		&dropoutdescriptor,
+		&inputMode,
+		&direction,
+		&mode,
+		&algo,
+		&dataType,
+	)).error("GetRNNDescriptor")
+	return int32(hiddensize), int32(numLayers), &DropOutD{descriptor: dropoutdescriptor},
+		RNNInputMode(inputMode), DirectionMode(direction), rnnmode(mode), RNNAlgo(algo), DataType(dataType), err
+}
 
+//SetRNNMatrixMathType Sets the math type for the descriptor
+func (r *RNND) SetRNNMatrixMathType(math MathType) error {
+	return Status(C.cudnnSetRNNMatrixMathType(r.descriptor, math.c())).error("SetRNNMatrixMathType")
+}
+
+//GetRNNMatrixMathType Gets the math type for the descriptor
+func (r *RNND) GetRNNMatrixMathType() (MathType, error) {
+	var math C.cudnnMathType_t
+	err := Status(C.cudnnGetRNNMatrixMathType(r.descriptor, &math)).error("SetRNNMatrixMathType")
+	return MathType(math), err
 }
