@@ -9,23 +9,20 @@ import (
 	"errors"
 )
 
+//ConvolutionModeFlag is used to pass Convolution Mode Flags in a semi-safe way for human users by using methods
+type ConvolutionModeFlag struct {
+}
+
 //ConvolutionMode is the type to describe the convolution mode flags
 type ConvolutionMode C.cudnnConvolutionMode_t
 
-//ConvolutionModeFlag returns the defalut flag ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
-//can be changed through methods
-func ConvolutionModeFlag() ConvolutionMode {
-
-	return ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
-}
-
 //Convolution returns  ConvolutionMode(C.CUDNN_CONVOLUTION)
-func (c ConvolutionMode) Convolution() ConvolutionMode {
+func (c ConvolutionModeFlag) Convolution() ConvolutionMode {
 	return ConvolutionMode(C.CUDNN_CONVOLUTION)
 }
 
 // CrossCorrelation returns ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
-func (c ConvolutionMode) CrossCorrelation() ConvolutionMode {
+func (c ConvolutionModeFlag) CrossCorrelation() ConvolutionMode {
 	return ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
 }
 

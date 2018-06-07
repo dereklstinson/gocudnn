@@ -5,7 +5,10 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
-import "fmt"
+import (
+	"fmt"
+	"unsafe"
+)
 
 /* helper function to provide the convolution algo that fit best the requirement */
 
@@ -23,6 +26,10 @@ func (cbd ConvBwdDataPref) c() C.cudnnConvolutionBwdDataPreference_t {
 	return C.cudnnConvolutionBwdDataPreference_t(cbd)
 }
 
+//ConvBwdDataAlgoFlag is used to pass ConvBwdDataAlgo Flags
+type ConvBwdDataAlgoFlag struct {
+}
+
 //ConvBwdDataAlgo used for flags in the bacward data algorithms
 type ConvBwdDataAlgo C.cudnnConvolutionBwdDataAlgo_t
 
@@ -36,6 +43,45 @@ const (
 	ConvBwdDataAlgoWinoGradNonFused ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED
 	ConvBwdDataAlgoCount            ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT
 )
+
+//Algo0 return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0)
+func (c ConvBwdDataAlgoFlag) Algo0() ConvBwdDataAlgo {
+	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0)
+}
+
+//Algo1 return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1)
+func (c ConvBwdDataAlgoFlag) Algo1() ConvBwdDataAlgo {
+	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1)
+}
+
+//FFT return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT)
+func (c ConvBwdDataAlgoFlag) FFT() ConvBwdDataAlgo {
+	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT)
+}
+
+//FFTTiling return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING)
+func (c ConvBwdDataAlgoFlag) FFTTiling() ConvBwdDataAlgo {
+	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING)
+}
+
+//Winograd 	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD)
+func (c ConvBwdDataAlgoFlag) Winograd() ConvBwdDataAlgo {
+	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD)
+}
+
+//WinogradNonFused return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED)
+func (c ConvBwdDataAlgoFlag) WinogradNonFused() ConvBwdDataAlgo {
+	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED)
+}
+
+//Count return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT)
+func (c ConvBwdDataAlgoFlag) Count() ConvBwdDataAlgo {
+	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT)
+}
+
+func (cbd *ConvBwdDataAlgo) unionize() unsafe.Pointer {
+	return unsafe.Pointer(cbd)
+}
 
 func (cbd ConvBwdDataAlgo) c() C.cudnnConvolutionBwdDataAlgo_t {
 	return C.cudnnConvolutionBwdDataAlgo_t(cbd)

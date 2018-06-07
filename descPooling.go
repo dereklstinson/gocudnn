@@ -11,31 +11,30 @@ import "errors"
  *  pooling mode
  */
 
+//PoolingModeFlag is used to pass PoolingMode flags for human users semi-safely using methods
+type PoolingModeFlag struct {
+}
+
 //PoolingMode is used for flags in pooling
 type PoolingMode C.cudnnPoolingMode_t
 
-//PoolingModeFlag returns a pooling mode flag default of Pooling Max which can be changed by methods
-func PoolingModeFlag() PoolingMode {
-	return PoolingMode(C.CUDNN_POOLING_MAX)
-}
-
 //Max returns PoolingMode(C.CUDNN_POOLING_MAX) flag
-func (p PoolingMode) Max() PoolingMode {
+func (p PoolingModeFlag) Max() PoolingMode {
 	return PoolingMode(C.CUDNN_POOLING_MAX)
 }
 
 //AverageCountIncludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING) flag
-func (p PoolingMode) AverageCountIncludePadding() PoolingMode {
+func (p PoolingModeFlag) AverageCountIncludePadding() PoolingMode {
 	return PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING)
 }
 
 //AverageCountExcludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING) flag
-func (p PoolingMode) AverageCountExcludePadding() PoolingMode {
+func (p PoolingModeFlag) AverageCountExcludePadding() PoolingMode {
 	return PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING)
 }
 
 //MaxDeterministic returns PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC) flag
-func (p PoolingMode) MaxDeterministic() PoolingMode {
+func (p PoolingModeFlag) MaxDeterministic() PoolingMode {
 	return PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC)
 }
 

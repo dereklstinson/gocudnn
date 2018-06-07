@@ -7,41 +7,40 @@ import (
 	"C"
 )
 
+//OpTensorFlag is used pass OpTensorOp Flags Semi Safely using methods
+type OpTensorFlag struct {
+}
+
 //OpTensorOp is used for flags for the Optensor functions
 type OpTensorOp C.cudnnOpTensorOp_t
 
-//OpTensorOpFlag is used to pass flags through methods of optesnsorop default is add
-func OpTensorOpFlag() OpTensorOp {
-	return OpTensorOp(C.CUDNN_OP_TENSOR_ADD)
-}
-
 //Add returns 	 OpTensorOp(C.CUDNN_OP_TENSOR_ADD)
-func (o OpTensorOp) Add() OpTensorOp {
+func (o OpTensorFlag) Add() OpTensorOp {
 	return OpTensorOp(C.CUDNN_OP_TENSOR_ADD)
 }
 
 //Mul returns  OpTensorOp(C.CUDNN_OP_TENSOR_MUL)
-func (o OpTensorOp) Mul() OpTensorOp {
+func (o OpTensorFlag) Mul() OpTensorOp {
 	return OpTensorOp(C.CUDNN_OP_TENSOR_MUL)
 }
 
 //Min returns OpTensorOp(C.CUDNN_OP_TENSOR_MIN)
-func (o OpTensorOp) Min() OpTensorOp {
+func (o OpTensorFlag) Min() OpTensorOp {
 	return OpTensorOp(C.CUDNN_OP_TENSOR_MIN)
 }
 
 //Max returns OpTensorOp(C.CUDNN_OP_TENSOR_MAX)
-func (o OpTensorOp) Max() OpTensorOp {
+func (o OpTensorFlag) Max() OpTensorOp {
 	return OpTensorOp(C.CUDNN_OP_TENSOR_MAX)
 }
 
 //Sqrt returns OpTensorOp(C.CUDNN_OP_TENSOR_SQRT)
-func (o OpTensorOp) Sqrt() OpTensorOp {
+func (o OpTensorFlag) Sqrt() OpTensorOp {
 	return OpTensorOp(C.CUDNN_OP_TENSOR_SQRT)
 }
 
 //Not returns OpTensorOp(C.CUDNN_OP_TENSOR_NOT)
-func (o OpTensorOp) Not() OpTensorOp {
+func (o OpTensorFlag) Not() OpTensorOp {
 	return OpTensorOp(C.CUDNN_OP_TENSOR_NOT)
 }
 func (o OpTensorOp) c() C.cudnnOpTensorOp_t { return C.cudnnOpTensorOp_t(o) }

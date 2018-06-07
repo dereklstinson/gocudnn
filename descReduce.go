@@ -8,9 +8,8 @@ import "C"
 //ReduceTensorOp used for flags for reduce tensor functions
 type ReduceTensorOp C.cudnnReduceTensorOp_t
 
-//ReduceTensorOpFlag func for ReduceTensorOp flags it defaults with ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_ADD) can be changed with methods
-func ReduceTensorOpFlag() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_ADD)
+//ReduceTensorOpFlag is used to pass ReduceTensorOp flags semi safely for users using methods
+type ReduceTensorOpFlag struct {
 }
 
 // This will go away...eventually ... maybe.  I will pass the C.<flag> through methods (like above) instead of how it is done below
@@ -27,48 +26,48 @@ const (
 )
 
 //Add returns reduceTensorAdd flag
-func (r ReduceTensorOp) Add() ReduceTensorOp {
-	return reduceTensorAdd
+func (r ReduceTensorOpFlag) Add() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_ADD)
 }
 
 //Mul returns reduceTensorMul flag
-func (r ReduceTensorOp) Mul() ReduceTensorOp {
-	return reduceTensorMul
+func (r ReduceTensorOpFlag) Mul() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MUL)
 }
 
 //Min returns reduceTensorMin flag
-func (r ReduceTensorOp) Min() ReduceTensorOp {
-	return reduceTensorMin
+func (r ReduceTensorOpFlag) Min() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MIN)
 }
 
 //Max returns reduceTensorMax flag
-func (r ReduceTensorOp) Max() ReduceTensorOp {
-	return reduceTensorMax
+func (r ReduceTensorOpFlag) Max() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MAX)
 }
 
 //Amax returns reduceTensorAmax flag
-func (r ReduceTensorOp) Amax() ReduceTensorOp {
-	return reduceTensorAmax
+func (r ReduceTensorOpFlag) Amax() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_AMAX)
 }
 
 //Avg returns reduceTensorAvg flag
-func (r ReduceTensorOp) Avg() ReduceTensorOp {
-	return reduceTensorAvg
+func (r ReduceTensorOpFlag) Avg() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_AVG)
 }
 
 //Norm1 returns reduceTensorNorm1 flag
-func (r ReduceTensorOp) Norm1() ReduceTensorOp {
-	return reduceTensorNorm1
+func (r ReduceTensorOpFlag) Norm1() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_NORM1)
 }
 
 //Norm2 returns reduceTensorNorm2 flag
-func (r ReduceTensorOp) Norm2() ReduceTensorOp {
-	return reduceTensorNorm2
+func (r ReduceTensorOpFlag) Norm2() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_NORM2)
 }
 
 //MulNoZeros returns reduceTensorMulNoZeros flag
-func (r ReduceTensorOp) MulNoZeros() ReduceTensorOp {
-	return reduceTensorMulNoZeros
+func (r ReduceTensorOpFlag) MulNoZeros() ReduceTensorOp {
+	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MUL_NO_ZEROS)
 }
 
 //ReduceTensorIndices are used for flags

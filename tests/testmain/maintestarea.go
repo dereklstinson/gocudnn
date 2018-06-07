@@ -77,9 +77,11 @@ func main() {
 		}
 	*/
 	//Group 0
+	var datatypeflag gocudnn.DataTypeFlag
+	var tffunctionflag gocudnn.TensorFormatFlag
 	handle := gocudnn.NewHandle()
-	DataTypeFlag := gocudnn.DataTypeFlag().Float()
-	TensorFormatFlag := gocudnn.TensorFormatFlag().NCHW()
+	DataTypeFlag := datatypeflag.Float()
+	TensorFormatFlag := tffunctionflag.NCHW()
 	//Group1
 	tens, err := gocudnn.NewTensor4dDescriptor(DataTypeFlag, TensorFormatFlag, gocudnn.Shape(1, 3, 32, 32))
 	if err != nil {
@@ -92,7 +94,8 @@ func main() {
 	}
 
 	//Group 3
-	ConvMode := gocudnn.ConvolutionModeFlag().CrossCorrelation()
+	var convmodef gocudnn.ConvolutionModeFlag
+	ConvMode := convmodef.CrossCorrelation()
 	convd, err := gocudnn.NewConvolution2dDescriptor(ConvMode, DataTypeFlag,
 		gocudnn.Pads(1, 1), gocudnn.Strides(1, 1), gocudnn.Dialation(1, 1))
 	if err != nil {
@@ -135,7 +138,8 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println(x)
-
-	activation, err := gocudnn.NewActivationDescriptor(gocudnn.ActivationModeFlag().Relu(), gocudnn.PropagationNANFlag().NotPropagateNan(), gocudnn.CDouble(4))
+	var actflag gocudnn.ActivationModeFlag
+	var propflag gocudnn.PropagationNANFlag
+	activation, err := gocudnn.NewActivationDescriptor(actflag.Relu(), propflag.NotPropagateNan(), gocudnn.CDouble(4))
 	fmt.Println(activation)
 }

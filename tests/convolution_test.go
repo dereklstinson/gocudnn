@@ -7,8 +7,10 @@ import (
 )
 
 func TestConvolution(t *testing.T) {
-	dtflag := gocudnn.DataTypeFlag().Double()
-	tfflag := gocudnn.TensorFormatFlag().NHWC()
+	var datatypeflag gocudnn.DataTypeFlag
+	var tffunctionflag gocudnn.TensorFormatFlag
+	dtflag := datatypeflag.Double()
+	tfflag := tffunctionflag.NHWC()
 	tens, err := gocudnn.NewTensor4dDescriptor(dtflag, tfflag, gocudnn.Shape(1, 3, 32, 32))
 	if err != nil {
 		t.Error(err)
@@ -19,8 +21,8 @@ func TestConvolution(t *testing.T) {
 		t.Error(err)
 	}
 	//fmt.Println(filts)
-
-	convd, err := gocudnn.NewConvolution2dDescriptor(gocudnn.ConvolutionModeFlag().CrossCorrelation(), dtflag,
+	var convmode gocudnn.ConvolutionModeFlag
+	convd, err := gocudnn.NewConvolution2dDescriptor(convmode.CrossCorrelation(), dtflag,
 		gocudnn.Pads(1, 1), gocudnn.Strides(1, 1), gocudnn.Dialation(1, 1))
 	if err != nil {
 		t.Error(err)

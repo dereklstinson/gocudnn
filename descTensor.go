@@ -10,58 +10,54 @@ import (
 	"errors"
 )
 
-//PONDERING most of the tensor info stuff(like the stuff that says "Get.....") should probably be private.
+//DataTypeFlag is used to pass DataType flags semi-safely though methods
+type DataTypeFlag struct {
+}
 
 //DataType is used for flags for the tensor layer structs
 type DataType C.cudnnDataType_t
 
-//DataTypeFlag returns a datatype with default being the DataType(C.CUDNN_DATA_FLOAT) flag
-func DataTypeFlag() DataType {
-	return DataType(C.CUDNN_DATA_FLOAT)
-}
-
 // Float return DataType(C.CUDNN_DATA_FLOAT)
-func (d DataType) Float() DataType {
+func (d DataTypeFlag) Float() DataType {
 	return DataType(C.CUDNN_DATA_FLOAT)
 }
 
 // Double return DataType(C.CUDNN_DATA_DOUBLE)
-func (d DataType) Double() DataType {
+func (d DataTypeFlag) Double() DataType {
 	return DataType(C.CUDNN_DATA_DOUBLE)
 }
 
 // Int8 return DataType(C.CUDNN_DATA_INT8)
-func (d DataType) Int8() DataType {
+func (d DataTypeFlag) Int8() DataType {
 	return DataType(C.CUDNN_DATA_INT8)
 }
 
 // Int32 return DataType(C.CUDNN_DATA_INT32)
-func (d DataType) Int32() DataType {
+func (d DataTypeFlag) Int32() DataType {
 	return DataType(C.CUDNN_DATA_INT32)
 }
 
 // UInt8 return DataType(C.CUDNN_DATA_INT8)
-func (d DataType) UInt8() DataType {
+func (d DataTypeFlag) UInt8() DataType {
 	return DataType(C.CUDNN_DATA_UINT8)
 }
 
 func (d DataType) c() C.cudnnDataType_t { return C.cudnnDataType_t(d) }
 
+//MathTypeFlag used to pass MathType Flags semi-safely through methods.
+type MathTypeFlag struct {
+}
+
 //MathType are flags to set for cudnnMathType_t
 type MathType C.cudnnMathType_t
 
-//MathTypeFlag returns MathType(C.CUDNN_DEFAULT_MATH) can be changed with methods
-func MathTypeFlag() MathType {
-	return MathType(C.CUDNN_DEFAULT_MATH)
-}
-
 //Default return MathType(C.CUDNN_DEFAULT_MATH)
-func (math MathType) Default() MathType {
+func (math MathTypeFlag) Default() MathType {
 	return MathType(C.CUDNN_DEFAULT_MATH)
 }
 
 //TensorOpMath return MathType(C.CUDNN_TENSOR_OP_MATH)
-func (math MathType) TensorOpMath() MathType {
+func (math MathTypeFlag) TensorOpMath() MathType {
 	return MathType(C.CUDNN_TENSOR_OP_MATH)
 }
 
@@ -74,70 +70,66 @@ func (math MathType) string() string {
 	return "Math Type Tensor OP"
 }
 
+//PropagationNANFlag used to return Propagation flags semi-safely through methods
+type PropagationNANFlag struct {
+}
+
 //PropagationNAN  is type for C.cudnnNanPropagation_t used for flags
 type PropagationNAN C.cudnnNanPropagation_t
 
-//PropagationNANFlag return PropagationNAN(CUDNN_NOT_PROPAGATE_NAN) that can be changed through methods
-func PropagationNANFlag() PropagationNAN {
-	return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN)
-}
-
 //NotPropagateNan return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN) flag
-func (p PropagationNAN) NotPropagateNan() PropagationNAN {
+func (p PropagationNANFlag) NotPropagateNan() PropagationNAN {
 	return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN)
 }
 
 //PropagateNan return PropagationNAN(C.CUDNN_PROPAGATE_NAN) flag
-func (p PropagationNAN) PropagateNan() PropagationNAN {
+func (p PropagationNANFlag) PropagateNan() PropagationNAN {
 	return PropagationNAN(C.CUDNN_PROPAGATE_NAN)
 }
 
 func (p PropagationNAN) c() C.cudnnNanPropagation_t { return C.cudnnNanPropagation_t(p) }
 
+//DeterminismFlag used to pass Determinism flags semi-safely using methods
+type DeterminismFlag struct {
+}
+
 //Determinism is the type for flags that set Determinism
 type Determinism C.cudnnDeterminism_t
 
-//Flags for Determinism
-const (
-	DeterministicNON Determinism = iota
-	Deterministic
-)
+//Non returns  Determinism(C.CUDNN_NON_DETERMINISTIC)
+func (d DeterminismFlag) Non() Determinism { return Determinism(C.CUDNN_NON_DETERMINISTIC) }
+
+//Deter returns Determinism(C.CUDNN_DETERMINISTIC)
+func (d DeterminismFlag) Deter() Determinism { return Determinism(C.CUDNN_DETERMINISTIC) }
 
 func (d Determinism) c() C.cudnnDeterminism_t { return C.cudnnDeterminism_t(d) }
+
 func (d Determinism) string() string {
-	if d == DeterministicNON {
+	if d == Determinism(C.CUDNN_NON_DETERMINISTIC) {
 		return "Non Deterministic"
 	}
 	return "Deterministic "
 }
 
+//TensorFormatFlag used to pass TensorFormat Flags semi safely
+type TensorFormatFlag struct {
+}
+
 //TensorFormat is the type used for flags to set tensor format
 type TensorFormat C.cudnnTensorFormat_t
 
-//Flags for TensorFormat
-const (
-	TensorFormatNCHW      TensorFormat = C.CUDNN_TENSOR_NCHW
-	TensorFormatNHWC      TensorFormat = C.CUDNN_TENSOR_NHWC
-	TensorFormatNCHWVectC TensorFormat = C.CUDNN_TENSOR_NCHW_VECT_C
-)
-
-//TensorFormat returns a flag that defaults with  TensorFormat(C.CUDNN_TENSOR_NCHW) can be changed with methods
-func TensorFormatFlag() TensorFormat {
-	return TensorFormat(C.CUDNN_TENSOR_NCHW)
-}
-
 //NCHW return TensorFormat(C.CUDNN_TENSOR_NCHW)
-func (t TensorFormat) NCHW() TensorFormat {
+func (t TensorFormatFlag) NCHW() TensorFormat {
 	return TensorFormat(C.CUDNN_TENSOR_NCHW)
 }
 
 //NHWC return TensorFormat(C.CUDNN_TENSOR_NHWC)
-func (t TensorFormat) NHWC() TensorFormat {
+func (t TensorFormatFlag) NHWC() TensorFormat {
 	return TensorFormat(C.CUDNN_TENSOR_NHWC)
 }
 
 //NCHWvectC return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
-func (t TensorFormat) NCHWvectC() TensorFormat {
+func (t TensorFormatFlag) NCHWvectC() TensorFormat {
 	return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
 }
 func (t TensorFormat) c() C.cudnnTensorFormat_t { return C.cudnnTensorFormat_t(t) }
