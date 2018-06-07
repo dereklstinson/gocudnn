@@ -372,70 +372,162 @@ func (handle *Handle) RNNForwardInference(
 	)).error("RNNForwardInference")
 }
 
-/*
-cudnnStatus_t CUDNNWINAPI cudnnRNNForwardTraining( cudnnHandle_t              handle,
-	const cudnnRNNDescriptor_t    rnnDesc,
-	const int                     seqLength,
-	const cudnnTensorDescriptor_t *xDesc,
-	const void                    *x,
-	const cudnnTensorDescriptor_t hxDesc,
-	const void                    *hx,
-	const cudnnTensorDescriptor_t cxDesc,
-	const void                    *cx,
-	const cudnnFilterDescriptor_t wDesc,
-	const void                    *w,
-	const cudnnTensorDescriptor_t *yDesc,
-	void                          *y,
-	const cudnnTensorDescriptor_t hyDesc,
-	void                          *hy,
-	const cudnnTensorDescriptor_t cyDesc,
-	void                          *cy,
-	void                          *workspace,
-	size_t                        workSpaceSizeInBytes,
-	void *                        reserveSpace,
-	size_t                        reserveSpaceSizeInBytes);
+//RNNForwardTraining is the forward algo for an RNN
+func (handle *Handle) RNNForwardTraining(
+	r *RNND,
+	seqLen int32,
+	xD []*TensorD,
+	x Memer,
+	hxD *TensorD,
+	hx Memer,
+	cxD *TensorD,
+	cx Memer,
+	wD *FilterD,
+	w Memer,
+	yD []*TensorD,
+	y Memer,
+	hyD *TensorD,
+	hy Memer,
+	cyD *TensorD,
+	cy Memer,
+	wspace Memer,
+	rspace Memer,
+) error {
+	tocxD := tensorDArrayToC(xD)
+	tocyD := tensorDArrayToC(yD)
+	err := Status(C.cudnnRNNForwardTraining(
+		handle.x,
+		r.descriptor,
+		C.int(seqLen),
+		&tocxD[0],
+		x.Ptr(),
+		hxD.descriptor,
+		hx.Ptr(),
+		cxD.descriptor,
+		cx.Ptr(),
+		wD.descriptor,
+		w.Ptr(),
+		&tocyD[0],
+		y.Ptr(),
+		hyD.descriptor,
+		hy.Ptr(),
+		cyD.descriptor,
+		cy.Ptr(),
+		wspace.Ptr(),
+		wspace.ByteSize().c(),
+		rspace.Ptr(),
+		rspace.ByteSize().c(),
+	)).error("RNNForwardTraining")
+	return err
+}
 
-cudnnStatus_t CUDNNWINAPI cudnnRNNBackwardData( cudnnHandle_t                 handle,
-	const cudnnRNNDescriptor_t    rnnDesc,
-	const int                     seqLength,
-	const cudnnTensorDescriptor_t *yDesc,
-	const void                    *y,
-	const cudnnTensorDescriptor_t *dyDesc,
-	const void                    *dy,
-	const cudnnTensorDescriptor_t dhyDesc,
-	const void                    *dhy,
-	const cudnnTensorDescriptor_t dcyDesc,
-	const void                    *dcy,
-	const cudnnFilterDescriptor_t wDesc,
-	const void                    *w,
-	const cudnnTensorDescriptor_t hxDesc,
-	const void                    *hx,
-	const cudnnTensorDescriptor_t cxDesc,
-	const void                    *cx,
-	const cudnnTensorDescriptor_t *dxDesc,
-	void                          *dx,
-	const cudnnTensorDescriptor_t dhxDesc,
-	void                          *dhx,
-	const cudnnTensorDescriptor_t dcxDesc,
-	void                          *dcx,
-	void                          *workspace,
-	size_t                        workSpaceSizeInBytes,
-	void *                        reserveSpace,
-	size_t                        reserveSpaceSizeInBytes);
+//RNNBackwardData is the backward algo for an RNN
+func (handle *Handle) RNNBackwardData(
+	r *RNND,
+	seqLen int32,
 
-cudnnStatus_t CUDNNWINAPI cudnnRNNBackwardWeights( cudnnHandle_t              handle,
-	const cudnnRNNDescriptor_t    rnnDesc,
-	const int                     seqLength,
-	const cudnnTensorDescriptor_t *xDesc,
-	const void                    *x,
-	const cudnnTensorDescriptor_t hxDesc,
-	const void                    *hx,
-	const cudnnTensorDescriptor_t *yDesc,
-	const void                    *y,
-	const void                    *workspace,
-	size_t                        workSpaceSizeInBytes,
-	const cudnnFilterDescriptor_t dwDesc,
-	void                          *dw,
-	const void                    *reserveSpace,
-	size_t                        reserveSpaceSizeInBytes);
-*/
+	yD []*TensorD,
+	y Memer,
+
+	dyD []*TensorD,
+	dy Memer,
+
+	dhyD *TensorD,
+	dhy Memer,
+
+	dcyD *TensorD,
+	dcy Memer,
+
+	wD *FilterD,
+	w Memer,
+
+	hxD *TensorD,
+	hx Memer,
+
+	cxD *TensorD,
+	cx Memer,
+
+	dxD []*TensorD,
+	dx Memer,
+
+	dhxD *TensorD,
+	dhx Memer,
+
+	dcxD *TensorD,
+	dcx Memer,
+
+	wspace Memer,
+	rspace Memer,
+) error {
+	tocdxD := tensorDArrayToC(dxD)
+	tocdyD := tensorDArrayToC(dyD)
+	tocyD := tensorDArrayToC(yD)
+	err := Status(C.cudnnRNNBackwardData(
+		handle.x,
+		r.descriptor,
+		C.int(seqLen),
+		&tocyD[0],
+		y.Ptr(),
+		&tocdyD[0],
+		dy.Ptr(),
+		dhyD.descriptor,
+		dhy.Ptr(),
+		dcyD.descriptor,
+		dcy.Ptr(),
+		wD.descriptor,
+		w.Ptr(),
+		hxD.descriptor,
+		hx.Ptr(),
+		cxD.descriptor,
+		cx.Ptr(),
+		&tocdxD[0],
+		dx.Ptr(),
+		dhxD.descriptor,
+		dhx.Ptr(),
+		dcxD.descriptor,
+		dcx.Ptr(),
+		wspace.Ptr(),
+		wspace.ByteSize().c(),
+		rspace.Ptr(),
+		rspace.ByteSize().c(),
+	)).error("RNNBackwardData")
+	return err
+}
+
+//BackwardWeights does the backward weight function
+func (handle *Handle) BackwardWeights(
+	r *RNND,
+	seqLen int32,
+	xD []*TensorD,
+	x Memer,
+	hxD *TensorD,
+	hx Memer,
+	yD []*TensorD,
+	y Memer,
+	wspace Memer,
+	dwD *FilterD,
+	dw Memer,
+	rspace Memer,
+) error {
+	tocxD := tensorDArrayToC(xD)
+	tocyD := tensorDArrayToC(yD)
+	err := Status(C.cudnnRNNBackwardWeights(
+		handle.x,
+		r.descriptor,
+		C.int(seqLen),
+		&tocxD[0],
+		x.Ptr(),
+		hxD.descriptor,
+		hx.Ptr(),
+		&tocyD[0],
+		y.Ptr(),
+		wspace.Ptr(),
+		wspace.ByteSize().c(),
+		dwD.descriptor,
+		dw.Ptr(),
+		rspace.Ptr(),
+		rspace.ByteSize().c(),
+	)).error("BackwardWeights")
+
+	return err
+}
