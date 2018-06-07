@@ -2,6 +2,12 @@ package gocudnn
 
 /*
 #include <cudnn.h>
+
+void MakeAlgorithmforRNN(cudnnAlgorithm_t *input,cudnnRNNAlgo_t RNNAlgo ){
+	input->algo.RNNAlgo=RNNAlgo;
+}
+
+
 */
 import "C"
 import (
@@ -110,6 +116,13 @@ func (r RNNAlgoFlag) Count() RNNAlgo {
 }
 
 func (r RNNAlgo) c() C.cudnnRNNAlgo_t { return C.cudnnRNNAlgo_t(r) }
+
+//Algo returns an Algorithm used for
+func (r RNNAlgo) Algo() Algorithm {
+	var algorithm C.cudnnAlgorithm_t
+	C.MakeAlgorithmforRNN(&algorithm, r.c())
+	return Algorithm(algorithm)
+}
 
 //AlgorithmPerformance go typed C.cudnnAlgorithmPerformance_t
 type AlgorithmPerformance C.cudnnAlgorithmPerformance_t

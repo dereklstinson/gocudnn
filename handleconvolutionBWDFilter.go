@@ -3,6 +3,10 @@ package gocudnn
 /*
 
 #include <cudnn.h>
+
+void MakeAlgorithmforBWDFilter(cudnnAlgorithm_t *input,cudnnConvolutionBwdFilterAlgo_t algo ){
+	input->algo.convBwdFilterAlgo=algo;
+}
 */
 import "C"
 import "fmt"
@@ -44,6 +48,14 @@ const (
 func (cb ConvBwdFiltAlgo) c() C.cudnnConvolutionBwdFilterAlgo_t {
 	return C.cudnnConvolutionBwdFilterAlgo_t(cb)
 }
+
+//Algo returns an Algorithm Struct
+func (cb ConvBwdFiltAlgo) Algo() Algorithm {
+	var algorithm C.cudnnAlgorithm_t
+	C.MakeAlgorithmforBWDFilter(&algorithm, cb.c())
+	return Algorithm(algorithm)
+}
+
 func (cb ConvBwdFiltAlgo) print() {
 	switch cb {
 	case ConvBwdFiltAlgo0:
@@ -80,8 +92,8 @@ func (cb ConvBwdFiltAlgoPerf) Print() {
 	fmt.Println("MathType:", cb.mathType)
 }
 
-//Algo returns the Pref Algo
-func (cb ConvBwdFiltAlgoPerf) Algo() ConvBwdFiltAlgo {
+//PrefAlgo returns the Pref Algo
+func (cb ConvBwdFiltAlgoPerf) PrefAlgo() ConvBwdFiltAlgo {
 	return ConvBwdFiltAlgo(cb.algo)
 }
 

@@ -3,6 +3,10 @@ package gocudnn
 /*
 
 #include <cudnn.h>
+
+void MakeAlgorithmforFWD(cudnnAlgorithm_t *input,cudnnConvolutionFwdAlgo_t algo ){
+	input->algo.convFwdAlgo=algo;
+}
 */
 import "C"
 import "fmt"
@@ -37,6 +41,14 @@ const (
 func (a ConvolutionFwdAlgo) c() C.cudnnConvolutionFwdAlgo_t {
 	return C.cudnnConvolutionFwdAlgo_t(a)
 }
+
+//Algo returns an Algorithm Struct
+func (a ConvolutionFwdAlgo) Algo() Algorithm {
+	var algorithm C.cudnnAlgorithm_t
+	C.MakeAlgorithmforFWD(&algorithm, a.c())
+	return Algorithm(algorithm)
+}
+
 func (a ConvolutionFwdAlgo) toString() string {
 	var x string
 	switch a {

@@ -3,6 +3,11 @@ package gocudnn
 /*
 
 #include <cudnn.h>
+
+void MakeAlgorithmforBWDData(cudnnAlgorithm_t *input,cudnnConvolutionBwdDataAlgo_t algo ){
+	input->algo.convBwdDataAlgo=algo;
+}
+
 */
 import "C"
 import (
@@ -33,7 +38,7 @@ type ConvBwdDataAlgoFlag struct {
 //ConvBwdDataAlgo used for flags in the bacward data algorithms
 type ConvBwdDataAlgo C.cudnnConvolutionBwdDataAlgo_t
 
-//Flags for the backward data algorithms
+//Flags for the backward data algorithms probably going to delete
 const (
 	ConvBwdDataAlgo0                ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0 /* non-deterministic */
 	ConvBwdDataAlgo1                ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1
@@ -85,6 +90,14 @@ func (cbd *ConvBwdDataAlgo) unionize() unsafe.Pointer {
 
 func (cbd ConvBwdDataAlgo) c() C.cudnnConvolutionBwdDataAlgo_t {
 	return C.cudnnConvolutionBwdDataAlgo_t(cbd)
+}
+
+//Algo returns an Algorithm struct
+func (cbd ConvBwdDataAlgo) Algo() Algorithm {
+	var algorithm C.cudnnAlgorithm_t
+	C.MakeAlgorithmforBWDData(&algorithm, cbd.c())
+	return Algorithm(algorithm)
+
 }
 
 //ConvBwdDataAlgoPerf is used to find the best/fastest algorithms
