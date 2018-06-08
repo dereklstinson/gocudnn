@@ -27,11 +27,70 @@ func CreateAlgorithmDescriptor() (*AlgorithmD, error) {
 
 }
 
-func (a *AlgorithmD) cudnnSetAlgorithmDescriptor(algo Algorithm) error {
+//SetAlgorithmDescriptor sets the algorithm descriptor
+func (a *AlgorithmD) SetAlgorithmDescriptor(algo Algorithm) error {
 
 	err := Status(C.cudnnSetAlgorithmDescriptor(
 		a.descriptor,
 		algo.c(),
-	)).error("CreateAlgorithmDescriptor")
+	)).error("SetAlgorithmDescriptor")
 	return err
+}
+
+// GetAlgorithmDescriptor returns a Algorithm
+func (a *AlgorithmD) GetAlgorithmDescriptor() (Algorithm, error) {
+	var algo C.cudnnAlgorithm_t
+	err := Status(C.cudnnGetAlgorithmDescriptor(
+		a.descriptor,
+		&algo,
+	)).error("GetAlgorithmDescriptor")
+	return Algorithm(algo), err
+}
+
+//CopyAlgorithmDescriptor returns a copy of AlgorithmD
+func (a *AlgorithmD) CopyAlgorithmDescriptor() (*AlgorithmD, error) {
+	var desc C.cudnnAlgorithmDescriptor_t
+	err := Status(C.cudnnCopyAlgorithmDescriptor(
+		a.descriptor,
+		desc,
+	)).error("CopyAlgorithmDescriptor")
+	if err != nil {
+		return nil, err
+	}
+	return &AlgorithmD{
+		descriptor: desc,
+	}, nil
+}
+
+//DestroyDescriptor destroys descriptor
+func (a *AlgorithmD) DestroyDescriptor() error {
+	return Status(C.cudnnDestroyAlgorithmDescriptor(a.descriptor)).error("DestroyDescriptor")
+}
+
+//CreateAlgorithmPerformance creates and returns an AlgorithmPerformance //This might have to return an array be an array
+func CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, error) {
+	algoperf := make([]C.cudnnAlgorithmPerformance_t, numberToCreate)
+
+	err := Status(C.cudnnCreateAlgorithmPerformance(
+		&algoperf[0],
+		C.int(numberToCreate),
+	)).error("CreateAlgorithmPerformance")
+	return calgoperftogoarray(algoperf), err
+}
+
+/*
+func (a *AlgorithmPerformance) SetAlgorithmPerformance(
+	algod *AlgorithmD,
+
+) error {
+	return nil
+}
+*/
+func calgoperftogoarray(input []C.cudnnAlgorithmPerformance_t) []AlgorithmPerformance {
+	size := len(input)
+	output := make([]AlgorithmPerformance, size)
+	for i := 0; i < size; i++ {
+		output[i].descriptor = (input[i])
+	}
+	return output
 }

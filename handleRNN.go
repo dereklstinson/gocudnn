@@ -72,11 +72,7 @@ func (handle *Handle) FindRNNForwardInferenceAlgorithmEx(
 		wspace.ByteSize().c(),
 	)).error("FindRNNForwardInferenceAlgorithmEx")
 
-	results := make([]AlgorithmPerformance, C.int(retactAlgoCount))
-	for i := 0; i < len(results); i++ {
-		results[i] = AlgorithmPerformance(perfResults[i])
-	}
-	return results, err
+	return calgoperftogoarray(perfResults), err
 }
 
 //GetRNNForwardTrainingAlgorithmMaxCount gets the max number of algorithms for rnnforward training algo
@@ -145,11 +141,8 @@ func (handle *Handle) FindRNNForwardTrainingAlgorithmEx(
 		rspace.Ptr(),
 		rspace.ByteSize().c(),
 	)).error("FindRNNForwardTrainingAlgorithmEx")
-	results := make([]AlgorithmPerformance, actualcount)
-	for i := 0; i < len(results); i++ {
-		results[i] = AlgorithmPerformance(perfresults[i])
-	}
-	return results, err
+
+	return calgoperftogoarray(perfresults), err
 }
 
 //GetRNNBackwardDataAlgorithmMaxCount gets the max number of algorithms for the back prop rnn
@@ -255,11 +248,8 @@ func (handle *Handle) FindRNNBackwardDataAlgorithmEx(
 		rspace.ByteSize().c(),
 		//31 total?
 	)).error("FindRNNBackwardDataAlgorithmEx")
-	results := make([]AlgorithmPerformance, actualcount)
-	for i := 0; i < len(results); i++ {
-		results[i] = AlgorithmPerformance(perfresults[i])
-	}
-	return results, err
+
+	return calgoperftogoarray(perfresults), err
 }
 
 //GetRNNBackwardWeightsAlgorithmMaxCount gets the max number of algos for weights
@@ -320,11 +310,8 @@ func (handle *Handle) FindRNNBackwardWeightsAlgorithmEx(
 		rspace.Ptr(),
 		rspace.ByteSize().c(),
 	)).error("FindRNNBackwardWeightsAlgorithmEx")
-	results := make([]AlgorithmPerformance, actualcount)
-	for i := 0; i < len(results); i++ {
-		results[i] = AlgorithmPerformance(perfresults[i])
-	}
-	return results, err
+
+	return calgoperftogoarray(perfresults), err
 }
 
 //RNNForwardInference is the forward inference
