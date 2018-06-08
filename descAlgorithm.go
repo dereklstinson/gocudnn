@@ -69,6 +69,7 @@ func (a *AlgorithmD) DestroyDescriptor() error {
 
 //CreateAlgorithmPerformance creates and returns an AlgorithmPerformance //This might have to return an array be an array
 func CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, error) {
+	//var algoperf C.cudnnAlgorithmPerformance_t
 	algoperf := make([]C.cudnnAlgorithmPerformance_t, numberToCreate)
 
 	err := Status(C.cudnnCreateAlgorithmPerformance(
@@ -78,19 +79,38 @@ func CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, e
 	return calgoperftogoarray(algoperf), err
 }
 
-/*
-func (a *AlgorithmPerformance) SetAlgorithmPerformance(
-	algod *AlgorithmD,
+//GetAlgorithmPerformance gets algorithm performance. it returns AlgorithmD, Status, float32(time), SizeT(memorysize in bytes)
+//I didn't include the setalgorithmperformance func, but it might need to be made.
+func (a *AlgorithmPerformance) GetAlgorithmPerformance() (AlgorithmD, Status, float32, SizeT, error) {
+	var algoD AlgorithmD
+	var status C.cudnnStatus_t
+	var time C.float
+	var mem C.size_t
 
-) error {
-	return nil
+	err := Status(C.cudnnGetAlgorithmPerformance(
+		a.descriptor,
+		&algoD.descriptor,
+		&status,
+		&time,
+		&mem,
+	)).error("GetAlgorithmPerformance")
+	return algoD, Status(status), float32(time), SizeT(mem), err
 }
-*/
+
+//DestroyPerformance destroys the perfmance
+func (a *AlgorithmPerformance) DestroyPerformance() error {
+	return Status(C.cudnnDestroyAlgorithmPerformance(
+		&a.descriptor,
+		C.int(0),
+	)).error("DestroyPerformance")
+}
+
 func calgoperftogoarray(input []C.cudnnAlgorithmPerformance_t) []AlgorithmPerformance {
 	size := len(input)
 	output := make([]AlgorithmPerformance, size)
 	for i := 0; i < size; i++ {
 		output[i].descriptor = (input[i])
+		output[i].index = C.int(i)
 	}
 	return output
 }

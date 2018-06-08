@@ -127,6 +127,7 @@ func (r RNNAlgo) Algo() Algorithm {
 //AlgorithmPerformance go typed C.cudnnAlgorithmPerformance_t
 type AlgorithmPerformance struct {
 	descriptor C.cudnnAlgorithmPerformance_t
+	index      C.int
 }
 
 //RNND  holdes Rnn descriptor

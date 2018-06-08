@@ -12,7 +12,7 @@ For the least amount of hassle use Ubuntu 16.04.  This can work on Ubuntu 18.04,
 
 
 Will need to set the environmental variables to something along the lines as below.  
-
+'''
 export LD_LIBRARY_PATH=/usr/local/cuda-9.2/lib64
 
 export CUDA_PATH=/usr/local/cuda
@@ -22,12 +22,19 @@ export CPATH="$CUDA_PATH/include/"
 export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so $CUDA_PATH/lib64/libcudnn.so"
 
 export PATH=$PATH:/usr/local/cuda-9.2/bin
+'''
+
+version 0.0.1.
+Pretty much all of the cudnn.h file has been converted to go.  There are still many things to do like tests.  Some of the tests can't be done until I get some sort of link with the device memory.
 
 
+1)Needs a way to build memory on device.  
+2)Callbacks at this time are not going to be implemented (maybe never)
+3)Until this reaches version 1.0 functions are likely to change.  Especially the Flags.  Those are in the middle of being changed to be a little more user friendly/safe.
+4)Algorithm will likely be changed.  I will have to see what it is like when I do testing. 
+5)I might get rid of the handle methods to keep it in line with how Golang uses contexts. 
 
 
-Sad to say, but this is going to be a save location for the time being.  I will update here on what is working and not.
-The end is in sight though, Just finished the LRN portion of the handles.  
 
 
 
