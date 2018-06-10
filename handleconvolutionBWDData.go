@@ -12,7 +12,6 @@ void MakeAlgorithmforBWDData(cudnnAlgorithm_t *input,cudnnConvolutionBwdDataAlgo
 import "C"
 import (
 	"fmt"
-	"unsafe"
 )
 
 /* helper function to provide the convolution algo that fit best the requirement */
@@ -20,36 +19,37 @@ import (
 //ConvBwdDataPref used for flags on bwddatapref
 type ConvBwdDataPref C.cudnnConvolutionBwdDataPreference_t
 
-//Flags for the data preference
-const (
-	ConvBwdDataNoWorkspace           ConvBwdDataPref = C.CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE
-	ConvBwdDataPreferFastest         ConvBwdDataPref = C.CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST
-	ConvBwdDataSpecifyWorkspaceLimit ConvBwdDataPref = C.CUDNN_CONVOLUTION_BWD_DATA_SPECIFY_WORKSPACE_LIMIT
-)
+//ConvBwdDataPrefFlag used to pass ConvBwdDataPref flags through methods
+type ConvBwdDataPrefFlag struct {
+}
+
+//NoWorkSpace returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE)
+func (c ConvBwdDataPrefFlag) NoWorkSpace() ConvBwdDataPref {
+	return ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE)
+}
+
+//PreferFastest returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
+func (c ConvBwdDataPrefFlag) PreferFastest() ConvBwdDataPref {
+	return ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST)
+}
+
+//SpecifyWorkSpaceLimit returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
+func (c ConvBwdDataPrefFlag) SpecifyWorkSpaceLimit() ConvBwdDataPref {
+	return ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_SPECIFY_WORKSPACE_LIMIT)
+}
 
 func (cbd ConvBwdDataPref) c() C.cudnnConvolutionBwdDataPreference_t {
 	return C.cudnnConvolutionBwdDataPreference_t(cbd)
 }
 
+//ConvBwdDataAlgo used for flags in the bacward data algorithms
+type ConvBwdDataAlgo C.cudnnConvolutionBwdDataAlgo_t
+
 //ConvBwdDataAlgoFlag is used to pass ConvBwdDataAlgo Flags
 type ConvBwdDataAlgoFlag struct {
 }
 
-//ConvBwdDataAlgo used for flags in the bacward data algorithms
-type ConvBwdDataAlgo C.cudnnConvolutionBwdDataAlgo_t
-
-//Flags for the backward data algorithms probably going to delete
-const (
-	ConvBwdDataAlgo0                ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0 /* non-deterministic */
-	ConvBwdDataAlgo1                ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1
-	ConvBwdDataAlgoFFT              ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT
-	ConvBwdDataAlgoFFTTiling        ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING
-	ConvBwdDataAlgoWinograd         ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD
-	ConvBwdDataAlgoWinoGradNonFused ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED
-	ConvBwdDataAlgoCount            ConvBwdDataAlgo = C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT
-)
-
-//Algo0 return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0)
+//Algo0 return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0) /* non-deterministic */
 func (c ConvBwdDataAlgoFlag) Algo0() ConvBwdDataAlgo {
 	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0)
 }
@@ -84,10 +84,6 @@ func (c ConvBwdDataAlgoFlag) Count() ConvBwdDataAlgo {
 	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT)
 }
 
-func (cbd *ConvBwdDataAlgo) unionize() unsafe.Pointer {
-	return unsafe.Pointer(cbd)
-}
-
 func (cbd ConvBwdDataAlgo) c() C.cudnnConvolutionBwdDataAlgo_t {
 	return C.cudnnConvolutionBwdDataAlgo_t(cbd)
 }
@@ -105,19 +101,19 @@ type ConvBwdDataAlgoPerf C.cudnnConvolutionBwdDataAlgoPerf_t
 
 func (cbd ConvBwdDataAlgo) print() {
 	switch cbd {
-	case ConvBwdDataAlgo0:
+	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0):
 		fmt.Println("ConvBwdDataAlgo0")
-	case ConvBwdDataAlgo1:
+	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1):
 		fmt.Println("ConvBwdDataAlgo1")
-	case ConvBwdDataAlgoFFT:
+	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT):
 		fmt.Println("ConvBwdDataAlgoFFT")
-	case ConvBwdDataAlgoFFTTiling:
+	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING):
 		fmt.Println("ConvBwdDataAlgoFFTTiling")
-	case ConvBwdDataAlgoWinograd:
+	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD):
 		fmt.Println("ConvBwdDataAlgoWinograd")
-	case ConvBwdDataAlgoWinoGradNonFused:
+	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED):
 		fmt.Println("ConvBwdDataAlgoWinoGradNonFused")
-	case ConvBwdDataAlgoCount:
+	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT):
 		fmt.Println("ConvBwdDataAlgoCount")
 
 	default:

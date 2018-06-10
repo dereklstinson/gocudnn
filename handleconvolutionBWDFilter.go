@@ -33,18 +33,49 @@ func (bw ConvBwdFilterPref) c() C.cudnnConvolutionBwdFilterPreference_t {
 //ConvBwdFiltAlgo Used for ConvBwdFiltAlgo flags
 type ConvBwdFiltAlgo C.cudnnConvolutionBwdFilterAlgo_t
 
-// ConvBwdFiltAlgo flags
-const (
-	ConvBwdFiltAlgo0         ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0 /* non-deterministic */
-	ConvBwdFiltAlgo1         ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1
-	ConvBwdFiltAlgoFFT       ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT
-	ConvBwdFiltAlgo3         ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3        /* non-deterministic */
-	ConvBwdFiltAlgoWinGrad   ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD /* not implemented */
-	ConvBwdFiltAlgoNonFused  ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED
-	ConvBwdFiltAlgoFFTTiling ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING
-	ConvBwdFiltAlgoCount     ConvBwdFiltAlgo = C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT
-)
+//ConvBwdFiltAlgoFlag is used to pass ConvBwdFiltAlgo Flags
+type ConvBwdFiltAlgoFlag struct {
+}
 
+//Algo0 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0) /* non-deterministic */
+func (c ConvBwdFiltAlgoFlag) Algo0() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0)
+}
+
+//Algo1 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1)
+func (c ConvBwdFiltAlgoFlag) Algo1() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1)
+}
+
+//FFT return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT)
+func (c ConvBwdFiltAlgoFlag) FFT() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT)
+}
+
+//Algo3 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3)
+func (c ConvBwdFiltAlgoFlag) Algo3() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3)
+}
+
+//Winograd 	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD)
+func (c ConvBwdFiltAlgoFlag) Winograd() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD)
+}
+
+//WinogradNonFused return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED)
+func (c ConvBwdFiltAlgoFlag) WinogradNonFused() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED)
+}
+
+//FFTTiling return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING)
+func (c ConvBwdFiltAlgoFlag) FFTTiling() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING)
+}
+
+//Count return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT)
+func (c ConvBwdFiltAlgoFlag) Count() ConvBwdFiltAlgo {
+	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT)
+}
 func (cb ConvBwdFiltAlgo) c() C.cudnnConvolutionBwdFilterAlgo_t {
 	return C.cudnnConvolutionBwdFilterAlgo_t(cb)
 }
@@ -58,21 +89,21 @@ func (cb ConvBwdFiltAlgo) Algo() Algorithm {
 
 func (cb ConvBwdFiltAlgo) print() {
 	switch cb {
-	case ConvBwdFiltAlgo0:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0):
 		fmt.Println("ConvBwdFiltAlgo0")
-	case ConvBwdFiltAlgo1:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1):
 		fmt.Println("ConvBwdFiltAlgo1")
-	case ConvBwdFiltAlgoFFT:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT):
 		fmt.Println("ConvBwdFiltAlgoFFT")
-	case ConvBwdFiltAlgo3:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3):
 		fmt.Println("ConvBwdFiltAlgo3")
-	case ConvBwdFiltAlgoWinGrad:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD):
 		fmt.Println("ConvBwdFiltAlgoWinGrad")
-	case ConvBwdFiltAlgoNonFused:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED):
 		fmt.Println("ConvBwdFiltAlgoNonFused")
-	case ConvBwdFiltAlgoFFTTiling:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING):
 		fmt.Println("ConvBwdFiltAlgoFFTTiling")
-	case ConvBwdFiltAlgoCount:
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT):
 		fmt.Println("ConvBwdFiltAlgoCount")
 	default:
 		fmt.Println("Not supported")

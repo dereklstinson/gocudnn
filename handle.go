@@ -25,8 +25,8 @@ func (handle *Handle) Pointer() unsafe.Pointer {
 //NewHandle creates a handle its basically a Context
 func NewHandle() *Handle {
 
-	//var handle Handle
 	var handle C.cudnnHandle_t
+
 	err := Status(C.cudnnCreate(&handle)).error("NewHandle")
 	if err != nil {
 		panic(err)
@@ -76,3 +76,7 @@ func (handle *Handle) GetStream() (Stream, error) {
 	s.stream = *some
 	return s, Status(y).error("(*Handle).GetStream")
 }
+
+/*
+func (handle *Handle) SetDevice()
+*/
