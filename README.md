@@ -1,6 +1,12 @@
 # GoCudnn
 Go Bindings for cuDNN 7.1 and Cuda 9.2
 
+version 0.0.2 Pretty much all of the cudnn.h file has been converted to go.  There are still many things to do like tests.
+
+---
+
+## Setup
+
 cuDNN found at or around https://developer.nvidia.com/cudnn
 
 CUDA Toolkit found at or around https://developer.nvidia.com/cuda-downloads
@@ -27,15 +33,18 @@ export PATH=$PATH:/usr/local/cuda-9.2/bin
 
 I would also like to get this to work on windows, also, but I am finding that windows,go,cuda don't like to mesh together so well, at least not as intuitive as linux,go,cuda.
 
-version 0.0.2.
-Pretty much all of the cudnn.h file has been converted to go.  There are still many things to do like tests.
+
+---
+
+## Warnings/Notes
 
 
-1. Needs a way to build memory on device.  
-2. allbacks at this time are not going to be implemented (maybe never)
-3. Until this reaches version 1.0 functions are likely to change.  
-4. Algorithm will likely be changed.  I will have to see what it is like when I do testing. 
-5. I might get rid of the handle methods to keep it in line with how Golang uses contexts. 
+1. Callbacks at this time are not going to be implemented (maybe never)
+2. Until this reaches version 1.0 functions are likely to change.  
+3. Algorithm will likely be changed.  I will have to see what it is like when I do testing. 
+4. I might get rid of the handle methods to keep it in line with how Golang uses contexts. 
+
+---
 
 Documentation For cudnn can be found at https://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html
 
@@ -48,13 +57,16 @@ A few exceptions though:.
 2. Flags are handled by empty structs. Those structs will pass the value of the flag.  
 3. All of the "get" functions will return multiple values (some of them don't right now, but that will change).
 
-##A little more on flag handling
+---
+
+## A little more on flag handling
 So, lets say there is a flag that uses type ConvBwdFilterPref. In order to use those flags you would do something like ConvBwdFilterPref(x), where x would be 0,1, or 2. (I wanted to still be able to have an easy route for automation). Or if you are a human you could use the ConvBwdFilterPrefFlag struct. Lets say you make a ConvBwdFilterPrefFlag called  filtpref (var filtpref gocudnn.ConvBwdFilterPrefFlag) Then you could use the methods for that struct like filtpref.NoWorkspace(), filtpref.PrefFastest(), and filtpref.SpecifyWorkspaceLimit().  The thought process for doing this is, because I love intellisense, and it is really hard to use it when only flags show up on it.
 
 I might end up putting the flags into seperate kind of like how I seperated the handle and desc parts of the funcs.  Just so it is easier to find. I might change the order too.  Instead of leading with desc I might end with it.  I don't know which would be easier to read.  
 
+---
 
-##Note on Handles.  
+## Note on Handles.  
 I am really stuck on how much I should enforce host thread use on this. So I am not going to enforce anything. That will be up to you.  I have a pre-prototype example in the file HostThread.go, but I haven't used it at all yet.  
 
 Here is a little info on contexts/handles (correct me if I am wrong on this too).  
@@ -65,7 +77,9 @@ Here is a little info on contexts/handles (correct me if I am wrong on this too)
 5. You cannot share memory from one context to another unless you do some sort of memcopy.   
 6. In order to use multiple GPUs you will have to set that device on a new thread and create a new handle on that thread. (I think I haven't included that    function yet.)
 
-##Thinking about doing
+---
+
+## Thinking about doing
 
 I am thinking about returning the Memer interface of the memory that gets updated in handle functions. I think it would make it easier to follow.
 
