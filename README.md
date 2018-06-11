@@ -1,5 +1,5 @@
 # GoCudnn
-Go Bindings for cuDNN 7.1 and Cuda 9.2
+Go Bindings for cuDNN 7.1 using Cuda 9.2 (Just some Cuda 9.2)
 
 version 0.0.2 Pretty much all of the cudnn.h file has been converted to go.  There are still many things to do like tests.
 
@@ -20,15 +20,15 @@ For the least amount of hassle use Ubuntu 16.04.  This can work on Ubuntu 18.04,
 Will need to set the environmental variables to something along the lines as below.  
 
 ```
-export LD_LIBRARY_PATH=/usr/local/cuda-9.2/lib64
-
 export CUDA_PATH=/usr/local/cuda
+
+export LD_LIBRARY_PATH=$CUDA_PATH/cuda/lib64
 
 export CPATH="$CUDA_PATH/include/"
 
 export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so $CUDA_PATH/lib64/libcudnn.so"
 
-export PATH=$PATH:/usr/local/cuda-9.2/bin
+export PATH=$PATH:/usr/local/cuda/bin
 ```
 
 I would also like to get this to work on windows, also, but I am finding that windows,go,cuda don't like to mesh together so well, at least not as intuitive as linux,go,cuda.
