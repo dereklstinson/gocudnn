@@ -135,11 +135,5 @@ func (e *Error) Error() string {
 }
 
 /*
-//NewErrorRuntime was made public for other packages like cudnn that use the cuda_runtime_api
-func NewErrorRuntime(context string, e C.cudaError_t) error {
-	if e == C.cudaSuccess {
-		return nil
-	}
-	return newErrorCStr(context, C.cudaGetErrorString(e))
-}
+Code from github.com/unixpickle/cuda
 */

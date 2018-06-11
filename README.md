@@ -103,7 +103,9 @@ I am thinking about returning the Memer interface of the memory that gets update
 
 Also, I was thinking about adding the clips of the documentation commented out next to the functions. I think it would be easier to code if one is able to see what everything does without having to search for it in the documentation.  
 
+## Other Notes 
 
+1.  I took errors.go from unixpickle/cuda.  I really didn't want to have to rewrite that error stuff from the cuda runtime api. 
 
 
 
