@@ -30,44 +30,10 @@ func (mem *Malloced) Ptr() unsafe.Pointer {
 
 //GoPointer holds a pointer to a slice
 type GoPointer struct {
-	ptr             unsafe.Pointer
-	size            SizeT
-	interfaceholder interface{}
-	typevalue       string
+	ptr       unsafe.Pointer
+	size      SizeT
+	typevalue string
 }
-
-//MemcpyKindFlag used to pass flags for MemcpyKind through methods
-type MemcpyKindFlag struct {
-}
-
-//MemcpyKind are enum flags for mem copy
-type MemcpyKind C.enum_cudaMemcpyKind
-
-//HostToHost return MemcpyKind(C.cudaMemcpyHostToHost )
-func (m MemcpyKindFlag) HostToHost() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyHostToHost)
-}
-
-//HostToDevice 	return MemcpyKind(C.cudaMemcpyHostToDevice )
-func (m MemcpyKindFlag) HostToDevice() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyHostToDevice)
-}
-
-//DeviceToHost return MemcpyKind(C.cudaMemcpyDeviceToHost )
-func (m MemcpyKindFlag) DeviceToHost() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyDeviceToHost)
-}
-
-//DeviceToDevice return MemcpyKind(C.cudaMemcpyDeviceToDevice )
-func (m MemcpyKindFlag) DeviceToDevice() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyDeviceToDevice)
-}
-
-//Default return MemcpyKind(C.cudaMemcpyDefault )
-func (m MemcpyKindFlag) Default() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyDefault)
-}
-func (m MemcpyKind) c() C.enum_cudaMemcpyKind { return C.enum_cudaMemcpyKind(m) }
 
 //ByteSize returns the size of the memory chunck
 func (mem *Malloced) ByteSize() SizeT {
@@ -87,7 +53,6 @@ func (mem *GoPointer) Ptr() unsafe.Pointer {
 //Free unassignes the pointers and does the garbage collection
 func (mem *GoPointer) Free() error {
 	mem.size = 0
-	mem.interfaceholder = nil
 	mem.ptr = nil
 	mem.typevalue = ""
 	return nil
@@ -169,15 +134,10 @@ func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
 	return &mem, newErrorRuntime("MallocManaged", err)
 }
 
-//ReturnEmptyInterface returns the empty interface of the GoPointer slice that it came from
-func (mem *GoPointer) ReturnEmptyInterface() (interface{}, string) {
-	return mem.interfaceholder, mem.typevalue
-}
-
 //MakeGoPointer takes a slice and gives a GoPointer for that slice.  I wouldn't use that slice anylonger
 func MakeGoPointer(input interface{}) (*GoPointer, error) {
 	var ptr GoPointer
-	ptr.interfaceholder = input
+
 	var err error
 	switch val := input.(type) {
 	case []int:

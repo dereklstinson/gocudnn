@@ -32,26 +32,26 @@ type CScalar interface {
 //CFloat is a float in C
 type CFloat C.float
 
-func (f *CFloat) c() C.float { return C.float(*f) }
+func (f CFloat) c() C.float { return C.float(f) }
 
 //CPtr returns an unsafe pointer of the float
-func (f *CFloat) CPtr() unsafe.Pointer { return unsafe.Pointer(f) }
+func (f CFloat) CPtr() unsafe.Pointer { return unsafe.Pointer(&f) }
 
 //CDouble is a double in C
 type CDouble C.double
 
-func (d *CDouble) c() C.double { return C.double(*d) }
+func (d CDouble) c() C.double { return C.double(d) }
 
 //CPtr returns an unsafe pointer of the double
-func (d *CDouble) CPtr() unsafe.Pointer { return unsafe.Pointer(d) }
+func (d CDouble) CPtr() unsafe.Pointer { return unsafe.Pointer(&d) }
 
 //CInt is a int in C
 type CInt C.int
 
-func (i *CInt) c() C.int { return C.int(*i) }
+func (i CInt) c() C.int { return C.int(i) }
 
 //CPtr returns an unsafe pointer of the int
-func (i *CInt) CPtr() unsafe.Pointer { return unsafe.Pointer(i) }
+func (i CInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
 
 //RuntimeTag is a type that cudnn uses that I am not sure of yet
 type RuntimeTag C.cudnnRuntimeTag_t

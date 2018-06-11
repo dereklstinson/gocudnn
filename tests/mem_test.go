@@ -49,11 +49,3 @@ func TestMem(t *testing.T) {
 	}
 
 }
-
-func testarray(size int) []int32 {
-	array := make([]int32, size)
-	for i := 0; i < size; i++ {
-		array[i] = int32(1)
-	}
-	return array
-}

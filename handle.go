@@ -76,7 +76,3 @@ func (handle *Handle) GetStream() (Stream, error) {
 	s.stream = *some
 	return s, Status(y).error("(*Handle).GetStream")
 }
-
-/*
-func (handle *Handle) SetDevice()
-*/

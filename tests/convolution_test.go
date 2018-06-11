@@ -7,59 +7,59 @@ import (
 )
 
 func TestConvolution(t *testing.T) {
-	var datatypeflag gocudnn.DataTypeFlag
-	var tffunctionflag gocudnn.TensorFormatFlag
-	dtflag := datatypeflag.Double()
-	tfflag := tffunctionflag.NHWC()
-	tens, err := gocudnn.NewTensor4dDescriptor(dtflag, tfflag, gocudnn.Shape(1, 3, 32, 32))
-	if err != nil {
-		t.Error(err)
-	}
-	//fmt.Println(tens)
-	filts, err := gocudnn.NewFilter4dDescriptor(dtflag, tfflag, gocudnn.Shape(3, 3, 3, 3))
-	if err != nil {
-		t.Error(err)
-	}
-	//fmt.Println(filts)
-	var convmode gocudnn.ConvolutionModeFlag
-	convd, err := gocudnn.NewConvolution2dDescriptor(convmode.CrossCorrelation(), dtflag,
-		gocudnn.Pads(1, 1), gocudnn.Strides(1, 1), gocudnn.Dialation(1, 1))
-	if err != nil {
-		t.Error(err)
-	}
-	//fmt.Println(convd)
-	dims, err := convd.GetConvolution2dForwardOutputDim(tens, filts)
-	if err != nil {
-		t.Error(err)
-	}
-	//fmt.Println(dims)
-
-	tensout, err := gocudnn.NewTensor4dDescriptor(dtflag, tfflag, dims)
-	if err != nil {
-		t.Error(err)
-	}
 	handle := gocudnn.NewHandle()
 
-	top5performers, err := handle.FindConvolutionForwardAlgorithm(tens, filts, convd, tensout, 5)
+	array := gocudnn.Shape
+	pad := array
+	stride := array
+	dialation := array
+	xD, x, err := testTensorFloat4dNHWC(array(1, 3, 32, 32))
+
 	if err != nil {
 		t.Error(err)
 	}
-	flaggers := make([]bool, len(top5performers))
-	for i := 0; i < len(top5performers); i++ {
-		//fmt.Println(top5performers[i])
-		flaggers[i] = true
-		if top5performers[i].Stat != gocudnn.StatusSuccess {
-			flaggers[i] = false
-			//	t.Error(top5performers[i].Stat.GetErrorString())
-		}
+
+	wD, w, err := testFilterFloatNHWC(array(22, 3, 3, 3))
+	if err != nil {
+		t.Error(err)
 	}
-	var checkflag bool
-	for i := 0; i < len(flaggers); i++ {
-		if flaggers[i] == true {
-			checkflag = true
-		}
+
+	cD, err := testConvolutionFloat2d(pad(1, 1), stride(1, 1), dialation(1, 1))
+	if err != nil {
+		t.Error(err)
 	}
-	if checkflag != true {
-		t.Error("one of these should have been true")
+
+	dims, err := cD.GetConvolution2dForwardOutputDim(xD, wD)
+	if err != nil {
+		t.Error(err)
 	}
+	yD, y, err := testTensorFloat4dNHWC(dims)
+	if err != nil {
+		t.Error(err)
+	}
+	var pref gocudnn.ConvolutionFwdPreferenceFlag
+
+	fwdalgo, err := handle.GetConvolutionForwardAlgorithm(xD, wD, cD, yD, pref.PreferFastest(), 0)
+	if err != nil {
+		t.Error(err)
+	}
+	wssize, err := handle.GetConvolutionForwardWorkspaceSize(xD, wD, cD, yD, fwdalgo)
+	if err != nil {
+		t.Error(err)
+	}
+	wspace, err := gocudnn.Malloc(wssize)
+	if err != nil {
+		t.Error(err)
+	}
+	alpha := gocudnn.CFloat(1.0)
+	beta := gocudnn.CFloat(1.0)
+	err = handle.ConvolutionForward(alpha, xD, x, wD, w, cD, fwdalgo, wspace, beta, yD, y)
+	if err != nil {
+		t.Error(err)
+	}
+	w.Free()
+	x.Free()
+	y.Free()
+	wspace.Free()
+
 }

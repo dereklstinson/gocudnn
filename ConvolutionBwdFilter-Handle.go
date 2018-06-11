@@ -11,96 +11,6 @@ void MakeAlgorithmforBWDFilter(cudnnAlgorithm_t *input,cudnnConvolutionBwdFilter
 import "C"
 import "fmt"
 
-//ConvolutionBackwardBias Function to compute the bias gradient for batch convolution db is returned
-func (handle *Handle) ConvolutionBackwardBias(alpha CScalar, dyD TensorD, dy Memer, beta CScalar, dbD TensorD, db Memer) error {
-	return Status(C.cudnnConvolutionBackwardBias(handle.x, alpha.CPtr(), dyD.descriptor, dy.Ptr(), beta.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
-}
-
-//ConvBwdFilterPref are used for flags for the backwds filters
-type ConvBwdFilterPref C.cudnnConvolutionBwdFilterPreference_t
-
-//ConvBwdFilterPrefFlag is used to pass ConvBwdFilterPref flags through methods
-type ConvBwdFilterPrefFlag struct {
-}
-
-//NoWorkspace return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
-func (c ConvBwdFilterPrefFlag) NoWorkspace() ConvBwdFilterPref {
-	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
-}
-
-//PrefFastest return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)
-func (c ConvBwdFilterPrefFlag) PrefFastest() ConvBwdFilterPref {
-	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)
-}
-
-//SpecifyWorkspaceLimit return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
-func (c ConvBwdFilterPrefFlag) SpecifyWorkspaceLimit() ConvBwdFilterPref {
-	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
-}
-
-/*
-//These are the backwards filter flags
-const (
-	ConvBwdFilterNoWorkspace           ConvBwdFilterPref = C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE
-	ConvBwdFilterPrefFastest           ConvBwdFilterPref = C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST
-	ConvBwdFilterSpecifyWorkspaceLimit ConvBwdFilterPref = C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT
-)
-*/
-
-func (bw ConvBwdFilterPref) c() C.cudnnConvolutionBwdFilterPreference_t {
-	return C.cudnnConvolutionBwdFilterPreference_t(bw)
-}
-
-//ConvBwdFiltAlgo Used for ConvBwdFiltAlgo flags
-type ConvBwdFiltAlgo C.cudnnConvolutionBwdFilterAlgo_t
-
-//ConvBwdFiltAlgoFlag is used to pass ConvBwdFiltAlgo Flags
-type ConvBwdFiltAlgoFlag struct {
-}
-
-//Algo0 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0) /* non-deterministic */
-func (c ConvBwdFiltAlgoFlag) Algo0() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0)
-}
-
-//Algo1 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1)
-func (c ConvBwdFiltAlgoFlag) Algo1() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1)
-}
-
-//FFT return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT)
-func (c ConvBwdFiltAlgoFlag) FFT() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT)
-}
-
-//Algo3 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3)
-func (c ConvBwdFiltAlgoFlag) Algo3() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3)
-}
-
-//Winograd 	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD)
-func (c ConvBwdFiltAlgoFlag) Winograd() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD)
-}
-
-//WinogradNonFused return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED)
-func (c ConvBwdFiltAlgoFlag) WinogradNonFused() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED)
-}
-
-//FFTTiling return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING)
-func (c ConvBwdFiltAlgoFlag) FFTTiling() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING)
-}
-
-//Count return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT)
-func (c ConvBwdFiltAlgoFlag) Count() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT)
-}
-func (cb ConvBwdFiltAlgo) c() C.cudnnConvolutionBwdFilterAlgo_t {
-	return C.cudnnConvolutionBwdFilterAlgo_t(cb)
-}
-
 //Algo returns an Algorithm Struct
 func (cb ConvBwdFiltAlgo) Algo() Algorithm {
 	var algorithm C.cudnnAlgorithm_t
@@ -180,6 +90,11 @@ func (handle *Handle) GetConvolutionBackwardAlgorithmMaxCount() (int32, error) {
 	x := Status(C.cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionForwardAlgorithmMaxCount")
 	return int32(count), x
 
+}
+
+//ConvolutionBackwardBias Function to compute the bias gradient for batch convolution db is returned
+func (handle *Handle) ConvolutionBackwardBias(alpha CScalar, dyD TensorD, dy Memer, beta CScalar, dbD TensorD, db Memer) error {
+	return Status(C.cudnnConvolutionBackwardBias(handle.x, alpha.CPtr(), dyD.descriptor, dy.Ptr(), beta.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
 }
 
 //FindConvolutionBackwardFilterAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
