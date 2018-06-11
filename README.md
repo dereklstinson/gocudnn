@@ -60,9 +60,27 @@ A few exceptions though:.
 ---
 
 ## A little more on flag handling
-So, lets say there is a flag that uses type ConvBwdFilterPref. In order to use those flags you would do something like ConvBwdFilterPref(x), where x would be 0,1, or 2. (I wanted to still be able to have an easy route for automation). Or if you are a human you could use the ConvBwdFilterPrefFlag struct. Lets say you make a ConvBwdFilterPrefFlag called  filtpref (var filtpref gocudnn.ConvBwdFilterPrefFlag) Then you could use the methods for that struct like filtpref.NoWorkspace(), filtpref.PrefFastest(), and filtpref.SpecifyWorkspaceLimit().  The thought process for doing this is, because I love intellisense, and it is really hard to use it when only flags show up on it.
+So, lets say there is a flag that uses type ConvBwdFilterPref. In order to use those flags you would do something like:
+```
+ConvBwdFilterPref(x) //Where x = 0,1 or 2.
+``` 
+The reason this is still visable is if you wanted to have a front end and wanted to have this stuff easily automated. 
 
-I might end up putting the flags into seperate kind of like how I seperated the handle and desc parts of the funcs.  Just so it is easier to find. I might change the order too.  Instead of leading with desc I might end with it.  I don't know which would be easier to read.  
+
+Or if you are directly building the networks you could use the ConvBwdFilterPrefFlag struct. 
+Lets say you make a ConvBwdFilterPrefFlag called  filtpref 
+```
+var filtpref gocudnn.ConvBwdFilterPrefFlag
+``` 
+Then you could use the methods for that struct like:
+```
+filtpref.NoWorkspace()
+filtpref.PrefFastest()
+filtpref.SpecifyWorkspaceLimit()
+```
+I think this makes it more intellisense friendly, and a little safer than putting the methods directly on ConvBwdFilterPref.
+
+Also, I might end up putting the flags into seperate kind of like how I seperated the handle and desc parts of the funcs.  Just so it is easier to find. I might change the order too.  Instead of leading with desc I might end with it.  I don't know which would be easier to read. 
 
 ---
 
