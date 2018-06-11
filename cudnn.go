@@ -21,6 +21,7 @@ func (s SizeT) c() C.size_t { return C.size_t(s) }
 type Memer interface {
 	Ptr() unsafe.Pointer
 	ByteSize() SizeT
+	Free() error
 }
 
 //CScalar is used for scalar multiplications with cudnn.  They have to be Ctypes. It could have easily been called voider

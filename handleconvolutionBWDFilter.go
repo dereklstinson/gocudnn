@@ -19,12 +19,33 @@ func (handle *Handle) ConvolutionBackwardBias(alpha CScalar, dyD TensorD, dy Mem
 //ConvBwdFilterPref are used for flags for the backwds filters
 type ConvBwdFilterPref C.cudnnConvolutionBwdFilterPreference_t
 
+//ConvBwdFilterPrefFlag is used to pass ConvBwdFilterPref flags through methods
+type ConvBwdFilterPrefFlag struct {
+}
+
+//NoWorkspace return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
+func (c ConvBwdFilterPrefFlag) NoWorkspace() ConvBwdFilterPref {
+	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
+}
+
+//PrefFastest return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)
+func (c ConvBwdFilterPrefFlag) PrefFastest() ConvBwdFilterPref {
+	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)
+}
+
+//SpecifyWorkspaceLimit return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
+func (c ConvBwdFilterPrefFlag) SpecifyWorkspaceLimit() ConvBwdFilterPref {
+	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
+}
+
+/*
 //These are the backwards filter flags
 const (
 	ConvBwdFilterNoWorkspace           ConvBwdFilterPref = C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE
 	ConvBwdFilterPrefFastest           ConvBwdFilterPref = C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST
 	ConvBwdFilterSpecifyWorkspaceLimit ConvBwdFilterPref = C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT
 )
+*/
 
 func (bw ConvBwdFilterPref) c() C.cudnnConvolutionBwdFilterPreference_t {
 	return C.cudnnConvolutionBwdFilterPreference_t(bw)

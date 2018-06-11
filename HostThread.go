@@ -70,6 +70,7 @@ func (thread *HostThread) RunHostThread(
 
 		case x := <-err:
 			err <- x
+			runtime.UnlockOSThread()
 			return err
 		}
 
