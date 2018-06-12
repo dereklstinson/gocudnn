@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/dereklstinson/GoCudnn"
@@ -57,9 +58,10 @@ func TestConvolution(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	algobwd, err := handle.GetConvolutionBackwardDataAlgorithm()
 	w.Free()
 	x.Free()
 	y.Free()
 	wspace.Free()
-
+	fmt.Println(algobwd)
 }

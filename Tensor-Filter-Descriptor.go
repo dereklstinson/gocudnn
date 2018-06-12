@@ -61,7 +61,7 @@ func NewFilterNdDescriptor(data DataType, format TensorFormat, shape []int32) (*
 	return &FilterD{descriptor: descriptor, dims: dims, flags: tnd}, nil
 }
 
-//GetDeiscriptor returns a copy of the ConvolutionD
+//GetDescriptor returns a copy of the ConvolutionD
 func (f *FilterD) GetDescriptor() (DataType, TensorFormat, []int32, error) {
 	var data C.cudnnDataType_t
 	var format C.cudnnTensorFormat_t

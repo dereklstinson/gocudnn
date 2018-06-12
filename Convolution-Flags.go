@@ -255,7 +255,7 @@ func (c ConvolutionFwdPreferenceFlag) SpecifyWorkSpaceLimit() ConvolutionFwdPref
  */
 
 //ConvFwdAlgo flags for cudnnConvFwdAlgo_t
-type ConvFwdAlgo C.cudnnConvFwdAlgo_t
+type ConvFwdAlgo C.cudnnConvolutionFwdAlgo_t
 
 //ConvFwdAlgoFlag transfer flags for ConvFwdAlgo through methods
 type ConvFwdAlgoFlag struct {
@@ -306,6 +306,6 @@ func (c ConvFwdAlgoFlag) Count() ConvFwdAlgo {
 	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
 }
 
-func (a ConvFwdAlgo) c() C.cudnnConvFwdAlgo_t {
-	return C.cudnnConvFwdAlgo_t(a)
+func (a ConvFwdAlgo) c() C.cudnnConvolutionFwdAlgo_t {
+	return C.cudnnConvolutionFwdAlgo_t(a)
 }
