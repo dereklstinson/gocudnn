@@ -22,6 +22,22 @@ type DataTypeFlag struct {
 //DataType is used for flags for the tensor layer structs
 type DataType C.cudnnDataType_t
 
+//FindScalar finds a CScalar value for the datatype being used by the tensors
+func FindScalar(datatype DataType, x float64) CScalar {
+	switch datatype {
+	case DataType(C.CUDNN_DATA_FLOAT):
+		return CFloat(x)
+	case DataType(C.CUDNN_DATA_DOUBLE):
+		return CDouble(x)
+	case DataType(C.CUDNN_DATA_INT8):
+		return CInt(x)
+	case DataType(C.CUDNN_DATA_INT32):
+		return CInt(x)
+	default:
+		return CInt(x)
+	}
+}
+
 // Float return DataType(C.CUDNN_DATA_FLOAT)
 func (d DataTypeFlag) Float() DataType {
 	return DataType(C.CUDNN_DATA_FLOAT)
