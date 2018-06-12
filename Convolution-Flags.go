@@ -249,63 +249,63 @@ func (c ConvolutionFwdPreferenceFlag) SpecifyWorkSpaceLimit() ConvolutionFwdPref
 /*
 *
 *
-*       ConvolutionFwdAlgoFlag
+*       ConvFwdAlgoFlag
 *
 *
  */
 
-//ConvolutionFwdAlgo flags for cudnnConvolutionFwdAlgo_t
-type ConvolutionFwdAlgo C.cudnnConvolutionFwdAlgo_t
+//ConvFwdAlgo flags for cudnnConvFwdAlgo_t
+type ConvFwdAlgo C.cudnnConvFwdAlgo_t
 
-//ConvolutionFwdAlgoFlag transfer flags for ConvolutionFwdAlgo through methods
-type ConvolutionFwdAlgoFlag struct {
+//ConvFwdAlgoFlag transfer flags for ConvFwdAlgo through methods
+type ConvFwdAlgoFlag struct {
 }
 
-//ImplicitGemm returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM)
-func (c ConvolutionFwdAlgoFlag) ImplicitGemm() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM)
+//ImplicitGemm returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM)
+func (c ConvFwdAlgoFlag) ImplicitGemm() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM)
 }
 
-//ImplicitPrecompGemm returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM)
-func (c ConvolutionFwdAlgoFlag) ImplicitPrecompGemm() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM)
+//ImplicitPrecompGemm returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM)
+func (c ConvFwdAlgoFlag) ImplicitPrecompGemm() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM)
 }
 
-//Gemm returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM)
-func (c ConvolutionFwdAlgoFlag) Gemm() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM)
+//Gemm returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM)
+func (c ConvFwdAlgoFlag) Gemm() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM)
 }
 
-//Direct returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT)
-func (c ConvolutionFwdAlgoFlag) Direct() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT)
+//Direct returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT)
+func (c ConvFwdAlgoFlag) Direct() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT)
 }
 
-//FFT returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT)
-func (c ConvolutionFwdAlgoFlag) FFT() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT)
+//FFT returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT)
+func (c ConvFwdAlgoFlag) FFT() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT)
 }
 
-//FFTTiling returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING)
-func (c ConvolutionFwdAlgoFlag) FFTTiling() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING)
+//FFTTiling returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING)
+func (c ConvFwdAlgoFlag) FFTTiling() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING)
 }
 
-//WinoGrad  returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD)
-func (c ConvolutionFwdAlgoFlag) WinoGrad() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD)
+//WinoGrad  returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD)
+func (c ConvFwdAlgoFlag) WinoGrad() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD)
 }
 
-//WinoGradNonFused   returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED)
-func (c ConvolutionFwdAlgoFlag) WinoGradNonFused() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED)
+//WinoGradNonFused   returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED)
+func (c ConvFwdAlgoFlag) WinoGradNonFused() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED)
 }
 
-//Count    returns ConvolutionFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
-func (c ConvolutionFwdAlgoFlag) Count() ConvolutionFwdAlgo {
-	return ConvolutionFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
+//Count    returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
+func (c ConvFwdAlgoFlag) Count() ConvFwdAlgo {
+	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
 }
 
-func (a ConvolutionFwdAlgo) c() C.cudnnConvolutionFwdAlgo_t {
-	return C.cudnnConvolutionFwdAlgo_t(a)
+func (a ConvFwdAlgo) c() C.cudnnConvFwdAlgo_t {
+	return C.cudnnConvFwdAlgo_t(a)
 }
