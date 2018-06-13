@@ -6,6 +6,7 @@ import (
 	"github.com/dereklstinson/GoCudnn"
 )
 
+//mem_test is so that memory allocation can be tested
 func TestMem(t *testing.T) {
 	array := testarray(1024)
 

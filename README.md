@@ -1,7 +1,7 @@
 # GoCudnn
 Go Bindings for cuDNN 7.1 using Cuda 9.2 (Just some Cuda 9.2)
 
-version 0.0.2 Pretty much all of the cudnn.h file has been converted to go.  There are still many things to do like tests.
+Currently this is pre alpha.  Functions can and will change. Almost on a daily basis.
 
 ---
 
@@ -88,12 +88,13 @@ Also, I might end up putting the flags into seperate kind of like how I seperate
 I am really stuck on how much I should enforce host thread use on this. So I am not going to enforce anything. That will be up to you.  I have a pre-prototype example in the file HostThread.go, but I haven't used it at all yet.  
 
 Here is a little info on contexts/handles (correct me if I am wrong on this too).  
-1. Cuda and cudnn like to have one context assigned to one host thread.  Basically that creates a little world where only that host thread and context can do work together. 
-2. When creating a goroutine you will have to use the runtime.LockOSThread() function, and create a Handle on that. Then you can build everthing within that locked thread.
+1. Cuda and cudnn like to have one context/host assigned to one host thread.  
+2. When creating a goroutine you will have to use the runtime.LockOSThread() function, and create a Handle on that. Then you should build everthing within that locked thread.
 3. You will not be able to build any memory for that context unless it is built on the thread that is hosting that context. 
-4. You will not be able have multiple goroutines send info to that context unless you use channels.   
-5. You cannot share memory from one context to another unless you do some sort of memcopy.   
-6. In order to use multiple GPUs you will have to set that device on a new thread and create a new handle on that thread. (I think I haven't included that    function yet.)
+4. Multiple Host threads can be used by using streams.  I am assuming that can sort of be implimented using goroutines that get locked on a stream, but I haven't played around with it yet.   
+5. You cannot share memory from one context to another unless you do some sort of memcopy. 
+6. It is best practice to have one context per GPU. As of right now gocudnn doesn't support multiple gpus.  It will in the future.
+
 
 ---
 
