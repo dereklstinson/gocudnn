@@ -87,6 +87,7 @@ func (mem *Malloced) Free() error {
 		return newErrorRuntime("Free", err)
 	}
 	err := C.cudaFree(mem.ptr)
+	mem.ptr = nil
 	mem.size = 0
 	mem.typevalue = ""
 	return newErrorRuntime("Free", err)
