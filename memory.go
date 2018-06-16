@@ -37,11 +37,17 @@ type GoPointer struct {
 
 //ByteSize returns the size of the memory chunck
 func (mem *Malloced) ByteSize() SizeT {
+	if mem.ptr == nil {
+		return SizeT(0)
+	}
 	return mem.size
 }
 
 //ByteSize returns the size of the memory chunck
 func (mem *GoPointer) ByteSize() SizeT {
+	if mem.ptr == nil {
+		return SizeT(0)
+	}
 	return mem.size
 }
 
