@@ -20,16 +20,24 @@ For the least amount of hassle use Ubuntu 16.04.  This can work on Ubuntu 18.04,
 Will need to set the environmental variables to something along the lines as below.  
 
 ```
-export CUDA_PATH=/usr/local/cuda
+export PATH=/usr/local/cuda-9.2/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-9.2/lib64\
+                         ${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
-export LD_LIBRARY_PATH=$CUDA_PATH/cuda/lib64
+export PATH=$PATH:/usr/local/go/bin
+
+
+export CUDA_PATH=/usr/local/cuda
 
 export CPATH="$CUDA_PATH/include/"
 
-export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so $CUDA_PATH/lib64/libcudnn.so"
+export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudnn.so $CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so"
 
-export PATH=$PATH:/usr/local/cuda/bin
+
 ```
+
+
+
 
 I would also like to get this to work on windows, also, but I am finding that windows,go,cuda don't like to mesh together so well, at least not as intuitive as linux,go,cuda.
 
