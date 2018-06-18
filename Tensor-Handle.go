@@ -24,8 +24,8 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (h *Handle) AddTensor(data DataType, alpha CScalar, tx *TensorD, x Memer, beta CScalar, tc *TensorD, c Memer) error {
+func (h *Handle) AddTensor(data DataType, alpha CScalar, aD *TensorD, A Memer, beta CScalar, cD *TensorD, c Memer) error {
 
-	s := Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), tc.descriptor, c.Ptr()))
-	return s.error("TransformTensor")
+	s := Status(C.cudnnAddTensor(h.x, alpha.CPtr(), aD.descriptor, A.Ptr(), beta.CPtr(), cD.descriptor, c.Ptr()))
+	return s.error("AddTensor")
 }
