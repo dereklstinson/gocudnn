@@ -60,17 +60,18 @@ func (r ReduceTensorOpFlag) MulNoZeros() ReduceTensorOp {
 //ReduceTensorIndices are used for flags
 type ReduceTensorIndices C.cudnnReduceTensorIndices_t
 
-//ReduceTensorIndicesFlag used to pass reduce tensor indices through methods it defaults with reduceTensorNoIndices
-const ReduceTensorIndicesFlag ReduceTensorIndices = C.CUDNN_REDUCE_TENSOR_NO_INDICES
+//ReduceTensorIndicesFlag used to pass reduce tensor indices through methods
+type ReduceTensorIndicesFlag struct {
+}
 
 //NoIndices returns reduceTensorNoIndices flag
-func (r ReduceTensorIndices) NoIndices() ReduceTensorIndices {
+func (r ReduceTensorIndicesFlag) NoIndices() ReduceTensorIndices {
 
 	return ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_NO_INDICES)
 }
 
 //FlattenedIndicies returns reduceTensorFlattenedIndicies flag
-func (r ReduceTensorIndices) FlattenedIndicies() ReduceTensorIndices {
+func (r ReduceTensorIndicesFlag) FlattenedIndicies() ReduceTensorIndices {
 
 	return ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_FLATTENED_INDICES)
 }
@@ -82,27 +83,27 @@ func (r ReduceTensorIndices) c() C.cudnnReduceTensorIndices_t {
 //IndiciesType are flags
 type IndiciesType C.cudnnIndicesType_t
 
-//IndiciesTypeFlag is used to pass IndiciesType flags through methods defaults at indiciesType32Bit
-func IndiciesTypeFlag() IndiciesType {
-	return IndiciesType(C.CUDNN_32BIT_INDICES)
+//IndiciesTypeFlag is used to pass IndiciesType flags through method
+type IndiciesTypeFlag struct {
 }
 
 //Type32Bit returns  IndiciesType( C.CUDNN_32BIT_INDICES) flag
-func (i IndiciesType) Type32Bit() IndiciesType {
+func (i IndiciesTypeFlag) Type32Bit() IndiciesType {
 	return IndiciesType(C.CUDNN_32BIT_INDICES)
 }
 
 //Type64Bit returns  IndiciesType( C.CUDNN_64BIT_INDICES) flag
-func (i IndiciesType) Type64Bit() IndiciesType {
+func (i IndiciesTypeFlag) Type64Bit() IndiciesType {
 	return IndiciesType(C.CUDNN_64BIT_INDICES)
 }
 
 //Type16Bit returns IndiciesType( C.CUDNN_16BIT_INDICES) flag
-func (i IndiciesType) Type16Bit() IndiciesType {
+func (i IndiciesTypeFlag) Type16Bit() IndiciesType {
 	return IndiciesType(C.CUDNN_16BIT_INDICES)
 }
 
 //Type8Bit returns  IndiciesType( C.CUDNN_8BIT_INDICES) flag
-func (i IndiciesType) Type8Bit() IndiciesType {
+func (i IndiciesTypeFlag) Type8Bit() IndiciesType {
 	return IndiciesType(C.CUDNN_8BIT_INDICES)
 }
+func (i IndiciesType) c() C.cudnnIndicesType_t { return C.cudnnIndicesType_t(i) }

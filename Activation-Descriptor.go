@@ -5,7 +5,7 @@ package gocudnn
 */
 import "C"
 
-//ActivationD is the activation descriptor
+//ActivationD is an opaque struct that holds the description of an activation operation.
 type ActivationD struct {
 	descriptor C.cudnnActivationDescriptor_t
 	coef       C.double //This is used for ceiling for clipped relu, and alpha for elu

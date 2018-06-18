@@ -37,7 +37,7 @@ func TestConvolution(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	var pref gocudnn.ConvolutionFwdPreferenceFlag
+	var pref gocudnn.ConvolutionFwdPrefFlag
 
 	fwdalgo, err := handle.GetConvolutionForwardAlgorithm(xD, wD, cD, yD, pref.PreferFastest(), 0)
 	if err != nil {

@@ -124,7 +124,7 @@ func (cbd ConvBwdDataAlgo) c() C.cudnnConvolutionBwdDataAlgo_t {
 /*
 *
 *
-*       ConvBwdFilterPref
+*       ConvBwdFilterPrefFlag
 *
 *
  */
@@ -158,7 +158,7 @@ func (bw ConvBwdFilterPref) c() C.cudnnConvolutionBwdFilterPreference_t {
 /*
 *
 *
-*       ConvBwdFiltAlgo
+*       ConvBwdFiltAlgoFlag
 *
 *
  */
@@ -216,7 +216,7 @@ func (cb ConvBwdFiltAlgo) c() C.cudnnConvolutionBwdFilterAlgo_t {
 /*
 *
 *
-*       ConvolutionFwdPreferenceFlag
+*       ConvolutionFwdPrefFlag
 *
 *
  */
@@ -227,22 +227,22 @@ type ConvolutionFwdPreference C.cudnnConvolutionFwdPreference_t
 /* helper function to provide the convolution algo that fit best the requirement */
 //these are flags for ConvolutionFwdPreference
 
-//ConvolutionFwdPreferenceFlag transfer flags for ConvolutionFwdPreference through methods
-type ConvolutionFwdPreferenceFlag struct {
+//ConvolutionFwdPrefFlag transfer flags for ConvolutionFwdPreference through methods
+type ConvolutionFwdPrefFlag struct {
 }
 
 //NoWorkSpace returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE)
-func (c ConvolutionFwdPreferenceFlag) NoWorkSpace() ConvolutionFwdPreference {
+func (c ConvolutionFwdPrefFlag) NoWorkSpace() ConvolutionFwdPreference {
 	return ConvolutionFwdPreference(C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE)
 }
 
 //PreferFastest returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
-func (c ConvolutionFwdPreferenceFlag) PreferFastest() ConvolutionFwdPreference {
+func (c ConvolutionFwdPrefFlag) PreferFastest() ConvolutionFwdPreference {
 	return ConvolutionFwdPreference(C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
 }
 
 //SpecifyWorkSpaceLimit returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
-func (c ConvolutionFwdPreferenceFlag) SpecifyWorkSpaceLimit() ConvolutionFwdPreference {
+func (c ConvolutionFwdPrefFlag) SpecifyWorkSpaceLimit() ConvolutionFwdPreference {
 	return ConvolutionFwdPreference(C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
 }
 

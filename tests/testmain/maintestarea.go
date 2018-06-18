@@ -133,7 +133,7 @@ func main() {
 		top5performers[i].PrintReadable(i)
 
 	}
-	var convfwd gocudnn.ConvolutionFwdPreferenceFlag
+	var convfwd gocudnn.ConvolutionFwdPrefFlag
 	x, err := handle.GetConvolutionForwardAlgorithm(tens, filts, convd, tensout, convfwd.NoWorkSpace(), gocudnn.SizeT(0))
 	if err != nil {
 		fmt.Println(err)
