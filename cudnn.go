@@ -53,6 +53,14 @@ func (i CInt) c() C.int { return C.int(i) }
 //CPtr returns an unsafe pointer of the int
 func (i CInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
 
+//CUInt is an unsigned int in C
+type CUInt C.uint
+
+//CPtr returns an unsafe pointer of the Unsigned Int
+func (i CUInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
+
+func (i CUInt) c() C.uint { return C.uint(i) }
+
 //RuntimeTag is a type that cudnn uses that I am not sure of yet
 type RuntimeTag C.cudnnRuntimeTag_t
 
