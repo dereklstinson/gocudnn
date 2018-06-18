@@ -1,5 +1,7 @@
 ---
-description: 'This page covers activation structs, flags, functions, and methods.'
+description: >-
+  This page covers activation structs, flags, functions, methods, and handle
+  methods used for Activation.
 ---
 
 # Activation
