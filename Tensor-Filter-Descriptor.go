@@ -12,6 +12,7 @@ import (
 //FilterD is the struct holding discriptor information for cudnnFilterDescriptor_t
 type FilterD struct {
 	descriptor C.cudnnFilterDescriptor_t
+	tensorD    *TensorD
 	dims       C.int
 	flags      descflag
 }
@@ -30,16 +31,35 @@ func NewFilter4dDescriptor(data DataType, format TensorFormat, shape []int32) (*
 		return nil, errors.New("length of shape != 4")
 	}
 	var descriptor C.cudnnFilterDescriptor_t
-	err := Status(C.cudnnCreateFilterDescriptor(&descriptor)).error("NewFilter4dDescriptor-create")
+	var tensordescriptor C.cudnnTensorDescriptor_t
+	err := Status(C.cudnnCreateFilterDescriptor(&descriptor)).error("NewFilter4dDescriptor-create-Filter")
+	if err != nil {
+		return nil, err
+	}
+	err = Status(C.cudnnCreateTensorDescriptor(&tensordescriptor)).error("NewFilter4dDescriptor-create-Tensor")
 	if err != nil {
 		return nil, err
 	}
 	cshape := int32Tocint(shape)
-	err = Status(C.cudnnSetFilter4dDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), cshape[0], cshape[1], cshape[2], cshape[3])).error("NewFilter4dDescriptor-set")
+	err = Status(C.cudnnSetFilter4dDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), cshape[0], cshape[1], cshape[2], cshape[3])).error("NewFilter4dDescriptor-set-Filter")
 	if err != nil {
 		return nil, err
 	}
-	return &FilterD{descriptor: descriptor, dims: C.int(4), flags: t4d}, nil
+
+	err = Status(C.cudnnSetTensor4dDescriptor(tensordescriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), cshape[0], cshape[1], cshape[2], cshape[3])).error("NewFilter4dDescriptor-set-Tensor")
+	if err != nil {
+		return nil, err
+	}
+
+	return &FilterD{
+		descriptor: descriptor,
+		tensorD: &TensorD{
+			descriptor: tensordescriptor,
+			dims:       C.int(4),
+			flag:       t4d,
+		},
+		dims:  C.int(4),
+		flags: t4d}, nil
 }
 
 //NewFilterNdDescriptor creates and sets an FilterNDDescriptor
@@ -48,17 +68,35 @@ func NewFilterNdDescriptor(data DataType, format TensorFormat, shape []int32) (*
 		return nil, errors.New("length of shape >= 4")
 	}
 	var descriptor C.cudnnFilterDescriptor_t
+	var tensordescriptor C.cudnnTensorDescriptor_t
 	err := Status(C.cudnnCreateFilterDescriptor(&descriptor)).error("NewFilter4dDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	err = Status(C.cudnnCreateTensorDescriptor(&tensordescriptor)).error("NewFilter4dDescriptor-create-Tensor")
 	if err != nil {
 		return nil, err
 	}
 	cshape := int32Tocint(shape)
 	dims := C.int(len(shape))
-	err = Status(C.cudnnSetFilterNdDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), dims, &cshape[0])).error("NewFilter4dDescriptor-set")
+	err = Status(C.cudnnSetFilterNdDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), dims, &cshape[0])).error("NewFilterNdDescriptor-set-filter")
 	if err != nil {
 		return nil, err
 	}
-	return &FilterD{descriptor: descriptor, dims: dims, flags: tnd}, nil
+	err = Status(C.cudnnSetTensorNdDescriptorEx(tensordescriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), dims, &cshape[0])).error("NewFilterNdDescriptor-set-tensor")
+	if err != nil {
+		return nil, err
+	}
+
+	return &FilterD{
+		descriptor: descriptor,
+		tensorD: &TensorD{
+			descriptor: tensordescriptor,
+			dims:       dims,
+			flag:       tnd,
+		},
+		dims:  dims,
+		flags: tnd}, nil
 }
 
 //GetDescriptor returns a copy of the ConvolutionD
@@ -81,5 +119,30 @@ func (f *FilterD) GetDescriptor() (DataType, TensorFormat, []int32, error) {
 
 //DestroyDescriptor Destroys Filter Descriptor
 func (f *FilterD) DestroyDescriptor() error {
-	return Status(C.cudnnDestroyFilterDescriptor(f.descriptor)).error("DestroyConvolutionDescriptor")
+	var flagger1 bool
+	var flagger2 bool
+
+	err1 := f.tensorD.DestroyDescriptor()
+	if err1 != nil {
+		flagger1 = true
+	}
+
+	err2 := Status(C.cudnnDestroyFilterDescriptor(f.descriptor)).error("DestroyDescriptor-filt")
+	if err2 != nil {
+		flagger2 = true
+	}
+	if flagger1 == flagger2 {
+		if flagger1 == true {
+			return nil
+		}
+		return errors.New(err1.Error() + " , " + err2.Error())
+	}
+	if flagger1 == true {
+		return err1
+	}
+	if flagger2 == true {
+		return err2
+	}
+	return nil
+
 }

@@ -7,8 +7,8 @@ import (
 	"C"
 )
 
-//OpTensor performs an operation on some tensors
-func (handle *Handle) OpTensor(data DataType,
+//OpTensor performs an operation on some tensors   C= operation( (alpha1 * A) , (alpha2 *B) ) + (beta *C)
+func (handle *Handle) OpTensor(
 	t *OPTensorD,
 	alpha1 CScalar,
 	aDesc *TensorD,
@@ -18,7 +18,7 @@ func (handle *Handle) OpTensor(data DataType,
 	B Memer,
 	beta CScalar,
 	cDesc *TensorD,
-	Ce Memer) error {
+	c Memer) error {
 
 	x := C.cudnnOpTensor(
 		handle.x,
@@ -31,6 +31,6 @@ func (handle *Handle) OpTensor(data DataType,
 		B.Ptr(),
 		beta.CPtr(),
 		cDesc.descriptor,
-		Ce.Ptr())
+		c.Ptr())
 	return Status(x).error("OpTensor")
 }

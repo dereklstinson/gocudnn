@@ -158,9 +158,9 @@ func (t *TensorD) GetSizeInBytes() (SizeT, error) {
 
 //IsDestroyed checks if the tensor is destroyed.  It will return a true if it is destroyed. If it is then this can be used again.
 
-//DestroyTensorD destroys the tensor
-func (t *TensorD) DestroyTensorD() error {
-	x := Status(C.cudnnDestroyTensorDescriptor(t.descriptor))
+//DestroyDescriptor destroys the tensor
+func (t *TensorD) DestroyDescriptor() error {
 
-	return x.error("GetTensorNdDescriptor")
+	return Status(C.cudnnDestroyTensorDescriptor(t.descriptor)).error("DestroyDescriptor")
+
 }
