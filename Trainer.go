@@ -5,6 +5,10 @@ import (
 )
 
 /*
+**Attention this is put on hold, because of how opaque cudnn is and I don't want to have to build
+another context and copy memory just so I can update the weights.  Also, I might move that operation to host functions.
+I don't know...
+
 
 Written in the style of cudnn/GoCudnn. This is an added set of functions to calculate loss.
 

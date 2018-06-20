@@ -17,6 +17,11 @@ type FilterD struct {
 	flags      descflag
 }
 
+//TensorD returns the tensor descripter of FilterD.  //Kind of a hack
+func (f *FilterD) TensorD() *TensorD {
+	return f.tensorD
+}
+
 //CreateFilterDescriptor creates a filter distriptor
 /*
  The Basic 4d shape is shape[0] = # of output feature maps
