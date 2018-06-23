@@ -5,8 +5,18 @@ package gocudnn
 */
 import "C"
 
+type Activation struct {
+	Ops  ActivationOps
+	Flgs ActivationModeFlag
+}
+
+//ActivationOperations makes
+type ActivationOps struct {
+}
+
 //ActivationForward does the forward activation function yrtn is returned and changed.
-func (handle *Handle) ActivationForward(
+func (op ActivationOps) ActivationForward(
+	handle *Handle,
 	aD *ActivationD,
 	alpha CScalar,
 	xD *TensorD,
@@ -18,7 +28,8 @@ func (handle *Handle) ActivationForward(
 }
 
 //ActivationBackward does the activation backward method
-func (handle *Handle) ActivationBackward(
+func (op ActivationOps) ActivationBackward(
+	handle *Handle,
 	aD *ActivationD,
 	alpha CScalar,
 	yD *TensorD,
