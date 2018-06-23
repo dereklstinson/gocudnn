@@ -9,6 +9,7 @@ type Flags struct {
 	ConvBwdDataAlgo     ConvBwdDataAlgoFlag
 	ConvBwdFilterPref   ConvBwdFilterPrefFlag
 	ConvBwdFiltAlgo     ConvBwdFiltAlgoFlag
+	ConvFwdAlgo         ConvFwdAlgoFlag
 	ConvolutionFwdPref  ConvolutionFwdPrefFlag
 	CTCLossAlgo         CTCLossAlgoFlag
 	LRNmode             LRNmodeFlag
