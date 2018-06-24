@@ -6,18 +6,23 @@ package gocudnn
 */
 import "C"
 
+//Algorithm is an empty struct that is used to call algorithm type functions
+type Algorithm struct {
+	Funcs AlgoFuncs
+}
+
 //AlgorithmD holds the C.cudnnAlgorithmDescriptor_t
 type AlgorithmD struct {
 	descriptor C.cudnnAlgorithmDescriptor_t
 }
 
-//Algorithm is used to pass generic stuff
-type Algorithm C.cudnnAlgorithm_t
+//Algos is used to pass generic stuff
+type Algos C.cudnnAlgorithm_t
 
-func (a Algorithm) c() C.cudnnAlgorithm_t { return C.cudnnAlgorithm_t(a) }
+func (a Algos) c() C.cudnnAlgorithm_t { return C.cudnnAlgorithm_t(a) }
 
 //CreateAlgorithmDescriptor returns an *AlgorthmD, error
-func CreateAlgorithmDescriptor() (*AlgorithmD, error) {
+func (algo Algorithm) CreateAlgorithmDescriptor() (*AlgorithmD, error) {
 
 	var desc C.cudnnAlgorithmDescriptor_t
 	err := Status(C.cudnnCreateAlgorithmDescriptor(&desc)).error("CreateAlgorithmDescriptor")
@@ -28,7 +33,7 @@ func CreateAlgorithmDescriptor() (*AlgorithmD, error) {
 }
 
 //SetAlgorithmDescriptor sets the algorithm descriptor
-func (a *AlgorithmD) SetAlgorithmDescriptor(algo Algorithm) error {
+func (a *AlgorithmD) SetAlgorithmDescriptor(algo Algos) error {
 
 	err := Status(C.cudnnSetAlgorithmDescriptor(
 		a.descriptor,
@@ -38,13 +43,13 @@ func (a *AlgorithmD) SetAlgorithmDescriptor(algo Algorithm) error {
 }
 
 // GetAlgorithmDescriptor returns a Algorithm
-func (a *AlgorithmD) GetAlgorithmDescriptor() (Algorithm, error) {
+func (a *AlgorithmD) GetAlgorithmDescriptor() (Algos, error) {
 	var algo C.cudnnAlgorithm_t
 	err := Status(C.cudnnGetAlgorithmDescriptor(
 		a.descriptor,
 		&algo,
 	)).error("GetAlgorithmDescriptor")
-	return Algorithm(algo), err
+	return Algos(algo), err
 }
 
 //CopyAlgorithmDescriptor returns a copy of AlgorithmD
@@ -68,7 +73,7 @@ func (a *AlgorithmD) DestroyDescriptor() error {
 }
 
 //CreateAlgorithmPerformance creates and returns an AlgorithmPerformance //This might have to return an array be an array
-func CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, error) {
+func (algo Algorithm) CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, error) {
 	//var algoperf C.cudnnAlgorithmPerformance_t
 	algoperf := make([]C.cudnnAlgorithmPerformance_t, numberToCreate)
 
@@ -113,4 +118,34 @@ func calgoperftogoarray(input []C.cudnnAlgorithmPerformance_t) []AlgorithmPerfor
 		output[i].index = C.int(i)
 	}
 	return output
+}
+
+type AlgoFuncs struct {
+}
+
+//GetAlgorithmSpaceSize gets the size in bytes of the algorithm
+func (a AlgoFuncs) GetAlgorithmSpaceSize(handle *Handle, algoD *AlgorithmD) (SizeT, error) {
+	var sizet C.size_t
+	err := Status(C.cudnnGetAlgorithmSpaceSize(handle.x, algoD.descriptor, &sizet)).error("GetAlgorithmSpaceSize")
+	return SizeT(sizet), err
+}
+
+//SaveAlgorithm saves the algorithm to host
+func (a AlgoFuncs) SaveAlgorithm(handle *Handle, algoD *AlgorithmD, algoSpace Memer) error {
+	return Status(C.cudnnSaveAlgorithm(
+		handle.x,
+		algoD.descriptor,
+		algoSpace.Ptr(),
+		algoSpace.ByteSize().c(),
+	)).error("SaveAlgorithm")
+}
+
+//RestoreAlgorithm from host
+func (a AlgoFuncs) RestoreAlgorithm(handle *Handle, algoD *AlgorithmD, algoSpace Memer) error {
+	return Status(C.cudnnRestoreAlgorithm(
+		handle.x,
+		algoSpace.Ptr(),
+		algoSpace.ByteSize().c(),
+		algoD.descriptor,
+	)).error("RestoreAlgorithm")
 }

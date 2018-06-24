@@ -13,10 +13,10 @@ import (
 )
 
 //Algo returns an Algorithm used for
-func (r RNNAlgo) Algo() Algorithm {
+func (r RNNAlgo) Algo() Algos {
 	var algorithm C.cudnnAlgorithm_t
 	C.MakeAlgorithmforRNN(&algorithm, r.c())
-	return Algorithm(algorithm)
+	return Algos(algorithm)
 }
 
 //AlgorithmPerformance go typed C.cudnnAlgorithmPerformance_t

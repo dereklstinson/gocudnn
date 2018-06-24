@@ -2,7 +2,14 @@
 
 Go Bindings for cuDNN 7.1 using Cuda 9.2 \(Just some Cuda 9.2\)
 
+#Currently in an OverHaul
+I am renaming files ...again. Since cudnn basically doesn't have any sort of training functions. I am going to have to include a lot more cuda into this.  Which wouldn't be a problem, but any sort of library that is called in a go package is made for private use for only that package.  I practiced on some work arounds, but when it comes down to structs. Those don't play nice at all when it comes to cgo because c types are unexported!
+
+Since this can potentially become a huge package and it won't necessarily hold just cudnn. I am going to have to combine files and seperate the cuda functions by empty structs.  Those empty structs can then be used to call methods. It will probably look a lot like 
+
 Currently this is pre alpha. Functions can and will change. Almost on a daily basis.
+
+
 
 ## Setup
 

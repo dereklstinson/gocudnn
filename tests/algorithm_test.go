@@ -7,12 +7,13 @@ import (
 )
 
 func TestAlgorithm(t *testing.T) {
+	var Algo gocudnn.Algorithm
 
-	AlgoD, err := gocudnn.CreateAlgorithmDescriptor()
+	AlgoD, err := Algo.CreateAlgorithmDescriptor()
 	if err != nil {
 		t.Error(err)
 	}
-	var algo gocudnn.Algorithm
+	var algo gocudnn.Algos
 	err = AlgoD.SetAlgorithmDescriptor(algo)
 	if err != nil {
 		t.Error(err)
@@ -22,7 +23,7 @@ func TestAlgorithm(t *testing.T) {
 		t.Error(err)
 	}
 
-	algoperf, err := gocudnn.CreateAlgorithmPerformance(100)
+	algoperf, err := Algo.CreateAlgorithmPerformance(100)
 	if err != nil {
 		t.Error(err)
 	}

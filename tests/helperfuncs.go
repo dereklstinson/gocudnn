@@ -54,10 +54,11 @@ func filterbytesize(size []int32, typebytes int32) int32 {
 	return multiplier
 }
 func testConvolutionFloat2d(pads, strides, dialation []int32) (*gocudnn.ConvolutionD, error) {
+	var Conv gocudnn.Convolution
 	var dtype gocudnn.DataTypeFlag
 	var convmode gocudnn.ConvolutionModeFlag
 
-	convd, err := gocudnn.NewConvolution2dDescriptor(convmode.CrossCorrelation(), dtype.Float(),
+	convd, err := Conv.NewConvolution2dDescriptor(convmode.CrossCorrelation(), dtype.Float(),
 		pads, strides, dialation)
 	if err != nil {
 		return nil, err

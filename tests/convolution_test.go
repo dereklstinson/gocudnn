@@ -13,6 +13,7 @@ func TestConvolution(t *testing.T) {
 	pad := array
 	stride := array
 	dialation := array
+	var Conv gocudnn.Convolution
 	xD, x, err := testTensorFloat4dNHWC(array(1, 3, 32, 32))
 
 	if err != nil {
@@ -39,11 +40,11 @@ func TestConvolution(t *testing.T) {
 	}
 	var pref gocudnn.ConvolutionFwdPrefFlag
 
-	fwdalgo, err := handle.GetConvolutionForwardAlgorithm(xD, wD, cD, yD, pref.PreferFastest(), 0)
+	fwdalgo, err := Conv.Funcs.Fwd.GetConvolutionForwardAlgorithm(handle, xD, wD, cD, yD, pref.PreferFastest(), 0)
 	if err != nil {
 		t.Error(err)
 	}
-	wssize, err := handle.GetConvolutionForwardWorkspaceSize(xD, wD, cD, yD, fwdalgo)
+	wssize, err := Conv.Funcs.Fwd.GetConvolutionForwardWorkspaceSize(handle, xD, wD, cD, yD, fwdalgo)
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,7 +54,7 @@ func TestConvolution(t *testing.T) {
 	}
 	alpha := gocudnn.CFloat(1.0)
 	beta := gocudnn.CFloat(1.0)
-	err = handle.ConvolutionForward(alpha, xD, x, wD, w, cD, fwdalgo, wspace, beta, yD, y)
+	err = Conv.Funcs.Fwd.ConvolutionForward(handle, alpha, xD, x, wD, w, cD, fwdalgo, wspace, beta, yD, y)
 	if err != nil {
 		t.Error(err)
 	}

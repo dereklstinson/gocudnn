@@ -12,7 +12,9 @@ func TestActivationHandle(t *testing.T) {
 	var Amode gocudnn.ActivationModeFlag
 	handle := gocudnn.NewHandle()
 	coef := gocudnn.CDouble(10.0)
-	aD, err := gocudnn.NewActivationDescriptor(Amode.Relu(), NaN.NotPropagateNan(), coef)
+	var Activation gocudnn.Activation
+
+	aD, err := Activation.NewActivationDescriptor(Amode.Relu(), NaN.NotPropagateNan(), coef)
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,12 +38,12 @@ func TestActivationHandle(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = handle.ActivationForward(aD, alpha, xD, xmem, beta, yD, ymem)
+	err = Activation.Funcs.ActivationForward(handle, aD, alpha, xD, xmem, beta, yD, ymem)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = handle.ActivationBackward(aD, alpha, yD, ymem, dyD, dymem, xD, xmem, beta, dxD, dxmem)
+	err = Activation.Funcs.ActivationBackward(handle, aD, alpha, yD, ymem, dyD, dymem, xD, xmem, beta, dxD, dxmem)
 	if err != nil {
 		t.Error(err)
 	}
