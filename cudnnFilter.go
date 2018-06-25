@@ -9,7 +9,9 @@ import (
 	"errors"
 )
 
+//Filter is a struct that is used to call Flgs for filter descriptor, and also to create a filter descriptor
 type Filter struct {
+	Flgs TensorFlags
 }
 
 //FilterD is the struct holding discriptor information for cudnnFilterDescriptor_t
