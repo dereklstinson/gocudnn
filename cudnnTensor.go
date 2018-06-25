@@ -112,7 +112,7 @@ func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*Te
 }
 
 //NewTensorNdDescriptorEx creates and sets an ND descriptor ex
-func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shape, stride []int32) (*TensorD, error) {
+func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shape []int32) (*TensorD, error) {
 	if len(shape) < 4 {
 		return nil, errors.New("Shape array has to be greater than  4")
 	}
