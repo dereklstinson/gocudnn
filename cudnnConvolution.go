@@ -807,8 +807,8 @@ type ConvBwdFilterPref C.cudnnConvolutionBwdFilterPreference_t
 type ConvBwdFilterPrefFlag struct {
 }
 
-//NoWorkspace return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
-func (c ConvBwdFilterPrefFlag) NoWorkspace() ConvBwdFilterPref {
+//NoWorkSpace return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
+func (c ConvBwdFilterPrefFlag) NoWorkSpace() ConvBwdFilterPref {
 	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
 }
 
