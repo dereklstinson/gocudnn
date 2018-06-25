@@ -87,8 +87,8 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 
 }
 
-//NewtTensorNdDescriptor creates and sets an nd descriptor
-func (t Tensor) NewtTensorNdDescriptor(data DataType, shape, stride []int32) (*TensorD, error) {
+//NewTensorNdDescriptor creates and sets an nd descriptor
+func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*TensorD, error) {
 	if len(shape) != len(stride) {
 		return nil, errors.New("len(shape) must equal len(stride)")
 	}
