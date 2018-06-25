@@ -818,7 +818,7 @@ func (c ConvBwdFilterPrefFlag) PrefFastest() ConvBwdFilterPref {
 }
 
 //SpecifyWorkspaceLimit return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
-func (c ConvBwdFilterPrefFlag) SpecifyWorkspaceLimit() ConvBwdFilterPref {
+func (c ConvBwdFilterPrefFlag) SpecifyWorkSpaceLimit() ConvBwdFilterPref {
 	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
 }
 
