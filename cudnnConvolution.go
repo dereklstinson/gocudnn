@@ -333,10 +333,10 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmV7(
 //GetConvolutionBackwardDataWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
 func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataWorkspaceSize(
 	handle *Handle,
-	w FilterD,
-	dy TensorD,
-	c ConvolutionD,
-	dx TensorD,
+	w *FilterD,
+	dy *TensorD,
+	c *ConvolutionD,
+	dx *TensorD,
 	algo ConvBwdDataAlgo) (SizeT, error) {
 	var sizebytes C.size_t
 	err := Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
