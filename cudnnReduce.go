@@ -5,6 +5,7 @@ package gocudnn
 */
 import "C"
 
+//Reduce holds Reduce flags and funcs also used to access create reduce tensor function
 type Reduce struct {
 	Funcs ReduceFuncs
 	Flgs  ReduceFlags
@@ -78,6 +79,7 @@ func (reduce *ReduceTensorD) DestroyReduceTensorDescriptor() error {
 	return err
 }
 
+//ReduceFuncs is a nil struct used to call Reduce functions
 type ReduceFuncs struct {
 }
 
@@ -139,6 +141,7 @@ func (r ReduceFuncs) ScaleTensor(handle *Handle, data DataType, yDesc *TensorD, 
 	return Status(x).error("ScaleTensor")
 }
 
+//ReduceFlags holds the flag holders that are used for reduce flags
 type ReduceFlags struct {
 	RedTenOp   ReduceTensorOpFlag
 	RedTenIndc ReduceTensorIndicesFlag

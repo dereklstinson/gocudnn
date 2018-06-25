@@ -193,6 +193,7 @@ func (ten TensorFuncs) AddTensor(h *Handle, data DataType, alpha CScalar, aD *Te
 	return s.error("AddTensor")
 }
 
+//TensorFlags holds all things that tensors use for flags
 type TensorFlags struct {
 	Data   DataTypeFlag
 	Math   MathTypeFlag

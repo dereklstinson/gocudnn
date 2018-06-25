@@ -12,6 +12,7 @@ import (
 	"unsafe"
 )
 
+//RNN holds the funcs and flags that are used for RNN stuff it is also used for the creation of an RNND
 type RNN struct {
 	Funcs RNNFuncs
 	Flgs  RNNFlags
@@ -44,7 +45,7 @@ func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
 }
 
 //CreateRNNDescriptor creates an RNND descriptor
-func CreateRNNDescriptor() (*RNND, error) {
+func (rn RNN) CreateRNNDescriptor() (*RNND, error) {
 	var desc C.cudnnRNNDescriptor_t
 	err := Status(C.cudnnCreateRNNDescriptor(&desc)).error("CreateRNNDescriptor")
 	if err != nil {
@@ -903,6 +904,7 @@ FLAGS
 
 */
 
+//RNNFlags holds all the RNN flags
 type RNNFlags struct {
 	Mode      RNNModeFlag
 	Algo      RNNAlgoFlag

@@ -7,6 +7,7 @@ package gocudnn
 */
 import "C"
 
+//Memory holds Memory flags will do more later
 type Memory struct {
 	Flgs MemcpyKindFlag
 }

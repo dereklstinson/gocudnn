@@ -6,8 +6,10 @@ package gocudnn
 */
 import "C"
 
+//SoftMax holds the soft max flags and soft max funcs
 type SoftMax struct {
-	Flgs SoftMaxFlags
+	Flgs  SoftMaxFlags
+	Funcs SoftMaxFuncs
 }
 
 //SoftMaxFuncs is a nil struct that is used to call SoftMax Functions
@@ -69,6 +71,7 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	)).error("SoftMaxBackward")
 }
 
+//SoftMaxFlags holds all the soft max flag
 type SoftMaxFlags struct {
 	Algo SoftMaxAlgorithmFlag
 	Mode SoftMaxModeFlag

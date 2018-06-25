@@ -5,6 +5,7 @@ package gocudnn
 */
 import "C"
 
+//Spatial hods the funcs and flags of Spatial Stuff
 type Spatial struct {
 	Funcs SpatialFuncs
 	Flgs  SamplerTypeFlag
@@ -110,6 +111,8 @@ func (space SpatialFuncs) SpatialTfSamplerBackward(
 }
 
 /* APIs for spatial transformer network*/
+
+//SamplerTypeFlag is used to pass the Bilinear flag as a method
 type SamplerTypeFlag struct {
 }
 
