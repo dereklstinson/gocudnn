@@ -13,8 +13,8 @@ func testarray(size int) []int32 {
 func testTensorFloat4dNHWC(input []int32) (*gocudnn.TensorD, *gocudnn.Malloced, error) {
 	var Dtype gocudnn.DataTypeFlag
 	var format gocudnn.TensorFormatFlag
-
-	xD, err := gocudnn.NewTensor4dDescriptor(Dtype.Float(), format.NHWC(), input)
+	var Tensor gocudnn.Tensor
+	xD, err := Tensor.NewTensor4dDescriptor(Dtype.Float(), format.NHWC(), input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -31,10 +31,11 @@ func testTensorFloat4dNHWC(input []int32) (*gocudnn.TensorD, *gocudnn.Malloced, 
 }
 
 func testFilterFloatNHWC(input []int32) (*gocudnn.FilterD, *gocudnn.Malloced, error) {
-	var Dtype gocudnn.DataTypeFlag
-	var format gocudnn.TensorFormatFlag
-
-	xD, err := gocudnn.NewFilter4dDescriptor(Dtype.Float(), format.NHWC(), input)
+	var Tensor gocudnn.Tensor
+	NHWC := Tensor.Flgs.Format.NHWC()
+	DataFloat := Tensor.Flgs.Data.Float()
+	var Filter gocudnn.Filter
+	xD, err := Filter.NewFilter4dDescriptor(DataFloat, NHWC, input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -55,10 +56,11 @@ func filterbytesize(size []int32, typebytes int32) int32 {
 }
 func testConvolutionFloat2d(pads, strides, dialation []int32) (*gocudnn.ConvolutionD, error) {
 	var Conv gocudnn.Convolution
-	var dtype gocudnn.DataTypeFlag
-	var convmode gocudnn.ConvolutionModeFlag
-
-	convd, err := Conv.NewConvolution2dDescriptor(convmode.CrossCorrelation(), dtype.Float(),
+	var Tensor gocudnn.Tensor
+	Float := Tensor.Flgs.Data.Float()
+	Cross := Conv.Flgs.Mode.CrossCorrelation()
+	Conv.Flgs.Mode.Convolution()
+	convd, err := Conv.NewConvolution2dDescriptor(Cross, Float,
 		pads, strides, dialation)
 	if err != nil {
 		return nil, err

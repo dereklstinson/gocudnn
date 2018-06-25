@@ -13,14 +13,14 @@ func TestTensors(t *testing.T) {
 	dtf := datatypeflag.Double()
 	tff := tffunctionflag.NCHW()
 	shape := gocudnn.Shape
-
-	TheTensor, err := gocudnn.NewTensor4dDescriptor(dtf, tff, shape(20, 20, 20, 20))
+	var Tensor gocudnn.Tensor
+	TensorD, err := Tensor.NewTensor4dDescriptor(dtf, tff, shape(20, 20, 20, 20))
 
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(TheTensor)
-	fmt.Println(TheTensor)
+	t.Log(TensorD)
+	fmt.Println(TensorD)
 	/*
 
 		c0 := shape[1] * shape[2] * slide[2]
