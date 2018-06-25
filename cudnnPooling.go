@@ -7,6 +7,12 @@ package gocudnn
 import "C"
 import "errors"
 
+//Pooling is used to hold flags and funcs for pooling operations
+type Pooling struct {
+	Funcs PoolingFuncs
+	Flgs  PoolingModeFlag
+}
+
 //PoolingD handles the pooling descriptor
 type PoolingD struct {
 	descriptor C.cudnnPoolingDescriptor_t
@@ -14,7 +20,7 @@ type PoolingD struct {
 }
 
 //NewPooling2dDescriptor creates and sets a pooling 2d Descriptor
-func NewPooling2dDescriptor(
+func (pool Pooling) NewPooling2dDescriptor(
 	mode PoolingMode,
 	nan PropagationNAN,
 	window []int32, // height and wideth
@@ -82,7 +88,7 @@ func (p *PoolingD) GetPoolingDescriptor() (PoolingMode, PropagationNAN, []int32,
 }
 
 //CreatePoolingNdDescriptor Creates and sets a pooling nd descriptor
-func CreatePoolingNdDescriptor(
+func (pool Pooling) CreatePoolingNdDescriptor(
 	mode PoolingMode,
 	nan PropagationNAN,
 	dims int32,
@@ -152,3 +158,96 @@ func (p *PoolingD) GetPoolingForwardOutputDim(
 func (p *PoolingD) DestroyDescriptor() error {
 	return Status(C.cudnnDestroyPoolingDescriptor(p.descriptor)).error("DestroyDescriptor")
 }
+
+//PoolingFuncs is a nill struct used to call pooling functions
+type PoolingFuncs struct {
+}
+
+/* Pooling functions: All of the form "output = alpha * Op(inputs) + beta * output" */
+
+//PoolingForward does the poolingForward operation
+func (pool PoolingFuncs) PoolingForward(
+	handle *Handle,
+	p *PoolingD,
+	alpha CScalar,
+	xD *TensorD,
+	x Memer,
+	beta CScalar,
+	yD *TensorD,
+	y Memer,
+) error {
+	return Status(C.cudnnPoolingForward(
+		handle.x,
+		p.descriptor,
+		alpha.CPtr(),
+		xD.descriptor,
+		x.Ptr(),
+		beta.CPtr(),
+		yD.descriptor,
+		y.Ptr(),
+	)).error("PoolingForward")
+}
+
+//PoolingBackward does the backward pooling operation
+func (pool PoolingFuncs) PoolingBackward(
+	handle *Handle,
+	p *PoolingD,
+	alpha CScalar,
+	yD *TensorD,
+	y Memer,
+	dyD *TensorD,
+	dy Memer,
+	xD *TensorD,
+	x Memer,
+	beta CScalar,
+	dxD *TensorD,
+	dx Memer,
+) error {
+	return Status(C.cudnnPoolingBackward(
+		handle.x,
+		p.descriptor,
+		alpha.CPtr(),
+		yD.descriptor,
+		y.Ptr(),
+		dyD.descriptor,
+		dy.Ptr(),
+		xD.descriptor,
+		x.Ptr(),
+		beta.CPtr(),
+		dxD.descriptor,
+		dx.Ptr(),
+	)).error("PoolingBackward")
+}
+
+/*
+ *  pooling mode
+ */
+
+//PoolingModeFlag is used to pass PoolingMode flags for human users semi-safely using methods
+type PoolingModeFlag struct {
+}
+
+//PoolingMode is used for flags in pooling
+type PoolingMode C.cudnnPoolingMode_t
+
+//Max returns PoolingMode(C.CUDNN_POOLING_MAX) flag
+func (p PoolingModeFlag) Max() PoolingMode {
+	return PoolingMode(C.CUDNN_POOLING_MAX)
+}
+
+//AverageCountIncludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING) flag
+func (p PoolingModeFlag) AverageCountIncludePadding() PoolingMode {
+	return PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING)
+}
+
+//AverageCountExcludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING) flag
+func (p PoolingModeFlag) AverageCountExcludePadding() PoolingMode {
+	return PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING)
+}
+
+//MaxDeterministic returns PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC) flag
+func (p PoolingModeFlag) MaxDeterministic() PoolingMode {
+	return PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC)
+}
+
+func (p PoolingMode) c() C.cudnnPoolingMode_t { return C.cudnnPoolingMode_t(p) }

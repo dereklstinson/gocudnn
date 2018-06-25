@@ -9,6 +9,9 @@ import (
 	"errors"
 )
 
+type Filter struct {
+}
+
 //FilterD is the struct holding discriptor information for cudnnFilterDescriptor_t
 type FilterD struct {
 	descriptor C.cudnnFilterDescriptor_t
@@ -31,7 +34,7 @@ func (f *FilterD) TensorD() *TensorD {
 */
 
 //NewFilter4dDescriptor Creates and sets an Filter 4d Descpripter
-func NewFilter4dDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
+func (f Filter) NewFilter4dDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
 	if len(shape) != 4 {
 		return nil, errors.New("length of shape != 4")
 	}
@@ -68,7 +71,7 @@ func NewFilter4dDescriptor(data DataType, format TensorFormat, shape []int32) (*
 }
 
 //NewFilterNdDescriptor creates and sets an FilterNDDescriptor
-func NewFilterNdDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
+func (f Filter) NewFilterNdDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
 	if len(shape) < 4 {
 		return nil, errors.New("length of shape >= 4")
 	}

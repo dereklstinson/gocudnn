@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import "errors"
 
+//BatchNorm Holds Batch Normalization Flags and functions, and is used to call Batchnorm desctriptor
 type BatchNorm struct {
 	Flg   BatchNormModeFlag
 	Funcs batchNormFuncs

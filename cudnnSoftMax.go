@@ -6,6 +6,74 @@ package gocudnn
 */
 import "C"
 
+type SoftMax struct {
+	Flgs SoftMaxFlags
+}
+
+//SoftMaxFuncs is a nil struct that is used to call SoftMax Functions
+type SoftMaxFuncs struct {
+}
+
+/* Softmax functions: All of the form "output = alpha * Op(inputs) + beta * output" */
+
+//SoftMaxForward performs forward softmax
+func (soft SoftMaxFuncs) SoftMaxForward(
+	handle *Handle,
+	algo SoftMaxAlgorithm,
+	mode SoftMaxMode,
+	alpha CScalar,
+	xD *TensorD,
+	x Memer,
+	beta CScalar,
+	yD *TensorD,
+	y Memer) error {
+	return Status(C.cudnnSoftmaxForward(
+		handle.x,
+		algo.c(),
+		mode.c(),
+		alpha.CPtr(),
+		xD.descriptor,
+		x.Ptr(),
+		beta.CPtr(),
+		yD.descriptor,
+		y.Ptr(),
+	)).error("SoftMaxForward")
+}
+
+//SoftMaxBackward performs the backward softmax
+func (soft SoftMaxFuncs) SoftMaxBackward(
+	handle *Handle,
+	algo SoftMaxAlgorithm,
+	mode SoftMaxMode,
+	alpha CScalar,
+	yD *TensorD,
+	y Memer,
+	dyD *TensorD,
+	dy Memer,
+	beta CScalar,
+	dxD *TensorD,
+	dx Memer,
+) error {
+	return Status(C.cudnnSoftmaxBackward(
+		handle.x,
+		algo.c(),
+		mode.c(),
+		alpha.CPtr(),
+		yD.descriptor,
+		y.Ptr(),
+		dyD.descriptor,
+		dy.Ptr(),
+		beta.CPtr(),
+		dxD.descriptor,
+		dx.Ptr(),
+	)).error("SoftMaxBackward")
+}
+
+type SoftMaxFlags struct {
+	Algo SoftMaxAlgorithmFlag
+	Mode SoftMaxModeFlag
+}
+
 //SoftMaxAlgorithm is used for flags
 type SoftMaxAlgorithm C.cudnnSoftmaxAlgorithm_t
 

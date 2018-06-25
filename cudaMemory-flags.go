@@ -7,6 +7,10 @@ package gocudnn
 */
 import "C"
 
+type Memory struct {
+	Flgs MemcpyKindFlag
+}
+
 //MemcpyKindFlag used to pass flags for MemcpyKind through methods
 type MemcpyKindFlag struct {
 }

@@ -120,6 +120,7 @@ func calgoperftogoarray(input []C.cudnnAlgorithmPerformance_t) []AlgorithmPerfor
 	return output
 }
 
+//AlgoFuncs is a nil struct used to calling algo functions
 type AlgoFuncs struct {
 }
 

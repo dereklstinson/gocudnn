@@ -5,8 +5,18 @@ package gocudnn
 */
 import "C"
 
+type Spatial struct {
+	Funcs SpatialFuncs
+	Flgs  SamplerTypeFlag
+}
+
+//SpatialFuncs is a struct used to call Spatial functions as methods
+type SpatialFuncs struct {
+}
+
 //SpatialTfGridGeneratorForward This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
-func (handle *Handle) SpatialTfGridGeneratorForward(
+func (space SpatialFuncs) SpatialTfGridGeneratorForward(
+	handle *Handle,
 	st *SpatialTransformerD,
 	theta Memer, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
 	grid Memer, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
@@ -23,7 +33,8 @@ func (handle *Handle) SpatialTfGridGeneratorForward(
 }
 
 //SpatialTfGridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
-func (handle *Handle) SpatialTfGridGeneratorBackward(
+func (space SpatialFuncs) SpatialTfGridGeneratorBackward(
+	handle *Handle,
 	st *SpatialTransformerD,
 	grid Memer,
 	theta Memer,
@@ -38,7 +49,8 @@ func (handle *Handle) SpatialTfGridGeneratorBackward(
 }
 
 //SpatialTfSamplerForward performs the spatialtfsampleforward
-func (handle *Handle) SpatialTfSamplerForward(
+func (space SpatialFuncs) SpatialTfSamplerForward(
+	handle *Handle,
 	st *SpatialTransformerD,
 	alpha CScalar,
 	xD *TensorD,
@@ -62,7 +74,8 @@ func (handle *Handle) SpatialTfSamplerForward(
 }
 
 //SpatialTfSamplerBackward does the spatial Tranform Sample Backward
-func (handle *Handle) SpatialTfSamplerBackward(
+func (space SpatialFuncs) SpatialTfSamplerBackward(
+	handle *Handle,
 	st *SpatialTransformerD,
 	alpha CScalar,
 	xD *TensorD,
@@ -94,4 +107,56 @@ func (handle *Handle) SpatialTfSamplerBackward(
 		betaDgrid.CPtr(),
 		dGrid.Ptr(),
 	)).error("SpatialTfSamplerBackward")
+}
+
+/* APIs for spatial transformer network*/
+type SamplerTypeFlag struct {
+}
+
+//Bilinear returns SamplerType(C.CUDNN_SAMPLER_BILINEAR)
+func (s SamplerTypeFlag) Bilinear() SamplerType { return SamplerType(C.CUDNN_SAMPLER_BILINEAR) }
+
+//SamplerType is used for flags
+type SamplerType C.cudnnSamplerType_t
+
+func (s SamplerType) c() C.cudnnSamplerType_t { return C.cudnnSamplerType_t(s) }
+
+//SpatialTransformerD holdes the spatial descriptor
+type SpatialTransformerD struct {
+	descriptor C.cudnnSpatialTransformerDescriptor_t
+	dims       C.int
+}
+
+//NewSpatialTransformerNdDescriptor creates and sets SpatialTransformerD
+func (sp Spatial) NewSpatialTransformerNdDescriptor(
+	sampler SamplerType,
+	data DataType,
+	dimA []int32,
+) (*SpatialTransformerD, error) {
+	var desc C.cudnnSpatialTransformerDescriptor_t
+	err := Status(C.cudnnCreateSpatialTransformerDescriptor(&desc)).error("NewSpatialTransformerNdDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	dims := C.int(len(dimA))
+	cdimA := int32Tocint(dimA)
+	err = Status(C.cudnnSetSpatialTransformerNdDescriptor(
+		desc,
+		sampler.c(),
+		data.c(),
+		dims,
+		&cdimA[0],
+	)).error("NewSpatialTransformerNdDescriptor-Set")
+	if err != nil {
+		return nil, err
+	}
+	return &SpatialTransformerD{
+		descriptor: desc,
+		dims:       dims,
+	}, nil
+}
+
+//DestroyDescriptor destroys the spatial Transformer Desctiptor
+func (sp *SpatialTransformerD) DestroyDescriptor() error {
+	return Status(C.cudnnDestroySpatialTransformerDescriptor(sp.descriptor)).error("DestroyDescriptor")
 }

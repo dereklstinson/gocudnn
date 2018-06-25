@@ -70,9 +70,9 @@ func (handle *Handle) SetStream(s *Stream) error {
 func (handle *Handle) GetStream() (Stream, error) {
 	var s Stream
 	var some *C.cudaStream_t
-	x := C.cudnnHandle_t(handle.Pointer())
+	//x := C.cudnnHandle_t(handle.Pointer())
 
-	y := C.cudnnGetStream(x, some)
+	y := C.cudnnGetStream(handle.x, some)
 	s.stream = *some
 	return s, Status(y).error("(*Handle).GetStream")
 }

@@ -10,6 +10,7 @@ void MakeAlgorithmforCTCL(cudnnAlgorithm_t *input,cudnnCTCLossAlgo_t Algo ){
 */
 import "C"
 
+//CTCLoss is used to call CTC funcs and flags
 type CTCLoss struct {
 	Funcs CTCLossFuncs
 	Flags CTCLossAlgoFlag
