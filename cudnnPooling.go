@@ -127,7 +127,7 @@ func (pool Pooling) CreatePoolingNdDescriptor(
 
 //GetPoolingForwardOutputDim will return the forward output dims from the pooling desc, and the tensor passed
 func (p *PoolingD) GetPoolingForwardOutputDim(
-	input TensorD,
+	input *TensorD,
 ) ([]int32, error) {
 	if input.dims != p.dims {
 		return nil, errors.New("input dims != pooling dims")

@@ -74,8 +74,8 @@ func NewTrainingDescriptor(mode TrainingMode, data DataType, params TrainingPara
 	if mode < 0 || mode > 4 {
 		return nil, errors.New("NewTrainingDescriptor: Unsupported Trainingmode")
 	}
-	var flg Flags
-	dt := flg.DataType
+	var tflag Tensor
+	dt := tflag.Flgs.Data
 	switch data {
 	case dt.Double(): //this is just used to check if it is true.
 	case dt.Float():
