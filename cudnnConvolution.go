@@ -182,7 +182,7 @@ func (cbd ConvBwdDataAlgo) print() {
 //Print prints a human readable copy of the algorithm
 func (cbd ConvBwdDataAlgoPerf) Print() {
 	ConvBwdFiltAlgo(cbd.algo).print()
-	fmt.Println("Status:", Status(cbd.algo).geterrorstring())
+	fmt.Println("Status:", Status(cbd.algo).GetErrorString())
 	fmt.Println("Time:", cbd.time)
 	fmt.Println("Memory:", cbd.memory)
 	fmt.Println("Determinism:", cbd.determinism)
@@ -437,7 +437,7 @@ type ConvBwdFiltAlgoPerf C.cudnnConvolutionBwdFilterAlgoPerf_t
 //Print prints a human readable copy of the algorithm
 func (cb ConvBwdFiltAlgoPerf) Print() {
 	ConvBwdFiltAlgo(cb.algo).print()
-	fmt.Println("Status:", Status(cb.algo).geterrorstring())
+	fmt.Println("Status:", Status(cb.algo).GetErrorString())
 	fmt.Println("Time:", cb.time)
 	fmt.Println("Memory:", cb.memory)
 	fmt.Println("Determinism:", cb.determinism)
@@ -1022,7 +1022,7 @@ func (algoPerf ConvFwdAlgoPerformance) PrintReadable(index int) {
 	fmt.Println("")
 	holder := make([]interface{}, 7)
 	holder[0] = algoPerf.Algo.toString()
-	holder[1] = algoPerf.Stat.geterrorstring()
+	holder[1] = algoPerf.Stat.GetErrorString()
 	holder[2] = algoPerf.Time
 	holder[3] = algoPerf.Memory
 	holder[4] = algoPerf.Determinism.string()

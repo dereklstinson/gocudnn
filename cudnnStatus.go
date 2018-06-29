@@ -14,7 +14,7 @@ type Status C.cudnnStatus_t
 const StatusSuccess Status = 0
 
 //GetErrorString is the function that makes a human readable message
-func (status Status) geterrorstring() string {
+func (status Status) GetErrorString() string {
 	response := C.cudnnGetErrorString(C.cudnnStatus_t(status))
 	return C.GoString(response)
 }
@@ -25,5 +25,5 @@ func (status Status) error(comment string) error {
 		return nil
 	}
 	x := comment + ":"
-	return errors.New(x + "cudnn:" + status.geterrorstring())
+	return errors.New(x + "cudnn:" + status.GetErrorString())
 }
