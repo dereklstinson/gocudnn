@@ -13,28 +13,8 @@ type Status C.cudnnStatus_t
 // of the Status.error() method
 const StatusSuccess Status = 0
 
-/*
-//enumeration returns for cudnn
-const (
-	StatusSuccess Status = iota
-	StatusNotInitialized
-	StatusAllocFailed
-	StatusBadParam
-	StatusInternalError
-	StatusInvalidValue
-	StatusArchMismatch
-	StatusMappingError
-	StatusExecutionFailed
-	StatusNotSupported
-	StatusLicenseError
-	StatusRuntimePrerequisiteMissing
-	StatusRuntimeInProgress
-	StatusRuntimeFpOverflow
-)
-*/
-
 //GetErrorString is the function that makes a human readable message
-func (status Status) GetErrorString() string {
+func (status Status) geterrorstring() string {
 	response := C.cudnnGetErrorString(C.cudnnStatus_t(status))
 	return C.GoString(response)
 }
@@ -45,5 +25,5 @@ func (status Status) error(comment string) error {
 		return nil
 	}
 	x := comment + ":"
-	return errors.New(x + "cudnn:" + status.GetErrorString())
+	return errors.New(x + "cudnn:" + status.geterrorstring())
 }

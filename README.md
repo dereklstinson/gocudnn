@@ -35,7 +35,7 @@ export CUDA_PATH=/usr/local/cuda
 
 export CPATH="$CUDA_PATH/include/"
 
-export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudnn.so $CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so"
+export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudnn.so $CUDA_PATH/lib64/libcublas.so $CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so"
 ```
 
 I would also like to get this to work on windows, also, but I am finding that windows,go,cuda don't like to mesh together so well, at least not as intuitive as linux,go,cuda.
@@ -99,6 +99,14 @@ Here is a little info on contexts/handles \(correct me if I am wrong on this too
 I am thinking about returning the Memer interface of the memory that gets updated in handle functions. I think it would make it easier to follow.
 
 Also, I was thinking about adding the clips of the documentation commented out next to the functions. I think it would be easier to code if one is able to see what everything does without having to search for it in the documentation.
+
+
+## CUBLAS and CUDA additions
+
+As far as I can tell cudnn doesn't have/support training and loss functions.  I am going to add at least the training part. Loss is a different story. So that being said cuda will have its own context.  Sharing memory between contexts shouldn't be a problem if it is on one graphics card because only one context can run on a device at a time (multiple devices could pose a problem if I am not mistaken).  I will create a subpackage for the kernels that are going to be used for training.  
+
+I started to make a cublas section for fully connected neural networks, but I think I will not do that.  You can create a fully connected neuron, by setting the tensor filter size to be the size of the input dims.  Then don't have padding on the convolution. Make sure the dilation is set to zero  
+
 
 ## Other Notes
 
