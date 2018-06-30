@@ -138,12 +138,12 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 	var data C.cudnnDataType_t
 	if t.flag == t4d {
 		x := C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])
-		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("SetTensor4dDescriptorEx")
+		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 
 	} else if t.flag == tnd {
 		var holder C.int
 		x := C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])
-		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("SetTensor4dDescriptorEx")
+		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 	}
 
 	return DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tensor Not t4d,or tnd")
