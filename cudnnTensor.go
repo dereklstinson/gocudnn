@@ -193,6 +193,18 @@ func (ten TensorFuncs) AddTensor(h *Handle, data DataType, alpha CScalar, aD *Te
 	return s.error("AddTensor")
 }
 
+//ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
+func (ten TensorFuncs) ScaleTensor(h *Handle, yD *TensorD, y Memer, alpha CScalar) error {
+	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), alpha.CPtr())).error("ScaleTensor")
+}
+
+//SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
+func (ten TensorFuncs) SetTensor(handle *Handle, yDesc *TensorD, y Memer, v CScalar) error {
+
+	x := C.cudnnSetTensor(handle.x, yDesc.descriptor, y.Ptr(), v.CPtr())
+	return Status(x).error("SetTensor")
+}
+
 //TensorFlags holds all things that tensors use for flags
 type TensorFlags struct {
 	Data   DataTypeFlag

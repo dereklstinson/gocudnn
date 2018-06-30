@@ -127,20 +127,6 @@ func (r ReduceFuncs) ReduceTensorOp(
 	return Status(x).error("ReduceTensor")
 }
 
-//SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func (r ReduceFuncs) SetTensor(handle *Handle, data DataType, yDesc *TensorD, y Memer, v CScalar) error {
-
-	x := C.cudnnSetTensor(handle.x, yDesc.descriptor, y.Ptr(), v.CPtr())
-	return Status(x).error("SetTensor")
-}
-
-//ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func (r ReduceFuncs) ScaleTensor(handle *Handle, data DataType, yDesc *TensorD, y Memer, alpha CScalar) error {
-
-	x := C.cudnnScaleTensor(handle.x, yDesc.descriptor, y.Ptr(), alpha.CPtr())
-	return Status(x).error("ScaleTensor")
-}
-
 //ReduceFlags holds the flag holders that are used for reduce flags
 type ReduceFlags struct {
 	RedTenOp   ReduceTensorOpFlag
