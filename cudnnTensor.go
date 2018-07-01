@@ -47,7 +47,7 @@ func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 }
 
 //Shape basically takes some arguments and makes a slice out of them. This is made out of convenience to the user when building a tensor. It will not return an error
-func Shape(nums ...int32) []int32 {
+func (t Tensor) Shape(nums ...int32) []int32 {
 	return nums
 }
 
@@ -166,7 +166,7 @@ func (t *TensorD) DestroyDescriptor() error {
 
 }
 
-//TensorFuncs is used to call functions for tensors
+//TensorFuncs is used to call functions for tensors usually the are functions that pass the Handle Type
 type TensorFuncs struct {
 }
 
