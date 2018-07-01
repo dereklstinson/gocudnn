@@ -20,12 +20,12 @@ func main() {
 	handle := gocudnn.NewHandle()
 
 	//Group1
-	tens, err := Tensor.NewTensor4dDescriptor(Float, NHWC, gocudnn.Shape(1, 3, 32, 32))
+	tens, err := Tensor.NewTensor4dDescriptor(Float, NHWC, Tensor.Shape(1, 3, 32, 32))
 	if err != nil {
 		fmt.Println(err)
 	}
 	//Group 2
-	filts, err := Filter.NewFilter4dDescriptor(Float, NHWC, gocudnn.Shape(3, 3, 5, 5))
+	filts, err := Filter.NewFilter4dDescriptor(Float, NHWC, Tensor.Shape(3, 3, 5, 5))
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -33,7 +33,7 @@ func main() {
 	//Group 3
 	ConvMode := Convolution.Flgs.Mode.CrossCorrelation()
 	convd, err := Convolution.NewConvolution2dDescriptor(ConvMode, Float,
-		gocudnn.Pads(1, 1), gocudnn.Shape(1, 1), gocudnn.Dialation(1, 1))
+		Tensor.Shape(1, 1), Tensor.Shape(1, 1), Tensor.Shape(1, 1))
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -8,8 +8,8 @@ import (
 
 func TestConvolution(t *testing.T) {
 	handle := gocudnn.NewHandle()
-
-	array := gocudnn.Shape
+	var Tensor gocudnn.Tensor
+	array := Tensor.Shape
 	pad := array
 	stride := array
 	dialation := array

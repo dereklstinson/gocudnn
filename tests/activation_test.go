@@ -13,14 +13,14 @@ func TestActivationHandle(t *testing.T) {
 	handle := gocudnn.NewHandle()
 	coef := gocudnn.CDouble(10.0)
 	var Activation gocudnn.Activation
-
+	var Tensor gocudnn.Tensor
 	aD, err := Activation.NewActivationDescriptor(Amode.Relu(), NaN.NotPropagateNan(), coef)
 	if err != nil {
 		t.Error(err)
 	}
 	alpha := gocudnn.CFloat(1.0)
 	beta := alpha
-	shape := gocudnn.Shape
+	shape := Tensor.Shape
 	xD, xmem, err := testTensorFloat4dNHWC(shape(32, 32, 32, 32))
 	if err != nil {
 		t.Error(err)

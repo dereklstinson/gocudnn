@@ -10,10 +10,12 @@ import (
 func TestTensors(t *testing.T) {
 	var datatypeflag gocudnn.DataTypeFlag
 	var tffunctionflag gocudnn.TensorFormatFlag
+
 	dtf := datatypeflag.Double()
 	tff := tffunctionflag.NCHW()
-	shape := gocudnn.Shape
+
 	var Tensor gocudnn.Tensor
+	shape := Tensor.Shape
 	TensorD, err := Tensor.NewTensor4dDescriptor(dtf, tff, shape(20, 20, 20, 20))
 
 	if err != nil {
