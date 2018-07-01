@@ -47,6 +47,7 @@ type ConvolutionD struct {
 	flag       descflag
 }
 
+/*
 //Pads is a convienence func
 func Pads(pad ...int32) []int32 {
 	return pad
@@ -56,6 +57,7 @@ func Pads(pad ...int32) []int32 {
 func Dialation(dialation ...int32) []int32 {
 	return dialation
 }
+*/
 
 //NewConvolution2dDescriptor creates and sets a 2d convolution descriptor
 func (conv Convolution) NewConvolution2dDescriptor(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) (*ConvolutionD, error) {
