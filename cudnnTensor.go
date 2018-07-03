@@ -170,9 +170,27 @@ func (t *TensorD) DestroyDescriptor() error {
 type TensorFuncs struct {
 }
 
-//TransformTensor does something like this --> Tensor layout conversion helper (y = alpha * x + beta * y)
-//Will have to play around with this layer to figure it out
-func (ten TensorFuncs) TransformTensor(h *Handle, data DataType, alpha CScalar, tx *TensorD, x Memer, beta CScalar, ty *TensorD, y Memer) error {
+//TransformTensor
+/*
+From the SDK Documentation:
+This function copies the scaled data from one tensor to another tensor with a different layout.
+Those descriptors need to have the same dimensions but not necessarily the same strides.
+The input and output tensors must not overlap in any way (i.e., tensors cannot be transformed in place).
+This function can be used to convert a tensor with an unsupported format to a supported one.
+
+cudnnStatus_t cudnnTransformTensor(
+    cudnnHandle_t                  handle,
+    const void                    *alpha,
+    const cudnnTensorDescriptor_t  xDesc,
+    const void                    *x,
+    const void                    *beta,
+    const cudnnTensorDescriptor_t  yDesc,
+	void                          *y)
+
+y = Transfomr((alpha *x),(beta * y))
+my guess in what this does is change the format like NCHW to NHWC of y, but it won't change the descripter because it is constant
+*/
+func (ten TensorFuncs) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x Memer, beta CScalar, ty *TensorD, y Memer) error {
 	var s Status
 
 	s = Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), ty.descriptor, y.Ptr()))
@@ -187,7 +205,7 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (ten TensorFuncs) AddTensor(h *Handle, data DataType, alpha CScalar, aD *TensorD, A Memer, beta CScalar, cD *TensorD, c Memer) error {
+func (ten TensorFuncs) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A Memer, beta CScalar, cD *TensorD, c Memer) error {
 
 	s := Status(C.cudnnAddTensor(h.x, alpha.CPtr(), aD.descriptor, A.Ptr(), beta.CPtr(), cD.descriptor, c.Ptr()))
 	return s.error("AddTensor")

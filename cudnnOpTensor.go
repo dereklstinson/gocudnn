@@ -41,11 +41,14 @@ func (t *OPTensorD) GetDescriptor() (OpTensorOp, DataType, PropagationNAN, error
 	x := C.cudnnGetOpTensorDescriptor(t.descriptor, &tensop, &datatype, &nanprop)
 	return OpTensorOp(tensop), DataType(datatype), PropagationNAN(nanprop), Status(x).error("GetOpTensorDescriptor")
 }
+func destroyopdesc(t *OPTensorD) error {
+	return Status(C.cudnnDestroyOpTensorDescriptor(t.descriptor)).error("destroyoptensor")
+}
 
 //DestroyDescriptor destroys the descriptor
 func (t *OPTensorD) DestroyDescriptor() error {
-	x := C.cudnnDestroyOpTensorDescriptor(t.descriptor)
-	return Status(x).error("DestroyDescriptor")
+
+	return destroyopdesc(t)
 }
 
 //OpTensorFuncs is used to call OpTensor function
