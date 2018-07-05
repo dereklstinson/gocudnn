@@ -61,6 +61,22 @@ func (i CUInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
 
 func (i CUInt) c() C.uint { return C.uint(i) }
 
+//CInt8 is a signed char
+type CInt8 C.char
+
+func (c CInt8) c() C.char { return C.char(c) }
+
+//CPtr retunrs an unsafe pointer for CInt8
+func (c CInt8) CPtr() unsafe.Pointer { return unsafe.Pointer(&c) }
+
+//CUInt8 is a C.uchar
+type CUInt8 C.uchar
+
+func (c CUInt8) c() C.uchar { return C.uchar(c) }
+
+//CPtr retunrs an unsafe pointer for CUInt8
+func (c CUInt8) CPtr() unsafe.Pointer { return unsafe.Pointer(&c) }
+
 //RuntimeTag is a type that cudnn uses that I am not sure of yet
 type RuntimeTag C.cudnnRuntimeTag_t
 
