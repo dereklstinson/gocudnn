@@ -78,6 +78,6 @@ func main() {
 	var actflag gocudnn.ActivationModeFlag
 	var propflag gocudnn.PropagationNANFlag
 	var Activation gocudnn.Activation
-	activation, err := Activation.NewActivationDescriptor(actflag.Relu(), propflag.NotPropagateNan(), gocudnn.CDouble(4))
+	activation, err := Activation.NewActivationDescriptor(actflag.Relu(), propflag.NotPropagateNan(), 4)
 	fmt.Println(activation)
 }

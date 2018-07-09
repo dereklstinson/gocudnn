@@ -2,6 +2,7 @@ package gocudnn
 
 /*
 #include <cudnn.h>
+
 */
 import "C"
 
@@ -22,7 +23,7 @@ type ActivationD struct {
 }
 
 //NewActivationDescriptor creates and sets and returns an activation descriptor in ActivationD and the error
-func (new Activation) NewActivationDescriptor(mode ActivationMode, nan PropagationNAN, coef CDouble) (*ActivationD, error) {
+func (new Activation) NewActivationDescriptor(mode ActivationMode, nan PropagationNAN, coef float64) (*ActivationD, error) {
 
 	var descriptor C.cudnnActivationDescriptor_t
 	err := Status(C.cudnnCreateActivationDescriptor(&descriptor)).error("NewActivationDescriptor-create")
@@ -30,7 +31,7 @@ func (new Activation) NewActivationDescriptor(mode ActivationMode, nan Propagati
 		return nil, err
 	}
 
-	err = Status(C.cudnnSetActivationDescriptor(descriptor, mode.c(), nan.c(), coef.c())).error("NewActivationDescriptor-set")
+	err = Status(C.cudnnSetActivationDescriptor(descriptor, mode.c(), nan.c(), C.double(coef))).error("NewActivationDescriptor-set")
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +42,12 @@ func (new Activation) NewActivationDescriptor(mode ActivationMode, nan Propagati
 }
 
 //GetDescriptor gets the descriptor info for ActivationD
-func (a *ActivationD) GetDescriptor() (ActivationMode, PropagationNAN, CDouble, error) {
+func (a *ActivationD) GetDescriptor() (ActivationMode, PropagationNAN, float64, error) {
 	var coef C.double
 	var mode C.cudnnActivationMode_t
 	var nan C.cudnnNanPropagation_t
 	err := Status(C.cudnnGetActivationDescriptor(a.descriptor, &mode, &nan, &coef)).error("GetDescriptor")
-	return ActivationMode(mode), PropagationNAN(nan), CDouble(coef), err
+	return ActivationMode(mode), PropagationNAN(nan), float64(coef), err
 }
 
 //DestroyDescriptor destroys the activation descriptor

@@ -11,10 +11,10 @@ func TestActivationHandle(t *testing.T) {
 	var NaN gocudnn.PropagationNANFlag
 	var Amode gocudnn.ActivationModeFlag
 	handle := gocudnn.NewHandle()
-	coef := gocudnn.CDouble(10.0)
+
 	var Activation gocudnn.Activation
 	var Tensor gocudnn.Tensor
-	aD, err := Activation.NewActivationDescriptor(Amode.Relu(), NaN.NotPropagateNan(), coef)
+	aD, err := Activation.NewActivationDescriptor(Amode.Relu(), NaN.NotPropagateNan(), 10)
 	if err != nil {
 		t.Error(err)
 	}

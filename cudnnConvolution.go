@@ -534,7 +534,14 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithmMaxCount(han
 }
 
 //ConvolutionBackwardBias Function to compute the bias gradient for batch convolution db is returned
-func (cbf ConvolutionBwdFuncs) ConvolutionBackwardBias(handle *Handle, alpha CScalar, dyD *TensorD, dy Memer, beta CScalar, dbD *TensorD, db Memer) error {
+func (cbf ConvolutionBwdFuncs) ConvolutionBackwardBias(
+	handle *Handle,
+	alpha CScalar,
+	dyD *TensorD,
+	dy Memer,
+	beta CScalar,
+	dbD *TensorD,
+	db Memer) error {
 	return Status(C.cudnnConvolutionBackwardBias(handle.x, alpha.CPtr(), dyD.descriptor, dy.Ptr(), beta.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
 }
 
