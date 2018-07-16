@@ -22,7 +22,27 @@ type Memer interface {
 	Ptr() unsafe.Pointer
 	ByteSize() SizeT
 	Free() error
+	Stored() Location
 }
+
+func (l Location) Readable() string {
+	switch l {
+	case 0:
+		return "no memory allocated"
+	case 1:
+		return "on Go Side Host"
+	case 2:
+		return "on Cuda Side Device"
+	case 3:
+		return "on Cuda Side Host"
+	case 4:
+		return "on Cuda Unified Memory"
+	}
+	return "UH OH"
+}
+
+//Location is used for flags.  It will be used for mem copies between host and device.
+type Location int
 
 //CScalar is used for scalar multiplications with cudnn.  They have to be Ctypes. It could have easily been called voider
 type CScalar interface {

@@ -21,11 +21,25 @@ type Malloced struct {
 	size      SizeT
 	typevalue string
 	onhost    bool
+	onmanaged bool
 }
 
 //Ptr returns an unsafe.Pointer
 func (mem *Malloced) Ptr() unsafe.Pointer {
 	return mem.ptr
+}
+func (mem *Malloced) Stored() Location {
+	if mem.ptr == nil {
+		return 0
+	}
+	if mem.onhost == true {
+		return 3
+	}
+	if mem.onmanaged == true {
+		return 4
+	}
+	return 2
+
 }
 
 //GoPointer holds a pointer to a slice
@@ -54,6 +68,14 @@ func (mem *GoPointer) ByteSize() SizeT {
 //Ptr returns an unsafe.Pointer
 func (mem *GoPointer) Ptr() unsafe.Pointer {
 	return mem.ptr
+}
+
+//Stored returns an Location which can be used to by other programs
+func (mem *GoPointer) Stored() Location {
+	if mem.ptr == nil {
+		return 0
+	}
+	return 1
 }
 
 //Free unassignes the pointers and does the garbage collection
@@ -136,6 +158,7 @@ func (mem ManagedMemFlag) Host() ManagedMem {
 //MallocManaged is useful if devices support unified virtual memory.
 func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
 	var mem Malloced
+	mem.onmanaged = true
 	mem.size = size
 	err := C.cudaMallocManaged(&mem.ptr, size.c(), management.c())
 	return &mem, newErrorRuntime("MallocManaged", err)
@@ -221,10 +244,6 @@ func FindSizeT(input interface{}) (SizeT, error) {
 		return SizeT(0), errors.New("Unsupported Type")
 	}
 }
-
-
-
-
 
 /*
 
