@@ -25,6 +25,7 @@ type Memer interface {
 	Stored() Location
 }
 
+//Readable makes the Location readable readable
 func (l Location) Readable() string {
 	switch l {
 	case 0:
