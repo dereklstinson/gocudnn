@@ -45,6 +45,26 @@ func (l Location) Readable() string {
 //Location is used for flags.  It will be used for mem copies between host and device.
 type Location int
 
+//LocationFlag struct is nil and used to pass Location in a more readable format
+type LocationFlag struct {
+}
+
+func (l LocationFlag) NotAllocated() Location {
+	return Location(0)
+}
+func (l LocationFlag) GoSideHost() Location {
+	return Location(1)
+}
+func (l LocationFlag) Device() Location {
+	return Location(2)
+}
+func (l LocationFlag) CudaHost() Location {
+	return Location(3)
+}
+func (l LocationFlag) Unified() Location {
+	return Location(4)
+}
+
 //CScalar is used for scalar multiplications with cudnn.  They have to be Ctypes. It could have easily been called voider
 type CScalar interface {
 	CPtr() unsafe.Pointer
