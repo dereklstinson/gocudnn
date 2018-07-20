@@ -306,63 +306,62 @@ func (m MemcpyKind) c() C.enum_cudaMemcpyKind { return C.enum_cudaMemcpyKind(m) 
 func MemCpyDeterminer(src, dest Memer) (MemcpyKind, error) {
 	var L LocationFlag
 	var M MemcpyKindFlag
-	if dest.Stored() == L.NotAllocated() {
-		return M.HostToHost(), errors.New("Destination Memory Not Allocated")
-	}
 	if src.Stored() == L.NotAllocated() {
 		return M.HostToHost(), errors.New("Source Memory Not Allocated")
 	}
-	if dest.Stored() == L.Unified() {
-		return M.Default(), nil
-	}
-	if dest.Stored() == L.GoSideHost() {
-		if src.Stored() == dest.Stored() {
-			return M.HostToHost(), errors.New("No Cuda Allocation Needed")
-		}
-		if src.Stored() == L.Device() {
-			return M.DeviceToHost(), nil
-		}
-		if src.Stored() == L.Unified() {
+	switch dest.Stored() {
+
+	case L.NotAllocated():
+		return M.HostToHost(), errors.New("Destination Memory Not Allocated")
+
+	case L.Unified():
+		switch src.Stored() {
+		case L.Unified():
 			return M.Default(), nil
-		}
-		if src.Stored() == L.CudaHost() {
-			return M.HostToHost(), nil
-		}
-		return M.HostToHost(), errors.New("not supported for gocudnn")
-	}
-	if dest.Stored() == L.Device() {
-		if src.Stored() == dest.Stored() {
-			return M.DeviceToDevice(), nil
-		}
-		if src.Stored() == L.GoSideHost() {
-			return M.HostToDevice(), nil
-			if src.Stored() == L.CudaHost() {
-				return M.HostToDevice(), nil
-			}
-			return M.Default(), errors.New("not supported for gocudnn")
-		}
-		if dest.Stored() == L.CudaHost() {
-			if src.Stored() == dest.Stored() {
-				return M.HostToHost(), nil
-			}
-			if src.Stored() == L.GoSideHost() {
-				return M.HostToHost(), nil
-			}
-			if src.Stored() == L.Device() {
-				return M.DeviceToHost(), nil
-			}
-			return M.Default(), errors.New("not supported for gocudnn")
+		case L.GoSideHost():
+			return M.Default(), nil
+		default:
+			return M.Default(), errors.New("not Supported for gocudnn")
 		}
 
-	}
-	if dest.Stored() == L.Unified() {
-		if src.Stored() == dest.Stored() {
-			return M.Default(), nil
+	case L.GoSideHost():
+		switch src.Stored() {
+		case L.GoSideHost():
+			return M.HostToHost(), errors.New("No Cuda Allocation Needed")
+		case L.Device():
+			return M.DeviceToHost(), nil
+
+		case L.CudaHost():
+			return M.HostToHost(), nil
+		default:
+			return M.HostToHost(), errors.New("not supported for gocudnn")
 		}
-		if src.Stored() == L.GoSideHost() {
-			return M.Default(), nil
+	case L.Device():
+		switch src.Stored() {
+		case L.Device():
+			return M.DeviceToDevice(), nil
+		case L.GoSideHost():
+			return M.HostToDevice(), nil
+		case L.CudaHost():
+			return M.HostToDevice(), nil
+		default:
+			return M.Default(), errors.New("not supported for gocudnn")
+
 		}
-		return M.Default(), errors.New("not Supported for gocudnn")
+	case L.CudaHost():
+		switch src.Stored() {
+		case L.CudaHost():
+			return M.HostToHost(), nil
+		case L.GoSideHost():
+			return M.HostToHost(), nil
+		case L.Device():
+			return M.DeviceToHost(), nil
+		default:
+			return M.Default(), errors.New("not supported for gocudnn")
+
+		}
+	default:
+		return M.HostToHost(), errors.New("not supported for gocudnn")
 	}
-	return M.HostToHost(), errors.New("not supported for gocudnn")
+
 }
