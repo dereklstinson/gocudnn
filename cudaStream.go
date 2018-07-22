@@ -24,4 +24,11 @@ func (s *Stream) create() error {
 	return newErrorRuntime("cudaStreamCreate", x)
 
 }
-func (s *Stream) Destroy()
+func destroystream(s *Stream) error {
+	return newErrorRuntime("Destroy", C.cudaStreamDestroy(s.stream))
+}
+
+//Destroy destroys the stream
+func (s *Stream) Destroy() error {
+	return destroystream(s)
+}
