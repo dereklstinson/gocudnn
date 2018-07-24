@@ -5,7 +5,9 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
-import "errors"
+import (
+	"errors"
+)
 
 //Pooling is used to hold flags and funcs for pooling operations
 type Pooling struct {
@@ -129,12 +131,16 @@ func (pool Pooling) CreatePoolingNdDescriptor(
 func (p *PoolingD) GetPoolingForwardOutputDim(
 	input *TensorD,
 ) ([]int32, error) {
-	if input.dims != p.dims {
-		return nil, errors.New("input dims != pooling dims")
-	}
+	/*
+		if input.dims != p.dims {
+			inp := strconv.Itoa(int(input.dims))
+			pop := strconv.Itoa(int(p.dims))
+			return nil, errors.New("input dims != pooling dims" + " input dims: " + inp + " pooling dims: " + pop)
+		}
+	*/
 
-	outputdims := make([]C.int, p.dims)
 	if p.dims > 2 {
+		outputdims := make([]C.int, p.dims)
 		err := Status(C.cudnnGetPoolingNdForwardOutputDim(
 			p.descriptor,
 			input.descriptor,
@@ -143,6 +149,7 @@ func (p *PoolingD) GetPoolingForwardOutputDim(
 		)).error("GetPoolingForwardOutputDim-nd")
 		return cintToint32(outputdims), err
 	}
+	outputdims := make([]C.int, 4)
 	err := Status(C.cudnnGetPooling2dForwardOutputDim(
 		p.descriptor,
 		input.descriptor,
