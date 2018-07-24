@@ -63,6 +63,15 @@ func (d *Device) Set() error {
 	return newErrorRuntime("Set", C.cudaSetDevice(d.id.c()))
 }
 
+//SetValidDevices takes a list of devices in terms of user priority for cuda execution
+func (cu Cuda) SetValidDevices(devices []*Device) error {
+	x := make([]C.int, len(devices))
+	for i := 0; i < len(devices); i++ {
+		x[i] = C.int(devices[i].id)
+	}
+	return newErrorRuntime("SetValidDevices", C.cudaSetValidDevices(&x[0], C.int(len(devices))))
+}
+
 //CreateDevice sets the device on the current host thread.
 //Be sure when starting a goroutine lock the thread before calling this.
 func (cu Cuda) CreateDevice(device int32) (*Device, error) {

@@ -4,6 +4,9 @@ package gocudnn
 #include <cuda_runtime_api.h>
 #include <cuda.h>
 #include <driver_types.h>
+
+typedef struct cudaPointerAttributes cudaPointerAttributes;
+typedef enum cudaMemoryType cudaMemoryType;
 */
 import "C"
 
@@ -11,6 +14,15 @@ import (
 	"errors"
 	"unsafe"
 )
+
+//Memer is an interface for memory
+type Memer interface {
+	Ptr() unsafe.Pointer
+	ByteSize() SizeT
+	Free() error
+	Stored() Location
+	//Atributes()Atribs
+}
 
 //Malloced is a non garbage collection varient to what was used in buffer.
 //It gives the user more control over the memory for cases of building neural networks
@@ -23,6 +35,36 @@ type Malloced struct {
 	onhost    bool
 	onmanaged bool
 }
+
+type Atribs struct {
+	Type    MemType
+	Device  int32
+	DPtr    unsafe.Pointer
+	HPtr    unsafe.Pointer
+	Managed bool
+}
+
+func (m *Malloced) Atributes() (Atribs, error) {
+	var x C.cudaPointerAttributes
+	cuerr := C.cudaPointerGetAttributes(&x, m.ptr)
+	err := newErrorRuntime("Attributes", cuerr)
+	if err != nil {
+		return Atribs{}, err
+	}
+	var managed bool
+	if x.isManaged > C.int(0) {
+		managed = true
+	}
+	return Atribs{
+		Type:    MemType(x.memoryType),
+		Device:  int32(x.device),
+		DPtr:    unsafe.Pointer(x.devicePointer),
+		HPtr:    unsafe.Pointer(x.hostPointer),
+		Managed: managed,
+	}, nil
+}
+
+type MemType C.cudaMemoryType
 
 //Ptr returns an unsafe.Pointer
 func (mem *Malloced) Ptr() unsafe.Pointer {
@@ -364,4 +406,44 @@ func MemCpyDeterminer(src, dest Memer) (MemcpyKind, error) {
 		return M.HostToHost(), errors.New("not supported for gocudnn")
 	}
 
+}
+
+//Readable makes the Location readable readable
+func (l Location) Readable() string {
+	switch l {
+	case 0:
+		return "no memory allocated"
+	case 1:
+		return "on Go Side Host"
+	case 2:
+		return "on Cuda Side Device"
+	case 3:
+		return "on Cuda Side Host"
+	case 4:
+		return "on Cuda Unified Memory"
+	}
+	return "UH OH"
+}
+
+//Location is used for flags.  It will be used for mem copies between host and device.
+type Location int
+
+//LocationFlag struct is nil and used to pass Location in a more readable format
+type LocationFlag struct {
+}
+
+func (l LocationFlag) NotAllocated() Location {
+	return Location(0)
+}
+func (l LocationFlag) GoSideHost() Location {
+	return Location(1)
+}
+func (l LocationFlag) Device() Location {
+	return Location(2)
+}
+func (l LocationFlag) CudaHost() Location {
+	return Location(3)
+}
+func (l LocationFlag) Unified() Location {
+	return Location(4)
 }
