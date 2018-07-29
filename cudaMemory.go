@@ -12,6 +12,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 )
 
@@ -207,9 +208,13 @@ func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
 	err := C.cudaMallocManaged(&mem.ptr, size.c(), management.c())
 	return &mem, newErrorRuntime("MallocManaged", err)
 }
+func prependerror(info string, err error) error {
+	return errors.New(info + ": " + err.Error())
+}
 
 //MakeGoPointer takes a slice and gives a GoPointer for that slice.  I wouldn't use that slice anylonger
 func MakeGoPointer(input interface{}) (*GoPointer, error) {
+	//fname:="MakeGoPointer"
 	var ptr GoPointer
 
 	var err error
@@ -274,7 +279,8 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	default:
-		return nil, errors.New("Unsupported Type")
+		thetype := fmt.Errorf("Type %T", val)
+		return nil, errors.New("MakeGoPointer: Unsupported Type -- Type: " + thetype.Error())
 	}
 }
 
@@ -296,7 +302,7 @@ func FindSizeT(input interface{}) (SizeT, error) {
 	case []uint32:
 		return SizeT(len(val) * 4), nil
 	default:
-		return SizeT(0), errors.New("Unsupported Type")
+		return SizeT(0), errors.New("FindSizeT: Unsupported Type")
 	}
 }
 

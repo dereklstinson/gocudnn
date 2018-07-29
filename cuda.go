@@ -1,18 +1,27 @@
 package gocudnn
 
 //#include <cuda_runtime_api.h>
+//#include <cuda.h>
 import "C"
 import (
 	"runtime"
 )
+
+func init() {
+	err := newErrorDriver("intit", C.cuInit(0))
+
+	if err != nil {
+		panic(err)
+	}
+}
 
 //Cuda is a nil struct that is used to pass Cuda functions
 type Cuda struct {
 }
 
 type Device struct {
-	id     CInt
-	thread int32
+	id CInt
+	//	thread int32
 }
 
 //GetDeviceList returns a list of *Devices that are not set yet.
@@ -22,19 +31,24 @@ func (cu Cuda) GetDeviceList() ([]*Device, error) {
 	if err != nil {
 		return nil, err
 	}
-	x := make([]*Device, y)
-	zero := int32(0)
+	var x []*Device
+	zero := CInt(0)
 	for i := zero; i < y; i++ {
-		x[i].id = CInt(i)
+		var id C.CUdevice
+		err = newErrorDriver("Getting DeviceID", C.cuDeviceGet(&id, i.c()))
+		if err != nil {
+			return nil, err
+		}
+		x = append(x, &Device{id: CInt(id)})
 	}
 	return x, nil
 }
 
 //DeviceCount returns the number of cuda devices
-func (cu Cuda) devicecount() (int32, error) {
+func (cu Cuda) devicecount() (CInt, error) {
 	var x C.int
-	rte := C.cudaGetDeviceCount(&x)
-	return int32(x), newErrorRuntime("DeviceCount", rte)
+	rte := C.cuDeviceGetCount(&x)
+	return CInt(x), newErrorDriver("DeviceCount", rte)
 }
 
 func (d *Device) EnablePeerAccess(peer *Device) error {
