@@ -391,6 +391,23 @@ func (cbf ConvolutionBwdFuncs) ConvolutionBackwardData(
 	dxDesc *TensorD,
 	dx Memer,
 ) error {
+	if wspace == nil {
+		Status(C.cudnnConvolutionBackwardData(
+			handle.x,
+			alpha.CPtr(),
+			wDesc.descriptor,
+			w.Ptr(),
+			dyDesc.descriptor,
+			dy.Ptr(),
+			convDesc.descriptor,
+			algo.c(),
+			nil,
+			SizeT(0).c(),
+			beta.CPtr(),
+			dxDesc.descriptor,
+			dx.Ptr(),
+		)).error("ConvolutionBackwardData")
+	}
 	return Status(C.cudnnConvolutionBackwardData(
 		handle.x,
 		alpha.CPtr(),
@@ -683,6 +700,23 @@ func (cbf ConvolutionBwdFuncs) ConvolutionBackwardFilter(
 	dwDesc *FilterD,
 	dw Memer,
 ) error {
+	if wspace == nil {
+		return Status(C.cudnnConvolutionBackwardFilter(
+			handle.x,
+			alpha.CPtr(),
+			xDesc.descriptor,
+			x.Ptr(),
+			dyDesc.descriptor,
+			dy.Ptr(),
+			convDesc.descriptor,
+			algo.c(),
+			nil,
+			SizeT(0).c(),
+			beta.CPtr(),
+			dwDesc.descriptor,
+			dw.Ptr(),
+		)).error("cudnnConvolutionBackwardFilter")
+	}
 	return Status(C.cudnnConvolutionBackwardFilter(
 		handle.x,
 		alpha.CPtr(),
@@ -895,6 +929,10 @@ func (cfo ConvolutionFwdFuncs) ConvolutionForward(
 	beta CScalar,
 	yD *TensorD,
 	y Memer) error {
+	if wspace == nil {
+		return Status(C.cudnnConvolutionForward(handle.x, alpha.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
+			cD.descriptor, algo.c(), nil, SizeT(0).c(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
+	}
 	return Status(C.cudnnConvolutionForward(handle.x, alpha.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
 		cD.descriptor, algo.c(), wspace.Ptr(), wspace.ByteSize().c(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
 
