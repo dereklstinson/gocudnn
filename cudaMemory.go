@@ -45,9 +45,18 @@ type Atribs struct {
 	Managed bool
 }
 
-func (m *Malloced) Atributes() (Atribs, error) {
+func cfloattofloat32(input []C.float) []float32 {
+	slice := make([]float32, len(input))
+	for i := 0; i < len(input); i++ {
+		slice[i] = float32(input[i])
+	}
+	return slice
+}
+
+//Atributes returns the atributes
+func (mem *Malloced) Atributes() (Atribs, error) {
 	var x C.cudaPointerAttributes
-	cuerr := C.cudaPointerGetAttributes(&x, m.ptr)
+	cuerr := C.cudaPointerGetAttributes(&x, mem.ptr)
 	err := newErrorRuntime("Attributes", cuerr)
 	if err != nil {
 		return Atribs{}, err
@@ -69,6 +78,9 @@ type MemType C.cudaMemoryType
 
 //Ptr returns an unsafe.Pointer
 func (mem *Malloced) Ptr() unsafe.Pointer {
+	if mem == nil {
+		return nil
+	}
 	return mem.ptr
 }
 
@@ -96,6 +108,9 @@ type GoPointer struct {
 
 //ByteSize returns the size of the memory chunck
 func (mem *Malloced) ByteSize() SizeT {
+	if mem == nil {
+		return SizeT(0)
+	}
 	if mem.ptr == nil {
 		return SizeT(0)
 	}
@@ -107,11 +122,17 @@ func (mem *GoPointer) ByteSize() SizeT {
 	if mem.ptr == nil {
 		return SizeT(0)
 	}
+	if mem == nil {
+		return SizeT(0)
+	}
 	return mem.size
 }
 
 //Ptr returns an unsafe.Pointer
 func (mem *GoPointer) Ptr() unsafe.Pointer {
+	if mem == nil {
+		return nil
+	}
 	return mem.ptr
 }
 

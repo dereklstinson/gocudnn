@@ -392,7 +392,7 @@ func (cbf ConvolutionBwdFuncs) ConvolutionBackwardData(
 	dx Memer,
 ) error {
 	if wspace == nil {
-		Status(C.cudnnConvolutionBackwardData(
+		return Status(C.cudnnConvolutionBackwardData(
 			handle.x,
 			alpha.CPtr(),
 			wDesc.descriptor,
@@ -959,6 +959,29 @@ func (cfo ConvolutionFwdFuncs) ConvolutionBiasActivationForward(
 	yD *TensorD,
 	y Memer,
 ) error {
+	if wspace == nil {
+		return Status(
+			C.cudnnConvolutionBiasActivationForward(
+				handle.x,
+				alpha1.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				wD.descriptor,
+				w.Ptr(),
+				cD.descriptor,
+				algo.c(),
+				nil,
+				SizeT(0).c(),
+				alpha2.CPtr(),
+				zD.descriptor,
+				z.Ptr(),
+				biasD.descriptor,
+				bias.Ptr(),
+				aD.descriptor,
+				yD.descriptor,
+				y.Ptr(),
+			)).error("ConvolutionBiasActivationForward")
+	}
 	return Status(
 		C.cudnnConvolutionBiasActivationForward(
 			handle.x,
