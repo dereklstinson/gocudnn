@@ -22,6 +22,7 @@ type Memer interface {
 	ByteSize() SizeT
 	Free() error
 	Stored() Location
+	FillSlice(interface{}) error
 	//Atributes()Atribs
 }
 
@@ -29,6 +30,7 @@ type Memer interface {
 //It gives the user more control over the memory for cases of building neural networks
 //on the GPU.  Just remember to free the memory or the gpu will fill up fast.
 //Malloced contains info on a chunk of memory on the device
+
 type Malloced struct {
 	ptr       unsafe.Pointer
 	size      SizeT
@@ -73,6 +75,25 @@ func (mem *Malloced) Atributes() (Atribs, error) {
 		Managed: managed,
 	}, nil
 }
+func (mem *Malloced) FillSlice(input interface{}) error {
+	var kind MemcpyKindFlag
+	bsize, err := FindSizeT(input)
+	if err != nil {
+		return err
+	}
+	ptr, err := MakeGoPointer(input)
+	if err != nil {
+		return err
+	}
+	if mem.onmanaged == true {
+		return CudaMemCopy(ptr, mem, bsize, kind.Default())
+	}
+	if mem.onhost == true {
+		return CudaMemCopy(ptr, mem, bsize, kind.HostToHost())
+	}
+
+	return CudaMemCopy(ptr, mem, bsize, kind.DeviceToHost())
+}
 
 type MemType C.cudaMemoryType
 
@@ -99,13 +120,6 @@ func (mem *Malloced) Stored() Location {
 
 }
 
-//GoPointer holds a pointer to a slice
-type GoPointer struct {
-	ptr       unsafe.Pointer
-	size      SizeT
-	typevalue string
-}
-
 //ByteSize returns the size of the memory chunck
 func (mem *Malloced) ByteSize() SizeT {
 	if mem == nil {
@@ -117,7 +131,150 @@ func (mem *Malloced) ByteSize() SizeT {
 	return mem.size
 }
 
-//ByteSize returns the size of the memory chunck
+//Free Frees the memory on the device
+func (mem *Malloced) Free() error {
+	if mem.onhost == true {
+		err := C.cudaFreeHost(mem.ptr)
+		mem.size = 0
+		mem.typevalue = ""
+		return newErrorRuntime("Free", err)
+	}
+	err := C.cudaFree(mem.ptr)
+	mem.ptr = nil
+	mem.size = 0
+	mem.typevalue = ""
+	return newErrorRuntime("Free", err)
+}
+
+//GoPointer holds a pointer to a slice
+type GoPointer struct {
+	ptr       unsafe.Pointer
+	slice     interface{}
+	size      SizeT
+	typevalue string
+}
+
+func checkinterface(input interface{}) (string, error) {
+	switch input.(type) {
+	case []float32:
+		return "[]float32", nil
+	case []float64:
+		return "[]float64", nil
+	case []int:
+		return "[]int", nil
+	case []uint:
+		return "[]uint", nil
+	case []int32:
+		return "[]int32", nil
+	case []uint32:
+		return "[]uint32", nil
+	case []byte:
+		return "[]byte", nil
+	case []int8:
+		return "[]int8", nil
+	default:
+		return "", errors.New("No Support")
+	}
+
+}
+
+//FillSlice will fill the slice, but if the GoPointer has been coppied to device memory. Then the memory will not be up to date.
+func (mem *GoPointer) FillSlice(input interface{}) error {
+	bsize, err := FindSizeT(input)
+	if err != nil {
+		return err
+	}
+
+	inputtype, err := checkinterface(input)
+	if err != nil {
+		return err
+	}
+	memtype, err := checkinterface(mem.slice)
+	if err != nil {
+		return err
+	}
+	if inputtype != memtype {
+		return errors.New("Fill SLice: Types Don't Match")
+
+	}
+
+	switch x := input.(type) {
+	case []float32:
+		y := tofloat32array(mem.slice)
+		if len(x) != len(y) {
+			return errors.New("Slice Length Doesn't Match")
+		}
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
+		input = x
+	case []int32:
+	case []int:
+	case []float64:
+	case []uint32:
+	case []uint:
+	case []byte:
+
+	}
+
+	return nil
+}
+
+func tofloat64array(input interface{}) []float64 {
+	switch x := input.(type) {
+	case []float64:
+		return x
+	default:
+		return nil
+	}
+
+}
+func tofloat32array(input interface{}) []float32 {
+	switch x := input.(type) {
+	case []float32:
+		return x
+	default:
+		return nil
+	}
+
+}
+func touintarray(input interface{}) []uint {
+	switch x := input.(type) {
+	case []uint:
+		return x
+	default:
+		return nil
+	}
+
+}
+func toint32array(input interface{}) []int32 {
+	switch x := input.(type) {
+	case []int32:
+		return x
+	default:
+		return nil
+	}
+
+}
+func tobytearray(input interface{}) []byte {
+	switch x := input.(type) {
+	case []byte:
+		return x
+	default:
+		return nil
+	}
+
+}
+func toint8array(input interface{}) []int8 {
+	switch x := input.(type) {
+	case []int8:
+		return x
+	default:
+		return nil
+	}
+}
+
+//ByteSize returns the size of the memory chunk
 func (mem *GoPointer) ByteSize() SizeT {
 	if mem.ptr == nil {
 		return SizeT(0)
@@ -152,92 +309,11 @@ func (mem *GoPointer) Free() error {
 	return nil
 }
 
-//CudaMemCopy copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
-func CudaMemCopy(dest Memer, src Memer, count SizeT, kind MemcpyKind) error {
-	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), count.c(), kind.c())
-	return newErrorRuntime("cudaMemcpy", err)
-}
-
-/*
-//CudaMemCopy copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
-func (mem *Malloced) CudaMemCopy(dest Memer, src Memer, count SizeT, kind MemcpyKind) error {
-	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), count.c(), kind.c())
-	return newErrorRuntime("cudaMemcpy", err)
-}
-*/
-
-//Free Frees the memory on the device
-func (mem *Malloced) Free() error {
-	if mem.onhost == true {
-		err := C.cudaFreeHost(mem.ptr)
-		mem.size = 0
-		mem.typevalue = ""
-		return newErrorRuntime("Free", err)
-	}
-	err := C.cudaFree(mem.ptr)
-	mem.ptr = nil
-	mem.size = 0
-	mem.typevalue = ""
-	return newErrorRuntime("Free", err)
-}
-
-//Malloc returns struct Malloced that has a pointer memory that is now allocated to the device
-func Malloc(size SizeT) (*Malloced, error) {
-	var gpu Malloced
-	gpu.size = size
-	err := C.cudaMalloc(&gpu.ptr, gpu.size.c())
-	return &gpu, newErrorRuntime("Malloc", err)
-}
-
-//MallocHost - Allocates page-locked memory on the host. used specifically for fast calls from the host.
-func MallocHost(size SizeT) (*Malloced, error) {
-	var mem Malloced
-	mem.size = size
-	x := C.cudaMallocHost(&mem.ptr, mem.size.c())
-	err := newErrorRuntime("MallocHost", x)
-	if err != nil {
-		return nil, err
-	}
-	mem.onhost = true
-	return &mem, nil
-}
-
-//ManagedMemFlag used to pass ManagedMem flags through methods
-type ManagedMemFlag struct {
-}
-
-//ManagedMem is used for mem management flags
-type ManagedMem C.uint
-
-func (mem ManagedMem) c() C.uint { return C.uint(mem) }
-
-//Global returns ManagedMem(1)
-func (mem ManagedMemFlag) Global() ManagedMem {
-	return ManagedMem(1)
-}
-
-//Host returns ManagedMem(2)
-func (mem ManagedMemFlag) Host() ManagedMem {
-	return ManagedMem(2)
-}
-
-//MallocManaged is useful if devices support unified virtual memory.
-func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
-	var mem Malloced
-	mem.onmanaged = true
-	mem.size = size
-	err := C.cudaMallocManaged(&mem.ptr, size.c(), management.c())
-	return &mem, newErrorRuntime("MallocManaged", err)
-}
-func prependerror(info string, err error) error {
-	return errors.New(info + ": " + err.Error())
-}
-
 //MakeGoPointer takes a slice and gives a GoPointer for that slice.  I wouldn't use that slice anylonger
 func MakeGoPointer(input interface{}) (*GoPointer, error) {
 	//fname:="MakeGoPointer"
 	var ptr GoPointer
-
+	ptr.slice = input
 	var err error
 	switch val := input.(type) {
 	case []int:
@@ -303,6 +379,72 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		thetype := fmt.Errorf("Type %T", val)
 		return nil, errors.New("MakeGoPointer: Unsupported Type -- Type: " + thetype.Error())
 	}
+}
+
+//CudaMemCopy copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
+func CudaMemCopy(dest Memer, src Memer, count SizeT, kind MemcpyKind) error {
+	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), count.c(), kind.c())
+	return newErrorRuntime("cudaMemcpy", err)
+}
+
+/*
+//CudaMemCopy copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
+func (mem *Malloced) CudaMemCopy(dest Memer, src Memer, count SizeT, kind MemcpyKind) error {
+	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), count.c(), kind.c())
+	return newErrorRuntime("cudaMemcpy", err)
+}
+*/
+
+//Malloc returns struct Malloced that has a pointer memory that is now allocated to the device
+func Malloc(size SizeT) (*Malloced, error) {
+	var gpu Malloced
+	gpu.size = size
+	err := C.cudaMalloc(&gpu.ptr, gpu.size.c())
+	return &gpu, newErrorRuntime("Malloc", err)
+}
+
+//MallocHost - Allocates page-locked memory on the host. used specifically for fast calls from the host.
+func MallocHost(size SizeT) (*Malloced, error) {
+	var mem Malloced
+	mem.size = size
+	x := C.cudaMallocHost(&mem.ptr, mem.size.c())
+	err := newErrorRuntime("MallocHost", x)
+	if err != nil {
+		return nil, err
+	}
+	mem.onhost = true
+	return &mem, nil
+}
+
+//ManagedMemFlag used to pass ManagedMem flags through methods
+type ManagedMemFlag struct {
+}
+
+//ManagedMem is used for mem management flags
+type ManagedMem C.uint
+
+func (mem ManagedMem) c() C.uint { return C.uint(mem) }
+
+//Global returns ManagedMem(1)
+func (mem ManagedMemFlag) Global() ManagedMem {
+	return ManagedMem(1)
+}
+
+//Host returns ManagedMem(2)
+func (mem ManagedMemFlag) Host() ManagedMem {
+	return ManagedMem(2)
+}
+
+//MallocManaged is useful if devices support unified virtual memory.
+func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
+	var mem Malloced
+	mem.onmanaged = true
+	mem.size = size
+	err := C.cudaMallocManaged(&mem.ptr, size.c(), management.c())
+	return &mem, newErrorRuntime("MallocManaged", err)
+}
+func prependerror(info string, err error) error {
+	return errors.New(info + ": " + err.Error())
 }
 
 //FindSizeT finds the SizeT of the array
