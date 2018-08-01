@@ -13,6 +13,7 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"unsafe"
 )
 
@@ -30,7 +31,6 @@ type Memer interface {
 //It gives the user more control over the memory for cases of building neural networks
 //on the GPU.  Just remember to free the memory or the gpu will fill up fast.
 //Malloced contains info on a chunk of memory on the device
-
 type Malloced struct {
 	ptr       unsafe.Pointer
 	size      SizeT
@@ -180,11 +180,13 @@ func checkinterface(input interface{}) (string, error) {
 
 //FillSlice will fill the slice, but if the GoPointer has been coppied to device memory. Then the memory will not be up to date.
 func (mem *GoPointer) FillSlice(input interface{}) error {
-	bsize, err := FindSizeT(input)
+	bsizein, err := FindSizeT(input)
 	if err != nil {
 		return err
 	}
-
+	if bsizein != mem.ByteSize() {
+		return errors.New("FillSlice: Sizes Don't Match " + strconv.Itoa(int(bsizein)) + " and " + strconv.Itoa(int(mem.ByteSize())))
+	}
 	inputtype, err := checkinterface(input)
 	if err != nil {
 		return err
@@ -201,20 +203,39 @@ func (mem *GoPointer) FillSlice(input interface{}) error {
 	switch x := input.(type) {
 	case []float32:
 		y := tofloat32array(mem.slice)
-		if len(x) != len(y) {
-			return errors.New("Slice Length Doesn't Match")
-		}
 		for i := 0; i < len(x); i++ {
 			x[i] = y[i]
 		}
-		input = x
 	case []int32:
+		y := toint32array(mem.slice)
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
 	case []int:
+		y := tointarray(mem.slice)
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
 	case []float64:
+		y := tofloat64array(mem.slice)
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
 	case []uint32:
+		y := touint32array(mem.slice)
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
 	case []uint:
+		y := touintarray(mem.slice)
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
 	case []byte:
-
+		y := tobytearray(mem.slice)
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
 	}
 
 	return nil
@@ -238,6 +259,15 @@ func tofloat32array(input interface{}) []float32 {
 	}
 
 }
+func tointarray(input interface{}) []int {
+	switch x := input.(type) {
+	case []int:
+		return x
+	default:
+		return nil
+	}
+
+}
 func touintarray(input interface{}) []uint {
 	switch x := input.(type) {
 	case []uint:
@@ -250,6 +280,15 @@ func touintarray(input interface{}) []uint {
 func toint32array(input interface{}) []int32 {
 	switch x := input.(type) {
 	case []int32:
+		return x
+	default:
+		return nil
+	}
+
+}
+func touint32array(input interface{}) []uint32 {
+	switch x := input.(type) {
+	case []uint32:
 		return x
 	default:
 		return nil

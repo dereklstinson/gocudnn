@@ -18,6 +18,11 @@ func CreateStream() (*Stream, error) {
 	return &s, err
 }
 
+//Sync Syncronizes the stream
+func (s *Stream) Sync() error {
+	return newErrorRuntime("Sync", C.cudaStreamSynchronize(s.stream))
+}
+
 //Create creates a Stream
 func (s *Stream) create() error {
 	x := C.cudaStreamCreate(&s.stream)
