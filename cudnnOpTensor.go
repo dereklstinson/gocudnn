@@ -67,7 +67,7 @@ func (f OpTensorFuncs) OpTensor(
 	B Memer,
 	beta CScalar,
 	cDesc *TensorD,
-	c Memer) error {
+	cmem Memer) error {
 
 	x := C.cudnnOpTensor(
 		handle.x,
@@ -80,7 +80,7 @@ func (f OpTensorFuncs) OpTensor(
 		B.Ptr(),
 		beta.CPtr(),
 		cDesc.descriptor,
-		c.Ptr())
+		cmem.Ptr())
 	return Status(x).error("OpTensor")
 }
 
