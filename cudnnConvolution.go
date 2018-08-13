@@ -106,6 +106,43 @@ func (conv Convolution) NewConvolutionNdDescriptor(mode ConvolutionMode, data Da
 	return &ConvolutionD{descriptor: descriptor, dims: dims, flag: tnd}, nil
 }
 
+//GetDescriptor gets returns the values used to make the convolution descriptor
+func (c *ConvolutionD) GetDescriptor() (ConvolutionMode, DataType, []int32, []int32, []int32, error) {
+	if c.flag == t2d {
+		var padh C.int
+		var padw C.int
+		var u C.int
+		var v C.int
+		var dh C.int
+		var dw C.int
+		var mode C.cudnnConvolutionMode_t
+		var dtype C.cudnnDataType_t
+
+		err := Status(C.cudnnGetConvolution2dDescriptor(c.descriptor, &padh, &padw, &u, &v, &dh, &dw, &mode, &dtype)).error("Get2dDescripter")
+		pads := make([]int32, 2)
+		uv := make([]int32, 2)
+		dilat := make([]int32, 2)
+		pads[0] = int32(padh)
+		pads[1] = int32(padw)
+		uv[0] = int32(u)
+		uv[1] = int32(v)
+		dilat[0] = int32(dh)
+		dilat[1] = int32(dw)
+		return ConvolutionMode(mode), DataType(dtype), pads, uv, dilat, err
+
+	}
+
+	pad := make([]C.int, c.dims)
+	stride := make([]C.int, c.dims)
+	dilation := make([]C.int, c.dims)
+	var actual C.int
+	var mode C.cudnnConvolutionMode_t
+	var dtype C.cudnnDataType_t
+	err := Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &pad[0], &stride[0], &dilation[0], &mode, &dtype)).error("GetndDescriptor")
+	return ConvolutionMode(mode), DataType(dtype), cintToint32(pad), cintToint32(stride), cintToint32(dilation), err
+
+}
+
 //SetGroupCount sets the Group Count
 func (c *ConvolutionD) SetGroupCount(groupCount int32) error {
 
