@@ -25,6 +25,27 @@ type CScalar interface {
 	CPtr() unsafe.Pointer
 }
 
+//CScalarByDataType takes the DataType flag and puts num into a CScalar interface. The value of num will be bound by what is passed for DataType.
+//If a DataType isn't supported by the function it will return nil.
+func CScalarByDataType(dtype DataType, num float64) CScalar {
+	var x DataTypeFlag //CUDNN_DATATYPE_FLOAT
+	switch dtype {
+	case x.Double():
+		return CDouble(num)
+	case x.Float():
+		return CFloat(num)
+	case x.Int32():
+		return CInt(num)
+	case x.Int8():
+		return CInt8(num)
+	case x.UInt8():
+		return CUInt8(num)
+	default:
+		return nil
+	}
+
+}
+
 //CScalarConversion takes a go type and converts it to a CScalar interface. golang type int and int32 will both be converted to a CInt type.
 //If a go type is not supported then it will return a nil.
 //Current support is float64,float32,int, int32, int8,uint32, uint, uint8 ( I think byte should work because when I put it in the switch with uint8 it says duplicate type).
