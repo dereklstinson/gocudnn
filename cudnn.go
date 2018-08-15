@@ -25,6 +25,32 @@ type CScalar interface {
 	CPtr() unsafe.Pointer
 }
 
+//CScalarConversion takes a go type and converts it to a CScalar interface. golang type int and int32 will both be converted to a CInt type.
+//If a go type is not supported then it will return a nil.
+//Current support is float64,float32,int, int32, int8,uint32, uint, uint8 ( I think byte should work because when I put it in the switch with uint8 it says duplicate type).
+func CScalarConversion(gotype interface{}) CScalar {
+	switch x := gotype.(type) {
+	case float64:
+		return CDouble(x)
+	case float32:
+		return CFloat(x)
+	case int:
+		return CInt(x)
+	case int32:
+		return CInt(x)
+	case int8:
+		return CInt8(x)
+	case uint8:
+		return CUInt8(x)
+	case uint32:
+		return CUInt(x)
+	case uint:
+		return CUInt(x)
+	default:
+		return nil
+	}
+}
+
 //CFloat is a float in C
 type CFloat C.float
 
