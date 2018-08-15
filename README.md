@@ -2,13 +2,46 @@
 
 Go Bindings for cuDNN 7.1 using Cuda 9.2 \(Just some Cuda 9.2\)
 
-#Currently in an OverHaul
-I am renaming files ...again. Since cudnn basically doesn't have any sort of training functions. I am going to have to include a lot more cuda into this.  Which wouldn't be a problem, but any sort of library that is called in a go package is made for private use for only that package.  I practiced on some work arounds, but when it comes down to structs. Those don't play nice at all when it comes to cgo because c types are unexported!
+# Now In Alpha Stage
+To be honest I haven't tested all the functions.  If there is a bug. Please let me know. Even better make a pull request. I will only be testing the functions that are being used for my thesis.
+I don't plan on changing any of the function names.  I don't plan on deleting any functions.  I do plan on adding functions if needed.  Like maybe some cuda_runtime_api module stuff so that more than 2 types
+of trainers can be used.  I might add the jpeg image stuff, when that gets out of the beta phase.  
+I was able to get MNIST to work, and it is fast. 70,000 images in a few seconds.  WOW!
 
-Since this can potentially become a huge package and it won't necessarily hold just cudnn. I am going to have to combine files and seperate the cuda functions by empty structs.  Those empty structs can then be used to call methods. It will probably look a lot like 
+Note on how cudnn uses softmax, because to be honest it isn't entirely clear in the documentation how it works.  
+You place what I like to call the answers in the dy part of the function. y is the output of the softmaxforward function.  dx is the gradient going backward.
+A simplfied look at how this softmax function works for cudnn is dx = [(alpha * y) + dy] + beta *dx (the bracket is the operation). 
+Most texts read the backwards operation to be dx=dy-y.  (dx,dy,and y are vectors, and where y is the one hot state vector (Sorry, Im a computer engineer)))
+So make sure beta = 0 and alpha is -1 to get the typical softmax backprop.
 
-Currently this is pre alpha. Functions can and will change. Almost on a daily basis.
+Example
+```text
+func (soft SoftMaxFuncs) SoftMaxBackward(
+	handle *Handle,  //cudnn handle
+	algo SoftMaxAlgorithm, // a flag
+	mode SoftMaxMode,  // a flag
+	alpha CScalar,  // Set to -1.0
+	yD *TensorD,    // Network Ouput/Answer
+	y Memer,        //   ''
+	dyD *TensorD,  // Desired Answer / Label
+	dy Memer,     //   '' 
+	beta CScalar,  // Set to 0
+	dxD *TensorD,  // Gradient for previous layer
+	dx Memer,      //  ''
+)
+```
 
+Currently partially tested files
+
+cudaMemory.go  -Ive been using unified memory mostly.  
+cudnnActivation.go - Seems to work
+cudnnPooling.go -seems to work too
+cudnnSoftMax.go -work in my mnist.  
+cudnnOpTensor.go - I know the add works others should work too
+cudnnConvolution.go - Worked for the mnist test I had
+cudnnStatus.go -This works
+cudnnFilter.go -This works
+cudnnTensor.go -This works
 
 
 ## Setup
@@ -43,9 +76,7 @@ I would also like to get this to work on windows, also, but I am finding that wi
 ## Warnings/Notes
 
 1. Callbacks at this time are not going to be implemented \(maybe never\)
-2. Until this reaches version 1.0 functions are likely to change.  
-3. Algorithm will likely be changed.  I will have to see what it is like when I do testing. 
-4. I might get rid of the handle methods to keep it in line with how Golang uses contexts. 
+
 
 Documentation For cudnn can be found at [https://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html](https://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html)
 
@@ -91,14 +122,12 @@ I am really stuck on how much I should enforce host thread use on this. So I am 
 
 Here is a little info on contexts/handles \(correct me if I am wrong on this too\).  
 1. Cuda and cudnn like to have one context/host assigned to one host thread.  
-2. When creating a goroutine you will have to use the runtime.LockOSThread\(\) function, and create a Handle on that. Then you should build everthing within that locked thread. 3. You will not be able to build any memory for that context unless it is built on the thread that is hosting that context. 4. Multiple Host threads can be used by using streams. I am assuming that can sort of be implimented using goroutines that get locked on a stream, but I haven't played around with it yet.  
-5. You cannot share memory from one context to another unless you do some sort of memcopy. 6. It is best practice to have one context per GPU. As of right now gocudnn doesn't support multiple gpus. It will in the future.
+2. When creating a goroutine you will have to use the runtime.LockOSThread\(\) function, and create a Handle on that. Then you should build everthing within that locked thread. 
+3. You will not be able to build any memory for that context unless it is built on the thread that is hosting that context. 
+4. Multiple Host threads can be used by using streams. I am assuming that can sort of be implimented using goroutines that get locked on a stream, but I haven't played around with it yet.  
+5. You cannot share memory from one context to another unless you do some sort of memcopy. 
+6. It is best practice to have one context per GPU. As of right now gocudnn doesn't support multiple gpus. It will in the future.
 
-## Thinking about doing
-
-I am thinking about returning the Memer interface of the memory that gets updated in handle functions. I think it would make it easier to follow.
-
-Also, I was thinking about adding the clips of the documentation commented out next to the functions. I think it would be easier to code if one is able to see what everything does without having to search for it in the documentation.
 
 
 ## CUBLAS and CUDA additions

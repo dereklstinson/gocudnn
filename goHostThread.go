@@ -1,6 +1,9 @@
 package gocudnn
 
-//Host thread is a sample interface with the cudnn library.  Since
+/*
+This is me kind of playing around. Don't use this.  This needs to be on an upper level in another package.
+I am not deleting it because I will want to reference it for a project or package.
+
 import (
 	"runtime"
 )
@@ -25,21 +28,7 @@ type HostThread struct {
 	handle Handle
 }
 
-/*
 
-func (h *Host)HostController(numberofthreads int,f func(<-chan cudachan, chan<- cudachan, <-chan int, chan<- cudachan) error){
-	h.Threads=make([]HostThread, numberofthreads)
-	srcchan := make(chan cudachan, numberofthreads)
-	destchan :=make( chan cudachan, numberofthreads)
-	controllerchan :=make(chan cudachan,numberofthreads)
-
-	for i:=0;i<numberofthreads;i++{
-h.Threads.RunHostThread()
-	}
-
-}
-
-*/
 
 //RunHostThread is a sample host thread
 func (thread *HostThread) RunHostThread(
@@ -97,3 +86,4 @@ func (host *Host) Closer() {
 
 	}
 }
+*/
