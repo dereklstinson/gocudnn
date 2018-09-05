@@ -278,7 +278,8 @@ func (bnf batchNormFuncs) BatchNormalizationForwardInference(
 /*
 * Performs backward pass of Batch Normalization layer. Returns x gradient,
 * bnScale gradient and bnBias gradient */
-func (handle *Handle) BatchNormalizationBackward(
+func (bnf batchNormFuncs) BatchNormalizationBackward(
+	handle *Handle,
 	mode BatchNormMode,
 	alphaDataDiff CScalar,
 	betaDataDiff CScalar,
