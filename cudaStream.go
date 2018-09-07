@@ -13,26 +13,30 @@ type Stream struct {
 }
 
 //CreateBlockingStream creats an asyncronus stream stream for the user
-func CreateBlockingStream() (*Stream, error) {
+func (cu Cuda) CreateBlockingStream() (*Stream, error) {
 	var s Stream
 	err := s.create(false, false, 0)
 	return &s, err
 }
 
 //CreateNonBlockingStream creates a blocking stream
-func CreateNonBlockingStream() (*Stream, error) {
+func (cu Cuda) CreateNonBlockingStream() (*Stream, error) {
 	var s Stream
 	err := s.create(true, false, 0)
 	return &s, err
 
 }
-func CreateNonBlockingPriorityStream(priority int32) (*Stream, error) {
+
+//CreateNonBlockingPriorityStream creates a non blocking Priority Stream
+func (cu Cuda) CreateNonBlockingPriorityStream(priority int32) (*Stream, error) {
 	var s Stream
 	err := s.create(true, true, priority)
 	return &s, err
 
 }
-func CreateBlockingPriorityStream(priority int32) (*Stream, error) {
+
+//CreateBlockingPriorityStream creates a blocking stream
+func (cu Cuda) CreateBlockingPriorityStream(priority int32) (*Stream, error) {
 	var s Stream
 	err := s.create(true, true, priority)
 	return &s, err
