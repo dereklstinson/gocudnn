@@ -6,10 +6,12 @@ package gocudnn
 */
 import "C"
 
+//Event is a cuda event
 type Event struct {
 	x C.cudaEvent_t
 }
 
+//CreateEven will create and return an Event
 func (cu Cuda) CreateEvent() (Event, error) {
 	var e Event
 	err := newErrorRuntime("CreateEvent", C.cudaEventCreate(&e.x))
@@ -19,6 +21,7 @@ func (cu Cuda) CreateEvent() (Event, error) {
 	return e, nil
 }
 
+//Record records an event
 func (e *Event) Record(s Stream) error {
 	return newErrorRuntime("Record", C.cudaEventRecord(e.x, s.stream))
 }
@@ -44,6 +47,8 @@ func (e *Event) Status() (bool, error) {
 func (e *Event) Sync() error {
 	return newErrorRuntime("Sync", C.cudaEventSynchronize(e.x))
 }
+
+//Destroy destroys an event!
 func (e *Event) Destroy() error {
 	return destroyevent(e)
 }
