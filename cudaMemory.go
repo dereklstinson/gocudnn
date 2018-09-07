@@ -27,10 +27,7 @@ type Memer interface {
 	//Atributes()Atribs
 }
 
-//Malloced is a non garbage collection varient to what was used in buffer.
-//It gives the user more control over the memory for cases of building neural networks
-//on the GPU.  Just remember to free the memory or the gpu will fill up fast.
-//Malloced contains info on a chunk of memory on the device
+//Malloced is a non garbage collection memory that is stored on the device.  When done with it be sure to destroy it.
 type Malloced struct {
 	ptr       unsafe.Pointer
 	size      SizeT
@@ -39,6 +36,7 @@ type Malloced struct {
 	onmanaged bool
 }
 
+//Atribs are a memories attributes on the device side
 type Atribs struct {
 	Type    MemType
 	Device  int32
@@ -75,6 +73,8 @@ func (mem *Malloced) Atributes() (Atribs, error) {
 		Managed: managed,
 	}, nil
 }
+
+//Fill slice will fill a slice array that is passed to cuda
 func (mem *Malloced) FillSlice(input interface{}) error {
 	var kind MemcpyKindFlag
 	bsize, err := FindSizeT(input)
