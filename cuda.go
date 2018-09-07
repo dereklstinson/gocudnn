@@ -19,8 +19,11 @@ func init() {
 type Cuda struct {
 }
 
+//Device is a struct that holds a device info.
 type Device struct {
-	id CInt
+	id    CInt
+	major int
+	minor int
 	//	thread int32
 }
 
@@ -39,7 +42,17 @@ func (cu Cuda) GetDeviceList() ([]*Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		x = append(x, &Device{id: CInt(id)})
+		var major C.int
+		var minor C.int
+		err = newErrorDriver("cuDeviceGetAttribute - major", C.cuDeviceGetAttribute(&major, C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, id))
+		if err != nil {
+			return nil, err
+		}
+		err = newErrorDriver("cuDeviceGetAttribute - minor", C.cuDeviceGetAttribute(&minor, C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, id))
+		if err != nil {
+			return nil, err
+		}
+		x = append(x, &Device{id: CInt(id), major: int(major), minor: int(minor)})
 	}
 	return x, nil
 }
@@ -51,6 +64,7 @@ func (cu Cuda) devicecount() (CInt, error) {
 	return CInt(x), newErrorDriver("DeviceCount", rte)
 }
 
+//EnablePeerAccess check cudaDeviceEnablePeerAccess
 func (d *Device) EnablePeerAccess(peer *Device) error {
 	err := d.Set()
 	if err != nil {
@@ -94,9 +108,23 @@ func (cu Cuda) CreateDevice(device int32) (*Device, error) {
 		id: CInt(device),
 	}, newErrorRuntime("SetDevice", x)
 }
+
+//Major returns the compute capability major value
+func (d *Device) Major() int {
+	return d.major
+}
+
+//Minor returns the compute capability minor value
+func (d *Device) Minor() int {
+	return d.minor
+}
+
+//LockHostThread locks the current host thread
 func (cu Cuda) LockHostThread() {
 	runtime.LockOSThread()
 }
+
+//UnLockHostThread unlocks the current host thread
 func (cu Cuda) UnLockHostThread() {
 	runtime.UnlockOSThread()
 }
