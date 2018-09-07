@@ -170,7 +170,7 @@ func (t *TensorD) DestroyDescriptor() error {
 type TensorFuncs struct {
 }
 
-//TransformTensor
+//TransformTensor see below
 /*
 From the SDK Documentation:
 This function copies the scaled data from one tensor to another tensor with a different layout.
