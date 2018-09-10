@@ -1,4 +1,4 @@
-package cu
+package kernels
 
 import "C"
 import (
@@ -9,9 +9,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/dereklstinson/GoCudnn"
+	//	"github.com/dereklstinson/GoCudnn"
 )
+
+type Device interface {
+	Major() int
+	Minor() int
+}
 
 const nvcccompute30 = "	nvcc --gpu-architecture=compute_30 --gpu-code=compute_30 --ptx Activation30.cu"
 const nvcccompute35 = "	nvcc --gpu-architecture=compute_35 --gpu-code=compute_35 --ptx Activation35.cu"
@@ -83,7 +87,7 @@ type makefile struct {
 	lines []string
 }
 
-func MakeMakeFile(directory string, dotCUname string, device gocudnn.Device) string {
+func MakeMakeFile(directory string, dotCUname string, device Device) string {
 
 	device.Major()
 
@@ -93,11 +97,14 @@ func MakeMakeFile(directory string, dotCUname string, device gocudnn.Device) str
 	computecapability := majstr + minstr
 
 	newname := dotCUname
+
 	if strings.Contains(dotCUname, ".cu") {
 		newname = strings.TrimSuffix(dotCUname, ".cu")
+
 	} else {
 		dotCUname = dotCUname + ".cu"
 	}
+	newname = newname + ".ptx"
 	var some makefile
 	//some.lines=make([]string,13)
 	some.lines = make([]string, 2)
@@ -126,9 +133,9 @@ func MakeMakeFile(directory string, dotCUname string, device gocudnn.Device) str
 	return newname
 }
 
-func LoadPTXFile(filelocation string) string {
+func LoadPTXFile(directory, filename string) string {
 
-	ptxdata, err := ioutil.ReadFile(filelocation)
+	ptxdata, err := ioutil.ReadFile(directory + filename)
 	if err != nil {
 		panic(err)
 	}
