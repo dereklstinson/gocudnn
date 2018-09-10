@@ -1,14 +1,22 @@
 package gocudnn
 
+import "C"
 import (
 	"errors"
+
+	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
 /*
-**Attention this is put on hold, because of how opaque cudnn is and I don't want to have to build
-another context and copy memory just so I can update the weights.  Also, I might move that operation to host functions.
-I don't know...
+ Since momentum and vanilla can be made with optensor. Only AdaGrad, AdaDelta, and Adam are going to be used.  I might add more if my thesis requires it.
+ L1 and L2 regularization are available too.  If you don't want it then too bad.  Just write your own functions using the kernels subpackage. :-)
+Currently only float is available for training.  I will make a double for the trainer, too. but that will be later.
+Trainers get there own Context. Which is different than the cudnn handle.  So, make sure you make a Cuda variable.
+example:
 
+var cu gocudnn.Cuda
+
+ctx,err:= cu.CtxCreate(flag,device)
 
 Written in the style of cudnn/GoCudnn. This is an added set of functions to calculate loss.
 
@@ -16,43 +24,76 @@ Written in the style of cudnn/GoCudnn. This is an added set of functions to calc
 
 //TrainerD is the descriptor of the trainer
 type TrainerD struct {
-	data    DataType
-	mode    TrainingMode
-	params  TrainingParams
+	data DataType
+	mode TrainingMode
+	reg  Regularization
+	//	params  TrainingParams
 	l1loss  CScalar
 	l2loss  CScalar
 	counter CScalar
+	kmode   *Kernel
+	kreg    *Kernel
 }
 
 //TrainingParams is a struct can be use for training params.
 //When selecting the training mode the params that are not part of the training mode will be ignored.
 type TrainingParams struct {
-	Decay1   CScalar
-	Decay2   CScalar
-	Ro       CScalar
-	Eps      CScalar
-	Momentum CScalar
-	Rate     CScalar
-	Beta1    CScalar
-	Beta2    CScalar
+	decay1 CScalar
+	decay2 CScalar
+	batch  CScalar
+	ro     CScalar
+	rate   CScalar
+	beta1  CScalar
+	beta2  CScalar
+}
+type TContext struct {
+	ctx *Context
+	mod *Module
+	ptx string
 }
 
-//TrainingModeFlag is a nil struct that passes TrainingMode Flags through methods
+func MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir string) (*TContext, error) {
+	var cu Cuda
+	ctx, err := cu.CtxCreate(flags, dev)
+	if err != nil {
+		return nil, err
+	}
+	x := kernels.MakeMakeFile(trainingfloatdir, "trainingfloat", dev)
+	kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
+	mod, err := cu.NewModule(kerncode)
+	if err != nil {
+		return nil, err
+	}
+	//	kern,err:=cu.MakeKernel()
+	return &TContext{
+		ctx: ctx,
+		mod: mod,
+		ptx: kerncode,
+	}, nil
+}
+
+//Regularization will regulate the training.  L1 and/or L2
+type Regularization int32
+
+type RegularizationFlag struct {
+}
+
+func (r RegularizationFlag) L1() Regularization {
+	return Regularization(1)
+}
+func (r RegularizationFlag) L2() Regularization {
+	return Regularization(2)
+}
+func (r RegularizationFlag) L1L2() Regularization {
+	return Regularization(12)
+}
+
+//TrainingModeFlag is a nil struct that passes TrainingMode Flags through methods.
 type TrainingModeFlag struct {
 }
 
 //TrainingMode are flags to pass for training mode
 type TrainingMode int32
-
-//Vanilla Update Weight Mode
-func (t TrainingModeFlag) Vanilla() TrainingMode {
-	return TrainingMode(0)
-}
-
-//Momentum does the momentum algo
-func (t TrainingModeFlag) Momentum() TrainingMode {
-	return TrainingMode(1)
-}
 
 //AdaGrad performs the adagrad algo
 func (t TrainingModeFlag) AdaGrad() TrainingMode {
@@ -70,100 +111,95 @@ func (t TrainingModeFlag) Adam() TrainingMode {
 }
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
-func NewTrainingDescriptor(mode TrainingMode, data DataType, params TrainingParams) (*TrainerD, error) {
-	if mode < 0 || mode > 4 {
-		return nil, errors.New("NewTrainingDescriptor: Unsupported Trainingmode")
+func NewTrainingDescriptor(tctx *TContext, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
+	err := tctx.ctx.Push()
+	var ktf kernels.TrainingFloat
+	if err != nil {
+		return nil, err
 	}
+	var cu Cuda
+
+	var rflg RegularizationFlag
+	var regname string
+	switch reg {
+	case rflg.L1():
+		regname = ktf.L1()
+	case rflg.L2():
+		regname = ktf.L2()
+	case rflg.L1L2():
+		regname = ktf.L1L2()
+	default:
+		return nil, errors.New("Regularization Not Supported")
+	}
+	var mflg TrainingModeFlag
+	var mname string
+	switch mode {
+	case mflg.AdaDelta():
+		mname = ktf.AdaDelta()
+	case mflg.AdaGrad():
+		mname = ktf.AdaGrad()
+	case mflg.Adam():
+		mname = ktf.Adam()
+	default:
+		return nil, errors.New("TrainingMode Not Supported")
+	}
+
 	var tflag Tensor
 	dt := tflag.Flgs.Data
 	switch data {
-	case dt.Double(): //this is just used to check if it is true.
-	case dt.Float():
-	case dt.Int32():
-	case dt.Int8():
-	case dt.UInt8():
+
+	case dt.Float(): //this is just used to check if it is true.
+	//case dt.Double():
 	default:
 		return nil, errors.New("NewTrainingDescriptor: unsupported Datatype") //if not true then return error
 	}
+	kmode, err := cu.MakeKernel(mname, tctx.mod)
+	if err != nil {
+		return nil, err
+	}
+	kreg, err := cu.MakeKernel(regname, tctx.mod)
+	if err != nil {
+		return nil, err
+	}
+	_, err = cu.CtxPopCurrent()
+	if err != nil {
+		return nil, err
+	}
 	return &TrainerD{ //all true then we will set TrainerD
-		mode:   mode,
-		data:   data,
-		params: params,
+		mode:  mode,
+		data:  data,
+		reg:   reg,
+		kmode: kmode,
+		kreg:  kreg,
 	}, nil
 }
 
 //GetTrainingDescriptor returns the info that was set for the training descriptor
-func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, TrainingParams) {
-	return d.mode, d.data, d.params
+func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularization) {
+	return d.mode, d.data, d.reg
 }
 
-//ChangeTrainingParams passes a TrainingParam struct and it changes the values of the training parameters.
-func (d *TrainerD) ChangeTrainingParams(params TrainingParams) {
-	d.params = params
+//TrainValues. Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
+func (d *TrainerD) TrainValues(ctx *TContext, blocksize uint32, dw, w, l1, l2, gsum, xsum Memer, params TrainingParams) error {
+	var size uint32
+	w.ByteSize()
+	var dflg DataTypeFlag
+	switch d.data {
+	case dflg.Float():
+		size = uint32(w.ByteSize() / SizeT(4))
+	default:
+		return errors.New("Unsupported Type")
+	}
+	gridsize := kernels.SimpleGridCalculator(blocksize, size)
+
+	//var rflgs RegularizationFlag
+	var cu Cuda
+	err := ctx.ctx.Push()
+	if err != nil {
+		return err
+	}
+	defer cu.CtxPopCurrent()
+
+	return d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, dw.Ptr(), w.Ptr(), l1, l2, params.batch, params.decay1, params.decay2)
+
 }
-
-/*
-
-//Connection is one thing that most of the neurons have in common.  All but the pooling neurons
-type Connection struct {
-	Weight        float64
-	Gradientadder float64
-	deltaweight   float64
-	decay1        float64
-	decay2        float64
-	ro            float64
-	eps           float64
-	momentum      float64
-	rate          float64
-	trainingtype  string
-
-	gsum float64
-	xsum float64
-
-	counter uint64
-	beta1   float64
-	beta2   float64
-}
-
-
-
-decay1 := link.decay1
-if link.Weight < 0 {
-	decay1 = -decay1
-}
-decay2 := float64(link.Weight * link.decay2)
-link.Gradientadder = (link.Gradientadder / float64(batch)) + decay1 + decay2
-
-if link.trainingtype == "adagrad" {
-	link.deltaweight = link.deltaweight + float64(link.Gradientadder*link.Gradientadder)
-	link.Weight += -(link.rate * link.Gradientadder) / (math.Sqrt(link.deltaweight) + link.eps)
-} else if link.trainingtype == "rmsprop" {
-	decayrate := .999
-	link.deltaweight = decayrate*link.deltaweight + (1-decayrate)*link.Gradientadder*link.Gradientadder
-	x := -link.rate * link.Gradientadder / (math.Sqrt(link.deltaweight) + link.eps)
-	link.Weight += x
-} else if link.trainingtype == "adadelta" {
-	link.gsum = float64(link.ro*link.gsum) + (1-link.ro)*link.Gradientadder*link.Gradientadder
-	holder := -math.Sqrt((link.xsum+link.eps)/(link.gsum+link.eps)) * link.Gradientadder
-	link.xsum = float64(link.ro*link.xsum) + ((1 - link.ro) * holder * holder)
-	link.Weight += holder
-
-} else if link.trainingtype == "adam" {
-	link.gsum = float64(link.beta1*link.gsum) + float64((1.0-link.beta1)*link.Gradientadder)
-	gsumt := link.gsum / (1.0 - math.Pow(link.beta1, float64(link.counter)))
-	link.xsum = (link.beta2 * link.xsum) + ((1.0 - link.beta2) * link.Gradientadder * link.Gradientadder)
-	xsumt := link.xsum / (1.0 - math.Pow(link.beta2, float64(link.counter)))
-	link.Weight += -(link.rate * gsumt) / (math.Sqrt(xsumt) + link.eps)
-
-} else if link.trainingtype == "momentum" {
-	link.deltaweight = (link.deltaweight * link.momentum) - (link.Gradientadder * link.rate)
-	link.Weight += link.deltaweight
-
-} else {
-	link.Weight += -(link.rate * link.Gradientadder)
-}
-
-link.Gradientadder = 0
-link.counter++
-
-*/
