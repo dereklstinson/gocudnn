@@ -89,6 +89,13 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 	if err != nil {
 		return err
 	}
+	var shold C.cudaStream_t
+
+	if stream == nil {
+		shold = nil
+	} else {
+		shold = stream.stream
+	}
 	return newErrorDriver("cuLaunchKernel",
 		C.cuLaunchKernel(k.f,
 			C.uint(gx),
@@ -98,7 +105,7 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 			C.uint(by),
 			C.uint(bz),
 			C.uint(shared),
-			stream.stream,
+			shold,
 			&unsafearray[0],
 			nil,
 		))
