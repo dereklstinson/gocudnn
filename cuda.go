@@ -21,7 +21,8 @@ type Cuda struct {
 
 //Device is a struct that holds a device info.
 type Device struct {
-	id    CInt
+	id    C.CUdevice
+	idinC CInt
 	major int
 	minor int
 	//	thread int32
@@ -52,7 +53,8 @@ func (cu Cuda) GetDeviceList() ([]*Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		x = append(x, &Device{id: CInt(id), major: int(major), minor: int(minor)})
+
+		x = append(x, &Device{id: id, major: int(major), minor: int(minor), idinC: CInt(id)})
 	}
 	return x, nil
 }
@@ -70,7 +72,7 @@ func (d *Device) EnablePeerAccess(peer *Device) error {
 	if err != nil {
 		return err
 	}
-	return newErrorRuntime("EnablePeerAccess", C.cudaDeviceEnablePeerAccess(peer.id.c(), C.uint(0)))
+	return newErrorRuntime("EnablePeerAccess", C.cudaDeviceEnablePeerAccess(peer.idinC.c(), C.uint(0)))
 }
 
 //Reset resets the device. If device isn't set on current host thread. This function will auto set it. Make sure that the device that was currently using the host thread is set back onto host
@@ -88,7 +90,7 @@ func (d *Device) Reset() error {
 
 //Set sets the device to use. This will change the device that is residing on the current host thread.  There is no sychronization, with the previous or new device on the host thread.
 func (d *Device) Set() error {
-	return newErrorRuntime("Set", C.cudaSetDevice(d.id.c()))
+	return newErrorRuntime("Set", C.cudaSetDevice(d.idinC.c()))
 }
 
 //SetValidDevices takes a list of devices in terms of user priority for cuda execution
@@ -103,9 +105,11 @@ func (cu Cuda) SetValidDevices(devices []*Device) error {
 //CreateDevice sets the device on the current host thread.
 //Be sure when starting a goroutine lock the thread before calling this.
 func (cu Cuda) CreateDevice(device int32) (*Device, error) {
-	x := C.cudaSetDevice(C.int(device))
+	d := C.int(device)
+	x := C.cudaSetDevice(d)
 	return &Device{
-		id: CInt(device),
+		id:    C.CUdevice(d),
+		idinC: CInt(d),
 	}, newErrorRuntime("SetDevice", x)
 }
 
