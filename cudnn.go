@@ -67,6 +67,8 @@ func CScalarConversion(gotype interface{}) CScalar {
 		return CUInt(x)
 	case uint:
 		return CUInt(x)
+	case CScalar:
+		return x
 	default:
 		return nil
 	}
