@@ -11,7 +11,7 @@ type Event struct {
 	x C.cudaEvent_t
 }
 
-//CreateEven will create and return an Event
+//CreateEvent will create and return an Event
 func (cu Cuda) CreateEvent() (Event, error) {
 	var e Event
 	err := newErrorRuntime("CreateEvent", C.cudaEventCreate(&e.x))

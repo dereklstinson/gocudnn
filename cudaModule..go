@@ -12,6 +12,7 @@ import (
 	"unsafe"
 )
 
+//Kernel is a function stored on the gpu.
 type Kernel struct {
 	name string
 	f    C.CUfunction
