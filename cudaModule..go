@@ -58,7 +58,7 @@ func (m *Module) Load(filename string) error {
 	return newErrorDriver("Load", x)
 }
 
-//MakeKernel makes a kernel.  If module is unloaded, then the kernel returned won't work
+//MakeKernel makes a kernel.  (basically a function in cuda) If module is unloaded, then the kernel returned won't work
 func (cu Cuda) MakeKernel(kname string, m *Module) (*Kernel, error) {
 	var kern C.CUfunction
 	if m.loaded == false {
@@ -105,6 +105,86 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 			C.uint(by),
 			C.uint(bz),
 			C.uint(shared),
+			shold,
+			&unsafearray[0],
+			nil,
+		))
+}
+
+//KernelArguments need to be loaded before using LaunchV2.  Handy if most of the parameters are not changing. Also, if you want to parallelize it then you can use this.
+type KernelArguments struct {
+	gx, gy, gz CUInt
+	bx, by, bz CUInt
+	shared     CUInt
+	stream     *Stream
+	args       []interface{}
+}
+
+//SetGrid sets the grid dims
+func (k *KernelArguments) SetGrid(gx, gy, gz uint32) {
+	k.gx, k.gy, k.gz = CUInt(gx), CUInt(gy), CUInt(gz)
+
+}
+
+//GetGrid returns the grid values
+func (k *KernelArguments) GetGrid() (uint32, uint32, uint32) {
+	return uint32(k.gx), uint32(k.gy), uint32(k.gz)
+}
+
+//SetBlock sets the block dims
+func (k *KernelArguments) SetBlock(bx, by, bz uint32) {
+	k.bx, k.by, k.bz = CUInt(bx), CUInt(by), CUInt(bz)
+
+}
+
+//GetBlock returns the block values
+func (k *KernelArguments) GetBlock() (uint32, uint32, uint32) {
+	return uint32(k.bx), uint32(k.by), uint32(k.bz)
+
+}
+
+//SetShared sets the shared dims
+func (k *KernelArguments) SetShared(sharedsize uint32) {
+	k.shared = CUInt(sharedsize)
+}
+
+//GetShared returns the shared memory size value
+func (k *KernelArguments) GetShared() uint32 {
+	return uint32(k.shared)
+}
+
+//SetArguments sets the arguments
+func (k *KernelArguments) SetArguments(args ...interface{}) {
+	k.args = args
+}
+
+//GetArguments returns the empty interface array of arguments
+func (k *KernelArguments) GetArguments() []interface{} {
+	return k.args
+}
+
+//LaunchV2 is like launch but it takes KernelArgument struct.
+func (k *Kernel) LaunchV2(p KernelArguments) error {
+	unsafearray, err := ifacetounsafe(p.args)
+	if err != nil {
+		return err
+	}
+	var shold C.cudaStream_t
+
+	if p.stream == nil {
+		shold = nil
+	} else {
+		shold = p.stream.stream
+	}
+	return newErrorDriver("cuLaunchKernel",
+		C.cuLaunchKernel(k.f,
+			p.gx.c(),
+			p.gy.c(),
+			p.gz.c(),
+			p.bx.c(),
+			p.by.c(),
+			p.bz.c(),
+			p.shared.c(),
 			shold,
 			&unsafearray[0],
 			nil,
