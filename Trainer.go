@@ -22,6 +22,10 @@ Written in the style of cudnn/GoCudnn. This is an added set of functions to calc
 
 */
 
+//Xtra is a holder for Xtra functions that are made by me, and not cuda or cudnn
+type Xtra struct {
+}
+
 //TrainerD is the descriptor of the trainer
 type TrainerD struct {
 	data DataType
@@ -52,7 +56,7 @@ type TContext struct {
 	ptx string
 }
 
-func MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir string) (*TContext, error) {
+func (xtra Xtra) MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir string) (*TContext, error) {
 	var cu Cuda
 	ctx, err := cu.CtxCreate(flags, dev)
 	if err != nil {
@@ -111,7 +115,7 @@ func (t TrainingModeFlag) Adam() TrainingMode {
 }
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
-func NewTrainingDescriptor(tctx *TContext, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
+func (xtra Xtra) NewTrainingDescriptor(tctx *TContext, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
 	err := tctx.ctx.Push()
 	var ktf kernels.TrainingFloat
 	if err != nil {
@@ -180,7 +184,7 @@ func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularizati
 }
 
 //TrainValues. Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(ctx *TContext, blocksize uint32, dw, w, l1, l2, gsum, xsum Memer, params TrainingParams) error {
+func (d *TrainerD) TrainValues(ctx *TContext, blocksize uint32, dw, w, l1, l2, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
 	var size uint32
 	w.ByteSize()
 	var dflg DataTypeFlag
@@ -199,7 +203,10 @@ func (d *TrainerD) TrainValues(ctx *TContext, blocksize uint32, dw, w, l1, l2, g
 		return err
 	}
 	defer cu.CtxPopCurrent()
-
-	return d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, dw.Ptr(), w.Ptr(), l1, l2, params.batch, params.decay1, params.decay2)
+	err = d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, dw.Ptr(), w.Ptr(), l1, l2, params.batch, params.decay1, params.decay2)
+	if err != nil {
+		return err
+	}
+	return d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, dw.Ptr(), w.Ptr())
 
 }
