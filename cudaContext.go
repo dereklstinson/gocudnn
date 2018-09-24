@@ -4,10 +4,21 @@ package gocudnn
 #include <cuda.h>
 */
 import "C"
+import "errors"
 
 //Context holds a CUcontext.  This is soon going to be added!
 type Context struct {
 	ctx C.CUcontext
+}
+
+func (c *Context) GetCudnnHandle() (*Handle, error) {
+	return nil, errors.New("Not a CudnnHandle")
+}
+func (c *Context) GetCudaContext() (*Context, error) {
+	return c, nil
+}
+func (c *Context) GetTContext() (*TContext, error) {
+	return nil, errors.New("Not a TContext")
 }
 
 /*

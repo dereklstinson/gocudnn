@@ -80,7 +80,7 @@ extern "C" __global__
 void l1regularizationfloat(
     float *dw, //input and output
     float *w  //input
-    int values, //number of values
+ //   int values, //number of values
     float *l1, //output
     float *l2, //output
     float batch, // should be an int but just send it as a float

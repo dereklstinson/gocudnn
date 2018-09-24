@@ -7,6 +7,13 @@ import (
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
+//Contexter to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
+type Contexter interface {
+	GetCudnnHandle() (*Handle, error)
+	GetCudaContext() (*Context, error)
+	GetTContext() (*TContext, error)
+}
+
 /*
  Since momentum and vanilla can be made with optensor. Only AdaGrad, AdaDelta, and Adam are going to be used.  I might add more if my thesis requires it.
  L1 and L2 regularization are available too.  If you don't want it then too bad.  Just write your own functions using the kernels subpackage. :-)
@@ -21,6 +28,15 @@ ctx,err:= cu.CtxCreate(flag,device)
 Written in the style of cudnn/GoCudnn. This is an added set of functions to calculate loss.
 
 */
+func (t *TContext) GetCudnnHandle() (*Handle, error) {
+	return nil, errors.New("Not a CudnnHandle")
+}
+func (t *TContext) GetCudaContext() (*Context, error) {
+	return nil, errors.New("Not a CudaContext")
+}
+func (t *TContext) GetTContext() (*TContext, error) {
+	return t, nil
+}
 
 //Xtra is a holder for Xtra functions that are made by me, and not cuda or cudnn
 type Xtra struct {
@@ -32,9 +48,7 @@ type TrainerD struct {
 	mode TrainingMode
 	reg  Regularization
 	//	params  TrainingParams
-	l1loss  CScalar
-	l2loss  CScalar
-	counter CScalar
+	counter int32
 	kmode   *Kernel
 	kreg    *Kernel
 }
@@ -42,14 +56,61 @@ type TrainerD struct {
 //TrainingParams is a struct can be use for training params.
 //When selecting the training mode the params that are not part of the training mode will be ignored.
 type TrainingParams struct {
-	decay1 CScalar
-	decay2 CScalar
-	batch  CScalar
-	ro     CScalar
-	rate   CScalar
-	beta1  CScalar
-	beta2  CScalar
+	decay1 interface{}
+	decay2 interface{}
+	batch  interface{}
+	eps    interface{}
+	rate   interface{}
+	beta1  interface{}
+	beta2  interface{}
 }
+
+//SetDecay1 sets decay1
+func (a *TrainingParams) SetDecay1(decay1 interface{}) {
+	a.decay1 = decay1
+}
+
+//SetDecay2 sets decay 2
+func (a *TrainingParams) SetDecay2(decay2 interface{}) {
+	a.decay2 = decay2
+}
+
+//SetBeta1 sets beta1
+func (a *TrainingParams) SetBeta1(beta1 interface{}) {
+	a.beta1 = beta1
+}
+
+//SetBeta2 sets beta2
+func (a *TrainingParams) SetBeta2(beta2 interface{}) {
+	a.beta2 = beta2
+}
+
+//SetRate sets rate
+func (a *TrainingParams) SetRate(rate interface{}) {
+	a.rate = rate
+}
+
+//SetEps sets eps
+func (a *TrainingParams) SetEps(eps interface{}) {
+	a.eps = eps
+}
+func (a *TrainingParams) SetBatch(batch interface{}) {
+	a.batch = batch
+}
+
+func CreateParamsFloat32(decay1, decay2, batch, eps, rate, beta1, beta2 float32) TrainingParams {
+	//c := CScalarConversion
+	return TrainingParams{
+		decay1: decay1,
+		decay2: decay2,
+		batch:  batch,
+		eps:    eps,
+		rate:   rate,
+		beta1:  beta1,
+		beta2:  beta2,
+	}
+}
+
 type TContext struct {
 	ctx *Context
 	mod *Module
@@ -203,10 +264,34 @@ func (d *TrainerD) TrainValues(ctx *TContext, blocksize uint32, dw, w, l1, l2, g
 		return err
 	}
 	defer cu.CtxPopCurrent()
+
 	err = d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, dw.Ptr(), w.Ptr(), l1, l2, params.batch, params.decay1, params.decay2)
 	if err != nil {
 		return err
 	}
-	return d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, dw.Ptr(), w.Ptr())
 
+	switch d.mode {
+	case TrainingModeFlag{}.Adam():
+
+		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, w.Ptr(), gsum.Ptr(), xsum.Ptr(), dw.Ptr(), params.beta1, params.beta2, params.eps, float32(d.counter))
+		if err != nil {
+			return err
+		}
+		d.counter++
+		return nil
+
+	case TrainingModeFlag{}.AdaDelta():
+		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, w.Ptr(), gsum.Ptr(), dw.Ptr(), params.rate, params.eps)
+		if err != nil {
+			return err
+		}
+	case TrainingModeFlag{}.AdaGrad():
+		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, w.Ptr(), gsum.Ptr(), dw.Ptr(), params.rate, params.eps)
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("Unsopported Training Mode")
+	}
+	return nil
 }
