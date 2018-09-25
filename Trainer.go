@@ -11,7 +11,7 @@ import (
 type Contexter interface {
 	GetCudnnHandle() (*Handle, error)
 	GetCudaContext() (*Context, error)
-	GetTContext() (*TContext, error)
+	GetTrainHandle() (*TrainHandle, error)
 }
 
 /*
@@ -28,13 +28,13 @@ ctx,err:= cu.CtxCreate(flag,device)
 Written in the style of cudnn/GoCudnn. This is an added set of functions to calculate loss.
 
 */
-func (t *TContext) GetCudnnHandle() (*Handle, error) {
+func (t *TrainHandle) GetCudnnHandle() (*Handle, error) {
 	return nil, errors.New("Not a CudnnHandle")
 }
-func (t *TContext) GetCudaContext() (*Context, error) {
+func (t *TrainHandle) GetCudaContext() (*Context, error) {
 	return nil, errors.New("Not a CudaContext")
 }
-func (t *TContext) GetTContext() (*TContext, error) {
+func (t *TrainHandle) GetTrainHandle() (*TrainHandle, error) {
 	return t, nil
 }
 
@@ -111,12 +111,33 @@ func CreateParamsFloat32(decay1, decay2, batch, eps, rate, beta1, beta2 float32)
 	}
 }
 
-type TContext struct {
-	ctx *Context
+type TrainHandle struct {
 	mod *Module
 	ptx string
+	s   *Stream
 }
 
+func (t *TrainHandle) SetStream(s *Stream) {
+	t.s = s
+
+}
+func (xtra Xtra) MakeTrainingHandle(trainingfloatdir string, dev *Device) (*TrainHandle, error) {
+	var cu Cuda
+	x := kernels.MakeMakeFile(trainingfloatdir, "trainingfloat", dev)
+	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
+	mod, err := cu.NewModule(trainingfloatdir + x)
+	if err != nil {
+		//fmt.Println(kerncode)
+		return nil, err
+	}
+	//	kern,err:=cu.MakeKernel()
+	return &TrainHandle{
+		mod: mod,
+		//	ptx: kerncode,
+	}, nil
+}
+
+/*
 func (xtra Xtra) MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir string) (*TContext, error) {
 	var cu Cuda
 	ctx, err := cu.CtxCreate(flags, dev)
@@ -124,19 +145,20 @@ func (xtra Xtra) MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir
 		return nil, err
 	}
 	x := kernels.MakeMakeFile(trainingfloatdir, "trainingfloat", dev)
-	kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
-	mod, err := cu.NewModule(kerncode)
+	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
+	mod, err := cu.NewModule(trainingfloatdir + x)
 	if err != nil {
+		//fmt.Println(kerncode)
 		return nil, err
 	}
 	//	kern,err:=cu.MakeKernel()
 	return &TContext{
 		ctx: ctx,
 		mod: mod,
-		ptx: kerncode,
+		//	ptx: kerncode,
 	}, nil
 }
-
+*/
 //Regularization will regulate the training.  L1 and/or L2
 type Regularization int32
 
@@ -176,12 +198,8 @@ func (t TrainingModeFlag) Adam() TrainingMode {
 }
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
-func (xtra Xtra) NewTrainingDescriptor(tctx *TContext, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
-	err := tctx.ctx.Push()
+func (xtra Xtra) NewTrainingDescriptor(h *TrainHandle, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
 	var ktf kernels.TrainingFloat
-	if err != nil {
-		return nil, err
-	}
 	var cu Cuda
 
 	var rflg RegularizationFlag
@@ -218,15 +236,14 @@ func (xtra Xtra) NewTrainingDescriptor(tctx *TContext, mode TrainingMode, data D
 	default:
 		return nil, errors.New("NewTrainingDescriptor: unsupported Datatype") //if not true then return error
 	}
-	kmode, err := cu.MakeKernel(mname, tctx.mod)
+	kmode, err := cu.MakeKernel(mname, h.mod)
 	if err != nil {
 		return nil, err
 	}
-	kreg, err := cu.MakeKernel(regname, tctx.mod)
+	kreg, err := cu.MakeKernel(regname, h.mod)
 	if err != nil {
 		return nil, err
 	}
-	_, err = cu.CtxPopCurrent()
 	if err != nil {
 		return nil, err
 	}
@@ -245,8 +262,9 @@ func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularizati
 }
 
 //TrainValues. Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(ctx *TContext, blocksize uint32, dw, w, l1, l2, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
+func (d *TrainerD) TrainValues(h *TrainHandle, blocksize uint32, dw, w, l1, l2, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
 	var size uint32
+	var err error
 	w.ByteSize()
 	var dflg DataTypeFlag
 	switch d.data {
@@ -258,35 +276,67 @@ func (d *TrainerD) TrainValues(ctx *TContext, blocksize uint32, dw, w, l1, l2, g
 	gridsize := kernels.SimpleGridCalculator(blocksize, size)
 
 	//var rflgs RegularizationFlag
-	var cu Cuda
-	err := ctx.ctx.Push()
-	if err != nil {
-		return err
-	}
-	defer cu.CtxPopCurrent()
-
-	err = d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, dw.Ptr(), w.Ptr(), l1, l2, params.batch, params.decay1, params.decay2)
-	if err != nil {
-		return err
-	}
-
-	switch d.mode {
-	case TrainingModeFlag{}.Adam():
-
-		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, w.Ptr(), gsum.Ptr(), xsum.Ptr(), dw.Ptr(), params.beta1, params.beta2, params.eps, float32(d.counter))
+	/*
 		if err != nil {
 			return err
 		}
-		d.counter++
+		dwc, err := MallocManaged(dw.ByteSize(), ManagedMemFlag{}.Global())
+		if err != nil {
+			panic(err)
+		}
+		wc, err := MallocManaged(dw.ByteSize(), ManagedMemFlag{}.Global())
+		if err != nil {
+			panic(err)
+		}
+		err = CudaMemCopy(dwc, dw, dw.ByteSize(), MemcpyKindFlag{}.Default())
+		if err != nil {
+			panic(err)
+		}
+		err = CudaMemCopy(wc, w, w.ByteSize(), MemcpyKindFlag{}.Default())
+		if err != nil {
+			panic(err)
+		}
+	*/
+	err = d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+	if err != nil {
+		return err
+	}
+	/*
+		err = CudaMemCopy(dw, dwc, dw.ByteSize(), MemcpyKindFlag{}.Default())
+		if err != nil {
+			panic(err)
+		}
+		err = CudaMemCopy(dw, dwc, w.ByteSize(), MemcpyKindFlag{}.Default())
+		if err != nil {
+			panic(err)
+		}
+		err = dwc.Free()
+		if err != nil {
+			panic(err)
+		}
+		err = wc.Free()
+		if err != nil {
+			panic(err)
+		}
+	*/
+	switch d.mode {
+	case TrainingModeFlag{}.Adam():
+		/*
+			err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, w, gsum, xsum, dw, params.beta1, params.beta2, params.eps, float32(d.counter))
+			if err != nil {
+				return err
+			}
+			d.counter++
+		*/
 		return nil
 
 	case TrainingModeFlag{}.AdaDelta():
-		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, w.Ptr(), gsum.Ptr(), dw.Ptr(), params.rate, params.eps)
+		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, w, gsum, dw, params.rate, params.eps)
 		if err != nil {
 			return err
 		}
 	case TrainingModeFlag{}.AdaGrad():
-		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, nil, w.Ptr(), gsum.Ptr(), dw.Ptr(), params.rate, params.eps)
+		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, w, gsum, dw, params.rate, params.eps)
 		if err != nil {
 			return err
 		}

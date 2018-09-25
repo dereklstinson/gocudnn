@@ -24,7 +24,7 @@ func (handle *Handle) GetCudnnHandle() (*Handle, error) {
 func (handle *Handle) GetCudaContext() (*Context, error) {
 	return nil, errors.New("Not a CudaContext")
 }
-func (handle *Handle) GetTContext() (*TContext, error) {
+func (handle *Handle) GetTrainHandle() (*TrainHandle, error) {
 	return nil, errors.New("Not a TContext")
 }
 

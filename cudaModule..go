@@ -83,9 +83,28 @@ func (cu Cuda) MakeKernel(kname string, m *Module) (*Kernel, error) {
 //stream is the cuda stream this module will use.
 //args are the arguments that are used for the kernel. kernels are written in a .cu file.  You will need to make a .ptx file in order to use it.
 //you can check out the kernels package to get an idea of how to make the stuff.
+
+const ptrsize = 8
+
+func offset(ptr unsafe.Pointer, i int) unsafe.Pointer {
+	//Straight up took this from gorgonia/cu
+	return unsafe.Pointer(uintptr(ptr) + ptrsize*uintptr(i))
+}
+
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
 
 	unsafearray, err := ifacetounsafe(args)
+
+	//Start straight up took this from gorgonia/cu
+	argv := C.malloc(C.size_t(len(unsafearray) * ptrsize))
+	argp := C.malloc(C.size_t(len(unsafearray) * ptrsize))
+	defer C.free(argv)
+	defer C.free(argp)
+	for i := range unsafearray {
+		*((*unsafe.Pointer)(offset(argp, i))) = offset(argv, i)      // argp[i] = &argv[i]
+		*((*uint64)(offset(argv, i))) = *((*uint64)(unsafearray[i])) // argv[i] = *kernelParams[i]
+	}
+	//End
 	if err != nil {
 		return err
 	}
@@ -96,6 +115,7 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 	} else {
 		shold = stream.stream
 	}
+
 	return newErrorDriver("cuLaunchKernel",
 		C.cuLaunchKernel(k.f,
 			C.uint(gx),
@@ -106,8 +126,8 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 			C.uint(bz),
 			C.uint(shared),
 			shold,
-			&unsafearray[0],
-			nil,
+			(*unsafe.Pointer)(argp),
+			C.voiddptrnull,
 		))
 }
 
@@ -190,16 +210,21 @@ func (k *Kernel) LaunchV2(p KernelArguments) error {
 			nil,
 		))
 }
-func ifacetounsafe(args ...interface{}) ([]unsafe.Pointer, error) {
+func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 	array := make([]unsafe.Pointer, len(args))
+	//	fmt.Println("arguments passed", args)
+	//	fmt.Println("Length of Args", len(args))
 	for i := 0; i < len(args); i++ {
-		switch x := args[i].(type) {
-		case Malloced:
+		y := args[i]
+		switch x := y.(type) {
+		case *Malloced:
+
 			if x.ptr == nil {
 				return nil, errors.New("Memory Doesn't Have A Pointer")
 			}
-			array[i] = x.ptr
+			array[i] = x.Ptr()
 		default:
+			// /	fmt.Println("Got to:", i, "value is", x)
 			scalar := CScalarConversion(x)
 			if scalar == nil {
 				return nil, errors.New("Not a supported value")

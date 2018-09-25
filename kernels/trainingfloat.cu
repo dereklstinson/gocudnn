@@ -2,13 +2,8 @@ extern "C" __global__
 void adagradfloat(float *weights, //weights input and output
                   float *gsum, //storage
                   float *dw, //input and will have to set to zero
-              //    float *loss1, //output
-              //    float *loss2, //output
                   float rate, //input
-            //      float decay1,//input
-             //     float decay2,//input
-             //     int batch, 
-                  float eps){
+                  float eps){ //input
                 
  
     int section = blockIdx.x;
@@ -52,12 +47,7 @@ void adadeltafloat(
                     float *gsum, //storage
                     float *xsum, //storage
                     float *dw, //input and will have to set to zero
-               //     float *loss1, //output
-                 //   float *loss2, //output
                     const float rate, //input
-                  // const float decay1,//input
-                   // const float decay2,//input from cpu
-                    // const int batch, //input from cpu 
                     const float eps){
 
 
@@ -65,12 +55,7 @@ void adadeltafloat(
             int section = blockIdx.x;
             int index = threadIdx.x;
             int cell = section*blockDim.x +index;
-/*
-            if weights[cell]<0.0{
-            decay1=-decay1;
-            }*/
-//decay2=weights[cell]*decay2;
-//dw[cell]=(dw[cell]/(float)batch)+decay+decay2;
+
 gsum[cell]= gsum[cell]+(dw[cell]*dw[cell]);
 weights[cell]= -(rate*dw[cell])/(sqrtf(gsum[cell])+eps);
 dw[cell]=0.0;
@@ -94,7 +79,9 @@ void l1regularizationfloat(
     if (dw[cell]<0){
         decay=-decay;
     }
+ //   __syncthreads();
     atomicAdd(l1,w[cell]*decay);
+  //  __syncthreads();
     dw[cell]= (dw[cell]/batch) +decay;
     
 }  
@@ -113,8 +100,11 @@ void l2regularizationfloat(
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x+index;
+//    __syncthreads();
     atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
+ //   __syncthreads();
     dw[cell]= (dw[cell]/batch) + w[cell]*decay2;
+
     
 }  
 
@@ -135,10 +125,12 @@ void l1l2regularizationfloat(
     if (dw[cell]<0){
         decay=-decay;
     }
-
+ //   __syncthreads();
     atomicAdd(l1,w[cell]*decay);
+  //  __syncthreads();
+
     atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
+   // __syncthreads();
     dw[cell]= (dw[cell]/batch) + (w[cell]*decay2) +decay1;
     
 }  
-
