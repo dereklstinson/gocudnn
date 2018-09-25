@@ -153,6 +153,7 @@ type GoPointer struct {
 	slice     interface{}
 	size      SizeT
 	typevalue string
+	array     bool
 }
 
 func checkinterface(input interface{}) (string, error) {
@@ -361,6 +362,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "int"
 		ptr.size, err = FindSizeT(val)
+		ptr.array = true
 		if err != nil {
 			return nil, err
 		}
@@ -369,6 +371,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "int8"
 		ptr.size, err = FindSizeT(val)
+		ptr.array = true
 		if err != nil {
 			return nil, err
 		}
@@ -379,6 +382,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "byte"
 		ptr.size, err = FindSizeT(val)
+		ptr.array = true
 		if err != nil {
 			return nil, err
 		}
@@ -387,6 +391,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "float64"
 		ptr.size, err = FindSizeT(val)
+		ptr.array = true
 		if err != nil {
 			return nil, err
 		}
@@ -395,6 +400,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "float32"
 		ptr.size, err = FindSizeT(val)
+		ptr.array = true
 		if err != nil {
 			return nil, err
 		}
@@ -403,12 +409,74 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "int32"
 		ptr.size, err = FindSizeT(val)
+		ptr.array = true
 		if err != nil {
 			return nil, err
 		}
 		return &ptr, nil
 	case []uint32:
 		ptr.ptr = unsafe.Pointer(&val[0])
+		ptr.typevalue = "uint32"
+		ptr.size, err = FindSizeT(val)
+		ptr.array = true
+		if err != nil {
+			return nil, err
+		}
+		return &ptr, nil
+
+	case int:
+
+		ptr.ptr = unsafe.Pointer(&val)
+		ptr.typevalue = "int"
+		ptr.size, err = FindSizeT(val)
+		if err != nil {
+			return nil, err
+		}
+		return &ptr, nil
+	case int8:
+		ptr.ptr = unsafe.Pointer(&val)
+		ptr.typevalue = "int8"
+		ptr.size, err = FindSizeT(val)
+		if err != nil {
+			return nil, err
+		}
+		return &ptr, nil
+
+	case byte:
+
+		ptr.ptr = unsafe.Pointer(&val)
+		ptr.typevalue = "byte"
+		ptr.size, err = FindSizeT(val)
+		if err != nil {
+			return nil, err
+		}
+		return &ptr, nil
+	case float64:
+		ptr.ptr = unsafe.Pointer(&val)
+		ptr.typevalue = "float64"
+		ptr.size, err = FindSizeT(val)
+		if err != nil {
+			return nil, err
+		}
+		return &ptr, nil
+	case float32:
+		ptr.ptr = unsafe.Pointer(&val)
+		ptr.typevalue = "float32"
+		ptr.size, err = FindSizeT(val)
+		if err != nil {
+			return nil, err
+		}
+		return &ptr, nil
+	case int32:
+		ptr.ptr = unsafe.Pointer(&val)
+		ptr.typevalue = "int32"
+		ptr.size, err = FindSizeT(val)
+		if err != nil {
+			return nil, err
+		}
+		return &ptr, nil
+	case uint32:
+		ptr.ptr = unsafe.Pointer(&val)
 		ptr.typevalue = "uint32"
 		ptr.size, err = FindSizeT(val)
 		if err != nil {
@@ -504,6 +572,20 @@ func FindSizeT(input interface{}) (SizeT, error) {
 		return SizeT(len(val) * 4), nil
 	case []uint32:
 		return SizeT(len(val) * 4), nil
+	case int:
+		return SizeT(4), nil
+	case byte:
+		return SizeT(1), nil
+	case int8:
+		return SizeT(1), nil
+	case float64:
+		return SizeT(8), nil
+	case float32:
+		return SizeT(4), nil
+	case int32:
+		return SizeT(4), nil
+	case uint32:
+		return SizeT(4), nil
 	default:
 		return SizeT(0), errors.New("FindSizeT: Unsupported Type")
 	}

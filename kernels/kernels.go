@@ -115,6 +115,7 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 	err := os.MkdirAll(directory, 0644)
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println(directory)
 		panic(err)
 	}
 	err = ioutil.WriteFile(directory+"Makefile", data, 0644)

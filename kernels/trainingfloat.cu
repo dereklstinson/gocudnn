@@ -28,9 +28,8 @@ void adamfloat(
           float beta1,
           float beta2,
           float eps,
-          float counter,
-          ){
-    
+          float counter){
+
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x +index;
@@ -38,11 +37,12 @@ void adamfloat(
 
     gsum[cell]=beta1*gsum[cell] +(1.0-beta1)*dw[cell];
     float gsumt = 0;
-    gsumt = gsum[cell]/(1.0- _powf(beta1,counter));
+    gsumt = gsum[cell]/(1.0- powf(beta1,counter));
     xsum[cell]= (beta2*xsum[cell])+((1.0 -beta2)*dw[cell]*dw[cell]);
     float xsumt =0;
-    xsumt = xsum[cell]/(1.0 - _powf(beta2,counter));
-    w[cell]+= -(eps*gsumt)/(sqrtf(xsumt)+eps)j;      
+    xsumt = xsum[cell]/(1.0 - powf(beta2,counter));
+    //float hw = w[cell];
+    w[cell] +=  -(eps*gsumt)/(sqrtf(xsumt)+eps);      
 }
 
 
@@ -79,14 +79,14 @@ dw[cell]=0.0;
 extern "C" __global__
 void l1regularizationfloat(
     float *dw, //input and output
-    float *w  //input
+    float *w,  //input
  //   int values, //number of values
     float *l1, //output
     float *l2, //output
     float batch, // should be an int but just send it as a float
     float decay1,
-    const float decay2,
-){
+    const float decay2){
+
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x+index;
@@ -94,7 +94,7 @@ void l1regularizationfloat(
     if (dw[cell]<0){
         decay=-decay;
     }
-    atomicAdd(&l1,w[cell]*decay);
+    atomicAdd(l1,w[cell]*decay);
     dw[cell]= (dw[cell]/batch) +decay;
     
 }  
@@ -102,19 +102,18 @@ void l1regularizationfloat(
 extern "C" __global__
 void l2regularizationfloat(
     float *dw, //input and output
-    float *w  //input
+    float *w,  //input
     //int values, //number of values
     float *l1, //output
     float *l2, //output
     const float batch, // should be an int but just send it as a float
     const float decay1,
-    const float decay2,
+    const float decay2){
 
-){
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x+index;
-    atomicAdd(&l2,(w[cell]*w[cell]*decay2)/2.0);
+    atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
     dw[cell]= (dw[cell]/batch) + w[cell]*decay2;
     
 }  
@@ -122,14 +121,13 @@ void l2regularizationfloat(
 extern "C" __global__
 void l1l2regularizationfloat(
     float *dw, //input and output
-    float *w  //input needs to ba an array
+    float *w,  //input needs to ba an array
    // int values, //number of values
     float *l1, //output set to zero
     float *l2, //output set to zero
    const float batch, // should be an int but just send it as a float
    const float decay1, //input
-   const float decay2, //input
-){
+   const float decay2 ){ //input
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x+index;
@@ -138,8 +136,8 @@ void l1l2regularizationfloat(
         decay=-decay;
     }
 
-    atomicAdd(&l1,w[cell]*decay);
-    atomicAdd(&l2,(w[cell]*w[cell]*decay2)/2.0);
+    atomicAdd(l1,w[cell]*decay);
+    atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
     dw[cell]= (dw[cell]/batch) + (w[cell]*decay2) +decay1;
     
 }  
