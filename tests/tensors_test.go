@@ -43,3 +43,81 @@ func TestTensors(t *testing.T) {
 		}
 	*/
 }
+
+func maketestfilterW() (*gocudnn.FilterD, gocudnn.Memer, error) {
+	dtf := gocudnn.DataTypeFlag{}.Float()
+	tff := gocudnn.TensorFormatFlag{}.NCHW()
+
+	shape := gocudnn.Tensor{}.Shape //shape function
+	FilterD, err := gocudnn.Filter{}.NewFilter4dDescriptor(dtf, tff, shape(20, 20, 20, 20))
+	size, err := FilterD.TensorD().GetSizeInBytes()
+	if err != nil {
+		return nil, nil, err
+	}
+	cudamem, err := gocudnn.MallocManaged(size, gocudnn.ManagedMemFlag{}.Global())
+	if err != nil {
+		return nil, nil, err
+	}
+	goslice := floatslicew()
+	gomem, err := gocudnn.MakeGoPointer(goslice)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = gocudnn.CudaMemCopy(cudamem, gomem, size, gocudnn.MemcpyKindFlag{}.Default())
+	if err != nil {
+		return nil, nil, err
+	}
+	return FilterD, cudamem, nil
+
+}
+
+func maketestfilterDW() (*gocudnn.FilterD, gocudnn.Memer, error) {
+	dtf := gocudnn.DataTypeFlag{}.Float()
+	tff := gocudnn.TensorFormatFlag{}.NCHW()
+
+	shape := gocudnn.Tensor{}.Shape //shape function
+	FilterD, err := gocudnn.Filter{}.NewFilter4dDescriptor(dtf, tff, shape(20, 20, 20, 20))
+	size, err := FilterD.TensorD().GetSizeInBytes()
+	if err != nil {
+		return nil, nil, err
+	}
+	cudamem, err := gocudnn.MallocManaged(size, gocudnn.ManagedMemFlag{}.Global())
+	if err != nil {
+		return nil, nil, err
+	}
+	goslice := floatslicedw()
+	gomem, err := gocudnn.MakeGoPointer(goslice)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = gocudnn.CudaMemCopy(cudamem, gomem, size, gocudnn.MemcpyKindFlag{}.Default())
+	if err != nil {
+		return nil, nil, err
+	}
+	return FilterD, cudamem, nil
+
+}
+
+func floatslicedw(dims ...int) []float32 {
+	mult := 1
+	for i := 0; i < len(dims); i++ {
+		mult *= dims[i]
+	}
+	array := make([]float32, mult)
+	for i := 0; i < mult; i++ {
+		array[i] = float32(1.0) / float32((i%6)-3) //just some patterns
+	}
+	return array
+}
+
+func floatslicew(dims ...int) []float32 {
+	mult := 1
+	for i := 0; i < len(dims); i++ {
+		mult *= dims[i]
+	}
+	array := make([]float32, mult)
+	for i := 0; i < mult; i++ {
+		array[i] = float32((i % 6) - 3) //just some patterns
+	}
+	return array
+}
