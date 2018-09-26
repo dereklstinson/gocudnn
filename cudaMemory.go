@@ -86,6 +86,7 @@ func (mem *Malloced) FillSlice(input interface{}) error {
 		return err
 	}
 	if mem.onmanaged == true {
+
 		return CudaMemCopy(ptr, mem, bsize, kind.Default())
 	}
 	if mem.onhost == true {
@@ -545,11 +546,15 @@ func (mem ManagedMemFlag) Host() ManagedMem {
 
 //MallocManaged is useful if devices support unified virtual memory.
 func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
-	var mem Malloced
-	mem.onmanaged = true
-	mem.size = size
-	err := C.cudaMallocManaged(&mem.ptr, size.c(), management.c())
-	return &mem, newErrorRuntime("MallocManaged", err)
+	var mem unsafe.Pointer
+	//	mem.onmanaged = true
+	//	mem.size = size
+	err := C.cudaMallocManaged(&mem, size.c(), management.c())
+	return &Malloced{
+		onmanaged: true,
+		size:      size,
+		ptr:       mem,
+	}, newErrorRuntime("MallocManaged", err)
 }
 func prependerror(info string, err error) error {
 	return errors.New(info + ": " + err.Error())

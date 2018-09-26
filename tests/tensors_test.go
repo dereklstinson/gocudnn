@@ -44,7 +44,7 @@ func TestTensors(t *testing.T) {
 	*/
 }
 
-func maketestfilterW() (*gocudnn.FilterD, gocudnn.Memer, error) {
+func maketestfilterW() (*gocudnn.FilterD, *gocudnn.Malloced, error) {
 	dtf := gocudnn.DataTypeFlag{}.Float()
 	tff := gocudnn.TensorFormatFlag{}.NCHW()
 
@@ -71,7 +71,7 @@ func maketestfilterW() (*gocudnn.FilterD, gocudnn.Memer, error) {
 
 }
 
-func maketestfilterDW() (*gocudnn.FilterD, gocudnn.Memer, error) {
+func maketestfilterDW() (*gocudnn.FilterD, *gocudnn.Malloced, error) {
 	dtf := gocudnn.DataTypeFlag{}.Float()
 	tff := gocudnn.TensorFormatFlag{}.NCHW()
 
@@ -97,7 +97,45 @@ func maketestfilterDW() (*gocudnn.FilterD, gocudnn.Memer, error) {
 	return FilterD, cudamem, nil
 
 }
+func maketestxgsum() (*gocudnn.FilterD, *gocudnn.Malloced, error) {
 
+	dtf := gocudnn.DataTypeFlag{}.Float()
+	tff := gocudnn.TensorFormatFlag{}.NCHW()
+
+	shape := gocudnn.Tensor{}.Shape //shape function
+	FilterD, err := gocudnn.Filter{}.NewFilter4dDescriptor(dtf, tff, shape(20, 20, 20, 20))
+	size, err := FilterD.TensorD().GetSizeInBytes()
+	if err != nil {
+		return nil, nil, err
+	}
+	cudamem, err := gocudnn.MallocManaged(size, gocudnn.ManagedMemFlag{}.Global())
+	if err != nil {
+		return nil, nil, err
+	}
+	goslice := floatslicezero()
+	gomem, err := gocudnn.MakeGoPointer(goslice)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = gocudnn.CudaMemCopy(cudamem, gomem, size, gocudnn.MemcpyKindFlag{}.Default())
+	if err != nil {
+		return nil, nil, err
+	}
+	return FilterD, cudamem, nil
+
+}
+func floatslicezero(dims ...int) []float32 {
+	mult := 1
+	for i := 0; i < len(dims); i++ {
+		mult *= dims[i]
+	}
+	array := make([]float32, mult)
+	for i := 0; i < mult; i++ {
+		array[i] = 0.0
+	}
+	return array
+
+}
 func floatslicedw(dims ...int) []float32 {
 	mult := 1
 	for i := 0; i < len(dims); i++ {

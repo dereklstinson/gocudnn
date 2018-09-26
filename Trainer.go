@@ -98,7 +98,7 @@ func (a *TrainingParams) SetBatch(batch interface{}) {
 	a.batch = batch
 }
 
-func CreateParamsFloat32(decay1, decay2, batch, eps, rate, beta1, beta2 float32) TrainingParams {
+func (xtra Xtra) CreateParamsFloat32(decay1, decay2, batch, eps, rate, beta1, beta2 float32) TrainingParams {
 	//c := CScalarConversion
 	return TrainingParams{
 		decay1: decay1,
@@ -260,12 +260,17 @@ func (xtra Xtra) NewTrainingDescriptor(h *TrainHandle, mode TrainingMode, data D
 func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularization) {
 	return d.mode, d.data, d.reg
 }
+func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw Memer, beta1, beta2, eps, counter interface{}) error {
+	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, beta1, beta2, eps, counter)
+}
 
-//TrainValues. Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
+//TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
 func (d *TrainerD) TrainValues(h *TrainHandle, blocksize uint32, dw, w, l1, l2, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
 	var size uint32
 	var err error
-	w.ByteSize()
+	if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
+		return errors.New("Sizes don't match")
+	}
 	var dflg DataTypeFlag
 	switch d.data {
 	case dflg.Float():
@@ -274,69 +279,30 @@ func (d *TrainerD) TrainValues(h *TrainHandle, blocksize uint32, dw, w, l1, l2, 
 		return errors.New("Unsupported Type")
 	}
 	gridsize := kernels.SimpleGridCalculator(blocksize, size)
-
-	//var rflgs RegularizationFlag
 	/*
+		err = d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
 		if err != nil {
 			return err
-		}
-		dwc, err := MallocManaged(dw.ByteSize(), ManagedMemFlag{}.Global())
-		if err != nil {
-			panic(err)
-		}
-		wc, err := MallocManaged(dw.ByteSize(), ManagedMemFlag{}.Global())
-		if err != nil {
-			panic(err)
-		}
-		err = CudaMemCopy(dwc, dw, dw.ByteSize(), MemcpyKindFlag{}.Default())
-		if err != nil {
-			panic(err)
-		}
-		err = CudaMemCopy(wc, w, w.ByteSize(), MemcpyKindFlag{}.Default())
-		if err != nil {
-			panic(err)
-		}
-	*/
-	err = d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
-	if err != nil {
-		return err
-	}
-	/*
-		err = CudaMemCopy(dw, dwc, dw.ByteSize(), MemcpyKindFlag{}.Default())
-		if err != nil {
-			panic(err)
-		}
-		err = CudaMemCopy(dw, dwc, w.ByteSize(), MemcpyKindFlag{}.Default())
-		if err != nil {
-			panic(err)
-		}
-		err = dwc.Free()
-		if err != nil {
-			panic(err)
-		}
-		err = wc.Free()
-		if err != nil {
-			panic(err)
 		}
 	*/
 	switch d.mode {
 	case TrainingModeFlag{}.Adam():
-		/*
-			err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, w, gsum, xsum, dw, params.beta1, params.beta2, params.eps, float32(d.counter))
-			if err != nil {
-				return err
-			}
-			d.counter++
-		*/
+
+		err = d.adam(gridsize, uint32(1), uint32(1), blocksize, uint32(1), uint32(1), 0, h.s, int32(size), w, gsum, xsum, dw, params.beta1, params.beta2, params.eps, float32(d.counter))
+		if err != nil {
+			return err
+		}
+		d.counter++
+
 		return nil
 
 	case TrainingModeFlag{}.AdaDelta():
-		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, w, gsum, dw, params.rate, params.eps)
+		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, w, gsum, dw, params.rate, params.eps)
 		if err != nil {
 			return err
 		}
 	case TrainingModeFlag{}.AdaGrad():
-		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, w, gsum, dw, params.rate, params.eps)
+		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, w, gsum, dw, params.rate, params.eps)
 		if err != nil {
 			return err
 		}

@@ -9,6 +9,8 @@ const void ** voiddptrnull = NULL;
 import "C"
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"unsafe"
 )
 
@@ -84,28 +86,34 @@ func (cu Cuda) MakeKernel(kname string, m *Module) (*Kernel, error) {
 //args are the arguments that are used for the kernel. kernels are written in a .cu file.  You will need to make a .ptx file in order to use it.
 //you can check out the kernels package to get an idea of how to make the stuff.
 
-const ptrsize = 8
+const pointerSize = 8
 
 func offset(ptr unsafe.Pointer, i int) unsafe.Pointer {
-	//Straight up took this from gorgonia/cu
-	return unsafe.Pointer(uintptr(ptr) + ptrsize*uintptr(i))
+	return unsafe.Pointer(uintptr(ptr) + pointerSize*uintptr(i))
 }
-
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
 
-	unsafearray, err := ifacetounsafe(args)
-
+	kernelParams, err := ifacetounsafe(args)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Length of params:", len(kernelParams))
 	//Start straight up took this from gorgonia/cu
-	argv := C.malloc(C.size_t(len(unsafearray) * ptrsize))
-	argp := C.malloc(C.size_t(len(unsafearray) * ptrsize))
+	argv := C.malloc(C.size_t(len(kernelParams) * pointerSize))
+	argp := C.malloc(C.size_t(len(kernelParams) * pointerSize))
 	defer C.free(argv)
 	defer C.free(argp)
-	for i := range unsafearray {
-		*((*unsafe.Pointer)(offset(argp, i))) = offset(argv, i)      // argp[i] = &argv[i]
-		*((*uint64)(offset(argv, i))) = *((*uint64)(unsafearray[i])) // argv[i] = *kernelParams[i]
+	for i := 0; i < len(kernelParams); i++ {
+		fmt.Println(i)
+		*((*unsafe.Pointer)(offset(argp, i))) = offset(argv, i) // argp[i] = &argv[i]
+		fmt.Println("kernel address "+strconv.Itoa(i), ":", kernelParams[i])
+		holder := *((*uint64)(kernelParams[i]))
+		*((*uint64)(offset(argv, i))) = holder // argv[i] = *kernelParams[i]
 	}
+
 	//End
 	if err != nil {
+
 		return err
 	}
 	var shold C.cudaStream_t
@@ -218,11 +226,10 @@ func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 		y := args[i]
 		switch x := y.(type) {
 		case *Malloced:
-
 			if x.ptr == nil {
 				return nil, errors.New("Memory Doesn't Have A Pointer")
 			}
-			array[i] = x.Ptr()
+			array[i] = x.ptr
 		default:
 			// /	fmt.Println("Got to:", i, "value is", x)
 			scalar := CScalarConversion(x)

@@ -6,7 +6,7 @@ package gocudnn
 import "C"
 import "errors"
 
-//Context holds a CUcontext.  This is soon going to be added!
+//Context holds a CUcontext.
 type Context struct {
 	ctx C.CUcontext
 }
@@ -47,9 +47,21 @@ CU_CTX_FLAGS_MASK = 0x1f -> uint32(31)
 
 */
 
-//CtxCreate creates a context with the flags on the device passed
-func (cu Cuda) CtxCreate(flags uint32, device *Device) (*Context, error) {
+//CtxCreate creates a context with the flags on the device passed if -1 is passed in flags then it sets the default CU_CTX_SCHED_BLOCKING_SYNC = 0x04
+func (cu Cuda) CtxCreate(flags int32, device *Device) (*Context, error) {
+
 	var ctx C.CUcontext
+	if flags == -1 {
+		x := C.cuCtxCreate(&ctx, C.uint(4), device.id)
+
+		err := newErrorDriver("cuCtxCreate", x)
+		if err != nil {
+			return nil, err
+		}
+		return &Context{
+			ctx: ctx,
+		}, nil
+	}
 	x := C.cuCtxCreate(&ctx, C.uint(flags), device.id)
 
 	err := newErrorDriver("cuCtxCreate", x)
@@ -99,7 +111,7 @@ func (cu Cuda) CtxPopCurrent() (*Context, error) {
 
 //CtxSynchronize synchronizes the current context
 func (cu Cuda) CtxSynchronize() error {
-	return newErrorDriver("cuCtxDestroy", C.cuCtxSynchronize())
+	return newErrorDriver("cuCtxSynchronize", C.cuCtxSynchronize())
 }
 
 //Set sets/binds the context to the calling cpu thread. I think this pretty much performs a pop and push. w/o a returned popped context.

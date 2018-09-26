@@ -1,48 +1,63 @@
 extern "C" __global__
-void adagradfloat(float *weights, //weights input and output
-                  float *gsum, //storage
+void adagradfloat(const int length,
+                  float *weights, //weights input and output
                   float *dw, //input and will have to set to zero
-                  float rate, //input
-                  float eps){ //input
+                  float *gsum, //storage
+                  const float rate, //input
+                  const float eps){ //input
                 
  
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x +index;
-    gsum[cell]= gsum[cell]+(dw[cell]*dw[cell]);
-    weights[cell]= -(rate*dw[cell])/(sqrtf(gsum[cell])+eps);
+    if (cell<length){
+        int holder = gsum[cell];
+        gsum[cell]= holder +(dw[cell]*dw[cell]);
+        weights[cell]= -(rate*dw[cell])/(sqrtf(gsum[cell])+eps);
+        dw[cell]=0.0;
+    }  
+
 }
 
 
 extern "C" __global__
-void adamfloat(
-          float *w,
-          float *gsum,
-          float *xsum,
-          float *dw,
-          float beta1,
-          float beta2,
-          float eps,
-          float counter){
+void adamfloat(const int length,
+               float *w,
+               float *gsum,
+               float *xsum,
+               float *dw,
+               const float beta1,
+               const float beta2,
+               const float eps,
+               const float counter){
 
-    int section = blockIdx.x;
-    int index = threadIdx.x;
-    int cell = section*blockDim.x +index;
+    
+    int cell = (blockIdx.y*gridDim.x*blockDim.x) +
+    (blockIdx.x*blockDim.x) + 
+    threadIdx.x;
 
-
-    gsum[cell]=beta1*gsum[cell] +(1.0-beta1)*dw[cell];
+if (cell<length){
+    float ghold=gsum[cell];
+    gsum[cell]=beta1*ghold +(1.0-beta1)*dw[cell];
     float gsumt = 0;
     gsumt = gsum[cell]/(1.0- powf(beta1,counter));
-    xsum[cell]= (beta2*xsum[cell])+((1.0 -beta2)*dw[cell]*dw[cell]);
+    float xhold=xsum[cell];
+    xsum[cell]= (beta2*xhold)+((1.0 -beta2)*dw[cell]*dw[cell]);
     float xsumt =0;
     xsumt = xsum[cell]/(1.0 - powf(beta2,counter));
     //float hw = w[cell];
-    w[cell] +=  -(eps*gsumt)/(sqrtf(xsumt)+eps);      
+    float wcellhold = w[cell];
+    w[cell] = wcellhold -(eps*gsumt)/(sqrtf(xsumt)+eps);  
+    __syncthreads();
+    dw[cell]=0.0;
+
+}
+    
 }
 
 
 extern "C" __global__
-void adadeltafloat(
+void adadeltafloat( const int length,
                     float *weights, //weights input and output
                     float *gsum, //storage
                     float *xsum, //storage
@@ -55,82 +70,118 @@ void adadeltafloat(
             int section = blockIdx.x;
             int index = threadIdx.x;
             int cell = section*blockDim.x +index;
+if(cell<length){
+    gsum[cell]= gsum[cell]+(dw[cell]*dw[cell]);
+    weights[cell]= -(rate*dw[cell])/(sqrtf(gsum[cell])+eps);
+    dw[cell]=0.0;
 
-gsum[cell]= gsum[cell]+(dw[cell]*dw[cell]);
-weights[cell]= -(rate*dw[cell])/(sqrtf(gsum[cell])+eps);
-dw[cell]=0.0;
+
+}
+
 }
 
 extern "C" __global__
-void l1regularizationfloat(
-    float *dw, //input and output
-    float *w,  //input
- //   int values, //number of values
-    float *l1, //output
-    float *l2, //output
-    float batch, // should be an int but just send it as a float
-    float decay1,
-    const float decay2){
+void l1regularizationfloat(const int length,
+                           float *dw, //input and output
+                           float *w,  //input
+                           float *l1, //output
+                           float *l2, //output
+                           const float batch, // should be an int but just send it as a float
+                           const float decay1,
+                           const float decay2){
 
-    int section = blockIdx.x;
-    int index = threadIdx.x;
-    int cell = section*blockDim.x+index;
-    float decay = decay1;
-    if (dw[cell]<0){
-        decay=-decay;
-    }
- //   __syncthreads();
-    atomicAdd(l1,w[cell]*decay);
-  //  __syncthreads();
-    dw[cell]= (dw[cell]/batch) +decay;
+        int section = blockIdx.x;
+        int index = threadIdx.x;
+        int cell = section*blockDim.x+index;
+        float decay = decay1;
+        if (cell<length){
+            if (dw[cell]<0){
+                decay=-decay;
+            }
+            atomicAdd(l1,w[cell]*decay);
+            dw[cell]= (dw[cell]/batch) +decay;
+
+
+       }
+
     
 }  
 
 extern "C" __global__
 void l2regularizationfloat(
+    const int length,
     float *dw, //input and output
     float *w,  //input
-    //int values, //number of values
     float *l1, //output
     float *l2, //output
     const float batch, // should be an int but just send it as a float
     const float decay1,
     const float decay2){
-
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x+index;
-//    __syncthreads();
+    if (cell<length){
     atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
- //   __syncthreads();
     dw[cell]= (dw[cell]/batch) + w[cell]*decay2;
-
-    
+    }
+ 
 }  
 
 extern "C" __global__
 void l1l2regularizationfloat(
+    const int length,
     float *dw, //input and output
     float *w,  //input needs to ba an array
    // int values, //number of values
     float *l1, //output set to zero
     float *l2, //output set to zero
-   const float batch, // should be an int but just send it as a float
-   const float decay1, //input
-   const float decay2 ){ //input
+    const float batch, // should be an int but just send it as a float
+    const float decay1, //input
+    const float decay2){ //input
     int section = blockIdx.x;
     int index = threadIdx.x;
     int cell = section*blockDim.x+index;
     float decay = decay1;
-    if (dw[cell]<0){
-        decay=-decay;
-    }
- //   __syncthreads();
-    atomicAdd(l1,w[cell]*decay);
-  //  __syncthreads();
-
-    atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
-   // __syncthreads();
-    dw[cell]= (dw[cell]/batch) + (w[cell]*decay2) +decay1;
     
+    if (cell<length){
+        
+        if (dw[cell]<0){
+            decay=-decay;
+        }
+
+        atomicAdd(l1,w[cell]*decay); 
+        atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
+        dw[cell]= (dw[cell]/batch) + (w[cell]*decay2) +decay1;
+     }
+
 }  
+
+
+extern "C"  __global__ 
+void simpleadds(
+    const int length,
+    float *dw, //input and output
+    float *w,  //input
+    float *gsum, // should be an int but just send it as a float
+    float *xsum){
+
+    int section = blockIdx.x;
+    int index = threadIdx.x;
+    int cell = section*blockDim.x+index;
+if (cell<length){
+    gsum[cell]=dw[cell]+w[cell];
+    xsum[cell]=dw[cell]+w[cell];
+}
+}
+
+extern "C" __global__
+void copyto(const int length,float *dest,float *src){
+
+int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+if (i<length){
+    dest[i]=src[i];
+}
+
+}
+    
+  
