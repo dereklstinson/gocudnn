@@ -485,6 +485,26 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 			return nil, err
 		}
 		return &ptr, nil
+	case CInt:
+		ptr.ptr = val.CPtr()
+		ptr.typevalue = "CInt"
+		ptr.size = SizeT(val.Bytes())
+		return &ptr, nil
+	case CDouble:
+		ptr.ptr = val.CPtr()
+		ptr.typevalue = "CDouble"
+		ptr.size = SizeT(val.Bytes())
+		return &ptr, nil
+	case CFloat:
+		ptr.ptr = val.CPtr()
+		ptr.typevalue = "CFloat"
+		ptr.size = SizeT(val.Bytes())
+		return &ptr, nil
+	case CUInt:
+		ptr.ptr = val.CPtr()
+		ptr.typevalue = "CUInt"
+		ptr.size = SizeT(val.Bytes())
+		return &ptr, nil
 	default:
 		thetype := fmt.Errorf("Type %T", val)
 		return nil, errors.New("MakeGoPointer: Unsupported Type -- Type: " + thetype.Error())
