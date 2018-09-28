@@ -3,6 +3,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"strconv"
 
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
@@ -48,31 +49,47 @@ type TrainerD struct {
 	mode TrainingMode
 	reg  Regularization
 	//	params  TrainingParams
-	counter int32
+	counter uint32
 	kmode   *Kernel
 	kreg    *Kernel
+}
+
+type RegParams struct {
+	decay1 interface{}
+	decay2 interface{}
+	batch  interface{}
+}
+
+func (xtra Xtra) CreateRegParamsFloat32(decay1, decay2, batch float32) RegParams {
+	return RegParams{
+		decay1: decay1,
+		decay2: decay2,
+		batch:  batch,
+	}
+}
+
+//SetDecay1 sets decay1
+func (a *RegParams) SetDecay1(decay1 interface{}) {
+	a.decay1 = decay1
+}
+
+//SetDecay2 sets decay 2
+func (a *RegParams) SetDecay2(decay2 interface{}) {
+	a.decay2 = decay2
+}
+
+//SetBatch SetsBatch
+func (a *RegParams) SetBatch(batch interface{}) {
+	a.batch = batch
 }
 
 //TrainingParams is a struct can be use for training params.
 //When selecting the training mode the params that are not part of the training mode will be ignored.
 type TrainingParams struct {
-	decay1 interface{}
-	decay2 interface{}
-	batch  interface{}
-	eps    interface{}
-	rate   interface{}
-	beta1  interface{}
-	beta2  interface{}
-}
-
-//SetDecay1 sets decay1
-func (a *TrainingParams) SetDecay1(decay1 interface{}) {
-	a.decay1 = decay1
-}
-
-//SetDecay2 sets decay 2
-func (a *TrainingParams) SetDecay2(decay2 interface{}) {
-	a.decay2 = decay2
+	eps   interface{}
+	rate  interface{}
+	beta1 interface{}
+	beta2 interface{}
 }
 
 //SetBeta1 sets beta1
@@ -94,20 +111,14 @@ func (a *TrainingParams) SetRate(rate interface{}) {
 func (a *TrainingParams) SetEps(eps interface{}) {
 	a.eps = eps
 }
-func (a *TrainingParams) SetBatch(batch interface{}) {
-	a.batch = batch
-}
 
-func (xtra Xtra) CreateParamsFloat32(decay1, decay2, batch, eps, rate, beta1, beta2 float32) TrainingParams {
-	//c := CScalarConversion
+func (xtra Xtra) CreateParamsFloat32(eps, rate, beta1, beta2 float32) TrainingParams {
 	return TrainingParams{
-		decay1: decay1,
-		decay2: decay2,
-		batch:  batch,
-		eps:    eps,
-		rate:   rate,
-		beta1:  beta1,
-		beta2:  beta2,
+
+		eps:   eps,
+		rate:  rate,
+		beta1: beta1,
+		beta2: beta2,
 	}
 }
 
@@ -248,11 +259,12 @@ func (xtra Xtra) NewTrainingDescriptor(h *TrainHandle, mode TrainingMode, data D
 		return nil, err
 	}
 	return &TrainerD{ //all true then we will set TrainerD
-		mode:  mode,
-		data:  data,
-		reg:   reg,
-		kmode: kmode,
-		kreg:  kreg,
+		mode:    mode,
+		data:    data,
+		reg:     reg,
+		kmode:   kmode,
+		kreg:    kreg,
+		counter: uint32(1),
 	}, nil
 }
 
@@ -260,16 +272,34 @@ func (xtra Xtra) NewTrainingDescriptor(h *TrainHandle, mode TrainingMode, data D
 func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularization) {
 	return d.mode, d.data, d.reg
 }
-func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw Memer, beta1, beta2, eps, counter interface{}) error {
-	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, beta1, beta2, eps, counter)
+func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw Memer, rate, beta1, beta2, eps, counter interface{}) error {
+	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter)
+}
+func (d *TrainerD) L1L2Regularization(h *TrainHandle, blocksize uint32, dw, w, l1, l2 Memer, params RegParams) error {
+	var size uint32
+	switch d.data {
+	case DataTypeFlag{}.Float():
+		size = uint32(w.ByteSize() / SizeT(4))
+	default:
+		return errors.New("Unsupported Type")
+
+	}
+	gridsize := kernels.SimpleGridCalculator(blocksize, size)
+	return d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(h *TrainHandle, blocksize uint32, dw, w, l1, l2, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
+func (d *TrainerD) TrainValues(h *TrainHandle, blocksize uint32, dw, w, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
 	var size uint32
 	var err error
 	if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
-		return errors.New("Sizes don't match")
+		sp := " "
+		wbs := strconv.Itoa(int(w.ByteSize()))
+		dwbs := strconv.Itoa(int(dw.ByteSize()))
+		gsbs := strconv.Itoa(int(gsum.ByteSize()))
+		xsbs := strconv.Itoa(int(xsum.ByteSize()))
+		return errors.New("Sizes don't match" + sp + wbs + sp + dwbs + sp + gsbs + sp + xsbs)
 	}
 	var dflg DataTypeFlag
 	switch d.data {
@@ -279,20 +309,18 @@ func (d *TrainerD) TrainValues(h *TrainHandle, blocksize uint32, dw, w, l1, l2, 
 		return errors.New("Unsupported Type")
 	}
 	gridsize := kernels.SimpleGridCalculator(blocksize, size)
-	/*
-		err = d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
-		if err != nil {
-			return err
-		}
-	*/
+
 	switch d.mode {
 	case TrainingModeFlag{}.Adam():
 
-		err = d.adam(gridsize, uint32(1), uint32(1), blocksize, uint32(1), uint32(1), 0, h.s, int32(size), w, gsum, xsum, dw, params.beta1, params.beta2, params.eps, float32(d.counter))
+		err = d.adam(gridsize, uint32(1), uint32(1), blocksize, uint32(1), uint32(1), 0, h.s, int32(size), w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, float32(d.counter))
 		if err != nil {
 			return err
 		}
 		d.counter++
+		if d.counter < 1 {
+			d.counter = 1
+		}
 
 		return nil
 

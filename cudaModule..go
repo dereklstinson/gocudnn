@@ -13,7 +13,6 @@ const CUjit_option * nullJitOptions = NULL;
 import "C"
 import (
 	"errors"
-	"fmt"
 	"unsafe"
 )
 
@@ -128,7 +127,7 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 	defer C.free(argv)
 	defer C.free(argp)
 	for i := 0; i < len(kernelParams); i++ {
-		fmt.Println(i)
+		//fmt.Println(i)
 		*((*unsafe.Pointer)(offset(argp, i))) = offset(argv, i) // argp[i] = &argv[i]
 		//fmt.Println("kernel address "+strconv.Itoa(i), ":", kernelParams[i])
 		holder := *((*uint64)(kernelParams[i]))

@@ -26,31 +26,42 @@ void adamfloat(const int length,
                float *gsum,
                float *xsum,
                float *dw,
+               const float rate,
                const float beta1,
                const float beta2,
                const float eps,
                const float counter){
 
     
-    int cell = (blockIdx.y*gridDim.x*blockDim.x) +
+    int i = (blockIdx.y*gridDim.x*blockDim.x) +
     (blockIdx.x*blockDim.x) + 
     threadIdx.x;
 
-if (cell<length){
-    float ghold=gsum[cell];
-    gsum[cell]=beta1*ghold +(1.0-beta1)*dw[cell];
+if (i<length){
+     gsum[i]=(beta1*gsum[i]) +((1.0-beta1)*dw[i]);
     float gsumt = 0;
-    gsumt = gsum[cell]/(1.0- powf(beta1,counter));
-    float xhold=xsum[cell];
-    xsum[cell]= (beta2*xhold)+((1.0 -beta2)*dw[cell]*dw[cell]);
+    gsumt = gsum[i]/(1.0- powf(beta1,counter));
+     xsum[i]= (beta2*xsum[i])+((1.0 -beta2)*(dw[i]*dw[i]));
     float xsumt =0;
-    xsumt = xsum[cell]/(1.0 - powf(beta2,counter));
-    //float hw = w[cell];
-    float wcellhold = w[cell];
-    w[cell] = wcellhold -(eps*gsumt)/(sqrtf(xsumt)+eps);  
+    xsumt = xsum[i]/(1.0 - powf(beta2,counter));
+    w[i] += -(rate*gsumt)/(sqrtf(xsumt)+eps);  
+ //   __syncthreads();
+    dw[i]=0.0;
+    /*
+     float ghold=gsum[i];
+    gsum[i]=beta1*ghold +(1.0-beta1)*dw[i];
+    float gsumt = 0;
+    gsumt = gsum[i]/(1.0- powf(beta1,counter));
+    float xhold=xsum[i];
+    xsum[i]= (beta2*xhold)+((1.0 -beta2)*dw[i]*dw[i]);
+    float xsumt =0;
+    xsumt = xsum[i]/(1.0 - powf(beta2,counter));
+    //float hw = w[i];
+    float wcellhold = w[i];
+    w[i] = wcellhold -(eps*gsumt)/(sqrtf(xsumt)+eps);  
     __syncthreads();
-    dw[cell]=0.0;
-
+    dw[i]=0.0;
+*/
 }
     
 }
