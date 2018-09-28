@@ -34,6 +34,7 @@ type Malloced struct {
 	typevalue string
 	onhost    bool
 	onmanaged bool
+	devptr    C.CUdeviceptr
 }
 
 //Atribs are a memories attributes on the device side
@@ -56,7 +57,7 @@ func cfloattofloat32(input []C.float) []float32 {
 //Atributes returns the atributes
 func (mem *Malloced) Atributes() (Atribs, error) {
 	var x C.cudaPointerAttributes
-	cuerr := C.cudaPointerGetAttributes(&x, mem.ptr)
+	cuerr := C.cudaPointerGetAttributes(&x, mem.Ptr())
 	err := newErrorRuntime("Attributes", cuerr)
 	if err != nil {
 		return Atribs{}, err
@@ -109,7 +110,7 @@ func (mem *Malloced) Ptr() unsafe.Pointer {
 
 //Stored returns the Location Flag of the memory
 func (mem *Malloced) Stored() Location {
-	if mem.ptr == nil {
+	if mem.Ptr() == nil {
 		return 0
 	}
 	if mem.onhost == true {
@@ -127,7 +128,7 @@ func (mem *Malloced) ByteSize() SizeT {
 	if mem == nil {
 		return SizeT(0)
 	}
-	if mem.ptr == nil {
+	if mem.Ptr() == nil {
 		return SizeT(0)
 	}
 	return mem.size
@@ -136,12 +137,12 @@ func (mem *Malloced) ByteSize() SizeT {
 //Free Frees the memory on the device
 func (mem *Malloced) Free() error {
 	if mem.onhost == true {
-		err := C.cudaFreeHost(mem.ptr)
+		err := C.cudaFreeHost(mem.Ptr())
 		mem.size = 0
 		mem.typevalue = ""
 		return newErrorRuntime("Free", err)
 	}
-	err := C.cudaFree(mem.ptr)
+	err := C.cudaFree(mem.Ptr())
 	mem.ptr = nil
 	mem.size = 0
 	mem.typevalue = ""
@@ -507,6 +508,7 @@ func (mem *Malloced) CudaMemCopy(dest Memer, src Memer, count SizeT, kind Memcpy
 //Malloc returns struct Malloced that has a pointer memory that is now allocated to the device
 func Malloc(size SizeT) (*Malloced, error) {
 	var gpu Malloced
+	gpu.ptr = unsafe.Pointer(&gpu.devptr)
 	gpu.size = size
 	err := C.cudaMalloc(&gpu.ptr, gpu.size.c())
 	return &gpu, newErrorRuntime("Malloc", err)
@@ -546,15 +548,11 @@ func (mem ManagedMemFlag) Host() ManagedMem {
 
 //MallocManaged is useful if devices support unified virtual memory.
 func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
-	var mem unsafe.Pointer
-	//	mem.onmanaged = true
-	//	mem.size = size
-	err := C.cudaMallocManaged(&mem, size.c(), management.c())
-	return &Malloced{
-		onmanaged: true,
-		size:      size,
-		ptr:       mem,
-	}, newErrorRuntime("MallocManaged", err)
+	var mem Malloced
+	mem.onmanaged = true
+	mem.size = size
+	err := C.cudaMallocManaged(&mem.ptr, size.c(), management.c())
+	return &mem, newErrorRuntime("MallocManaged", err)
 }
 func prependerror(info string, err error) error {
 	return errors.New(info + ": " + err.Error())

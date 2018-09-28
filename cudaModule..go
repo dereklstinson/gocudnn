@@ -4,13 +4,16 @@ package gocudnn
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 const void ** voiddptrnull = NULL;
+const size_t ptrSize = sizeof(void *);
+const size_t maxArgSize = 8;
+const CUjit_option * nullJitOptions = NULL;
+
 
 */
 import "C"
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"unsafe"
 )
 
@@ -41,6 +44,15 @@ func (cu Cuda) NewModule(filename string) (*Module, error) {
 		loaded: true,
 	}, newErrorDriver("NewModule", x)
 }
+func (cu Cuda) NewModuleEx(Ptx string) (*Module, error) {
+	var mod C.CUmodule
+	cptx := unsafe.Pointer(C.CString(Ptx))
+	x := C.cuModuleLoadDataEx(&mod, cptx, 0, C.nullJitOptions, C.voiddptrnull)
+	return &Module{
+		m:      mod,
+		loaded: true,
+	}, newErrorDriver("NewModule", x)
+}
 
 //UnLoad Loads a Module
 func (m *Module) UnLoad() error {
@@ -60,12 +72,24 @@ func (m *Module) Load(filename string) error {
 	return newErrorDriver("Load", x)
 }
 
+//LoadEx loads the ptx string straightup
+func (m *Module) LoadEx(ptx string) error {
+	if m.loaded == true {
+		return errors.New("(*Module)LoadEx: Goside: Already Loaded")
+	}
+	cptx := unsafe.Pointer(C.CString(ptx))
+
+	x := C.cuModuleLoadDataEx(&m.m, cptx, 0, C.nullJitOptions, C.voiddptrnull)
+	return newErrorDriver("LoadEx", x)
+}
+
 //MakeKernel makes a kernel.  (basically a function in cuda) If module is unloaded, then the kernel returned won't work
 func (cu Cuda) MakeKernel(kname string, m *Module) (*Kernel, error) {
 	var kern C.CUfunction
 	if m.loaded == false {
 		return nil, errors.New("MakeKernel: Module Not Loaded")
 	}
+
 	name := C.CString(kname)
 	err := newErrorDriver("MakeKernel", C.cuModuleGetFunction(&kern, m.m, name))
 	if err != nil {
@@ -97,7 +121,7 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 	if err != nil {
 		return err
 	}
-	fmt.Println("Length of params:", len(kernelParams))
+	//fmt.Println("Length of params:", len(kernelParams))
 	//Start straight up took this from gorgonia/cu
 	argv := C.malloc(C.size_t(len(kernelParams) * pointerSize))
 	argp := C.malloc(C.size_t(len(kernelParams) * pointerSize))
@@ -106,7 +130,7 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 	for i := 0; i < len(kernelParams); i++ {
 		fmt.Println(i)
 		*((*unsafe.Pointer)(offset(argp, i))) = offset(argv, i) // argp[i] = &argv[i]
-		fmt.Println("kernel address "+strconv.Itoa(i), ":", kernelParams[i])
+		//fmt.Println("kernel address "+strconv.Itoa(i), ":", kernelParams[i])
 		holder := *((*uint64)(kernelParams[i]))
 		*((*uint64)(offset(argv, i))) = holder // argv[i] = *kernelParams[i]
 	}
@@ -229,7 +253,7 @@ func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 			if x.ptr == nil {
 				return nil, errors.New("Memory Doesn't Have A Pointer")
 			}
-			array[i] = x.ptr
+			array[i] = unsafe.Pointer(&x.ptr)
 		default:
 			// /	fmt.Println("Got to:", i, "value is", x)
 			scalar := CScalarConversion(x)
@@ -242,3 +266,22 @@ func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 	}
 	return array, nil
 }
+
+/*
+func convertargs (args []interface{})([]unsafe.Pointer,error){
+	array:=make([]unsafe.Pointer,0)
+	for i:=0;i<len(args);i++{
+		argpointer:=unsafe.Pointer(C.malloc(C.maxArgSize))
+		defer C.free(argpointer)
+		switch x:=args[i].(type){
+		case *Malloced:
+			x.ptr==nil{
+				return nil,errors.New("Memory Doesn't Have A Pointer")
+			}
+			c.memcpy(argpointer,unsafePointer(&x.ptr,C.ptrSize)
+			array=append(array,)
+		}
+	}
+}
+
+*/

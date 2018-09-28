@@ -18,7 +18,7 @@ func main() {
 	runtime.LockOSThread()
 	trainingkernellocation := "/home/derek/go/src/github.com/dereklstinson/GoCudnn/kernels/"
 	memsize := 64
-	//cudnn context
+
 	var cuda gocudnn.Cuda
 
 	devices, err := cuda.GetDeviceList()
@@ -35,12 +35,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//	ctx, err := cuda.CtxCreate(4, devices[0])
+	ctx, err := cuda.CtxCreate(4, devices[0])
 
 	if err != nil {
 		panic(err)
 	}
-	//	err = ctx.Set()
+	err = ctx.Set()
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +72,8 @@ func main() {
 	err = gocudnn.CudaMemCopy(dx, gptr1, bytesize, gocudnn.MemcpyKindFlag{}.Default())
 
 	kernelname := kernels.MakeMakeFile(trainingkernellocation, "trainingfloat.cu", devices[0])
-	mod, err := cuda.NewModule(trainingkernellocation + kernelname)
+	ptxstring := kernels.LoadPTXFile(trainingkernellocation, kernelname)
+	mod, err := cuda.NewModuleEx(ptxstring)
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +89,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = cuda.CtxSynchronize()
+	//err = cuda.CtxSynchronize()
 	if err != nil {
 		panic(err)
 	}
