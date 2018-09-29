@@ -2,9 +2,13 @@ package gocudnn
 
 /*
 #include <cudnn.h>
+#include <cuda.h>
 #include <cuda_runtime_api.h>
 */
 import "C"
+import (
+	"runtime"
+)
 
 //Event is a cuda event
 type Event struct {
@@ -19,6 +23,9 @@ func (cu Cuda) CreateEvent() (Event, error) {
 		return e, err
 	}
 	return e, nil
+}
+func (e *Event) keepsalive() {
+	runtime.KeepAlive(e)
 }
 
 //Record records an event
