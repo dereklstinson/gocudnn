@@ -24,6 +24,7 @@ type Memer interface {
 	Free() error
 	Stored() Location
 	FillSlice(interface{}) error
+
 	//Atributes()Atribs
 }
 
@@ -35,6 +36,11 @@ type Malloced struct {
 	onhost    bool
 	onmanaged bool
 	devptr    C.CUdeviceptr
+}
+
+//OffSet will return the offset address from the pointer passed
+func OffSet(point unsafe.Pointer, unitsize int, offset int) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(point) + uintptr(unitsize*offset))
 }
 
 //Atribs are a memories attributes on the device side
@@ -362,6 +368,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 	case []int:
 
 		ptr.ptr = unsafe.Pointer(&val[0])
+
 		ptr.typevalue = "int"
 		ptr.size, err = FindSizeT(val)
 		ptr.array = true
@@ -370,6 +377,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case []int8:
+
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "int8"
 		ptr.size, err = FindSizeT(val)
@@ -390,6 +398,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case []float64:
+
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "float64"
 		ptr.size, err = FindSizeT(val)
@@ -399,6 +408,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case []float32:
+
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "float32"
 		ptr.size, err = FindSizeT(val)
@@ -408,6 +418,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case []int32:
+
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "int32"
 		ptr.size, err = FindSizeT(val)
@@ -417,6 +428,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case []uint32:
+
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "uint32"
 		ptr.size, err = FindSizeT(val)
@@ -436,6 +448,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case int8:
+
 		ptr.ptr = unsafe.Pointer(&val)
 		ptr.typevalue = "int8"
 		ptr.size, err = FindSizeT(val)
@@ -454,6 +467,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case float64:
+
 		ptr.ptr = unsafe.Pointer(&val)
 		ptr.typevalue = "float64"
 		ptr.size, err = FindSizeT(val)
@@ -462,6 +476,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case float32:
+
 		ptr.ptr = unsafe.Pointer(&val)
 		ptr.typevalue = "float32"
 		ptr.size, err = FindSizeT(val)
@@ -470,6 +485,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case int32:
+
 		ptr.ptr = unsafe.Pointer(&val)
 		ptr.typevalue = "int32"
 		ptr.size, err = FindSizeT(val)
@@ -478,6 +494,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case uint32:
+
 		ptr.ptr = unsafe.Pointer(&val)
 		ptr.typevalue = "uint32"
 		ptr.size, err = FindSizeT(val)
@@ -486,21 +503,25 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case CInt:
+
 		ptr.ptr = val.CPtr()
 		ptr.typevalue = "CInt"
 		ptr.size = SizeT(val.Bytes())
 		return &ptr, nil
 	case CDouble:
+
 		ptr.ptr = val.CPtr()
 		ptr.typevalue = "CDouble"
 		ptr.size = SizeT(val.Bytes())
 		return &ptr, nil
 	case CFloat:
+
 		ptr.ptr = val.CPtr()
 		ptr.typevalue = "CFloat"
 		ptr.size = SizeT(val.Bytes())
 		return &ptr, nil
 	case CUInt:
+
 		ptr.ptr = val.CPtr()
 		ptr.typevalue = "CUInt"
 		ptr.size = SizeT(val.Bytes())
@@ -526,18 +547,18 @@ func (mem *Malloced) CudaMemCopy(dest Memer, src Memer, count SizeT, kind Memcpy
 */
 
 //Malloc returns struct Malloced that has a pointer memory that is now allocated to the device
-func Malloc(size SizeT) (*Malloced, error) {
+func Malloc(totalbytes SizeT) (*Malloced, error) {
 	var gpu Malloced
 	gpu.ptr = unsafe.Pointer(&gpu.devptr)
-	gpu.size = size
+	gpu.size = totalbytes
 	err := C.cudaMalloc(&gpu.ptr, gpu.size.c())
 	return &gpu, newErrorRuntime("Malloc", err)
 }
 
 //MallocHost - Allocates page-locked memory on the host. used specifically for fast calls from the host.
-func MallocHost(size SizeT) (*Malloced, error) {
+func MallocHost(totalbytes SizeT) (*Malloced, error) {
 	var mem Malloced
-	mem.size = size
+	mem.size = totalbytes
 	x := C.cudaMallocHost(&mem.ptr, mem.size.c())
 	err := newErrorRuntime("MallocHost", x)
 	if err != nil {
@@ -570,6 +591,7 @@ func (mem ManagedMemFlag) Host() ManagedMem {
 func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
 	var mem Malloced
 	mem.onmanaged = true
+
 	mem.size = size
 	err := C.cudaMallocManaged(&mem.ptr, size.c(), management.c())
 	return &mem, newErrorRuntime("MallocManaged", err)

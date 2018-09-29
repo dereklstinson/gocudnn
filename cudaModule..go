@@ -111,7 +111,7 @@ func (cu Cuda) MakeKernel(kname string, m *Module) (*Kernel, error) {
 
 const pointerSize = 8
 
-func offset(ptr unsafe.Pointer, i int) unsafe.Pointer {
+func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(ptr) + pointerSize*uintptr(i))
 }
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
@@ -128,10 +128,10 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 	defer C.free(argp)
 	for i := 0; i < len(kernelParams); i++ {
 		//fmt.Println(i)
-		*((*unsafe.Pointer)(offset(argp, i))) = offset(argv, i) // argp[i] = &argv[i]
+		*((*unsafe.Pointer)(offSet(argp, i))) = offSet(argv, i) // argp[i] = &argv[i]
 		//fmt.Println("kernel address "+strconv.Itoa(i), ":", kernelParams[i])
 		holder := *((*uint64)(kernelParams[i]))
-		*((*uint64)(offset(argv, i))) = holder // argv[i] = *kernelParams[i]
+		*((*uint64)(offSet(argv, i))) = holder // argv[i] = *kernelParams[i]
 	}
 
 	//End
