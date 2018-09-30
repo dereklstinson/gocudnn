@@ -134,7 +134,7 @@ func (t *TrainHandle) SetStream(s *Stream) {
 }
 func (xtra Xtra) MakeTrainingHandle(trainingfloatdir string, dev *Device) (*TrainHandle, error) {
 	var cu Cuda
-	x := kernels.MakeMakeFile(trainingfloatdir, "trainingfloat", dev)
+	x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
 	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
 	mod, err := cu.NewModule(trainingfloatdir + x)
 	if err != nil {

@@ -184,7 +184,61 @@ if (cell<length){
     xsum[cell]=dw[cell]+w[cell];
 }
 }
+extern "C" __global__
+void forwardParametricish(const int length,float *x,float *y,  float *alpha){
 
+int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+if (i<length){
+    if (x[i]>0.0){
+        y[i]=x[i];
+    }else{
+        y[i]=alpha[i]*x[i];
+    }
+    
+}
+
+}
+extern "C" __global__
+void backwardParametricish(const int length,float *dx,float *dy,  float *alpha, float *dalpha){
+
+int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+if (i<length){
+    if (dy[i]>0.0){
+        dx[i]=1.0;
+    }else{
+        dx[i]=alpha[i];
+        dalpha[i]+=alpha[i]*dy[i];
+    }   
+}
+}
+
+extern "C" __global__
+void forwardleaky(const int length,float *x,float *y, const float alpha){
+
+int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+if (i<length){
+    if (x[i]>0.0){
+        y[i]=x[i];
+    }else{
+        y[i]=alpha*x[i];
+    }
+    
+}
+
+}   
+extern "C" __global__
+void backwardleaky(const int length,float *dx,float *dy, const float alpha){
+int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+if (i<length){
+    if (dy[i]>0.0){
+        dx[i]=1.0;
+    }else{
+        dx[i]=alpha;
+    }
+    
+}
+
+}  
 extern "C" __global__
 void copyto(const int length,float *dest,float *src){
 
