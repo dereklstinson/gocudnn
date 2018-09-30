@@ -67,14 +67,17 @@ func TestTrainer(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	l1, err := gocudnn.MallocManaged(gocudnn.SizeT(4), gocudnn.ManagedMemFlag{}.Global())
+	/*
+		l1, err := gocudnn.MallocManaged(gocudnn.SizeT(4), gocudnn.ManagedMemFlag{}.Global())
+		if err != nil {
+			t.Error(err)
+		}
+	*/
+	/*l2, err := gocudnn.MallocManaged(gocudnn.SizeT(4), gocudnn.ManagedMemFlag{}.Global())
 	if err != nil {
 		t.Error(err)
 	}
-	l2, err := gocudnn.MallocManaged(gocudnn.SizeT(4), gocudnn.ManagedMemFlag{}.Global())
-	if err != nil {
-		t.Error(err)
-	}
+	*/
 	_, gsum, err := maketestxgsum()
 	if err != nil {
 		t.Error(err)
@@ -85,8 +88,8 @@ func TestTrainer(t *testing.T) {
 	}
 	//err = stream.Sync()
 
-	params := gocudnn.Xtra{}.CreateParamsFloat32(float32(.00001), float32(.0001), float32(20), float32(1e-8), float32(.001), float32(.9), float32(.999))
-	err = traind.TrainValues(trainhandle, 128, dx, x, l1, l2, gsum, xsum, params)
+	params := gocudnn.Xtra{}.CreateParamsFloat32(float32(1e-8), float32(.001), float32(.9), float32(.999))
+	err = traind.TrainValues(trainhandle, 128, dx, x, gsum, xsum, params)
 	if err != nil {
 		t.Error(err)
 	}

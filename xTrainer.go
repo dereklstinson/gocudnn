@@ -8,13 +8,6 @@ import (
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
-//Contexter to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
-type Contexter interface {
-	GetCudnnHandle() (*Handle, error)
-	GetCudaContext() (*Context, error)
-	GetTrainHandle() (*TrainHandle, error)
-}
-
 /*
  Since momentum and vanilla can be made with optensor. Only AdaGrad, AdaDelta, and Adam are going to be used.  I might add more if my thesis requires it.
  L1 and L2 regularization are available too.  If you don't want it then too bad.  Just write your own functions using the kernels subpackage. :-)
@@ -29,19 +22,6 @@ ctx,err:= cu.CtxCreate(flag,device)
 Written in the style of cudnn/GoCudnn. This is an added set of functions to calculate loss.
 
 */
-func (t *TrainHandle) GetCudnnHandle() (*Handle, error) {
-	return nil, errors.New("Not a CudnnHandle")
-}
-func (t *TrainHandle) GetCudaContext() (*Context, error) {
-	return nil, errors.New("Not a CudaContext")
-}
-func (t *TrainHandle) GetTrainHandle() (*TrainHandle, error) {
-	return t, nil
-}
-
-//Xtra is a holder for Xtra functions that are made by me, and not cuda or cudnn
-type Xtra struct {
-}
 
 //TrainerD is the descriptor of the trainer
 type TrainerD struct {
@@ -122,32 +102,6 @@ func (xtra Xtra) CreateParamsFloat32(eps, rate, beta1, beta2 float32) TrainingPa
 	}
 }
 
-type TrainHandle struct {
-	mod *Module
-	ptx string
-	s   *Stream
-}
-
-func (t *TrainHandle) SetStream(s *Stream) {
-	t.s = s
-
-}
-func (xtra Xtra) MakeTrainingHandle(trainingfloatdir string, dev *Device) (*TrainHandle, error) {
-	var cu Cuda
-	x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
-	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
-	mod, err := cu.NewModule(trainingfloatdir + x)
-	if err != nil {
-		//fmt.Println(kerncode)
-		return nil, err
-	}
-	//	kern,err:=cu.MakeKernel()
-	return &TrainHandle{
-		mod: mod,
-		//	ptx: kerncode,
-	}, nil
-}
-
 /*
 func (xtra Xtra) MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir string) (*TContext, error) {
 	var cu Cuda
@@ -170,6 +124,7 @@ func (xtra Xtra) MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir
 	}, nil
 }
 */
+
 //Regularization will regulate the training.  L1 and/or L2
 type Regularization int32
 
@@ -209,7 +164,7 @@ func (t TrainingModeFlag) Adam() TrainingMode {
 }
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
-func (xtra Xtra) NewTrainingDescriptor(h *TrainHandle, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
+func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
 	var ktf kernels.TrainingFloat
 	var cu Cuda
 
@@ -275,7 +230,7 @@ func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularizati
 func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw Memer, rate, beta1, beta2, eps, counter interface{}) error {
 	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter)
 }
-func (d *TrainerD) L1L2Regularization(h *TrainHandle, blocksize uint32, dw, w, l1, l2 Memer, params RegParams) error {
+func (d *TrainerD) L1L2Regularization(h *XHandle, blocksize uint32, dw, w, l1, l2 Memer, params RegParams) error {
 	var size uint32
 	switch d.data {
 	case DataTypeFlag{}.Float():
@@ -290,7 +245,7 @@ func (d *TrainerD) L1L2Regularization(h *TrainHandle, blocksize uint32, dw, w, l
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(h *TrainHandle, blocksize uint32, dw, w, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
+func (d *TrainerD) TrainValues(h *XHandle, blocksize uint32, dw, w, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
 	var size uint32
 	var err error
 	if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {

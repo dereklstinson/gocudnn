@@ -185,7 +185,7 @@ if (cell<length){
 }
 }
 extern "C" __global__
-void forwardParametricish(const int length,float *x,float *y,  float *alpha){
+void forwardParametricishfloat(const int length,float *x,float *y,  float *alpha){
 
 int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
 if (i<length){
@@ -199,7 +199,7 @@ if (i<length){
 
 }
 extern "C" __global__
-void backwardParametricish(const int length,float *dx,float *dy,  float *alpha, float *dalpha){
+void backwardParametricishfloat(const int length,float *dx,float *dy,  float *alpha, float *dalpha){
 
 int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
 if (i<length){
@@ -213,7 +213,7 @@ if (i<length){
 }
 
 extern "C" __global__
-void forwardleaky(const int length,float *x,float *y, const float alpha){
+void forwardleakyfloat(const int length,float *x,float *y, const float alpha){
 
 int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
 if (i<length){
@@ -227,7 +227,7 @@ if (i<length){
 
 }   
 extern "C" __global__
-void backwardleaky(const int length,float *dx,float *dy, const float alpha){
+void backwardleakyfloat(const int length,float *dx,float *dy, const float alpha){
 int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
 if (i<length){
     if (dy[i]>0.0){
