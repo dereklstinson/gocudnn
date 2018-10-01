@@ -54,11 +54,10 @@ func (x XActivationModeFlag) Parametric() XActivationMode {
 }
 
 type XActivationD struct {
-	data  DataType
-	amode XActivationMode
-	dtype DataType
-	tmode TrainingMode
-	//rmode   Regularization
+	data    DataType
+	amode   XActivationMode
+	dtype   DataType
+	tmode   TrainingMode
 	counter uint64
 	fwdmode *Kernel
 	bwdmode *Kernel
@@ -99,7 +98,6 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 			tmodek:  tmodek,
 			amode:   amode,
 			tmode:   tmode,
-			coef:    coef,
 			counter: ctr,
 		}, nil
 	default:
