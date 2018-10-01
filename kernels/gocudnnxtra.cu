@@ -33,19 +33,14 @@ void adamfloat(const int length,
                const float counter){
 
     
-    int i = (blockIdx.y*gridDim.x*blockDim.x) +
-    (blockIdx.x*blockDim.x) + 
-    threadIdx.x;
+    int i = (blockIdx.y*gridDim.x*blockDim.x) + (blockIdx.x*blockDim.x) +  threadIdx.x;
 
 if (i<length){
      gsum[i]=(beta1*gsum[i]) +((1.0-beta1)*dw[i]);
-    float gsumt = 0;
-    gsumt = gsum[i]/(1.0- powf(beta1,counter));
+    float gsumt = gsum[i]/(1.0- powf(beta1,counter));
      xsum[i]= (beta2*xsum[i])+((1.0 -beta2)*(dw[i]*dw[i]));
-    float xsumt =0;
-    xsumt = xsum[i]/(1.0 - powf(beta2,counter));
+    float xsumt = xsum[i]/(1.0 - powf(beta2,counter));
     w[i] += -(rate*gsumt)/(sqrtf(xsumt)+eps);  
- 
     dw[i]=0.0;
 
 }
@@ -115,6 +110,7 @@ void l2regularizationfloat(
     const float decay1,
     const float decay2){
         int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+    
     if (i<length){
     atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
     dw[i]= (dw[i]/batch) + w[i]*decay2;
@@ -129,7 +125,7 @@ void batchregfloat(
         int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
     if (i<length){
    
-    dw[i]= dw[i]/batch;
+    dw[i]/=batch;
     }
  
 }  
@@ -163,30 +159,34 @@ int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x
 
 extern "C" __global__
 void forwardParametricfloat(const int length ,float *x,float *y,  float *alpha){
-
-int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
-if (i<length){
-    if (x[i]>0.0){
-        y[i]=x[i];
+    int ibatch =  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+    int ialpha =  (blockIdx.x*blockDim.x) + threadIdx.x;
+if (ibatch<length){
+    if (x[ibatch]>0.0){
+        y[ibatch]=x[ibatch];
     }else{
-        y[i]=alpha[i]*x[i];
+        y[ibatch]=alpha[ialpha]*x[ibatch];
     }
     
 }
 
 }
-extern "C" __global__
-void backwardParametricfloat(const int length,float *dx,float *dy,  float *alpha, float *dalpha){
 
-    int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+//NHCW, NCWH only matters on the batch channel so for this to work alpha and dalpha are going to have to be the size of 
+// HCW.  
+extern "C" __global__  
+void backwardParametricfloat(const int length,float *x, float *dx,float *dy,  float *alpha, float *dalpha){
 
-if (i<length){
-    if (dy[i]>0.0){
-        dx[i]=1.0;
+    int ibatch=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+    int ialpha =  (blockIdx.x*blockDim.x) + threadIdx.x;
+if (ibatch<length){
+    if (x[ibatch]>0.0){
+        dx[ibatch]=dy[ibatch];
     }else{
-        dx[i]=alpha[i];
-        dalpha[i]+=alpha[i]*dy[i];
+        dx[ibatch]=alpha[ialpha]*dy[ibatch];
+        dalpha[ialpha]+=x[ibatch]*dy[ibatch];
     }   
+ 
 }
 }
 
@@ -205,13 +205,13 @@ if (i<length){
 
 }   
 extern "C" __global__
-void backwardleakyfloat(const int length,float *dx,float *dy, const float alpha){
+void backwardleakyfloat(const int length,float *x, float *dx,float *dy, const float alpha){
 int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
 if (i<length){
-    if (dy[i]>0.0){
-        dx[i]=1.0;
+    if (x[i]>0.0){
+        dx[i]=dy[i];
     }else{
-        dx[i]=alpha;
+        dx[i]=alpha*dy[i];
     }
     
 }

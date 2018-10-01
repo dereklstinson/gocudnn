@@ -24,6 +24,8 @@ type Memer interface {
 	Free() error
 	Stored() Location
 	FillSlice(interface{}) error
+	IsMalloced() *Malloced
+	IsGoPtr() *GoPointer
 
 	//Atributes()Atribs
 }
@@ -58,6 +60,16 @@ func cfloattofloat32(input []C.float) []float32 {
 		slice[i] = float32(input[i])
 	}
 	return slice
+}
+
+//Is Malloced will return the malloced
+func (mem *Malloced) IsMalloced() *Malloced {
+	return mem
+}
+
+//IsGoPtr will return nil
+func (mem *Malloced) IsGoPtr() *GoPointer {
+	return nil
 }
 
 //Atributes returns the atributes
@@ -348,6 +360,16 @@ func (mem *GoPointer) Ptr() unsafe.Pointer {
 	return mem.ptr
 }
 
+//Is Malloced will return nil.
+func (mem *GoPointer) IsMalloced() *Malloced {
+	return nil
+}
+
+//IsGoPtr will return the go pointer
+func (mem *GoPointer) IsGoPtr() *GoPointer {
+	return mem
+}
+
 //Stored returns an Location which can be used to by other programs
 func (mem *GoPointer) Stored() Location {
 	if mem.ptr == nil {
@@ -558,6 +580,7 @@ func Malloc(totalbytes SizeT) (*Malloced, error) {
 	gpu.ptr = unsafe.Pointer(&gpu.devptr)
 	gpu.size = totalbytes
 	err := C.cudaMalloc(&gpu.ptr, gpu.size.c())
+	gpu.Set(0)
 	return &gpu, newErrorRuntime("Malloc", err)
 }
 
@@ -571,6 +594,7 @@ func MallocHost(totalbytes SizeT) (*Malloced, error) {
 		return nil, err
 	}
 	mem.onhost = true
+	mem.Set(0)
 	return &mem, nil
 }
 
