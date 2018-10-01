@@ -81,6 +81,12 @@ func (mem *Malloced) Atributes() (Atribs, error) {
 	}, nil
 }
 
+//Set sets the value for each byte in device memory
+func (mem *Malloced) Set(value int32) error {
+	err := C.cudaMemset(mem.ptr, C.int(value), mem.size.c())
+	return newErrorRuntime("cudaMemset", err)
+}
+
 //FillSlice will fill a slice array that is passed to cuda
 func (mem *Malloced) FillSlice(input interface{}) error {
 	var kind MemcpyKindFlag

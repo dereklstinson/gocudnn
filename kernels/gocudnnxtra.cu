@@ -45,23 +45,9 @@ if (i<length){
     float xsumt =0;
     xsumt = xsum[i]/(1.0 - powf(beta2,counter));
     w[i] += -(rate*gsumt)/(sqrtf(xsumt)+eps);  
- //   __syncthreads();
+ 
     dw[i]=0.0;
-    /*
-     float ghold=gsum[i];
-    gsum[i]=beta1*ghold +(1.0-beta1)*dw[i];
-    float gsumt = 0;
-    gsumt = gsum[i]/(1.0- powf(beta1,counter));
-    float xhold=xsum[i];
-    xsum[i]= (beta2*xhold)+((1.0 -beta2)*dw[i]*dw[i]);
-    float xsumt =0;
-    xsumt = xsum[i]/(1.0 - powf(beta2,counter));
-    //float hw = w[i];
-    float wcellhold = w[i];
-    w[i] = wcellhold -(eps*gsumt)/(sqrtf(xsumt)+eps);  
-    __syncthreads();
-    dw[i]=0.0;
-*/
+
 }
     
 }
@@ -128,16 +114,25 @@ void l2regularizationfloat(
     const float batch, // should be an int but just send it as a float
     const float decay1,
     const float decay2){
-    int section = blockIdx.x;
-    int index = threadIdx.x;
-    int cell = section*blockDim.x+index;
-    if (cell<length){
-    atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
-    dw[cell]= (dw[cell]/batch) + w[cell]*decay2;
+        int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+    if (i<length){
+    atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
+    dw[i]= (dw[i]/batch) + w[i]*decay2;
     }
  
 }  
-
+extern "C" __global__
+void batchregfloat(
+    const int length,
+    float *dw, //input and output
+    const float batch) {// should be an int but just send it as a float
+        int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+    if (i<length){
+   
+    dw[i]= dw[i]/batch;
+    }
+ 
+}  
 extern "C" __global__
 void l1l2regularizationfloat(
     const int length,
@@ -149,43 +144,25 @@ void l1l2regularizationfloat(
     const float batch, // should be an int but just send it as a float
     const float decay1, //input
     const float decay2){ //input
-    int section = blockIdx.x;
-    int index = threadIdx.x;
-    int cell = section*blockDim.x+index;
-    float decay = decay1;
-    
-    if (cell<length){
+ 
+int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+   int decay =decay1 ;
+    if (i<length){
         
-        if (dw[cell]<0){
+        if (dw[i]<0){
             decay=-decay;
         }
 
-        atomicAdd(l1,w[cell]*decay); 
-        atomicAdd(l2,(w[cell]*w[cell]*decay2)/2.0);
-        dw[cell]= (dw[cell]/batch) + (w[cell]*decay2) +decay1;
+        atomicAdd(l1,w[i]*decay); 
+        atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
+        dw[i]= (dw[i]/batch) + (w[i]*decay2) +decay1;
      }
 
 }  
 
 
-extern "C"  __global__ 
-void simpleadds(
-    const int length,
-    float *dw, //input and output
-    float *w,  //input
-    float *gsum, // should be an int but just send it as a float
-    float *xsum){
-
-    int section = blockIdx.x;
-    int index = threadIdx.x;
-    int cell = section*blockDim.x+index;
-if (cell<length){
-    gsum[cell]=dw[cell]+w[cell];
-    xsum[cell]=dw[cell]+w[cell];
-}
-}
 extern "C" __global__
-void forwardParametricishfloat(const int length,float *x,float *y,  float *alpha){
+void forwardParametricfloat(const int length ,float *x,float *y,  float *alpha){
 
 int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
 if (i<length){
@@ -199,9 +176,10 @@ if (i<length){
 
 }
 extern "C" __global__
-void backwardParametricishfloat(const int length,float *dx,float *dy,  float *alpha, float *dalpha){
+void backwardParametricfloat(const int length,float *dx,float *dy,  float *alpha, float *dalpha){
 
-int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+    int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+
 if (i<length){
     if (dy[i]>0.0){
         dx[i]=1.0;
@@ -239,14 +217,3 @@ if (i<length){
 }
 
 }  
-extern "C" __global__
-void copyto(const int length,float *dest,float *src){
-
-int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
-if (i<length){
-    dest[i]=src[i];
-}
-
-}
-    
-  

@@ -53,7 +53,7 @@ func TestTrainer(t *testing.T) {
 		t.Error(err)
 	}
 
-	trainhandle, err := gocudnn.Xtra{}.MakeTrainingHandle(trainingkernellocation, devices[0])
+	trainhandle, err := gocudnn.Xtra{}.MakeXHandle(trainingkernellocation, devices[0])
 	if err != nil {
 		t.Error(err)
 	}
@@ -93,7 +93,7 @@ func TestTrainer(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	//	err = stream.Sync()
+	//	err = stream.Sync()qw
 	if err != nil {
 		t.Error(err)
 	}

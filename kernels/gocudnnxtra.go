@@ -1,35 +1,51 @@
 package kernels
 
-//TrainingFloat returns the kernel names through methods
-type TrainingFloat struct {
+//XtraKerns returns the kernel names through methods
+type XtraKerns struct {
+}
+
+func (t XtraKerns) ForwardParametricfloat() string {
+	return "forwardParametricfloat"
+}
+func (t XtraKerns) BackwardParametricfloat() string {
+	return "backwardParametricfloat"
+}
+func (t XtraKerns) ForwardLeakyfloat() string {
+	return "forwardleakyfloat"
+}
+func (t XtraKerns) BackwardLeakyfloat() string {
+	return "backwardleakyfloat"
+}
+func (t XtraKerns) Batch() string {
+	return "batchregfloat"
 }
 
 //AdaDelta ..
-func (t TrainingFloat) AdaDelta() string {
+func (t XtraKerns) AdaDelta() string {
 	return "adadeltafloat"
 }
 
 //AdaGrad ..
-func (t TrainingFloat) AdaGrad() string {
+func (t XtraKerns) AdaGrad() string {
 	return "adagradfloat"
 }
 
 //Adam ..
-func (t TrainingFloat) Adam() string {
+func (t XtraKerns) Adam() string {
 	return "adamfloat"
 }
 
 //L1 ..
-func (t TrainingFloat) L1() string {
+func (t XtraKerns) L1() string {
 	return "l1regularizationfloat"
 }
 
 //L2 ..
-func (t TrainingFloat) L2() string {
+func (t XtraKerns) L2() string {
 	return "l2regularizationfloat"
 }
 
 //L1L2 ..
-func (t TrainingFloat) L1L2() string {
+func (t XtraKerns) L1L2() string {
 	return "l1l2regularizationfloat"
 }

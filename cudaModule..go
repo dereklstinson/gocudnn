@@ -214,12 +214,16 @@ func (k *KernelArguments) GetArguments() []interface{} {
 	return k.args
 }
 
+/*
 //LaunchV2 is like launch but it takes KernelArgument struct.
 func (k *Kernel) LaunchV2(p KernelArguments) error {
 	unsafearray, err := ifacetounsafe(p.args)
 	if err != nil {
 		return err
 	}
+
+
+
 	var shold C.cudaStream_t
 
 	if p.stream == nil {
@@ -241,10 +245,11 @@ func (k *Kernel) LaunchV2(p KernelArguments) error {
 			nil,
 		))
 }
+*/
 func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 	array := make([]unsafe.Pointer, len(args))
 	//	fmt.Println("arguments passed", args)
-	//	fmt.Println("Length of Args", len(args))
+	//fmt.Println("Length of Args", len(args))
 	for i := 0; i < len(args); i++ {
 		y := args[i]
 		switch x := y.(type) {
@@ -254,7 +259,7 @@ func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 			}
 			array[i] = unsafe.Pointer(&x.ptr)
 		default:
-			// /	fmt.Println("Got to:", i, "value is", x)
+			//fmt.Println("Got to:", i, "value is", x)
 			scalar := CScalarConversion(x)
 			if scalar == nil {
 				return nil, errors.New("Not a supported value")

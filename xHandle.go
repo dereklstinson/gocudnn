@@ -16,6 +16,8 @@ type Contexter interface {
 	GetCudaContext() (*Context, error)
 	GetXHandle() (*XHandle, error)
 }
+
+//XHandle is a handle for xtra functions
 type XHandle struct {
 	mod *Module
 	ptx string
@@ -26,7 +28,8 @@ func (t *XHandle) SetStream(s *Stream) {
 	t.s = s
 
 }
-func (xtra Xtra) MakeTrainingHandle(trainingfloatdir string, dev *Device) (*XHandle, error) {
+
+func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *Device) (*XHandle, error) {
 	var cu Cuda
 	x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
 	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)

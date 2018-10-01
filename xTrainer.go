@@ -25,10 +25,9 @@ Written in the style of cudnn/GoCudnn. This is an added set of functions to calc
 
 //TrainerD is the descriptor of the trainer
 type TrainerD struct {
-	data DataType
-	mode TrainingMode
-	reg  Regularization
-	//	params  TrainingParams
+	data    DataType
+	mode    TrainingMode
+	reg     Regularization
 	counter uint32
 	kmode   *Kernel
 	kreg    *Kernel
@@ -102,29 +101,6 @@ func (xtra Xtra) CreateParamsFloat32(eps, rate, beta1, beta2 float32) TrainingPa
 	}
 }
 
-/*
-func (xtra Xtra) MakeTrainingContext(flags uint32, dev *Device, trainingfloatdir string) (*TContext, error) {
-	var cu Cuda
-	ctx, err := cu.CtxCreate(flags, dev)
-	if err != nil {
-		return nil, err
-	}
-	x := kernels.MakeMakeFile(trainingfloatdir, "trainingfloat", dev)
-	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
-	mod, err := cu.NewModule(trainingfloatdir + x)
-	if err != nil {
-		//fmt.Println(kerncode)
-		return nil, err
-	}
-	//	kern,err:=cu.MakeKernel()
-	return &TContext{
-		ctx: ctx,
-		mod: mod,
-		//	ptx: kerncode,
-	}, nil
-}
-*/
-
 //Regularization will regulate the training.  L1 and/or L2
 type Regularization int32
 
@@ -139,6 +115,10 @@ func (r RegularizationFlag) L2() Regularization {
 }
 func (r RegularizationFlag) L1L2() Regularization {
 	return Regularization(12)
+}
+func (r RegularizationFlag) Batch() Regularization {
+	return Regularization(3)
+
 }
 
 //TrainingModeFlag is a nil struct that passes TrainingMode Flags through methods.
@@ -162,10 +142,23 @@ func (t TrainingModeFlag) AdaDelta() TrainingMode {
 func (t TrainingModeFlag) Adam() TrainingMode {
 	return TrainingMode(4)
 }
+func (t TrainingMode) tostring() string {
+	f := TrainingModeFlag{}
+	x := kernels.XtraKerns{}
+	switch t {
+	case f.Adam():
+		return x.Adam()
+	case f.AdaDelta():
+		return x.AdaDelta()
+	case f.AdaGrad():
+		return x.AdaGrad()
+	}
+	return "Not Supported"
+}
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
 func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
-	var ktf kernels.TrainingFloat
+	var ktf kernels.XtraKerns
 	var cu Cuda
 
 	var rflg RegularizationFlag
@@ -177,6 +170,8 @@ func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataT
 		regname = ktf.L2()
 	case rflg.L1L2():
 		regname = ktf.L1L2()
+	case rflg.Batch():
+		regname = ktf.Batch()
 	default:
 		return nil, errors.New("Regularization Not Supported")
 	}
@@ -230,6 +225,8 @@ func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularizati
 func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw Memer, rate, beta1, beta2, eps, counter interface{}) error {
 	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter)
 }
+
+//L1L2Regularization does the l1l2 regularization
 func (d *TrainerD) L1L2Regularization(h *XHandle, blocksize uint32, dw, w, l1, l2 Memer, params RegParams) error {
 	var size uint32
 	switch d.data {
@@ -248,14 +245,28 @@ func (d *TrainerD) L1L2Regularization(h *XHandle, blocksize uint32, dw, w, l1, l
 func (d *TrainerD) TrainValues(h *XHandle, blocksize uint32, dw, w, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
 	var size uint32
 	var err error
-	if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
-		sp := " "
-		wbs := strconv.Itoa(int(w.ByteSize()))
-		dwbs := strconv.Itoa(int(dw.ByteSize()))
-		gsbs := strconv.Itoa(int(gsum.ByteSize()))
-		xsbs := strconv.Itoa(int(xsum.ByteSize()))
-		return errors.New("Sizes don't match" + sp + wbs + sp + dwbs + sp + gsbs + sp + xsbs)
+	if xsum != nil {
+		if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
+			sp := " "
+			wbs := strconv.Itoa(int(w.ByteSize()))
+			dwbs := strconv.Itoa(int(dw.ByteSize()))
+			gsbs := strconv.Itoa(int(gsum.ByteSize()))
+			xsbs := strconv.Itoa(int(xsum.ByteSize()))
+			return errors.New("Sizes don't match" + sp + wbs + sp + dwbs + sp + gsbs + sp + xsbs)
+		}
+
+	} else {
+		if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
+			sp := " "
+			wbs := strconv.Itoa(int(w.ByteSize()))
+			dwbs := strconv.Itoa(int(dw.ByteSize()))
+			gsbs := strconv.Itoa(int(gsum.ByteSize()))
+			//	xsbs := strconv.Itoa(int(xsum.ByteSize()))
+			return errors.New("Sizes don't match" + sp + wbs + sp + dwbs + sp + gsbs + sp)
+		}
+
 	}
+
 	var dflg DataTypeFlag
 	switch d.data {
 	case dflg.Float():

@@ -263,6 +263,28 @@ func FindScalar(datatype DataType, x float64) CScalar {
 	}
 }
 
+//FindLength returns the length of of the array considering the number of bytes and the Datatype
+func FindLength(s SizeT, dtype DataType) uint32 {
+	var dflg DataTypeFlag
+	var size uint32
+	switch dtype {
+	case dflg.Float():
+		size = uint32(s / SizeT(4))
+	case dflg.Double():
+		size = uint32(s / SizeT(8))
+	case dflg.Int32():
+		size = uint32(s / SizeT(4))
+	case dflg.Int8():
+		size = uint32(s / SizeT(1))
+	case dflg.UInt8():
+		size = uint32(s / SizeT(1))
+	default:
+		size = 0
+	}
+
+	return size
+}
+
 // Float return DataType(C.CUDNN_DATA_FLOAT)
 func (d DataTypeFlag) Float() DataType {
 	return DataType(C.CUDNN_DATA_FLOAT)

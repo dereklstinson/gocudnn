@@ -675,7 +675,7 @@ BB3_2:
 {
 	.reg .pred 	%p<2>;
 	.reg .f32 	%f<12>;
-	.reg .b32 	%r<6>;
+	.reg .b32 	%r<9>;
 	.reg .b64 	%rd<10>;
 
 
@@ -685,10 +685,13 @@ BB3_2:
 	ld.param.u64 	%rd3, [l2regularizationfloat_param_4];
 	ld.param.f32 	%f1, [l2regularizationfloat_param_5];
 	ld.param.f32 	%f2, [l2regularizationfloat_param_7];
-	mov.u32 	%r3, %ctaid.x;
-	mov.u32 	%r4, %ntid.x;
-	mov.u32 	%r5, %tid.x;
-	mad.lo.s32 	%r1, %r4, %r3, %r5;
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r4, %r3, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
 	setp.ge.s32	%p1, %r1, %r2;
 	@%p1 bra 	BB4_2;
 
@@ -713,6 +716,43 @@ BB4_2:
 	ret;
 }
 
+	// .globl	batchregfloat
+.visible .entry batchregfloat(
+	.param .u32 batchregfloat_param_0,
+	.param .u64 batchregfloat_param_1,
+	.param .f32 batchregfloat_param_2
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .f32 	%f<4>;
+	.reg .b32 	%r<9>;
+	.reg .b64 	%rd<5>;
+
+
+	ld.param.u32 	%r2, [batchregfloat_param_0];
+	ld.param.u64 	%rd1, [batchregfloat_param_1];
+	ld.param.f32 	%f1, [batchregfloat_param_2];
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r4, %r3, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32	%p1, %r1, %r2;
+	@%p1 bra 	BB5_2;
+
+	cvta.to.global.u64 	%rd2, %rd1;
+	mul.wide.s32 	%rd3, %r1, 4;
+	add.s64 	%rd4, %rd2, %rd3;
+	ld.global.f32 	%f2, [%rd4];
+	div.rn.f32 	%f3, %f2, %f1;
+	st.global.f32 	[%rd4], %f3;
+
+BB5_2:
+	ret;
+}
+
 	// .globl	l1l2regularizationfloat
 .visible .entry l1l2regularizationfloat(
 	.param .u32 l1l2regularizationfloat_param_0,
@@ -726,8 +766,8 @@ BB4_2:
 )
 {
 	.reg .pred 	%p<3>;
-	.reg .f32 	%f<20>;
-	.reg .b32 	%r<6>;
+	.reg .f32 	%f<19>;
+	.reg .b32 	%r<12>;
 	.reg .b64 	%rd<12>;
 
 
@@ -739,98 +779,54 @@ BB4_2:
 	ld.param.f32 	%f1, [l1l2regularizationfloat_param_5];
 	ld.param.f32 	%f2, [l1l2regularizationfloat_param_6];
 	ld.param.f32 	%f3, [l1l2regularizationfloat_param_7];
-	mov.u32 	%r3, %ctaid.x;
-	mov.u32 	%r4, %ntid.x;
-	mov.u32 	%r5, %tid.x;
-	mad.lo.s32 	%r1, %r4, %r3, %r5;
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r4, %r3, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
 	setp.ge.s32	%p1, %r1, %r2;
-	@%p1 bra 	BB5_2;
+	@%p1 bra 	BB6_2;
 
+	cvt.rzi.s32.f32	%r9, %f2;
 	cvta.to.global.u64 	%rd5, %rd1;
 	mul.wide.s32 	%rd6, %r1, 4;
 	add.s64 	%rd7, %rd5, %rd6;
 	ld.global.f32 	%f4, [%rd7];
 	setp.lt.f32	%p2, %f4, 0f00000000;
-	neg.f32 	%f5, %f2;
-	selp.f32	%f6, %f5, %f2, %p2;
+	neg.s32 	%r10, %r9;
+	selp.b32	%r11, %r10, %r9, %p2;
 	cvta.to.global.u64 	%rd8, %rd2;
 	add.s64 	%rd9, %rd8, %rd6;
-	ld.global.f32 	%f7, [%rd9];
-	mul.f32 	%f8, %f7, %f6;
+	cvt.rn.f32.s32	%f5, %r11;
+	ld.global.f32 	%f6, [%rd9];
+	mul.f32 	%f7, %f6, %f5;
 	cvta.to.global.u64 	%rd10, %rd3;
-	atom.global.add.f32 	%f9, [%rd10], %f8;
-	ld.global.f32 	%f10, [%rd9];
-	mul.f32 	%f11, %f10, %f10;
-	mul.f32 	%f12, %f11, %f3;
-	mul.f32 	%f13, %f12, 0f3F000000;
+	atom.global.add.f32 	%f8, [%rd10], %f7;
+	ld.global.f32 	%f9, [%rd9];
+	mul.f32 	%f10, %f9, %f9;
+	mul.f32 	%f11, %f10, %f3;
+	mul.f32 	%f12, %f11, 0f3F000000;
 	cvta.to.global.u64 	%rd11, %rd4;
-	atom.global.add.f32 	%f14, [%rd11], %f13;
-	ld.global.f32 	%f15, [%rd7];
-	div.rn.f32 	%f16, %f15, %f1;
-	ld.global.f32 	%f17, [%rd9];
-	fma.rn.f32 	%f18, %f17, %f3, %f16;
-	add.f32 	%f19, %f18, %f2;
-	st.global.f32 	[%rd7], %f19;
-
-BB5_2:
-	ret;
-}
-
-	// .globl	simpleadds
-.visible .entry simpleadds(
-	.param .u32 simpleadds_param_0,
-	.param .u64 simpleadds_param_1,
-	.param .u64 simpleadds_param_2,
-	.param .u64 simpleadds_param_3,
-	.param .u64 simpleadds_param_4
-)
-{
-	.reg .pred 	%p<2>;
-	.reg .f32 	%f<7>;
-	.reg .b32 	%r<6>;
-	.reg .b64 	%rd<14>;
-
-
-	ld.param.u32 	%r2, [simpleadds_param_0];
-	ld.param.u64 	%rd1, [simpleadds_param_1];
-	ld.param.u64 	%rd2, [simpleadds_param_2];
-	ld.param.u64 	%rd3, [simpleadds_param_3];
-	ld.param.u64 	%rd4, [simpleadds_param_4];
-	mov.u32 	%r3, %ctaid.x;
-	mov.u32 	%r4, %ntid.x;
-	mov.u32 	%r5, %tid.x;
-	mad.lo.s32 	%r1, %r4, %r3, %r5;
-	setp.ge.s32	%p1, %r1, %r2;
-	@%p1 bra 	BB6_2;
-
-	cvta.to.global.u64 	%rd5, %rd1;
-	mul.wide.s32 	%rd6, %r1, 4;
-	add.s64 	%rd7, %rd5, %rd6;
-	cvta.to.global.u64 	%rd8, %rd2;
-	add.s64 	%rd9, %rd8, %rd6;
-	ld.global.f32 	%f1, [%rd9];
-	ld.global.f32 	%f2, [%rd7];
-	add.f32 	%f3, %f2, %f1;
-	cvta.to.global.u64 	%rd10, %rd3;
-	add.s64 	%rd11, %rd10, %rd6;
-	st.global.f32 	[%rd11], %f3;
-	ld.global.f32 	%f4, [%rd9];
-	ld.global.f32 	%f5, [%rd7];
-	add.f32 	%f6, %f5, %f4;
-	cvta.to.global.u64 	%rd12, %rd4;
-	add.s64 	%rd13, %rd12, %rd6;
-	st.global.f32 	[%rd13], %f6;
+	atom.global.add.f32 	%f13, [%rd11], %f12;
+	ld.global.f32 	%f14, [%rd7];
+	div.rn.f32 	%f15, %f14, %f1;
+	ld.global.f32 	%f16, [%rd9];
+	fma.rn.f32 	%f17, %f16, %f3, %f15;
+	add.f32 	%f18, %f17, %f2;
+	st.global.f32 	[%rd7], %f18;
 
 BB6_2:
 	ret;
 }
 
-	// .globl	forwardParametricish
-.visible .entry forwardParametricish(
-	.param .u32 forwardParametricish_param_0,
-	.param .u64 forwardParametricish_param_1,
-	.param .u64 forwardParametricish_param_2,
-	.param .u64 forwardParametricish_param_3
+	// .globl	forwardParametricfloat
+.visible .entry forwardParametricfloat(
+	.param .u32 forwardParametricfloat_param_0,
+	.param .u64 forwardParametricfloat_param_1,
+	.param .u64 forwardParametricfloat_param_2,
+	.param .u64 forwardParametricfloat_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -839,10 +835,10 @@ BB6_2:
 	.reg .b64 	%rd<12>;
 
 
-	ld.param.u32 	%r2, [forwardParametricish_param_0];
-	ld.param.u64 	%rd2, [forwardParametricish_param_1];
-	ld.param.u64 	%rd3, [forwardParametricish_param_2];
-	ld.param.u64 	%rd4, [forwardParametricish_param_3];
+	ld.param.u32 	%r2, [forwardParametricfloat_param_0];
+	ld.param.u64 	%rd2, [forwardParametricfloat_param_1];
+	ld.param.u64 	%rd3, [forwardParametricfloat_param_2];
+	ld.param.u64 	%rd4, [forwardParametricfloat_param_3];
 	mov.u32 	%r3, %nctaid.x;
 	mov.u32 	%r4, %ctaid.y;
 	mov.u32 	%r5, %ctaid.x;
@@ -878,13 +874,13 @@ BB7_4:
 	ret;
 }
 
-	// .globl	backwardParametricish
-.visible .entry backwardParametricish(
-	.param .u32 backwardParametricish_param_0,
-	.param .u64 backwardParametricish_param_1,
-	.param .u64 backwardParametricish_param_2,
-	.param .u64 backwardParametricish_param_3,
-	.param .u64 backwardParametricish_param_4
+	// .globl	backwardParametricfloat
+.visible .entry backwardParametricfloat(
+	.param .u32 backwardParametricfloat_param_0,
+	.param .u64 backwardParametricfloat_param_1,
+	.param .u64 backwardParametricfloat_param_2,
+	.param .u64 backwardParametricfloat_param_3,
+	.param .u64 backwardParametricfloat_param_4
 )
 {
 	.reg .pred 	%p<3>;
@@ -893,11 +889,11 @@ BB7_4:
 	.reg .b64 	%rd<15>;
 
 
-	ld.param.u32 	%r2, [backwardParametricish_param_0];
-	ld.param.u64 	%rd3, [backwardParametricish_param_1];
-	ld.param.u64 	%rd4, [backwardParametricish_param_2];
-	ld.param.u64 	%rd5, [backwardParametricish_param_3];
-	ld.param.u64 	%rd6, [backwardParametricish_param_4];
+	ld.param.u32 	%r2, [backwardParametricfloat_param_0];
+	ld.param.u64 	%rd3, [backwardParametricfloat_param_1];
+	ld.param.u64 	%rd4, [backwardParametricfloat_param_2];
+	ld.param.u64 	%rd5, [backwardParametricfloat_param_3];
+	ld.param.u64 	%rd6, [backwardParametricfloat_param_4];
 	mov.u32 	%r3, %nctaid.x;
 	mov.u32 	%r4, %ctaid.y;
 	mov.u32 	%r5, %ctaid.x;
@@ -940,12 +936,12 @@ BB8_4:
 	ret;
 }
 
-	// .globl	forwardleaky
-.visible .entry forwardleaky(
-	.param .u32 forwardleaky_param_0,
-	.param .u64 forwardleaky_param_1,
-	.param .u64 forwardleaky_param_2,
-	.param .f32 forwardleaky_param_3
+	// .globl	forwardleakyfloat
+.visible .entry forwardleakyfloat(
+	.param .u32 forwardleakyfloat_param_0,
+	.param .u64 forwardleakyfloat_param_1,
+	.param .u64 forwardleakyfloat_param_2,
+	.param .f32 forwardleakyfloat_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -954,10 +950,10 @@ BB8_4:
 	.reg .b64 	%rd<8>;
 
 
-	ld.param.u32 	%r2, [forwardleaky_param_0];
-	ld.param.u64 	%rd2, [forwardleaky_param_1];
-	ld.param.u64 	%rd3, [forwardleaky_param_2];
-	ld.param.f32 	%f2, [forwardleaky_param_3];
+	ld.param.u32 	%r2, [forwardleakyfloat_param_0];
+	ld.param.u64 	%rd2, [forwardleakyfloat_param_1];
+	ld.param.u64 	%rd3, [forwardleakyfloat_param_2];
+	ld.param.f32 	%f2, [forwardleakyfloat_param_3];
 	mov.u32 	%r3, %ctaid.y;
 	mov.u32 	%r4, %nctaid.x;
 	mov.u32 	%r5, %ctaid.x;
@@ -990,12 +986,12 @@ BB9_4:
 	ret;
 }
 
-	// .globl	backwardleaky
-.visible .entry backwardleaky(
-	.param .u32 backwardleaky_param_0,
-	.param .u64 backwardleaky_param_1,
-	.param .u64 backwardleaky_param_2,
-	.param .f32 backwardleaky_param_3
+	// .globl	backwardleakyfloat
+.visible .entry backwardleakyfloat(
+	.param .u32 backwardleakyfloat_param_0,
+	.param .u64 backwardleakyfloat_param_1,
+	.param .u64 backwardleakyfloat_param_2,
+	.param .f32 backwardleakyfloat_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -1004,10 +1000,10 @@ BB9_4:
 	.reg .b64 	%rd<8>;
 
 
-	ld.param.u32 	%r2, [backwardleaky_param_0];
-	ld.param.u64 	%rd2, [backwardleaky_param_1];
-	ld.param.u64 	%rd3, [backwardleaky_param_2];
-	ld.param.f32 	%f1, [backwardleaky_param_3];
+	ld.param.u32 	%r2, [backwardleakyfloat_param_0];
+	ld.param.u64 	%rd2, [backwardleakyfloat_param_1];
+	ld.param.u64 	%rd3, [backwardleakyfloat_param_2];
+	ld.param.f32 	%f1, [backwardleakyfloat_param_3];
 	mov.u32 	%r3, %ctaid.y;
 	mov.u32 	%r4, %nctaid.x;
 	mov.u32 	%r5, %ctaid.x;
@@ -1037,44 +1033,6 @@ BB10_2:
 	st.global.f32 	[%rd1], %f1;
 
 BB10_4:
-	ret;
-}
-
-	// .globl	copyto
-.visible .entry copyto(
-	.param .u32 copyto_param_0,
-	.param .u64 copyto_param_1,
-	.param .u64 copyto_param_2
-)
-{
-	.reg .pred 	%p<2>;
-	.reg .f32 	%f<2>;
-	.reg .b32 	%r<9>;
-	.reg .b64 	%rd<8>;
-
-
-	ld.param.u32 	%r2, [copyto_param_0];
-	ld.param.u64 	%rd1, [copyto_param_1];
-	ld.param.u64 	%rd2, [copyto_param_2];
-	mov.u32 	%r3, %ctaid.y;
-	mov.u32 	%r4, %nctaid.x;
-	mov.u32 	%r5, %ctaid.x;
-	mad.lo.s32 	%r6, %r4, %r3, %r5;
-	mov.u32 	%r7, %ntid.x;
-	mov.u32 	%r8, %tid.x;
-	mad.lo.s32 	%r1, %r6, %r7, %r8;
-	setp.ge.s32	%p1, %r1, %r2;
-	@%p1 bra 	BB11_2;
-
-	cvta.to.global.u64 	%rd3, %rd2;
-	mul.wide.s32 	%rd4, %r1, 4;
-	add.s64 	%rd5, %rd3, %rd4;
-	ld.global.f32 	%f1, [%rd5];
-	cvta.to.global.u64 	%rd6, %rd1;
-	add.s64 	%rd7, %rd6, %rd4;
-	st.global.f32 	[%rd7], %f1;
-
-BB11_2:
 	ret;
 }
 
