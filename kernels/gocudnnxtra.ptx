@@ -824,53 +824,59 @@ BB6_2:
 	// .globl	forwardParametricfloat
 .visible .entry forwardParametricfloat(
 	.param .u32 forwardParametricfloat_param_0,
-	.param .u64 forwardParametricfloat_param_1,
+	.param .u32 forwardParametricfloat_param_1,
 	.param .u64 forwardParametricfloat_param_2,
-	.param .u64 forwardParametricfloat_param_3
+	.param .u64 forwardParametricfloat_param_3,
+	.param .u64 forwardParametricfloat_param_4
 )
 {
-	.reg .pred 	%p<3>;
+	.reg .pred 	%p<5>;
 	.reg .f32 	%f<4>;
-	.reg .b32 	%r<10>;
+	.reg .b32 	%r<11>;
 	.reg .b64 	%rd<12>;
 
 
 	ld.param.u32 	%r3, [forwardParametricfloat_param_0];
-	ld.param.u64 	%rd3, [forwardParametricfloat_param_1];
-	ld.param.u64 	%rd4, [forwardParametricfloat_param_2];
-	ld.param.u64 	%rd5, [forwardParametricfloat_param_3];
-	cvta.to.global.u64 	%rd1, %rd5;
-	mov.u32 	%r4, %nctaid.x;
-	mov.u32 	%r5, %ctaid.y;
-	mov.u32 	%r6, %ctaid.x;
-	mov.u32 	%r7, %ntid.x;
-	mad.lo.s32 	%r8, %r4, %r5, %r6;
+	ld.param.u32 	%r4, [forwardParametricfloat_param_1];
+	ld.param.u64 	%rd2, [forwardParametricfloat_param_2];
+	ld.param.u64 	%rd3, [forwardParametricfloat_param_3];
+	ld.param.u64 	%rd4, [forwardParametricfloat_param_4];
+	mov.u32 	%r5, %ntid.x;
+	mov.u32 	%r6, %nctaid.x;
+	mul.lo.s32 	%r7, %r5, %r6;
+	mov.u32 	%r8, %ctaid.x;
 	mov.u32 	%r9, %tid.x;
-	mad.lo.s32 	%r1, %r8, %r7, %r9;
-	mad.lo.s32 	%r2, %r6, %r7, %r9;
-	setp.ge.s32	%p1, %r1, %r3;
-	@%p1 bra 	BB7_4;
+	mad.lo.s32 	%r1, %r8, %r5, %r9;
+	mov.u32 	%r10, %ctaid.y;
+	mad.lo.s32 	%r2, %r7, %r10, %r1;
+	setp.lt.s32	%p1, %r2, %r3;
+	setp.lt.s32	%p2, %r1, %r4;
+	and.pred  	%p3, %p1, %p2;
+	@!%p3 bra 	BB7_4;
+	bra.uni 	BB7_1;
 
-	cvta.to.global.u64 	%rd6, %rd3;
-	mul.wide.s32 	%rd7, %r1, 4;
-	add.s64 	%rd8, %rd6, %rd7;
-	ld.global.f32 	%f1, [%rd8];
-	setp.gt.f32	%p2, %f1, 0f00000000;
-	cvta.to.global.u64 	%rd9, %rd4;
-	add.s64 	%rd2, %rd9, %rd7;
-	@%p2 bra 	BB7_3;
+BB7_1:
+	cvta.to.global.u64 	%rd5, %rd2;
+	mul.wide.s32 	%rd6, %r2, 4;
+	add.s64 	%rd7, %rd5, %rd6;
+	ld.global.f32 	%f1, [%rd7];
+	setp.gt.f32	%p4, %f1, 0f00000000;
+	cvta.to.global.u64 	%rd8, %rd3;
+	add.s64 	%rd1, %rd8, %rd6;
+	@%p4 bra 	BB7_3;
 	bra.uni 	BB7_2;
 
 BB7_3:
-	st.global.f32 	[%rd2], %f1;
+	st.global.f32 	[%rd1], %f1;
 	bra.uni 	BB7_4;
 
 BB7_2:
-	mul.wide.s32 	%rd10, %r2, 4;
-	add.s64 	%rd11, %rd1, %rd10;
+	cvta.to.global.u64 	%rd9, %rd4;
+	mul.wide.s32 	%rd10, %r1, 4;
+	add.s64 	%rd11, %rd9, %rd10;
 	ld.global.f32 	%f2, [%rd11];
 	mul.f32 	%f3, %f2, %f1;
-	st.global.f32 	[%rd2], %f3;
+	st.global.f32 	[%rd1], %f3;
 
 BB7_4:
 	ret;
@@ -879,46 +885,52 @@ BB7_4:
 	// .globl	backwardParametricfloat
 .visible .entry backwardParametricfloat(
 	.param .u32 backwardParametricfloat_param_0,
-	.param .u64 backwardParametricfloat_param_1,
+	.param .u32 backwardParametricfloat_param_1,
 	.param .u64 backwardParametricfloat_param_2,
 	.param .u64 backwardParametricfloat_param_3,
 	.param .u64 backwardParametricfloat_param_4,
-	.param .u64 backwardParametricfloat_param_5
+	.param .u64 backwardParametricfloat_param_5,
+	.param .u64 backwardParametricfloat_param_6
 )
 {
-	.reg .pred 	%p<3>;
+	.reg .pred 	%p<5>;
 	.reg .f32 	%f<10>;
-	.reg .b32 	%r<10>;
+	.reg .b32 	%r<11>;
 	.reg .b64 	%rd<18>;
 
 
-	ld.param.u32 	%r6, [backwardParametricfloat_param_0];
-	ld.param.u64 	%rd4, [backwardParametricfloat_param_1];
-	ld.param.u64 	%rd5, [backwardParametricfloat_param_2];
-	ld.param.u64 	%rd6, [backwardParametricfloat_param_3];
-	ld.param.u64 	%rd7, [backwardParametricfloat_param_4];
-	ld.param.u64 	%rd8, [backwardParametricfloat_param_5];
-	mov.u32 	%r7, %nctaid.x;
-	mov.u32 	%r8, %ctaid.y;
-	mov.u32 	%r1, %ctaid.x;
-	mov.u32 	%r2, %ntid.x;
-	mad.lo.s32 	%r9, %r7, %r8, %r1;
-	mov.u32 	%r3, %tid.x;
-	mad.lo.s32 	%r4, %r9, %r2, %r3;
-	setp.ge.s32	%p1, %r4, %r6;
-	@%p1 bra 	BB8_4;
+	ld.param.u32 	%r3, [backwardParametricfloat_param_0];
+	ld.param.u32 	%r4, [backwardParametricfloat_param_1];
+	ld.param.u64 	%rd4, [backwardParametricfloat_param_2];
+	ld.param.u64 	%rd5, [backwardParametricfloat_param_3];
+	ld.param.u64 	%rd6, [backwardParametricfloat_param_4];
+	ld.param.u64 	%rd7, [backwardParametricfloat_param_5];
+	ld.param.u64 	%rd8, [backwardParametricfloat_param_6];
+	mov.u32 	%r5, %ntid.x;
+	mov.u32 	%r6, %nctaid.x;
+	mul.lo.s32 	%r7, %r5, %r6;
+	mov.u32 	%r8, %ctaid.x;
+	mov.u32 	%r9, %tid.x;
+	mad.lo.s32 	%r1, %r8, %r5, %r9;
+	mov.u32 	%r10, %ctaid.y;
+	mad.lo.s32 	%r2, %r7, %r10, %r1;
+	setp.lt.s32	%p1, %r2, %r3;
+	setp.lt.s32	%p2, %r1, %r4;
+	and.pred  	%p3, %p1, %p2;
+	@!%p3 bra 	BB8_4;
+	bra.uni 	BB8_1;
 
-	mad.lo.s32 	%r5, %r1, %r2, %r3;
+BB8_1:
 	cvta.to.global.u64 	%rd9, %rd4;
-	mul.wide.s32 	%rd10, %r4, 4;
+	mul.wide.s32 	%rd10, %r2, 4;
 	add.s64 	%rd1, %rd9, %rd10;
 	ld.global.f32 	%f1, [%rd1];
-	setp.gt.f32	%p2, %f1, 0f00000000;
+	setp.gt.f32	%p4, %f1, 0f00000000;
 	cvta.to.global.u64 	%rd11, %rd6;
 	add.s64 	%rd2, %rd11, %rd10;
 	cvta.to.global.u64 	%rd12, %rd5;
 	add.s64 	%rd3, %rd12, %rd10;
-	@%p2 bra 	BB8_3;
+	@%p4 bra 	BB8_3;
 	bra.uni 	BB8_2;
 
 BB8_3:
@@ -929,18 +941,17 @@ BB8_3:
 BB8_2:
 	cvta.to.global.u64 	%rd13, %rd8;
 	cvta.to.global.u64 	%rd14, %rd7;
-	mul.wide.s32 	%rd15, %r5, 4;
+	mul.wide.s32 	%rd15, %r1, 4;
 	add.s64 	%rd16, %rd14, %rd15;
 	ld.global.f32 	%f2, [%rd2];
 	ld.global.f32 	%f3, [%rd16];
 	mul.f32 	%f4, %f3, %f2;
 	st.global.f32 	[%rd3], %f4;
+	add.s64 	%rd17, %rd13, %rd15;
 	ld.global.f32 	%f5, [%rd2];
 	ld.global.f32 	%f6, [%rd1];
-	add.s64 	%rd17, %rd13, %rd15;
-	ld.global.f32 	%f7, [%rd17];
-	fma.rn.f32 	%f8, %f6, %f5, %f7;
-	st.global.f32 	[%rd17], %f8;
+	mul.f32 	%f7, %f6, %f5;
+	atom.global.add.f32 	%f8, [%rd17], %f7;
 
 BB8_4:
 	ret;

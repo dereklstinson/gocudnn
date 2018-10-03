@@ -158,15 +158,23 @@ int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x
 
 
 extern "C" __global__
-void forwardParametricfloat(const int length ,float *x,float *y,  float *alpha){
-    int ibatch =  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
-    int ialpha =  (blockIdx.x*blockDim.x) + threadIdx.x;
-if (ibatch<length){
-    if (x[ibatch]>0.0){
-        y[ibatch]=x[ibatch];
-    }else{
-        y[ibatch]=alpha[ialpha]*x[ibatch];
+void forwardParametricfloat(const int length, const int alphalength ,float *x,float *y,  float *alpha){
+   int xsize = gridDim.x*blockDim.x;
+   int i= blockIdx.x*blockDim.x+threadIdx.x;
+   int j = xsize*blockIdx.y+i;
+
+  
+if (j<length){
+    if (i<alphalength){
+        if (x[j]>0.0){
+            y[j]=x[j];
+        }else{
+            y[j]=alpha[i]*x[j];
+        }
+
+
     }
+    
     
 }
 
@@ -175,21 +183,25 @@ if (ibatch<length){
 //NHCW, NCWH only matters on the batch channel so for this to work alpha and dalpha are going to have to be the size of 
 // HCW.  
 extern "C" __global__  
-void backwardParametricfloat(const int length,float *x, float *dx,float *dy,  float *alpha, float *dalpha){
+void backwardParametricfloat(const int length, const int alphalength ,float *x, float *dx,float *dy,  float *alpha, float *dalpha){
 
-    int ibatch=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
-    int ialpha =  (blockIdx.x*blockDim.x) + threadIdx.x;
-if (ibatch<length){
-    if (x[ibatch]>0.0){
-        dx[ibatch]=dy[ibatch];
+    int xsize = gridDim.x*blockDim.x;
+    int i= blockIdx.x*blockDim.x+threadIdx.x;
+    int j = xsize*blockIdx.y+i;
+ 
+if (j<length){
+    if (i<alphalength){
+    if (x[j]>0.0){
+        dx[j]=dy[j];
     }else{
-        dx[ibatch]=alpha[ialpha]*dy[ibatch];
-        dalpha[ialpha]+=x[ibatch]*dy[ibatch];
+        dx[j]=alpha[i]*dy[j];
+        atomicAdd(&dalpha[i],x[j]*dy[j]);
+  
     }   
  
 }
 }
-
+}
 extern "C" __global__
 void forwardleakyfloat(const int length,float *x,float *y, const float alpha){
 

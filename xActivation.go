@@ -1,15 +1,18 @@
 package gocudnn
 
+import "C"
 import (
 	"errors"
 
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
+//XActivationMode is flags for xtra activations
 type XActivationMode uint
 type XActivationModeFlag struct {
 }
 
+//asdfasdf
 func (x XActivationMode) tostringfwd(dtype DataType) string {
 	dtf := DataTypeFlag{}
 	var xaflg XActivationModeFlag
@@ -127,13 +130,15 @@ func (xA *XActivationD) ForwardProp(h *XHandle, blocksize, batch uint32, xD *Ten
 		return err
 	}
 	length := FindLength(sizeinbytes, dtype)
+	alphalength := length / batch
 	gridsize := kernels.SimpleGridCalculator(blocksize, length)
-
+	alphagrid := kernels.SimpleGridCalculator(blocksize, alphalength)
+	//batchgrid := kernels.SimpleGridCalculator(blocksize, batch)
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
 		return xA.fwdmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, x, y, float32(xA.coef))
 	case XActivationModeFlag{}.Parametric():
-		return xA.fwdmode.Launch(gridsize, batch, 1, blocksize, 1, 1, 0, h.s, length, x, y, alphas)
+		return xA.fwdmode.Launch(alphagrid, batch, 1, blocksize, 1, 1, 0, h.s, length, alphalength, x, y, alphas)
 	}
 	return errors.New("Unsupported XActivationMode")
 }
@@ -146,7 +151,9 @@ func (xA *XActivationD) BackProp(h *XHandle, blocksize, batch uint32, xD *Tensor
 		return err
 	}
 	length := FindLength(sizeinbytes, dtype)
+	alphalength := length / batch
 	gridsize := kernels.SimpleGridCalculator(blocksize, length)
+	alphagrid := kernels.SimpleGridCalculator(blocksize, alphalength)
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
@@ -158,7 +165,7 @@ func (xA *XActivationD) BackProp(h *XHandle, blocksize, batch uint32, xD *Tensor
 			return errors.New("alphas or daphas are nil")
 
 		}
-		return xA.bwdmode.Launch(gridsize, batch, 1, blocksize, 1, 1, 0, h.s, length, x, dx, dy, alphas, dalphas)
+		return xA.bwdmode.Launch(alphagrid, batch, 1, blocksize, 1, 1, 0, h.s, length, alphalength, x, dx, dy, alphas, dalphas)
 	}
 	return errors.New("Unsupported XActivationMode")
 }
