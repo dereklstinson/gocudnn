@@ -1,8 +1,6 @@
 package gocudnn
 
 import (
-	"errors"
-
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
@@ -11,10 +9,8 @@ type Xtra struct {
 }
 
 //Contexter to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
-type Contexter interface {
-	GetCudnnHandle() (*Handle, error)
-	GetCudaContext() (*Context, error)
-	GetXHandle() (*XHandle, error)
+type Handler interface {
+	SetStream(s *Stream) error
 }
 
 //XHandle is a handle for xtra functions
@@ -22,11 +18,12 @@ type XHandle struct {
 	mod *Module
 	ptx string
 	s   *Stream
+	c   *Context
 }
 
-func (t *XHandle) SetStream(s *Stream) {
+func (t *XHandle) SetStream(s *Stream) error {
 	t.s = s
-
+	return nil
 }
 
 func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *Device) (*XHandle, error) {
@@ -44,6 +41,8 @@ func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *Device) (*XHandle, er
 		//	ptx: kerncode,
 	}, nil
 }
+
+/*
 func (t *XHandle) GetCudnnHandle() (*Handle, error) {
 	return nil, errors.New("Not a CudnnHandle")
 }
@@ -53,3 +52,4 @@ func (t *XHandle) GetCudaContext() (*Context, error) {
 func (t *XHandle) GetXHandle() (*XHandle, error) {
 	return t, nil
 }
+*/

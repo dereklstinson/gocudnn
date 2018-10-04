@@ -11,10 +11,11 @@ typedef enum cudaMemoryType cudaMemoryType;
 import "C"
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"unsafe"
+
+	"github.com/pkg/errors"
 )
 
 //Memer is an interface for memory
@@ -24,8 +25,8 @@ type Memer interface {
 	Free() error
 	Stored() Location
 	FillSlice(interface{}) error
-	IsMalloced() *Malloced
-	IsGoPtr() *GoPointer
+	//	IsMalloced() *Malloced
+	//	IsGoPtr() *GoPointer
 
 	//Atributes()Atribs
 }
@@ -62,7 +63,8 @@ func cfloattofloat32(input []C.float) []float32 {
 	return slice
 }
 
-//Is Malloced will return the malloced
+/*
+//IsMalloced will return the malloced
 func (mem *Malloced) IsMalloced() *Malloced {
 	return mem
 }
@@ -71,7 +73,7 @@ func (mem *Malloced) IsMalloced() *Malloced {
 func (mem *Malloced) IsGoPtr() *GoPointer {
 	return nil
 }
-
+*/
 //Atributes returns the atributes
 func (mem *Malloced) Atributes() (Atribs, error) {
 	var x C.cudaPointerAttributes
@@ -360,6 +362,7 @@ func (mem *GoPointer) Ptr() unsafe.Pointer {
 	return mem.ptr
 }
 
+/*
 //Is Malloced will return nil.
 func (mem *GoPointer) IsMalloced() *Malloced {
 	return nil
@@ -369,7 +372,7 @@ func (mem *GoPointer) IsMalloced() *Malloced {
 func (mem *GoPointer) IsGoPtr() *GoPointer {
 	return mem
 }
-
+*/
 //Stored returns an Location which can be used to by other programs
 func (mem *GoPointer) Stored() Location {
 	if mem.ptr == nil {

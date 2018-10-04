@@ -124,5 +124,4 @@ func (a ActivationModeFlag) Elu() ActivationMode {
 func (a ActivationModeFlag) Identity() ActivationMode {
 	return ActivationMode(C.CUDNN_ACTIVATION_IDENTITY)
 }
-
 func (a ActivationMode) c() C.cudnnActivationMode_t { return C.cudnnActivationMode_t(a) }

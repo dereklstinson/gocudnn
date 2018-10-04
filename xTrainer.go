@@ -104,6 +104,7 @@ func (xtra Xtra) CreateParamsFloat32(eps, rate, beta1, beta2 float32) TrainingPa
 //Regularization will regulate the training.  L1 and/or L2
 type Regularization int32
 
+//RegularizationFlag allows the passing of regularization flags
 type RegularizationFlag struct {
 }
 
