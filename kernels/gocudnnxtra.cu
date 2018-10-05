@@ -216,6 +216,31 @@ if (i<length){
 }
 
 }   
+
+/*
+extern "C" __global__
+void concatforwardleakyfloatNCHW(const int length, const int batch, const int xAlength, const int xBlength, const int ylength, float *xA, float xB, float *y, const float alpha){
+
+int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+if (i<xAlength){
+    if (xA[i*batch]>0.0){
+        y[i]=xA[i*batch];
+    }else{
+        y[i*batch*(ylength)]=alpha*xA[i*batch];
+    }
+    
+}
+if (i<xBlength){
+    if (xA[i*batch]>0.0){
+        y[i]=xB[i*batch];
+    }else{
+        y[i*batch*(ylength+xAlength)]=alpha*xB[i*batch];
+    }
+    
+}
+}   
+*/
+
 extern "C" __global__
 void backwardleakyfloat(const int length,float *x, float *dx,float *dy, const float alpha){
 int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;

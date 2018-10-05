@@ -3,6 +3,85 @@ package gocudnn
 /*
 #include <cudnn.h>
 
+cudnnStatus_t ConcatActivationForward4DNCHW(
+								 cudnnHandle_t handle,
+								 cudnnActivationDescriptor_t        activationDesc,
+								 const void						    *alpha,
+								 const void 						*beta,
+								 const cudnnTensorDescriptor_t       xDescA,
+                                 const void                         *xA,
+						         const cudnnTensorDescriptor_t       xDescB,
+                                 const void                         *xB,
+	      						 const cudnnTensorDescriptor_t       yDescC, //Descriptor describing All of y.
+								 void                               *y){
+
+
+		int nA,nB,cA,cB,hA,hB,wA,wB,sn,sc,sh,sw ,cC;
+		cudnnDataType_t dtype;
+        cudnnStatus_t status;
+	status=	cudnnGetTensor4dDescriptor(xDescA,&dtype,&nA,&cA,&hA,&wA,&sn,&sc,&sh,&sw);
+  	if (status!=CUDNN_STATUS_SUCCESS){
+	  return status;
+	  }
+	      int chwA = cA*hA*wA;
+  	status=	cudnnGetTensor4dDescriptor(xDescB,&dtype,&nB,&cB,&hB,&wB,&sn,&sc,&sh,&sw);
+	if (status!=CUDNN_STATUS_SUCCESS){
+	  return status;
+	  }
+	  int chwB=cB*hB*wB;
+
+  	if (nA!=nB || hA!=hB || wA!=wB){
+	  return CUDNN_STATUS_BAD_PARAM;
+	}
+
+
+	cudnnTensorDescriptor_t tempdescXA,tempdescXB;
+	status= cudnnCreateTensorDescriptor(&tempdescXA);
+			if (status!=CUDNN_STATUS_SUCCESS){
+              return status;
+        	}
+
+	status= cudnnSetTensor4dDescriptor(tempdescXA,  CUDNN_TENSOR_NCHW,dtype,1,cA,hA,wA);
+          	if (status!=CUDNN_STATUS_SUCCESS){
+              return status;
+        	}
+
+	status= cudnnCreateTensorDescriptor(&tempdescXB);
+			if (status!=CUDNN_STATUS_SUCCESS){
+              return status;
+        	}
+
+	status= cudnnSetTensor4dDescriptor(tempdescXB,  CUDNN_TENSOR_NCHW,dtype,1,cB,hB,wB);
+          	if (status!=CUDNN_STATUS_SUCCESS){
+              return status;
+        	}
+   status=	cudnnGetTensor4dDescriptor(yDescC,&dtype,&nB,&cC,&hB,&wB,&sn,&sc,&sh,&sw);
+    if (nA!=nB || hA!=hB || wA!=wB || cC!=cA+cB){
+	  return CUDNN_STATUS_BAD_PARAM;
+	}
+	int chwC=hB*wB*cC;
+    int chwCstep=chwA+chwC;
+
+        for (int i =0;i<nA;i++){
+
+       status =cudnnActivationForward(handle,activationDesc,alpha,tempdescXA,xA+(i*chwA),beta,tempdescXA,y +(i*chwC));
+       status =cudnnActivationForward(handle,activationDesc,alpha,tempdescXB,xB+(i*chwB),beta,tempdescXB,y +(i*chwCstep));
+
+
+        	  }
+cudnnDestroyTensorDescriptor(tempdescXB);
+return cudnnDestroyTensorDescriptor(tempdescXA);
+
+	}
+
+
+
+
+
+
+
+
+
 */
 import "C"
 
@@ -12,6 +91,17 @@ type Activation struct {
 	Flgs  ActivationModeFlag
 }
 
+/*
+
+
+   cudnnActivationDescriptor_t         activationDesc,
+   const void                         *alpha,
+
+   const void                         *beta,
+   const cudnnTensorDescriptor_t       yDesc,
+   void                               *y
+
+*/
 //ActivationFuncs is an empty struct that is used for Activation operation type functions
 type ActivationFuncs struct {
 }
