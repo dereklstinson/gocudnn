@@ -9,6 +9,8 @@ import (
 
 //XActivationMode is flags for xtra activations
 type XActivationMode uint
+
+//XActivationModeFlag holds flags for a XactivationMode
 type XActivationModeFlag struct {
 }
 
@@ -23,7 +25,7 @@ func (x XActivationMode) tostringfwd(dtype DataType) string {
 	switch x {
 	case xaflg.Leaky():
 		return ktf.ForwardLeakyfloat()
-	case xaflg.Parametric():
+	case xaflg.parametric():
 		return ktf.ForwardParametricfloat()
 	}
 	return "error"
@@ -40,7 +42,7 @@ func (x XActivationMode) tostringbwd(dtype DataType) string {
 	switch x {
 	case xaflg.Leaky():
 		return ktf.BackwardLeakyfloat()
-	case xaflg.Parametric():
+	case xaflg.parametric():
 		return ktf.BackwardParametricfloat()
 	}
 	return "error"
@@ -52,7 +54,7 @@ func (x XActivationModeFlag) Leaky() XActivationMode {
 }
 
 //Parametric returns the Parametric flag
-func (x XActivationModeFlag) Parametric() XActivationMode {
+func (x XActivationModeFlag) parametric() XActivationMode {
 	return XActivationMode(2)
 }
 
@@ -77,7 +79,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 	ctr := int32(1)
 	var ktf kernels.XtraKerns
 	switch amode {
-	case XActivationModeFlag{}.Parametric():
+	case XActivationModeFlag{}.parametric():
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
@@ -137,7 +139,7 @@ func (xA *XActivationD) ForwardProp(h *XHandle, blocksize, batch uint32, xD *Ten
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
 		return xA.fwdmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, x, y, float32(xA.coef))
-	case XActivationModeFlag{}.Parametric():
+	case XActivationModeFlag{}.parametric():
 		return xA.fwdmode.Launch(alphagrid, batch, 1, blocksize, 1, 1, 0, h.s, length, alphalength, x, y, alphas)
 	}
 	return errors.New("Unsupported XActivationMode")
@@ -158,7 +160,7 @@ func (xA *XActivationD) BackProp(h *XHandle, blocksize, batch uint32, xD *Tensor
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
 		return xA.bwdmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, x, dx, dy, float32(xA.coef))
-	case XActivationModeFlag{}.Parametric():
+	case XActivationModeFlag{}.parametric():
 
 		if alphas == nil || dalphas == nil {
 

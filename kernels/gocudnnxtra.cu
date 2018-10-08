@@ -1,3 +1,8 @@
+#define CUDA_KERNEL_LOOP(i, n) \
+for (int i = blockIdx.x * blockDim.x + threadIdx.x; \
+     i < (n); \
+     i += blockDim.x * gridDim.x)
+
 extern "C" __global__
 void adagradfloat(const int length,
                   float *weights, //weights input and output
@@ -98,34 +103,95 @@ void l1regularizationfloat(const int length,
 
     
 }  
+/*
 extern "C" __global__
-void NCHWsegmentfrom1CHWfloat(const int BatchIndex,
-                              const int MetaBlockIdxX,
-                              const int MetaBlockIdxY,
-                              const int MetaBlockIdxZ,
-                              const int MetaGridDimX,
-                              const int MetaGridDimY,
-                              const int MetaGridDimZ,
-                              const int OriginalTotalVolume,
+void NHWCSegmentedFrom1NHWC(  const int BatchIndex,
+                              const int ChannelIndex,
+                              const int ChannelLength,
+                              const int OriginalStartX,
+                              const int OriginalStartY,
+                              const int OriginalSizeX,
+                              const int OriginalSizeY,
                               float *oMem,
                               float *nMem){
 
+                     
+int y = (blockIdx.y*blockDim.y +threadIdx.y);//Where y is in the memory    (y is the row)                                                  
+int x=  (blockIdx.x*blockDim.x +threadIdx.x);
+int ylength= blockDim.y*gridDim.y;
+int xlength =(blockDim.x*gridDim.x);
 
-int MetaID = MetaBlockIdxX +(MetaBlockIdxY*MetaGridDimX)+(MetaGridDimX*MetaGridDimY*MetaBlockIdxZ);
-int MetaBlock =  blockIdx.x + (blockIdx.y * gridDim.x) + (gridDim.x * gridDim.y * blockIdx.z)*MetaID;
-int MetaThread =  MetaBlock * (blockDim.x * blockDim.y * blockDim.z) + (threadIdx.z *blockDim.x * blockDim.y)+ (threadIdx.y * blockDim.x)+ threadIdx.x;
-int blockId = blockIdx.x + (blockIdx.y * gridDim.x) + (gridDim.x * gridDim.y * blockIdx.z);
-int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z) + (threadIdx.z *blockDim.x * blockDim.y)+ (threadIdx.y * blockDim.x)+ threadIdx.x;
-int BatchVolume = (blockDim.x*gridDim.x) *(blockDim.y*gridDim.y) *(blockDim.z*gridDim.z);
+int OriginalY=OriginalStartY+y;
+int OriginalX=OriginalStartX+x;
+int newi=(BatchIndex*ChannelLength*xlength*ylength)+(ChannelIndex*ylength*xlength)+(x*ylength)+y;
+int oldi=(ChannelIndex*OriginalSizeX*OriginalSizeY)+OriginalX*OriginalSizeY+OriginalY;
 
-        if  (threadId<BatchVolume){
-            if (MetaThread<OriginalTotalVolume){
-                nMem[BatchIndex*BatchVolume+threadId]=  oMem[MetaThread]  ;
+        if  (newi<xlength*ylength*ChannelLength){
+            if (oldi<ChannelLength*OriginalSizeX*OriginalSizeY){
+                nMem[newi]=  oMem[oldi]  ;
             }else{
-                nMem[BatchIndex*BatchVolume+threadId]=0.0;
+                nMem[newi]=0.0;
             }
         } 
        }
+
+
+
+       */
+
+extern "C" __global__
+void NHWCSegmentedFrom1NHWC(  //const int SectionX,
+                             // const int SectionY,
+                              const int ChannelLength,
+                         
+                              const int OriginalSizeX,
+                              const int OriginalSizeY,
+                              float *oMem,
+                              float *nMem){
+   
+    int y = (blockIdx.y*blockDim.y +threadIdx.y);//Where y is in the memory    (y is the row)                                                  
+    int x=  (blockIdx.x*blockDim.x +threadIdx.x);
+    int ylength= blockDim.y*gridDim.y;
+    int xlength =(blockDim.x*gridDim.x);
+    
+    int BatchTotal= ylength*xlength;
+   
+  
+    for (int ChannelIndex=0;ChannelIndex<ChannelLength;ChannelIndex++){
+        for (int BatchIndex=0;BatchIndex<BatchTotal;BatchIndex++){
+
+            int newi=(BatchIndex*ChannelLength*xlength*ylength)+(ChannelIndex*ylength*xlength)+(x*ylength)+y;
+            int fx=0;
+                for (int ax=0;ax<xlength;ax++, fx+=xlength){
+                
+                    int ox=fx+x;
+                    int fy=0;
+                    for ( int ay=0 ;ay<ylength;ay++, fy+=ylength){
+                    
+                        int oy=fy+y;
+                        
+                        if  (newi<xlength*ylength*ChannelLength){
+                           int oldi= (ChannelIndex*OriginalSizeX*OriginalSizeY)+(ox*OriginalSizeY)+oy;
+                            if (oldi<ChannelLength*OriginalSizeX*OriginalSizeY){
+                                nMem[newi]=  oMem[oldi]  ;
+                            }else{
+                                nMem[newi]=0.0;
+                            }
+                        } 
+                       }
+    
+                }
+            }
+
+    }
+   
+}                 
+
+
+
+
+
+       
 extern "C" __global__
 void CHWfromSegmentedNCHWfloat(const int BatchIndex,
                               const int MetaBlockIdxX,

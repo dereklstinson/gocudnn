@@ -2,8 +2,10 @@ package gocudnn
 
 import "errors"
 
+//Reshape is failing ---- changed all to private
+//Probably have to move to CPU
 //FindSegmentedOutputTensor creates a tensordescriptor for the segmeented size
-func (xt Xtra) FindSegmentedOutputTensor(descX *TensorD, h, w int32) (*TensorD, error) {
+func (xt Xtra) findSegmentedOutputTensor(descX *TensorD, h, w int32) (*TensorD, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
 		return nil, err
@@ -18,7 +20,7 @@ func (xt Xtra) FindSegmentedOutputTensor(descX *TensorD, h, w int32) (*TensorD, 
 }
 
 //SegmentedBatches1CHWtoNCHWForward only works on a 1CHW to NCHW where the batches are the size of the window. If the segmented
-func (xt Xtra) SegmentedBatches1CHWtoNCHWForward(handle *XHandle, xDesc *TensorD, x *Malloced, yDesc *TensorD, y *Malloced) error {
+func (xt Xtra) segmentedBatches1CHWtoNCHWForward(handle *XHandle, xDesc *TensorD, x *Malloced, yDesc *TensorD, y *Malloced) error {
 	datatypex, dimsx, _, err := xDesc.GetDescrptor()
 	if err != nil {
 		return err
@@ -30,11 +32,14 @@ func (xt Xtra) SegmentedBatches1CHWtoNCHWForward(handle *XHandle, xDesc *TensorD
 	n1 := divideandroundup(dimsx[2], dimsy[2])
 
 	n2 := divideandroundup(dimsx[3], dimsy[3])
+	n3 := n1 * n2
+
+	//originalarea := dimsx[2] * dimsx[3]
 	var dtflg DataTypeFlag
 	if datatypex != datatypey || datatypex != dtflg.Float() {
 		return errors.New("Datatypes Don't Match or Datatype is not float")
 	}
-	if uint32(dimsy[0]) != n1*n2 {
+	if uint32(dimsy[0]) != n3 {
 		return errors.New("SegmentedBatches Tensors don't match up")
 
 	}
@@ -46,28 +51,46 @@ func (xt Xtra) SegmentedBatches1CHWtoNCHWForward(handle *XHandle, xDesc *TensorD
 	if err != nil {
 		return err
 	}
-	blocksize := int32(4)
+	blocksize := int32(16)
 	bs := uint32(blocksize)
-	gx := divideandroundup(dimsy[1], blocksize)
-	gy := divideandroundup(dimsy[2], blocksize)
-	gz := divideandroundup(dimsy[3], blocksize)
-	OriginalTotalVol := findvol(dimsx)
-	for i := uint32(0); i < n1; i++ {
-		for k := uint32(0); k < n2; k++ {
-			index := int32(i*n2 + k)
-			err = kern.Launch(gx, gy, gz, bs, bs, bs, 0, handle.s, index, 1, int32(i), int32(k), 1, n1, n2, OriginalTotalVol, x.ptr, y.ptr)
-			if err != nil {
-				return err
-			}
-		}
+	gx := divideandroundup(dimsy[2], blocksize)
+	gy := divideandroundup(dimsy[3], blocksize)
+	//gz := divideandroundup(dimsy[3], blocksize)
+	//for channel := int32(0); channel < dimsx[1]; channel++ {
+	//	for ah, h := uint32(0), int32(0); ah < n1; ah, h = ah+1, h+dimsy[2] {
 
+	//		for aw, w := uint32(0), int32(0); aw < n2; aw, w = aw+1, w+dimsy[3] {
+
+	//			index := ah*n2 + aw
+	err = kern.Launch(gx, gy, 1, bs, bs, 1, 0, handle.s, int32(dimsx[1]), int32(dimsx[2]), int32(dimsx[3]), x, y)
+
+	if err != nil {
+		return err
 	}
+
+	//	}
+
+	/*
+	   const int BatchIndex,
+	   const int ChannelIndex,
+	   const int ChannelLength,
+	   const int OriginalStartX,
+	   const int OriginalStartY,
+	   const int OriginalSizeX,
+	   const int OriginalSizeY,
+	   float *oMem,
+	   float *nMem){
+	*/
+
+	//	}
+
+	//}
 
 	return nil
 }
 
 //SegmentedBatches1CHWtoNCHWBackward only works on a 1CHW to NCHW where the batches are the size of the window. If the segmented
-func (xt Xtra) SegmentedBatches1CHWtoNCHWBackward(handle *XHandle, xDesc *TensorD, x *Malloced, yDesc *TensorD, y *Malloced) error {
+func (xt Xtra) segmentedBatches1CHWtoNCHWBackward(handle *XHandle, xDesc *TensorD, x *Malloced, yDesc *TensorD, y *Malloced) error {
 	datatypex, dimsx, _, err := xDesc.GetDescrptor()
 	if err != nil {
 		return err
