@@ -188,7 +188,7 @@ cudnnStatus_t cudnnTransformTensor(
 	void                          *y)
 
 y = Transfomr((alpha *x),(beta * y))
-my guess in what this does is change the format like NCHW to NHWC of y, but it won't change the descripter because it is constant
+This will change the layout of a tensor stride wise
 */
 func (ten TensorFuncs) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x Memer, beta CScalar, ty *TensorD, y Memer) error {
 	var s Status

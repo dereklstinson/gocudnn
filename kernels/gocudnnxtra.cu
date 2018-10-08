@@ -98,6 +98,60 @@ void l1regularizationfloat(const int length,
 
     
 }  
+extern "C" __global__
+void NCHWsegmentfrom1CHWfloat(const int BatchIndex,
+                              const int MetaBlockIdxX,
+                              const int MetaBlockIdxY,
+                              const int MetaBlockIdxZ,
+                              const int MetaGridDimX,
+                              const int MetaGridDimY,
+                              const int MetaGridDimZ,
+                              const int OriginalTotalVolume,
+                              float *oMem,
+                              float *nMem){
+
+
+int MetaID = MetaBlockIdxX +(MetaBlockIdxY*MetaGridDimX)+(MetaGridDimX*MetaGridDimY*MetaBlockIdxZ);
+int MetaBlock =  blockIdx.x + (blockIdx.y * gridDim.x) + (gridDim.x * gridDim.y * blockIdx.z)*MetaID;
+int MetaThread =  MetaBlock * (blockDim.x * blockDim.y * blockDim.z) + (threadIdx.z *blockDim.x * blockDim.y)+ (threadIdx.y * blockDim.x)+ threadIdx.x;
+int blockId = blockIdx.x + (blockIdx.y * gridDim.x) + (gridDim.x * gridDim.y * blockIdx.z);
+int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z) + (threadIdx.z *blockDim.x * blockDim.y)+ (threadIdx.y * blockDim.x)+ threadIdx.x;
+int BatchVolume = (blockDim.x*gridDim.x) *(blockDim.y*gridDim.y) *(blockDim.z*gridDim.z);
+
+        if  (threadId<BatchVolume){
+            if (MetaThread<OriginalTotalVolume){
+                nMem[BatchIndex*BatchVolume+threadId]=  oMem[MetaThread]  ;
+            }else{
+                nMem[BatchIndex*BatchVolume+threadId]=0.0;
+            }
+        } 
+       }
+extern "C" __global__
+void CHWfromSegmentedNCHWfloat(const int BatchIndex,
+                              const int MetaBlockIdxX,
+                              const int MetaBlockIdxY,
+                              const int MetaBlockIdxZ,
+                              const int MetaGridDimX,
+                              const int MetaGridDimY,
+                              const int MetaGridDimZ,
+                              const int OriginalTotalVolume,
+                              float *oMem,
+                              float *nMem){
+  
+  
+  int MetaID = MetaBlockIdxX +(MetaBlockIdxY*MetaGridDimX)+(MetaGridDimX*MetaGridDimY*MetaBlockIdxZ);
+  int MetaBlock =  blockIdx.x + (blockIdx.y * gridDim.x) + (gridDim.x * gridDim.y * blockIdx.z)*MetaID;
+  int MetaThread =  MetaBlock * (blockDim.x * blockDim.y * blockDim.z) + (threadIdx.z *blockDim.x * blockDim.y)+ (threadIdx.y * blockDim.x)+ threadIdx.x;
+  int blockId = blockIdx.x + (blockIdx.y * gridDim.x) + (gridDim.x * gridDim.y * blockIdx.z);
+  int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z) + (threadIdx.z *blockDim.x * blockDim.y)+ (threadIdx.y * blockDim.x)+ threadIdx.x;
+  int BatchVolume = (blockDim.x*gridDim.x) *(blockDim.y*gridDim.y) *(blockDim.z*gridDim.z);
+  
+          if  (threadId<BatchVolume){
+              if (MetaThread<OriginalTotalVolume){
+                oMem[MetaThread]=  nMem[BatchIndex*BatchVolume+threadId]   ;
+              }
+          } 
+}     
 
 extern "C" __global__
 void l2regularizationfloat(

@@ -10,6 +10,26 @@ func testarray(size int) []int32 {
 	return array
 }
 
+func testTensorFloat4dNCHW(input []int32) (*gocudnn.TensorD, *gocudnn.Malloced, error) {
+	var Dtype gocudnn.DataTypeFlag
+	var format gocudnn.TensorFormatFlag
+	var Tensor gocudnn.Tensor
+	xD, err := Tensor.NewTensor4dDescriptor(Dtype.Float(), format.NCHW(), input)
+	if err != nil {
+		return nil, nil, err
+	}
+	xDsize, err := xD.GetSizeInBytes()
+	if err != nil {
+		return nil, nil, err
+	}
+	xmem, err := gocudnn.Malloc(xDsize)
+	if err != nil {
+		return nil, nil, err
+	}
+	return xD, xmem, nil
+
+}
+
 func testTensorFloat4dNHWC(input []int32) (*gocudnn.TensorD, *gocudnn.Malloced, error) {
 	var Dtype gocudnn.DataTypeFlag
 	var format gocudnn.TensorFormatFlag

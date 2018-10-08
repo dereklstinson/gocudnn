@@ -70,9 +70,12 @@ func MakeSeveralMakes(directory, dotCUname string) {
 		newcommand := exec.Command("make")
 		newcommand.Dir = directory
 		time.Sleep(time.Millisecond)
-		err = newcommand.Run()
+		response, err := newcommand.Output()
+		//err = newcommand.Run()
+
 		if err != nil {
-			fmt.Println("*****Something Is wrong with the" + dotCUname + "file*******")
+			fmt.Println("*****Something Is wrong with the" + dotCUname + " file*******")
+			fmt.Println(string(response))
 			panic(err)
 		}
 	}
@@ -126,9 +129,12 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 	newcommand := exec.Command("make")
 	newcommand.Dir = directory
 	time.Sleep(time.Millisecond)
-	err = newcommand.Run()
+	response, err := newcommand.Output()
+	//err = newcommand.Run()
+
 	if err != nil {
-		fmt.Println("*****Something Is wrong with the" + dotCUname + "file*******")
+		fmt.Println("*****Something Is wrong with the" + dotCUname + " file*******")
+		fmt.Println(string(response))
 		panic(err)
 	}
 	return newname

@@ -580,7 +580,7 @@ func (mem *Malloced) CudaMemCopy(dest Memer, src Memer, count SizeT, kind Memcpy
 //Malloc returns struct Malloced that has a pointer memory that is now allocated to the device
 func Malloc(totalbytes SizeT) (*Malloced, error) {
 	var gpu Malloced
-	gpu.ptr = unsafe.Pointer(&gpu.devptr)
+
 	gpu.size = totalbytes
 	err := C.cudaMalloc(&gpu.ptr, gpu.size.c())
 	gpu.Set(0)
