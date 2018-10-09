@@ -255,7 +255,7 @@ func FindScalar(datatype DataType, x float64) CScalar {
 	case DataType(C.CUDNN_DATA_DOUBLE):
 		return CDouble(x)
 	case DataType(C.CUDNN_DATA_INT8):
-		return CInt(x)
+		return CInt8(x)
 	case DataType(C.CUDNN_DATA_INT32):
 		return CInt(x)
 	default:
@@ -283,6 +283,27 @@ func FindLength(s SizeT, dtype DataType) uint32 {
 	}
 
 	return size
+}
+
+//FindSizeTfromVol takes a volume of dims and returns the size in bytes in SizeT
+func FindSizeTfromVol(volume []int32, dtype DataType) SizeT {
+	vol := int32(1)
+	for i := int32(0); i < int32(len(volume)); i++ {
+		vol *= volume[i]
+	}
+	switch dtype {
+	case DataType(C.CUDNN_DATA_FLOAT):
+		return SizeT(vol * int32(4))
+	case DataType(C.CUDNN_DATA_DOUBLE):
+		return SizeT(vol * int32(8))
+	case DataType(C.CUDNN_DATA_INT8):
+		return SizeT(vol)
+	case DataType(C.CUDNN_DATA_INT32):
+		return SizeT(vol * int32(4))
+	default:
+		return SizeT(0)
+	}
+
 }
 
 // Float return DataType(C.CUDNN_DATA_FLOAT)

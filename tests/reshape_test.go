@@ -1,8 +1,13 @@
 package tests
 
+import (
+	"testing"
+
+	gocudnn "github.com/dereklstinson/GoCudnn"
+)
+
 //THIS IS FAILING
 
-/*
 func TestReshape(t *testing.T) {
 	gocudnn.Cuda{}.LockHostThread()
 	trainingkernellocation := "/home/derek/go/src/github.com/dereklstinson/GoCudnn/kernels/"
@@ -18,7 +23,7 @@ func TestReshape(t *testing.T) {
 		t.Error(err)
 	}
 	//	handle := gocudnn.NewHandle()
-	stream, err := cu.CreateNonBlockingStream()
+	stream, err := cu.CreateBlockingStream()
 	if err != nil {
 		t.Error(err)
 	}
@@ -31,11 +36,12 @@ func TestReshape(t *testing.T) {
 		t.Error(err)
 	}
 	xhandle.SetStream(stream)
-	descX, Xmem, err := testTensorFloat4dNCHW([]int32{1, 10, 25, 25})
+	originaldims := []int32{1, 32, 32, 32}
+	descX, Xmem, err := testTensorFloat4dNCHW(originaldims)
 	if err != nil {
 		t.Error(err)
 	}
-	Xhmem, err := goptrtest([]int32{1, 10, 25, 25})
+	Xhmem, err := goptrtest(originaldims)
 	if err != nil {
 		t.Error(err)
 	}
@@ -43,7 +49,7 @@ func TestReshape(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	descY, err := gocudnn.Xtra{}.FindSegmentedOutputTensor(descX, 6, 6)
+	descY, err := gocudnn.Xtra{}.FindSegmentedOutputTensor(descX, 4, 4)
 	if err != nil {
 		t.Error(err)
 	}
@@ -103,4 +109,3 @@ func parammaker(dims []int32) int32 {
 	}
 	return mult
 }
-*/
