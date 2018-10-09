@@ -7,6 +7,7 @@ import (
 //Reshape is failing ---- changed all to private
 
 //Probably have to move to CPU
+
 //FindSegmentedOutputTensor creates a tensordescriptor for the segmeented size
 func (xt Xtra) FindSegmentedOutputTensor(descX *TensorD, h, w int32) (*TensorD, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
