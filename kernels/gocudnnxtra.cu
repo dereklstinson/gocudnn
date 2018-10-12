@@ -1,4 +1,62 @@
-      
+
+
+#define CUDA_GRID_LOOP_X(i,n)\
+for (int i=blockIdx.x *blockDim.x+threadIdx.x;i<n;\
+    i +=blockDim.x*gridDim.x)\
+
+#define BLOCK4D_DIMS 2
+
+extern "C" __global__
+void ShapetoBatch4D(          int BatchShape[BLOCK4D_DIMS+2],
+                              int ShapeShape[BLOCK4D_DIMS],
+                              int BlockShape[BLOCK4D_DIMS],
+                             const int numthrds,
+                              const int ShapeBatch,
+                             const bool B2S;
+                              float *BatchedMem,
+                              float *ShapeMem){
+CUDA_GRID_LOOP_X(batchIdx,numthrds){
+int batchIdxRemainder = batchIdx;
+int  batchPos[BLOCK4D_DIMS+2];
+for (int dim= BLOCK4D_DIMS+1;dim>=1;--dim){
+    batchPos[dim]=batchIdxRemainder%BatchShape[dim];
+    batchIdxRemainder/=BatchShape[dim];
+}
+batchPos[0]=batchIdxRemainder;
+int blockIdxRemainder = batchPos[0]/ShapeBatch;
+int shapeIdx = batchPos[BLOCK4D_DIMS+1];
+int shapeStride =ShapeShape[BLOCK4D_DIMS+1];
+
+const int spaceBatchPos=batchPos[0]%ShapeBatch;
+for (int block_Dim=BLOCK4D_DIMS-1;block_Dim>=0;--block_Dim){
+    int offset=blockIdxRemainder;
+if block_Dim>0{
+    offset %=BlockShape[block_Dim];
+}
+int shapePos=batchPos[block_Dim+1]*BlockShape[block_Dim]+offset;
+if (shapePos>=ShapeShape[block_Dim]{
+    if(B2S==false){
+        BatchedMem[batchIdx]=0;
+    }
+    break;
+}
+shapeIdx+=shapeStride*shapePos;
+shapeStride*=ShapeShape[block_Dim];
+if (block_Dim==0){
+    shapeIdx+=shapeStride*spaceBatchPos;
+    if (B2S==false){
+        BatchedMem[batchIdx]=ldg(ShapeMem+batchIdx);
+    }else{
+        ShapeMem[shapeIdx]=lgd(BatchedMem+batchIdx);
+    }
+}
+blockIdxRemainder/=BlockShape[block_Dim];
+}
+}
+
+
+}
+
 extern "C" __global__
 void adagradfloat(const int length,
                   float *weights, //weights input and output
@@ -98,80 +156,8 @@ void l1regularizationfloat(const int length,
        }
 
     
-}  
-extern "C" __global__
-void NHWCSegmentedFrom1NHWC(  const int ChannelIndex,
-                              const int ChannelLength,
-                              const int OriginalXSize,
-                              const int OriginalYSize,
-                              float *oMem,
-                              float *nMem){
+}
 
-              
-int y = (blockIdx.y*blockDim.y +threadIdx.y);//Where y is in the memory    (y is the row)                                                  
-int x=  (blockIdx.x*blockDim.x +threadIdx.x);
-int ylength= blockDim.y*gridDim.y;
-int xlength =(blockDim.x*gridDim.x);
-int stridex=gridDim.x*xlength;
-int stridey=gridDim.y*ylength;
-int OriginalY=stridey+y;
-int OriginalX=stridex+x;
-__shared__ float *SharedMem;
-            if (y<ylength&&x<xlength){
-                if  (OriginalX<OriginalXSize && OriginalY<OriginalYSize ){
-              SharedMem[x*ylength+y] =  oMem[(ChannelIndex*OriginalXSize*OriginalYSize)+(OriginalX*OriginalYSize)+OriginalY];  
-            }else{
-                SharedMem[x*ylength+y] =0.0;
-            }
-
-                
-            }
-            __syncthreads();
-            nMem[(x*gridDim.y*ChannelLength*ylength*xlength)+(y*ChannelLength*ylength*xlength)+(ChannelIndex*ylength*xlength)+(x*ylength)+y]=  SharedMem[x*ylength+y] ;
-          
-        } 
-        
-        
-/*
-extern "C" __global__
-void NHWCSegmentedFrom1NHWC(  const int N1index,
-                              const int N2index,
-                              const int N2length,
-                              const int ChannelIndex,
-                              const int ChannelLength,
-                              const int OriginalXSize,
-                              const int OriginalYSize,
-                              float *oMem,
-                              float *nMem){
-
-              
-int y = (blockIdx.y*blockDim.y +threadIdx.y);//Where y is in the memory    (y is the row)                                                  
-int x=  (blockIdx.x*blockDim.x +threadIdx.x);
-int ylength= blockDim.y*gridDim.y;
-int xlength =(blockDim.x*gridDim.x);
-int stridex=N1index*xlength;
-int stridey=N2index*ylength;
-int OriginalY=stridey+y;
-int OriginalX=stridex+x;
-__shared__ float *SharedMem;
-            if (y<ylength&&x<xlength){
-                if  (OriginalX<OriginalXSize && OriginalY<OriginalYSize ){
-              SharedMem[x*ylength*y] =  oMem[(ChannelIndex*OriginalXSize*OriginalYSize)+(OriginalX*OriginalYSize)+OriginalY];  
-            }else{
-                SharedMem[x*ylength*y] =0.0;
-            }
-
-                
-            }
-            __syncthreads();
-            nMem[(x*N2length*ChannelLength*ylength*xlength)+(y*ChannelLength*ylength*xlength)+(ChannelIndex*ylength*xlength)+(x*ylength)+y]=  SharedMem[x*ylength*y] ;
-          
-        } 
-       
-
-
-
-  */     
 //This is paired with the host
 extern "C" __global__
 void Segment1stDim(const int start_index, const float *src,float *dst ,const int size){
@@ -339,3 +325,79 @@ if (i<length){
 }
 
 }  
+// Doesn't Work and probably wont be used
+
+/*  
+extern "C" __global__
+void NHWCSegmentedFrom1NHWC(  const int ChannelIndex,
+                              const int ChannelLength,
+                              const int OriginalXSize,
+                              const int OriginalYSize,
+                              float *oMem,
+                              float *nMem){
+
+              
+int y = (blockIdx.y*blockDim.y +threadIdx.y);//Where y is in the memory    (y is the row)                                                  
+int x=  (blockIdx.x*blockDim.x +threadIdx.x);
+int ylength= blockDim.y*gridDim.y;
+int xlength =(blockDim.x*gridDim.x);
+int stridex=gridDim.x*xlength;
+int stridey=gridDim.y*ylength;
+int OriginalY=stridey+y;
+int OriginalX=stridex+x;
+__shared__ float *SharedMem;
+            if (y<ylength&&x<xlength){
+                if  (OriginalX<OriginalXSize && OriginalY<OriginalYSize ){
+              SharedMem[x*ylength+y] =  oMem[(ChannelIndex*OriginalXSize*OriginalYSize)+(OriginalX*OriginalYSize)+OriginalY];  
+            }else{
+                SharedMem[x*ylength+y] =0.0;
+            }
+
+                
+            }
+            __syncthreads();
+            nMem[(x*gridDim.y*ChannelLength*ylength*xlength)+(y*ChannelLength*ylength*xlength)+(ChannelIndex*ylength*xlength)+(x*ylength)+y]=  SharedMem[x*ylength+y] ;
+          
+        } 
+        
+*/        
+/*
+extern "C" __global__
+void NHWCSegmentedFrom1NHWC(  const int N1index,
+                              const int N2index,
+                              const int N2length,
+                              const int ChannelIndex,
+                              const int ChannelLength,
+                              const int OriginalXSize,
+                              const int OriginalYSize,
+                              float *oMem,
+                              float *nMem){
+
+              
+int y = (blockIdx.y*blockDim.y +threadIdx.y);//Where y is in the memory    (y is the row)                                                  
+int x=  (blockIdx.x*blockDim.x +threadIdx.x);
+int ylength= blockDim.y*gridDim.y;
+int xlength =(blockDim.x*gridDim.x);
+int stridex=N1index*xlength;
+int stridey=N2index*ylength;
+int OriginalY=stridey+y;
+int OriginalX=stridex+x;
+__shared__ float *SharedMem;
+            if (y<ylength&&x<xlength){
+                if  (OriginalX<OriginalXSize && OriginalY<OriginalYSize ){
+              SharedMem[x*ylength*y] =  oMem[(ChannelIndex*OriginalXSize*OriginalYSize)+(OriginalX*OriginalYSize)+OriginalY];  
+            }else{
+                SharedMem[x*ylength*y] =0.0;
+            }
+
+                
+            }
+            __syncthreads();
+            nMem[(x*N2length*ChannelLength*ylength*xlength)+(y*ChannelLength*ylength*xlength)+(ChannelIndex*ylength*xlength)+(x*ylength)+y]=  SharedMem[x*ylength*y] ;
+          
+        } 
+       
+
+
+
+  */     
