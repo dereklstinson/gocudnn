@@ -63,17 +63,6 @@ func cfloattofloat32(input []C.float) []float32 {
 	return slice
 }
 
-/*
-//IsMalloced will return the malloced
-func (mem *Malloced) IsMalloced() *Malloced {
-	return mem
-}
-
-//IsGoPtr will return nil
-func (mem *Malloced) IsGoPtr() *GoPointer {
-	return nil
-}
-*/
 //Atributes returns the atributes
 func (mem *Malloced) Atributes() (Atribs, error) {
 	var x C.cudaPointerAttributes
@@ -362,17 +351,6 @@ func (mem *GoPointer) Ptr() unsafe.Pointer {
 	return mem.ptr
 }
 
-/*
-//Is Malloced will return nil.
-func (mem *GoPointer) IsMalloced() *Malloced {
-	return nil
-}
-
-//IsGoPtr will return the go pointer
-func (mem *GoPointer) IsGoPtr() *GoPointer {
-	return mem
-}
-*/
 //Stored returns an Location which can be used to by other programs
 func (mem *GoPointer) Stored() Location {
 	if mem.ptr == nil {

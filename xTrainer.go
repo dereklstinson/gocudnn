@@ -33,12 +33,16 @@ type TrainerD struct {
 	kreg    *Kernel
 }
 
+//RegParams holds the regulator paramaters
 type RegParams struct {
 	decay1 interface{}
 	decay2 interface{}
 	batch  interface{}
 }
 
+//CreateRegParamsFloat32 creates the RegParams for float32 ,,, I really don't like this function.
+//It was kind of a shortcut since I use a gtx1080ti. Since the new rtx line has come out. Users will probably want to take
+//advantage of other types than single precision.
 func (xtra Xtra) CreateRegParamsFloat32(decay1, decay2, batch float32) RegParams {
 	return RegParams{
 		decay1: decay1,
@@ -91,6 +95,7 @@ func (a *TrainingParams) SetEps(eps interface{}) {
 	a.eps = eps
 }
 
+//CreateParamsFloat32 creates float32 paramaters for the different types of optimization
 func (xtra Xtra) CreateParamsFloat32(eps, rate, beta1, beta2 float32) TrainingParams {
 	return TrainingParams{
 
@@ -108,15 +113,22 @@ type Regularization int32
 type RegularizationFlag struct {
 }
 
+//L1 performs l1 regularization batch is included in this
 func (r RegularizationFlag) L1() Regularization {
 	return Regularization(1)
 }
+
+//L2 performs L2 regularization batch is included in this
 func (r RegularizationFlag) L2() Regularization {
 	return Regularization(2)
 }
+
+//L1L2 performs l1l2 regularization batch is included in this
 func (r RegularizationFlag) L1L2() Regularization {
 	return Regularization(12)
 }
+
+//Batch performs only the batch regularization which the other ones do also.
 func (r RegularizationFlag) Batch() Regularization {
 	return Regularization(3)
 

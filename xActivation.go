@@ -58,6 +58,7 @@ func (x XActivationModeFlag) parametric() XActivationMode {
 	return XActivationMode(2)
 }
 
+//XActivationD is the activation descriptor for the "Xtra" stuff that I added to cudnn
 type XActivationD struct {
 	data    DataType
 	amode   XActivationMode

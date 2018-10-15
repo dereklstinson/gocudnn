@@ -5,20 +5,20 @@ for (int i=blockIdx.x *blockDim.x+threadIdx.x;i<n;\
     i +=blockDim.x*gridDim.x)\
 
 #define BLOCK4D_DIMS 2
+
 extern "C" __global__ 
-void Transpse(int numthreads,
+void Transpose(int numthreads,
               const float *src,
               const int *buf,
               const int ndims,
-              float *dest,
-              ){
+              float *dest){
 const int* src_strides=buf;
 const int* dest_strides=buf+ndims;
 const int* perm=buf+ndims*2;
 
 CUDA_GRID_LOOP_X(destIdx,numthreads){
     int srcIdx=0;
-    int32 t=destIdx;
+    int t=destIdx;
          for (int i=0;i<ndims;++i){
              const int ratio=t/dest_strides[i];
              t-= ratio * dest_strides[i];

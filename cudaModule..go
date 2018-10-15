@@ -43,6 +43,8 @@ func (cu Cuda) NewModule(filename string) (*Module, error) {
 		loaded: true,
 	}, newErrorDriver("NewModule", x)
 }
+
+//NewModuleEx takes a string of the ptx data
 func (cu Cuda) NewModuleEx(Ptx string) (*Module, error) {
 	var mod C.CUmodule
 	cptx := unsafe.Pointer(C.CString(Ptx))
@@ -114,6 +116,8 @@ const pointerSize = 8
 func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(ptr) + pointerSize*uintptr(i))
 }
+
+//Launch will launch a kernal that is in it
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
 
 	kernelParams, err := ifacetounsafe(args)

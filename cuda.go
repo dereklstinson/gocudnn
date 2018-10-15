@@ -75,6 +75,34 @@ func (d *Device) EnablePeerAccess(peer *Device) error {
 	return newErrorRuntime("EnablePeerAccess", C.cudaDeviceEnablePeerAccess(peer.idinC.c(), C.uint(0)))
 }
 
+//CudaDeviceAttribute is used to pass device attributes It is not flushed out yet
+//TODO actually build
+type cudadeviceattribute C.uint
+
+func (d cudadeviceattribute) c() uint32 {
+	return uint32(d)
+}
+func (d *Device) getattribute(attr cudadeviceattribute) (int32, error) {
+	var val C.int
+	err := newErrorRuntime("getattribute", C.cudaDeviceGetAttribute(&val, attr.c(), d.idinC.c()))
+	return int32(val), err
+}
+
+//MaxThreadsPerBlock returns the max number of threads per block and the rutime error
+func (d *Device) MaxThreadsPerBlock() (int32, error) {
+	return d.getattribute(C.cudaDevAttrMaxThreadsPerBlock)
+}
+
+//MultiProcessorCount returns the number of multiproccessors on device and the runtime error
+func (d *Device) MultiProcessorCount() (int32, error) {
+	return d.getattribute(C.cudaDevAttrMultiProcessorCount)
+}
+
+//MaxThreadsPerMultiProcessor returns the number of threads that run a multiprocessor on device and the runtime error
+func (d *Device) MaxThreadsPerMultiProcessor() (int32, error) {
+	return d.getattribute(C.cudaDevAttrMaxThreadsPerMultiProcessor)
+}
+
 //Reset resets the device. If device isn't set on current host thread. This function will auto set it. Make sure that the device that was currently using the host thread is set back onto host
 func (d *Device) Reset() error {
 

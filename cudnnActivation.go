@@ -91,17 +91,6 @@ type Activation struct {
 	Flgs  ActivationModeFlag
 }
 
-/*
-
-
-   cudnnActivationDescriptor_t         activationDesc,
-   const void                         *alpha,
-
-   const void                         *beta,
-   const cudnnTensorDescriptor_t       yDesc,
-   void                               *y
-
-*/
 //ActivationFuncs is an empty struct that is used for Activation operation type functions
 type ActivationFuncs struct {
 }

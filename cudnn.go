@@ -95,7 +95,7 @@ func (d CDouble) c() C.double { return C.double(d) }
 func (d CDouble) CPtr() unsafe.Pointer { return unsafe.Pointer(&d) }
 
 //Bytes returns the number of bytes the CScalar has
-func (f CDouble) Bytes() int { return 8 }
+func (d CDouble) Bytes() int { return 8 }
 
 //CInt is a int in C
 type CInt C.int
@@ -106,7 +106,7 @@ func (i CInt) c() C.int { return C.int(i) }
 func (i CInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
 
 //Bytes returns the number of bytes the CScalar has
-func (f CInt) Bytes() int { return 4 }
+func (i CInt) Bytes() int { return 4 }
 
 //CUInt is an unsigned int in C
 type CUInt C.uint
@@ -115,7 +115,7 @@ type CUInt C.uint
 func (i CUInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
 
 //Bytes returns the number of bytes the CScalar has
-func (f CUInt) Bytes() int { return 4 }
+func (i CUInt) Bytes() int { return 4 }
 func (i CUInt) c() C.uint  { return C.uint(i) }
 
 //CInt8 is a signed char
@@ -127,7 +127,7 @@ func (c CInt8) c() C.char { return C.char(c) }
 func (c CInt8) CPtr() unsafe.Pointer { return unsafe.Pointer(&c) }
 
 //Bytes returns the number of bytes the CScalar has
-func (f CInt8) Bytes() int { return 1 }
+func (c CInt8) Bytes() int { return 1 }
 
 //CUInt8 is a C.uchar
 type CUInt8 C.uchar
@@ -135,7 +135,7 @@ type CUInt8 C.uchar
 func (c CUInt8) c() C.uchar { return C.uchar(c) }
 
 //Bytes returns the number of bytes the CScalar has
-func (f CUInt8) Bytes() int { return 1 }
+func (c CUInt8) Bytes() int { return 1 }
 
 //CPtr retunrs an unsafe pointer for CUInt8
 func (c CUInt8) CPtr() unsafe.Pointer { return unsafe.Pointer(&c) }

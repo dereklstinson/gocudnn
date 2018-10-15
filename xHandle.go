@@ -8,24 +8,29 @@ import (
 type Xtra struct {
 }
 
-//Contexter to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
+//Handler to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
 type Handler interface {
 	SetStream(s *Stream) error
 }
 
 //XHandle is a handle for xtra functions
 type XHandle struct {
-	mod *Module
-	ptx string
-	s   *Stream
-	c   *Context
+	mod                          *Module
+	ptx                          string
+	s                            *Stream
+	c                            *Context
+	maxblockthreads              int32
+	muliproccessorcount          int32
+	maxthreadspermultiproccessor int32
 }
 
+//SetStream sets a stream to be used by the handler
 func (t *XHandle) SetStream(s *Stream) error {
 	t.s = s
 	return nil
 }
 
+//MakeXHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn
 func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *Device) (*XHandle, error) {
 	var cu Cuda
 	x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
@@ -35,10 +40,28 @@ func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *Device) (*XHandle, er
 		//fmt.Println(kerncode)
 		return nil, err
 	}
+	mtpb, err := dev.MaxThreadsPerBlock()
+	if err != nil {
+
+		return nil, err
+	}
+	mmpt, err := dev.MaxThreadsPerMultiProcessor()
+	if err != nil {
+
+		return nil, err
+	}
+
+	nummp, err := dev.MultiProcessorCount()
+	if err != nil {
+
+		return nil, err
+	}
 	//	kern,err:=cu.MakeKernel()
 	return &XHandle{
-		mod: mod,
-		//	ptx: kerncode,
+		mod:                          mod,
+		maxblockthreads:              mtpb,
+		maxthreadspermultiproccessor: mmpt,
+		muliproccessorcount:          nummp,
 	}, nil
 }
 

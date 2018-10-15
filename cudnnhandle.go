@@ -17,17 +17,6 @@ type Handle struct {
 	x C.cudnnHandle_t
 }
 
-/*
-func (handle *Handle) GetCudnnHandle() (*Handle, error) {
-	return handle, nil
-}
-func (handle *Handle) GetCudaContext() (*Context, error) {
-	return nil, errors.New("Not a CudaContext")
-}
-func (handle *Handle) GetXHandle() (*XHandle, error) {
-	return nil, errors.New("Not a TContext")
-}
-*/
 //Pointer is a pointer to the handle
 func (handle *Handle) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(handle.x)
