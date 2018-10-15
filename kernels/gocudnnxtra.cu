@@ -5,14 +5,35 @@ for (int i=blockIdx.x *blockDim.x+threadIdx.x;i<n;\
     i +=blockDim.x*gridDim.x)\
 
 #define BLOCK4D_DIMS 2
+extern "C" __global__ 
+void Transpse(int numthreads,
+              const float *src,
+              const int *buf,
+              const int ndims,
+              float *dest,
+              ){
+const int* src_strides=buf;
+const int* dest_strides=buf+ndims;
+const int* perm=buf+ndims*2;
 
+CUDA_GRID_LOOP_X(destIdx,numthreads){
+    int srcIdx=0;
+    int32 t=destIdx;
+         for (int i=0;i<ndims;++i){
+             const int ratio=t/dest_strides[i];
+             t-= ratio * dest_strides[i];
+             srcIdx+=ratio *src_strides[perm[i]];
+         }
+         dest[destIdx]=src[srcIdx];
+    }
+}
 extern "C" __global__
 void ShapetoBatch4D(          int BatchShape[BLOCK4D_DIMS+2],
                               int ShapeShape[BLOCK4D_DIMS],
                               int BlockShape[BLOCK4D_DIMS],
                              const int numthrds,
                               const int ShapeBatch,
-                             const bool B2S;
+                             const bool B2S,
                               float *BatchedMem,
                               float *ShapeMem){
 CUDA_GRID_LOOP_X(batchIdx,numthrds){
@@ -30,11 +51,11 @@ int shapeStride =ShapeShape[BLOCK4D_DIMS+1];
 const int spaceBatchPos=batchPos[0]%ShapeBatch;
 for (int block_Dim=BLOCK4D_DIMS-1;block_Dim>=0;--block_Dim){
     int offset=blockIdxRemainder;
-if block_Dim>0{
+if( block_Dim>0){
     offset %=BlockShape[block_Dim];
 }
 int shapePos=batchPos[block_Dim+1]*BlockShape[block_Dim]+offset;
-if (shapePos>=ShapeShape[block_Dim]{
+if (shapePos>=ShapeShape[block_Dim]){
     if(B2S==false){
         BatchedMem[batchIdx]=0;
     }
@@ -45,9 +66,9 @@ shapeStride*=ShapeShape[block_Dim];
 if (block_Dim==0){
     shapeIdx+=shapeStride*spaceBatchPos;
     if (B2S==false){
-        BatchedMem[batchIdx]=ldg(ShapeMem+batchIdx);
+        BatchedMem[batchIdx]= ShapeMem[batchIdx];
     }else{
-        ShapeMem[shapeIdx]=lgd(BatchedMem+batchIdx);
+        ShapeMem[shapeIdx]= BatchedMem[batchIdx];
     }
 }
 blockIdxRemainder/=BlockShape[block_Dim];
