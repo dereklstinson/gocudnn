@@ -4,6 +4,10 @@
 for (int i=blockIdx.x *blockDim.x+threadIdx.x;i<n;\
     i +=blockDim.x*gridDim.x)\
 
+#define CUDA_GRID_AXIS_LOOP(i,n,axis)\
+for (int i=blockIdx.axis *blockDim.axis+threadIdx.axis;i<n;\
+    i +=blockDim.axis*gridDim.axis)\
+
 #define BLOCK4D_DIMS 2
 
 extern "C" __global__ 
@@ -13,71 +17,248 @@ void Transpose(int numthreads,
               const int ndims,
               float *dest){
 const int* src_strides=buf;
-const int* dest_strides=buf+ndims;
-const int* perm=buf+ndims*2;
+const int* dest_strides=&buf[ndims];
+const int* perm=&buf[ndims*2];
 
 CUDA_GRID_LOOP_X(destIdx,numthreads){
     int srcIdx=0;
     int t=destIdx;
          for (int i=0;i<ndims;++i){
-             const int ratio=t/dest_strides[i];
+           const int ratio=t/dest_strides[i];
              t-= ratio * dest_strides[i];
-             srcIdx+=ratio *src_strides[perm[i]];
+             srcIdx+= (ratio *src_strides[perm[i]]);
          }
          dest[destIdx]=src[srcIdx];
     }
 }
-extern "C" __global__
-void ShapetoBatch4D(          int BatchShape[BLOCK4D_DIMS+2],
-                              int ShapeShape[BLOCK4D_DIMS],
-                              int BlockShape[BLOCK4D_DIMS],
-                             const int numthrds,
-                              const int ShapeBatch,
-                             const bool B2S,
-                              float *BatchedMem,
-                              float *ShapeMem){
-CUDA_GRID_LOOP_X(batchIdx,numthrds){
-int batchIdxRemainder = batchIdx;
-int  batchPos[BLOCK4D_DIMS+2];
-for (int dim= BLOCK4D_DIMS+1;dim>=1;--dim){
-    batchPos[dim]=batchIdxRemainder%BatchShape[dim];
-    batchIdxRemainder/=BatchShape[dim];
-}
-batchPos[0]=batchIdxRemainder;
-int blockIdxRemainder = batchPos[0]/ShapeBatch;
-int shapeIdx = batchPos[BLOCK4D_DIMS+1];
-int shapeStride =ShapeShape[BLOCK4D_DIMS+1];
+extern "C" __global__ 
+void ShapetoBatch4DNHWC(
+                    const int xThreads,
+                    const int yThreads,
+                    const int zThreads,    
+                    const int hSize,
+                    const int wSize,          
+                    const int BatchOffset,
+                    const int ShapeOffset,
+                    const int N1,
+                    const int N2,
+                    float *shape,
+                    float *batch,
+                    int S2B){
+                       int batch0= N2*xThreads*yThreads*zThreads;
+                       int batch1=  xThreads*yThreads*zThreads;
+                       int batch2= yThreads*zThreads;
+                       int batch3= zThreads;
+                       for (int i=0;i<N1;i++){
+                        for (int j=0;j<N2;j++){
+                                CUDA_GRID_AXIS_LOOP(xIdx,xThreads,x){
+                                    CUDA_GRID_AXIS_LOOP(yIdx,yThreads,y){
+                                        CUDA_GRID_AXIS_LOOP(zIdx,zThreads,z){
+                                    
 
-const int spaceBatchPos=batchPos[0]%ShapeBatch;
+                                            int oh=(xThreads*i)+xIdx;
+                                            int ow=(yThreads*j)+yIdx;
+                                       
+                                 
+                                            if (S2B>0){
+                                                if (oh<hSize && ow<wSize){
+                                                batch[BatchOffset+(i*batch0)+(j*batch1)+(xIdx*batch2)+(yIdx*batch3)+zIdx]=
+                                               shape[ShapeOffset+(oh*hSize*zThreads)+(ow*zThreads)+zIdx];
+                                                }else{
+                                                    batch[BatchOffset+(i*batch0)+(j*batch1)+(xIdx*batch2)+(yIdx*batch3)+zIdx]=0;
+                                                }
+                                        }else{
+                                            shape[ShapeOffset+(oh*hSize*zThreads)+(ow*zThreads)+zIdx]=
+                                            batch[BatchOffset+(i*batch0)+(j*batch1)+(xIdx*batch2)+(yIdx*batch3)+zIdx];
+                                            
+                                        }
+                                         
+                                      }
+
+                                      }
+                                        
+                                    }
+                                }
+
+
+
+                            }
+                        }
+                    
+
+ extern "C" __global__ 
+ void ShapetoBatch4DNCHW(
+                     const int xThreads,
+                     const int yThreads,
+                     const int zThreads,    
+                     const int hSize,
+                     const int wSize,            
+                     const int BatchOffset,
+                     const int ShapeOffset,
+                     const int N1,
+                     const int N2,
+                     float *shape,
+                     float *batch,
+                     int S2B){
+                        int batch0= N2*xThreads*yThreads*zThreads;
+                        int batch1=  xThreads*yThreads*zThreads;
+                        int batch2= xThreads*yThreads;
+                        int batch3=  yThreads;
+                        for (int i=0;i<N1;i++){
+                         for (int j=0;j<N2;j++){
+                                 CUDA_GRID_AXIS_LOOP(xIdx,xThreads,x){
+                                     CUDA_GRID_AXIS_LOOP(yIdx,yThreads,y){
+                                         CUDA_GRID_AXIS_LOOP(zIdx,zThreads,z){
+                                     
+ 
+                                             int oh=(yThreads*i)+yIdx;
+                                             int ow=(zThreads*j)+zIdx;
+                                        
+                                  
+                                             if (S2B>0){
+                                                 if (oh<hSize && ow<wSize){
+                                                 batch[BatchOffset+(i*batch0)+(j*batch1)+(xIdx*batch2)+(yIdx*batch3)+zIdx]=
+                                                shape[ShapeOffset+(xIdx*wSize*hSize)+(oh*wSize)+ow];
+                                                 }else{
+                                                     batch[BatchOffset+(i*batch0)+(j*batch1)+(xIdx*batch2)+(yIdx*batch3)+zIdx]=0;
+                                                 }
+                                         }else{
+                                             shape[ShapeOffset+(xIdx*wSize*hSize)+(oh*wSize)+ow]=
+                                             batch[BatchOffset+(i*batch0)+(j*batch1)+(xIdx*batch2)+(yIdx*batch3)+zIdx];
+                                             
+                                         }
+                                       
+                                   }
+                                 }
+                                                           
+                              }
+                            }
+                          }
+                      }
+
+extern "C" __global__
+void ShapetoBatch4Dold(         const int *yNHWC,//[BLOCK4D_DIMS+2],
+                             const int *xHW,//[BLOCK4D_DIMS],
+                             const int *BlockHW,//[BLOCK4D_DIMS],
+                             const int numthrds,
+                             const int xN,
+                             const int B2S,
+                              float *xMem,
+                              float *yMem){
+CUDA_GRID_LOOP_X(yIdx,numthrds){
+int yIdxRemainder = yIdx;
+
+int  batchPos[BLOCK4D_DIMS+2];
+
+for (int dim= BLOCK4D_DIMS+1;dim>=1;--dim){
+    batchPos[dim] = yIdxRemainder % yNHWC[dim];
+    yIdxRemainder/=yNHWC[dim];
+}
+batchPos[0]=yIdxRemainder;
+int blockIdxRemainder = batchPos[0]/xN;
+int xIdx = batchPos[BLOCK4D_DIMS+1];
+int xStride =xHW[BLOCK4D_DIMS+1];
+
+const int xyposition=batchPos[0]%xN;
 for (int block_Dim=BLOCK4D_DIMS-1;block_Dim>=0;--block_Dim){
     int offset=blockIdxRemainder;
 if( block_Dim>0){
-    offset %=BlockShape[block_Dim];
+    offset %=BlockHW[block_Dim];
 }
-int shapePos=batchPos[block_Dim+1]*BlockShape[block_Dim]+offset;
-if (shapePos>=ShapeShape[block_Dim]){
-    if(B2S==false){
-        BatchedMem[batchIdx]=0;
+int xPos=batchPos[block_Dim+1]*BlockHW[block_Dim]+offset;
+if (xPos<0||xPos>=xHW[block_Dim]){
+    if (B2S<1){
+        yMem[yIdx]=0;
     }
     break;
 }
-shapeIdx+=shapeStride*shapePos;
-shapeStride*=ShapeShape[block_Dim];
+xIdx+=xStride*xPos;
+xStride*=xHW[block_Dim];
 if (block_Dim==0){
-    shapeIdx+=shapeStride*spaceBatchPos;
-    if (B2S==false){
-        BatchedMem[batchIdx]= ShapeMem[batchIdx];
+    xIdx+=xStride*xyposition;
+    if (B2S<1){
+        yMem[yIdx]= xMem[xIdx];
     }else{
-        ShapeMem[shapeIdx]= BatchedMem[batchIdx];
+        xMem[xIdx]= yMem[yIdx];
     }
 }
-blockIdxRemainder/=BlockShape[block_Dim];
+blockIdxRemainder/=BlockHW[block_Dim];
 }
 }
 
 
 }
 
+/*
+                             const int *yNHWC,//[BLOCK4D_DIMS+2],
+                             const int *xHW,//[BLOCK4D_DIMS],
+                             const int *BlockHW,//[BLOCK4D_DIMS],
+                             const int numthrds,
+                             const int xN,
+                             const int B2S,
+                              float *xMem,
+                              float *yMem){
+
+
+
+*/
+/*
+#define NUM_BLOCK_DIMS 2
+extern "C"__global__ 
+void ShapetoBatch4D( const int args.batch_tensor_shape
+    const int32 nthreads, T* space_tensor_ptr,
+                    S2BParameters<NUM_BLOCK_DIMS> args, T* batch_tensor_ptr) {
+  CUDA_1D_KERNEL_LOOP(batch_tensor_idx, nthreads) {
+    int32 remaining_batch_tensor_idx = batch_tensor_idx;
+
+    int32 batch_tensor_pos[NUM_BLOCK_DIMS + 2];
+
+    for (int dim = NUM_BLOCK_DIMS + 1; dim >= 1; --dim) {
+      batch_tensor_pos[dim] =
+          remaining_batch_tensor_idx % args.batch_tensor_shape[dim];
+      remaining_batch_tensor_idx /= args.batch_tensor_shape[dim];
+    }
+    batch_tensor_pos[0] = remaining_batch_tensor_idx;
+
+    int32 remaining_block_idx = batch_tensor_pos[0] / args.space_tensor_batch;
+    int32 space_tensor_idx = batch_tensor_pos[NUM_BLOCK_DIMS + 1];
+    int32 space_tensor_stride = args.batch_tensor_shape[NUM_BLOCK_DIMS + 1];
+    const int32 space_tensor_batch_pos =
+        batch_tensor_pos[0] % args.space_tensor_batch;
+    for (int block_dim = NUM_BLOCK_DIMS - 1; block_dim >= 0; --block_dim) {
+      int32 offset = remaining_block_idx;
+      if (block_dim > 0) {
+        offset %= args.block_shape[block_dim];
+      }
+      int32 space_tensor_pos =
+          batch_tensor_pos[block_dim + 1] * args.block_shape[block_dim] +
+          offset - args.pad_start[block_dim];
+      if (space_tensor_pos < 0 ||
+          space_tensor_pos >= args.space_tensor_spatial_shape[block_dim]) {
+        if (B2S == false) {
+          // In the space-to-batch case, write zero padding.
+          batch_tensor_ptr[batch_tensor_idx] = static_cast<T>(0);
+        }
+        break;
+      }
+      space_tensor_idx += space_tensor_stride * space_tensor_pos;
+      space_tensor_stride *= args.space_tensor_spatial_shape[block_dim];
+      if (block_dim == 0) {
+        space_tensor_idx += space_tensor_stride * space_tensor_batch_pos;
+        if (B2S == false) {
+          batch_tensor_ptr[batch_tensor_idx] =
+              ldg(space_tensor_ptr + space_tensor_idx);
+        } else {
+          space_tensor_ptr[space_tensor_idx] =
+              ldg(batch_tensor_ptr + batch_tensor_idx);
+        }
+      }
+      remaining_block_idx /= args.block_shape[block_dim];
+    }
+  }
+}
+
+*/
 extern "C" __global__
 void adagradfloat(const int length,
                   float *weights, //weights input and output

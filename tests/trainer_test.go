@@ -89,7 +89,7 @@ func TestTrainer(t *testing.T) {
 	//err = stream.Sync()
 
 	params := gocudnn.Xtra{}.CreateParamsFloat32(float32(1e-8), float32(.001), float32(.9), float32(.999))
-	err = traind.TrainValues(trainhandle, 128, dx, x, gsum, xsum, params)
+	err = traind.TrainValues(trainhandle, dx, x, gsum, xsum, params)
 	if err != nil {
 		t.Error(err)
 	}

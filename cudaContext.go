@@ -11,18 +11,6 @@ type Context struct {
 }
 
 /*
-func (c *Context) GetCudnnHandle() (*Handle, error) {
-	return nil, errors.New("Not a CudnnHandle")
-}
-func (c *Context) GetCudaContext() (*Context, error) {
-	return c, nil
-}
-func (c *Context) GetXHandle() (*XHandle, error) {
-	return nil, errors.New("Not a TContext")
-}
-*/
-
-/*
 CtxCreate creates a context.  --Flags are listed below just pass the equivelant uint32 for the flag.  I know it is lazy, but cuda was kind of lazy in this respect, too.  Default to zero if you don't know what the stuff does.
 CU_CTX_SCHED_AUTO = 0x00 -> uint32(0)
 	Automatic scheduling

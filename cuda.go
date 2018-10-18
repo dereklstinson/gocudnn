@@ -88,6 +88,44 @@ func (d *Device) getattribute(attr cudadeviceattribute) (int32, error) {
 	return int32(val), err
 }
 
+//MaxBlockDimXYZ returns an array of the values of blocks xyz in that order and an error
+func (d *Device) MaxBlockDimXYZ() ([]int32, error) {
+	var err error
+	xyz := make([]int32, 3)
+	xyz[0], err = d.getattribute(C.cudaDevAttrMaxBlockDimX)
+	if err != nil {
+		return nil, err
+	}
+	xyz[1], err = d.getattribute(C.cudaDevAttrMaxBlockDimY)
+	if err != nil {
+		return nil, err
+	}
+	xyz[2], err = d.getattribute(C.cudaDevAttrMaxBlockDimZ)
+	if err != nil {
+		return nil, err
+	}
+	return xyz, err
+}
+
+//MaxGridDimXYZ returns an array of the values of blocks xyz in that order and an error
+func (d *Device) MaxGridDimXYZ() ([]int32, error) {
+	var err error
+	xyz := make([]int32, 3)
+	xyz[0], err = d.getattribute(C.cudaDevAttrMaxGridDimX)
+	if err != nil {
+		return nil, err
+	}
+	xyz[1], err = d.getattribute(C.cudaDevAttrMaxGridDimY)
+	if err != nil {
+		return nil, err
+	}
+	xyz[2], err = d.getattribute(C.cudaDevAttrMaxGridDimZ)
+	if err != nil {
+		return nil, err
+	}
+	return xyz, err
+}
+
 //MaxThreadsPerBlock returns the max number of threads per block and the rutime error
 func (d *Device) MaxThreadsPerBlock() (int32, error) {
 	return d.getattribute(C.cudaDevAttrMaxThreadsPerBlock)

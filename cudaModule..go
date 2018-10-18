@@ -13,6 +13,7 @@ const CUjit_option * nullJitOptions = NULL;
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 )
 
@@ -120,7 +121,8 @@ func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 //Launch will launch a kernal that is in it
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
 
-	kernelParams, err := ifacetounsafe(args)
+	//	kernelParams, err := ifacetounsafe(args)
+	kernelParams, err := ifacetocunsafeprototype(args)
 	if err != nil {
 		return err
 	}
@@ -250,10 +252,74 @@ func (k *Kernel) LaunchV2(p KernelArguments) error {
 		))
 }
 */
+
+func ifacetocunsafeprototype(args []interface{}) ([]unsafe.Pointer, error) {
+
+	//	fmt.Println("arguments passed", args)
+	//fmt.Println("Length of Args", len(args))
+	unzippedargs := make([]interface{}, 0)
+	for i := range args {
+		switch x := args[i].(type) {
+		case []int32:
+			for j := range x {
+				unzippedargs = append(unzippedargs, x[j])
+			}
+		case []float64:
+			for j := range x {
+				unzippedargs = append(unzippedargs, x[j])
+			}
+		case []float32:
+			for j := range x {
+				unzippedargs = append(unzippedargs, x[j])
+			}
+		case []int:
+			for j := range x {
+				unzippedargs = append(unzippedargs, x[j])
+			}
+		case []uint32:
+			for j := range x {
+				unzippedargs = append(unzippedargs, x[j])
+			}
+		case []uint:
+			for j := range x {
+				unzippedargs = append(unzippedargs, x[j])
+			}
+		case []byte:
+			for j := range x {
+				unzippedargs = append(unzippedargs, x[j])
+			}
+		default:
+			unzippedargs = append(unzippedargs, args[i])
+		}
+	}
+	array := make([]unsafe.Pointer, len(unzippedargs))
+
+	for i := range unzippedargs {
+
+		switch x := unzippedargs[i].(type) {
+		case *Malloced:
+			if x.ptr == nil {
+				return nil, errors.New("Memory Doesn't Have A Pointer")
+			}
+			array[i] = unsafe.Pointer(&x.ptr)
+		default:
+			//fmt.Println("Got to:", i, "value is", x)
+			scalar := CScalarConversion(x)
+			if scalar == nil {
+				fmt.Println(unzippedargs[i])
+				return nil, errors.New("Not a supported value")
+			}
+			array[i] = scalar.CPtr()
+		}
+
+	}
+	return array, nil
+}
 func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 	array := make([]unsafe.Pointer, len(args))
 	//	fmt.Println("arguments passed", args)
 	//fmt.Println("Length of Args", len(args))
+
 	for i := 0; i < len(args); i++ {
 		y := args[i]
 		switch x := y.(type) {

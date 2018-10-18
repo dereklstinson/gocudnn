@@ -12,8 +12,7 @@ import (
 
 //Tensor is used for calling Tensor Funcs and also holds the flags
 type Tensor struct {
-	Flgs  TensorFlags
-	Funcs TensorFuncs
+	Flgs TensorFlags
 }
 
 func (math MathType) string() string {
@@ -26,15 +25,18 @@ func (math MathType) string() string {
 type descflag uint32
 
 const (
-	t4d descflag = 1
-	tnd descflag = 2
-	t2d descflag = 3
+	t4d   descflag = 1
+	tnd   descflag = 2
+	t2d   descflag = 3
+	t4dex descflag = 4
+	tndex descflag = 5
 )
 
 //TensorD holds the cudnnTensorDescriptor. Which is basically the tensor itself
 type TensorD struct {
 	descriptor C.cudnnTensorDescriptor_t
 	dims       C.int
+	frmt       TensorFormat
 	flag       descflag
 }
 
@@ -65,7 +67,7 @@ func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape 
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, dims: C.int(4), flag: t4d}, nil
+	return &TensorD{descriptor: descriptor, frmt: format, dims: C.int(4), flag: t4d}, nil
 }
 
 //NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
@@ -83,7 +85,7 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, dims: C.int(4), flag: t4d}, nil
+	return &TensorD{descriptor: descriptor, dims: C.int(4), flag: t4dex}, nil
 
 }
 
@@ -128,7 +130,16 @@ func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shap
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, dims: dims, flag: tnd}, nil
+	return &TensorD{descriptor: descriptor, dims: dims, flag: tndex}, nil
+}
+
+//GetFormat returns the format of the tensor error will return if tensor supports slide//
+func (t *TensorD) GetFormat() (TensorFormat, error) {
+	if t.flag == tndex || t.flag == t4d {
+		return t.frmt, nil
+	}
+	return 255, errors.New("Tensor Uses slide method")
+
 }
 
 //GetDescrptor returns Data Type the Dims for shape and stride and error.  for Descriptors without stride it will still return junk info. so be mindful when you code.
@@ -167,8 +178,6 @@ func (t *TensorD) DestroyDescriptor() error {
 }
 
 //TensorFuncs is used to call functions for tensors usually the are functions that pass the Handle Type
-type TensorFuncs struct {
-}
 
 //TransformTensor see below
 /*
@@ -190,7 +199,7 @@ cudnnStatus_t cudnnTransformTensor(
 y = Transfomr((alpha *x),(beta * y))
 This will change the layout of a tensor stride wise
 */
-func (ten TensorFuncs) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x Memer, beta CScalar, ty *TensorD, y Memer) error {
+func (t Tensor) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x Memer, beta CScalar, ty *TensorD, y Memer) error {
 	var s Status
 
 	s = Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), ty.descriptor, y.Ptr()))
@@ -205,19 +214,19 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (ten TensorFuncs) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A Memer, beta CScalar, cD *TensorD, c Memer) error {
+func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A Memer, beta CScalar, cD *TensorD, c Memer) error {
 
 	s := Status(C.cudnnAddTensor(h.x, alpha.CPtr(), aD.descriptor, A.Ptr(), beta.CPtr(), cD.descriptor, c.Ptr()))
 	return s.error("AddTensor")
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func (ten TensorFuncs) ScaleTensor(h *Handle, yD *TensorD, y Memer, alpha CScalar) error {
+func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y Memer, alpha CScalar) error {
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), alpha.CPtr())).error("ScaleTensor")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func (ten TensorFuncs) SetTensor(handle *Handle, yDesc *TensorD, y Memer, v CScalar) error {
+func (t Tensor) SetTensor(handle *Handle, yDesc *TensorD, y Memer, v CScalar) error {
 
 	x := C.cudnnSetTensor(handle.x, yDesc.descriptor, y.Ptr(), v.CPtr())
 	return Status(x).error("SetTensor")
@@ -446,4 +455,11 @@ func (t TensorFormatFlag) NHWC() TensorFormat {
 func (t TensorFormatFlag) NCHWvectC() TensorFormat {
 	return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
 }
+
+/*
+//SlideMethod will be used pretty much only as a backend.
+func (t TensorFormatFlag)SlideMethod() TensorFormat{
+	return TensorFormat(C.cudnnTensorFormat_t(255))
+}
+*/
 func (t TensorFormat) c() C.cudnnTensorFormat_t { return C.cudnnTensorFormat_t(t) }

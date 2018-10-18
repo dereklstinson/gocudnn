@@ -598,6 +598,16 @@ func (mem ManagedMemFlag) Host() ManagedMem {
 	return ManagedMem(2)
 }
 
+//UnifiedMangedHost uses the Unified memory mangement system and starts it off in the host
+func UnifiedMangedHost(size SizeT) (*Malloced, error) {
+	return MallocManaged(size, ManagedMem(2))
+}
+
+//UnifiedMangedGlobal uses the Unified memory mangement system and starts it off in the host
+func UnifiedMangedGlobal(size SizeT) (*Malloced, error) {
+	return MallocManaged(size, ManagedMem(1))
+}
+
 //MallocManaged is useful if devices support unified virtual memory.
 func MallocManaged(size SizeT, management ManagedMem) (*Malloced, error) {
 	var mem Malloced

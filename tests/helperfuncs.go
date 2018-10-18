@@ -22,7 +22,7 @@ func testTensorFloat4dNCHW(input []int32) (*gocudnn.TensorD, *gocudnn.Malloced, 
 	if err != nil {
 		return nil, nil, err
 	}
-	xmem, err := gocudnn.Malloc(xDsize)
+	xmem, err := gocudnn.UnifiedMangedGlobal(xDsize)
 	if err != nil {
 		return nil, nil, err
 	}

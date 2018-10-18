@@ -31,7 +31,7 @@ func TestTensoTrans(t *testing.T) {
 	//t.Error(ysize)
 	y, err := gocudnn.Malloc(ysize)
 
-	err = gocudnn.TensorFuncs{}.TransformTensor(handle, gocudnn.CFloat(1), xDesc, x, gocudnn.CFloat(0), yDesc, y)
+	err = gocudnn.Tensor{}.TransformTensor(handle, gocudnn.CFloat(1), xDesc, x, gocudnn.CFloat(0), yDesc, y)
 	if err != nil {
 		t.Error(err)
 	}

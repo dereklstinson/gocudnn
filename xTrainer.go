@@ -241,22 +241,23 @@ func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, l
 
 //L1L2Regularization does the l1l2 regularization
 func (d *TrainerD) L1L2Regularization(h *XHandle, blocksize uint32, dw, w, l1, l2 Memer, params RegParams) error {
-	var size uint32
+	var size int32
 	switch d.data {
 	case DataTypeFlag{}.Float():
-		size = uint32(w.ByteSize() / SizeT(4))
+		size = int32(w.ByteSize() / SizeT(4))
 	default:
 		return errors.New("Unsupported Type")
 
 	}
-	gridsize := kernels.SimpleGridCalculator(blocksize, size)
-	return d.kreg.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+	config := h.LaunchConfig(size)
+
+	return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
 
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(h *XHandle, blocksize uint32, dw, w, gsum, xsum Memer, params TrainingParams) error { //Not working yet.
-	var size uint32
+func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum Memer, params TrainingParams) error {
+	var size int32
 	var err error
 	if xsum != nil {
 		if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
@@ -283,16 +284,17 @@ func (d *TrainerD) TrainValues(h *XHandle, blocksize uint32, dw, w, gsum, xsum M
 	var dflg DataTypeFlag
 	switch d.data {
 	case dflg.Float():
-		size = uint32(w.ByteSize() / SizeT(4))
+		size = int32(w.ByteSize() / SizeT(4))
 	default:
 		return errors.New("Unsupported Type")
 	}
-	gridsize := kernels.SimpleGridCalculator(blocksize, size)
+
+	config := h.LaunchConfig(size)
 
 	switch d.mode {
 	case TrainingModeFlag{}.Adam():
 
-		err = d.adam(gridsize, uint32(1), uint32(1), blocksize, uint32(1), uint32(1), 0, h.s, int32(size), w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, float32(d.counter))
+		err = d.adam(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, float32(d.counter))
 		if err != nil {
 			return err
 		}
@@ -304,12 +306,14 @@ func (d *TrainerD) TrainValues(h *XHandle, blocksize uint32, dw, w, gsum, xsum M
 		return nil
 
 	case TrainingModeFlag{}.AdaDelta():
-		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, w, gsum, dw, params.rate, params.eps)
+		config := h.LaunchConfig(size)
+		err = d.kmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, w, gsum, dw, params.rate, params.eps)
 		if err != nil {
 			return err
 		}
 	case TrainingModeFlag{}.AdaGrad():
-		err = d.kmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, size, w, gsum, dw, params.rate, params.eps)
+		config := h.LaunchConfig(size)
+		err = d.kmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, w, gsum, dw, params.rate, params.eps)
 		if err != nil {
 			return err
 		}

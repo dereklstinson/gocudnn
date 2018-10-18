@@ -126,55 +126,42 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 }
 
 //ForwardProp does the feed forward operation alphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y
-func (xA *XActivationD) ForwardProp(h *XHandle, blocksize, batch uint32, xD *TensorD, x Memer, yD *TensorD, y Memer, alphas Memer) error {
+func (xA *XActivationD) ForwardProp(h *XHandle, batch uint32, xD *TensorD, x Memer, yD *TensorD, y Memer, alphas Memer) error {
 	dtype, _, _, err := xD.GetDescrptor()
 	sizeinbytes, err := xD.GetSizeInBytes()
 	if err != nil {
 		return err
 	}
 	length := FindLength(sizeinbytes, dtype)
-	alphalength := length / batch
-	gridsize := kernels.SimpleGridCalculator(blocksize, length)
-	alphagrid := kernels.SimpleGridCalculator(blocksize, alphalength)
-	//batchgrid := kernels.SimpleGridCalculator(blocksize, batch)
+
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
-		return xA.fwdmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, x, y, float32(xA.coef))
-	case XActivationModeFlag{}.parametric():
-		return xA.fwdmode.Launch(alphagrid, batch, 1, blocksize, 1, 1, 0, h.s, length, alphalength, x, y, alphas)
+		config := h.LaunchConfig(int32(length))
+		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef))
+
 	}
 	return errors.New("Unsupported XActivationMode")
 }
 
 //BackProp does the feed forward operation alphas and dalphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y(parametric right now)
-func (xA *XActivationD) BackProp(h *XHandle, blocksize, batch uint32, xD *TensorD, x Memer, dxD *TensorD, dx Memer, dyD *TensorD, dy Memer, alphas, dalphas Memer) error {
+func (xA *XActivationD) BackProp(h *XHandle, batch uint32, xD *TensorD, x Memer, dxD *TensorD, dx Memer, dyD *TensorD, dy Memer, alphas, dalphas Memer) error {
 	dtype, _, _, err := dxD.GetDescrptor()
 	sizeinbytes, err := dxD.GetSizeInBytes()
 	if err != nil {
 		return err
 	}
 	length := FindLength(sizeinbytes, dtype)
-	alphalength := length / batch
-	gridsize := kernels.SimpleGridCalculator(blocksize, length)
-	alphagrid := kernels.SimpleGridCalculator(blocksize, alphalength)
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
-		return xA.bwdmode.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, x, dx, dy, float32(xA.coef))
-	case XActivationModeFlag{}.parametric():
-
-		if alphas == nil || dalphas == nil {
-
-			return errors.New("alphas or daphas are nil")
-
-		}
-		return xA.bwdmode.Launch(alphagrid, batch, 1, blocksize, 1, 1, 0, h.s, length, alphalength, x, dx, dy, alphas, dalphas)
+		config := h.LaunchConfig(int32(length))
+		return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef))
 	}
 	return errors.New("Unsupported XActivationMode")
 }
 
 //UpdateAlphas will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
-func (xA *XActivationD) UpdateAlphas(h *XHandle, blocksize uint32, batch int, dxD *TensorD, alphas, dalphas, xsum, gsum Memer, t TrainingParams) error {
+func (xA *XActivationD) UpdateAlphas(h *XHandle, batch int, dxD *TensorD, alphas, dalphas, xsum, gsum Memer, t TrainingParams) error {
 	var dtf DataTypeFlag
 	dtype, _, _, err := dxD.GetDescrptor()
 	if dtype != dtf.Float() {
@@ -184,27 +171,29 @@ func (xA *XActivationD) UpdateAlphas(h *XHandle, blocksize uint32, batch int, dx
 	if err != nil {
 		return err
 	}
+
 	length := FindLength(sizeinbytes, dtype)
-	gridsize := kernels.SimpleGridCalculator(blocksize, length)
+	config := h.LaunchConfig(int32(length))
+
 	if xA.rmodek == nil {
 		return errors.New("regularization mode not set this is internal and if not using parmetric activation then you shouldn't update the alphas")
 	}
-	err = xA.rmodek.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, dalphas, float32(batch))
+	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, float32(batch))
 	if err != nil {
 		return err
 	}
 	switch xA.tmode {
 	case TrainingModeFlag{}.Adam():
 
-		err = xA.tmodek.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, alphas, gsum, xsum, dalphas, t.rate, t.beta1, t.beta2, t.eps, float32(xA.counter))
+		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, gsum, xsum, dalphas, t.rate, t.beta1, t.beta2, t.eps, float32(xA.counter))
 
 		///void adamfloat(const int length,float *w,float *gsum,float *xsum,float *dw,const float rate,const float beta1,const float beta2,const float eps,const float counter){
 		xA.counter++
 		return err
 	case TrainingModeFlag{}.AdaDelta():
-		return xA.tmodek.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, alphas, gsum, xsum, dalphas, t.rate, t.eps)
+		return xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, gsum, xsum, dalphas, t.rate, t.eps)
 	case TrainingModeFlag{}.AdaGrad():
-		return xA.tmodek.Launch(gridsize, 1, 1, blocksize, 1, 1, 0, h.s, length, alphas, dalphas, gsum, t.rate, t.eps)
+		return xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, dalphas, gsum, t.rate, t.eps)
 
 	}
 
