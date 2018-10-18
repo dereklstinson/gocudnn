@@ -240,7 +240,7 @@ func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, l
 }
 
 //L1L2Regularization does the l1l2 regularization
-func (d *TrainerD) L1L2Regularization(h *XHandle, blocksize uint32, dw, w, l1, l2 Memer, params RegParams) error {
+func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 Memer, params RegParams) error {
 	var size int32
 	switch d.data {
 	case DataTypeFlag{}.Float():
