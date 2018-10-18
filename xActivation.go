@@ -126,7 +126,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 }
 
 //ForwardProp does the feed forward operation alphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y
-func (xA *XActivationD) ForwardProp(h *XHandle, batch uint32, xD *TensorD, x Memer, yD *TensorD, y Memer, alphas Memer) error {
+func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x Memer, yD *TensorD, y Memer, alphas Memer) error {
 	dtype, _, _, err := xD.GetDescrptor()
 	sizeinbytes, err := xD.GetSizeInBytes()
 	if err != nil {
@@ -144,7 +144,7 @@ func (xA *XActivationD) ForwardProp(h *XHandle, batch uint32, xD *TensorD, x Mem
 }
 
 //BackProp does the feed forward operation alphas and dalphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y(parametric right now)
-func (xA *XActivationD) BackProp(h *XHandle, batch uint32, xD *TensorD, x Memer, dxD *TensorD, dx Memer, dyD *TensorD, dy Memer, alphas, dalphas Memer) error {
+func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x Memer, dxD *TensorD, dx Memer, dyD *TensorD, dy Memer, alphas, dalphas Memer) error {
 	dtype, _, _, err := dxD.GetDescrptor()
 	sizeinbytes, err := dxD.GetSizeInBytes()
 	if err != nil {
