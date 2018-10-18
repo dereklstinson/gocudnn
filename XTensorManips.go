@@ -20,18 +20,18 @@ func (xt Xtra) CreateTransposeDesc(handle *XHandle) (*XTransposeD, error) {
 }
 
 //GetChannelTransposeOutputDescAndPerm4d  will output a transposed descriptor and the permutation array for a NCHW to NHWC and vice versa
-func (t *XTransposeD) GetChannelTransposeOutputDescAndPerm4d(src *TensorD) (*TensorD, []int32, error) {
+func (t *XTransposeD) GetChannelTransposeOutputProperties(src *TensorD) (TensorFormat, DataType, []int32, []int32, error) {
 	dtype, dims, _, err := src.GetDescrptor()
 	if err != nil {
-		return nil, nil, err
+		return 255, 255, nil, nil, err
 	}
 	var dflag DataTypeFlag
 	if dtype != dflag.Float() {
-		return nil, nil, errors.New("Only Supported Format is float32")
+		return 255, 255, nil, nil, errors.New("Only Supported Format is float32")
 	}
 	frmt, err := src.GetFormat()
 	if err != nil {
-		return nil, nil, err
+		return 255, 255, nil, nil, err
 	}
 
 	var frmtflg TensorFormatFlag
@@ -39,16 +39,16 @@ func (t *XTransposeD) GetChannelTransposeOutputDescAndPerm4d(src *TensorD) (*Ten
 	if frmt == frmtflg.NCHW() {
 		perm := []int32{0, 2, 3, 1}
 		outdims := findnewdims(dims, perm)
-		outD, err := Tensor{}.NewTensor4dDescriptor(dtype, frmtflg.NHWC(), outdims)
-		return outD, perm, err
+
+		return frmtflg.NHWC(), dtype, outdims, perm, nil
 
 	} else if frmt == frmtflg.NHWC() {
 		perm := []int32{0, 3, 1, 2}
 		outdims := findnewdims(dims, perm)
-		outD, err := Tensor{}.NewTensor4dDescriptor(dtype, frmtflg.NCHW(), outdims)
-		return outD, perm, err
+
+		return frmtflg.NCHW(), dtype, outdims, perm, nil
 	}
-	return nil, nil, errors.New("Unsupported Tensor Format")
+	return 255, 255, nil, nil, errors.New("Unsupported Tensor Format")
 
 }
 
@@ -322,14 +322,14 @@ func copytogpuunified(x *GoPointer) (*Malloced, error) {
 }
 
 //FindShapetoBatchoutputTensor creates a tensordescriptor for the segmeented size
-func (s *XShapetoBatchD) FindShapetoBatchoutputTensor(descX *TensorD, h, w int32) (*TensorD, error) {
+func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
-		return nil, err
+		return 255, 255, nil, err
 	}
 	var dflag DataTypeFlag
 	if dtype != dflag.Float() {
-		return nil, errors.New("Only Supported Format is float32")
+		return 255, 255, nil, errors.New("Only Supported Format is float32")
 	}
 	var frmt TensorFormatFlag
 	xfrmt, err := descX.GetFormat()
@@ -339,15 +339,16 @@ func (s *XShapetoBatchD) FindShapetoBatchoutputTensor(descX *TensorD, h, w int32
 
 		n1 := int32(divideandroundup(dims[2], h))
 		n2 := int32(divideandroundup(dims[3], w))
-		return Tensor{}.NewTensor4dDescriptor(dtype, frmt.NCHW(), []int32{n1 * n2 * dims[0], dims[1], h, w})
+
+		return frmt.NCHW(), dtype, []int32{n1 * n2 * dims[0], dims[1], h, w}, nil
 
 	case frmt.NHWC():
 		n1 := int32(divideandroundup(dims[1], h))
 		n2 := int32(divideandroundup(dims[2], w))
-		return Tensor{}.NewTensor4dDescriptor(dtype, frmt.NHWC(), []int32{n1 * n2 * dims[0], h, w, dims[3]})
+		return frmt.NHWC(), dtype, []int32{n1 * n2 * dims[0], h, w, dims[3]}, nil
 
 	default:
-		return nil, errors.New("NHWC-Vec Not supported")
+		return 255, 255, nil, errors.New("NHWC-Vec Not supported")
 	}
 
 }
