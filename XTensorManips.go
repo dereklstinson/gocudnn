@@ -19,7 +19,7 @@ func (xt Xtra) CreateTransposeDesc(handle *XHandle) (*XTransposeD, error) {
 	return &XTransposeD{kern: kern}, err
 }
 
-//GetChannelTransposeOutputDescAndPerm4d  will output a transposed descriptor and the permutation array for a NCHW to NHWC and vice versa
+//GetChannelTransposeOutputProperties  will output a transposed descriptor and the permutation array for a NCHW to NHWC and vice versa
 func (t *XTransposeD) GetChannelTransposeOutputProperties(src *TensorD) (TensorFormat, DataType, []int32, []int32, error) {
 	dtype, dims, _, err := src.GetDescrptor()
 	if err != nil {
@@ -321,7 +321,7 @@ func copytogpuunified(x *GoPointer) (*Malloced, error) {
 	return y, nil
 }
 
-//FindShapetoBatchoutputTensor creates a tensordescriptor for the segmeented size
+//GetShapetoBatchOutputProperties creates a tensordescriptor for the segmeented size
 func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
