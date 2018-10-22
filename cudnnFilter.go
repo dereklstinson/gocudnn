@@ -142,7 +142,7 @@ func (f *FilterD) DestroyDescriptor() error {
 		flagger2 = true
 	}
 	if flagger1 == flagger2 {
-		if flagger1 == true {
+		if flagger1 == false {
 			return nil
 		}
 		return errors.New(err1.Error() + " , " + err2.Error())
