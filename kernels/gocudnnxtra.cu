@@ -137,128 +137,74 @@ void ShapetoBatch4DNHWC(
                       }
 
 extern "C" __global__
-void ShapetoBatch4Dold(         const int *yNHWC,//[BLOCK4D_DIMS+2],
-                             const int *xHW,//[BLOCK4D_DIMS],
-                             const int *BlockHW,//[BLOCK4D_DIMS],
-                             const int numthrds,
-                             const int xN,
-                             const int B2S,
-                              float *xMem,
-                              float *yMem){
-CUDA_GRID_LOOP_X(yIdx,numthrds){
-int yIdxRemainder = yIdx;
+void nearestneighborNHWC(
+        const int aligncorners,
+        const int threads,
+        const float *src,
+        const int src_height,
+        const int src_width,
+        const int channels,
+        const int dest_height,
+        const int dest_width,
+        const float height_scale,
+        const float width_scale,
+        float *dest){
+            CUDA_GRID_LOOP_X(i,threads){
+                int n=i;
+                int c = n%channels;
+                n/=channels;
+                int dest_x=n%dest_width;
+                n/=dest_width;
+                int dest_y=n%dest_height;
+                n/=dest_height;
+                const float *src_data_n=&src[n*channels*src_height*src_width];
+                const int src_y=fminf((aligncorners) ? (roundf(dest_y*height_scale))
+                                                     : (floorf(dest_y*height_scale)),
+                src_height -1);
 
-int  batchPos[BLOCK4D_DIMS+2];
-
-for (int dim= BLOCK4D_DIMS+1;dim>=1;--dim){
-    batchPos[dim] = yIdxRemainder % yNHWC[dim];
-    yIdxRemainder/=yNHWC[dim];
-}
-batchPos[0]=yIdxRemainder;
-int blockIdxRemainder = batchPos[0]/xN;
-int xIdx = batchPos[BLOCK4D_DIMS+1];
-int xStride =xHW[BLOCK4D_DIMS+1];
-
-const int xyposition=batchPos[0]%xN;
-for (int block_Dim=BLOCK4D_DIMS-1;block_Dim>=0;--block_Dim){
-    int offset=blockIdxRemainder;
-if( block_Dim>0){
-    offset %=BlockHW[block_Dim];
-}
-int xPos=batchPos[block_Dim+1]*BlockHW[block_Dim]+offset;
-if (xPos<0||xPos>=xHW[block_Dim]){
-    if (B2S<1){
-        yMem[yIdx]=0;
+                const int src_x=fminf((aligncorners) ? (roundf(dest_x*width_scale))
+                                                  : (floorf(dest_x*width_scale)),
+                src_width -1);
+                const int idx = (src_y*src_width+src_x)*channels+c;
+                dest[i]=src_data_n[idx];
     }
-    break;
+
 }
-xIdx+=xStride*xPos;
-xStride*=xHW[block_Dim];
-if (block_Dim==0){
-    xIdx+=xStride*xyposition;
-    if (B2S<1){
-        yMem[yIdx]= xMem[xIdx];
-    }else{
-        xMem[xIdx]= yMem[yIdx];
+extern "C" __global__
+void nearestneighborNHWCBack(
+        const int aligncorners,
+        const int threads,
+              float *src,
+        const int src_height,
+        const int src_width,
+        const int channels,
+        const int dest_height,
+        const int dest_width,
+        const float height_scale,
+        const float width_scale,
+        float *dest){
+            CUDA_GRID_LOOP_X(i,threads){
+                int n=i;
+                int c = n%channels;
+                n/=channels;
+                int src_x=n%src_width;
+                n/=src_width;
+                int src_y=n%src_height;
+                n/=src_height;
+                float *src_data_n=&src[n*channels*src_height*src_width];
+                const int dest_y=fminf((aligncorners) ? (roundf(src_y*height_scale))
+                                                     : (floorf(src_y*height_scale)),
+                dest_height -1);
+
+                const int dest_x=fminf((aligncorners) ? (roundf(src_x*width_scale))
+                                                  : (floorf(src_x*width_scale)),
+                dest_width -1);
+                const int idx = (dest_y*dest_width+dest_x)*channels+c;
+                atomicAdd(&src_data_n[idx], dest[i]);  
     }
-}
-blockIdxRemainder/=BlockHW[block_Dim];
-}
-}
-
 
 }
 
-/*
-                             const int *yNHWC,//[BLOCK4D_DIMS+2],
-                             const int *xHW,//[BLOCK4D_DIMS],
-                             const int *BlockHW,//[BLOCK4D_DIMS],
-                             const int numthrds,
-                             const int xN,
-                             const int B2S,
-                              float *xMem,
-                              float *yMem){
-
-
-
-*/
-/*
-#define NUM_BLOCK_DIMS 2
-extern "C"__global__ 
-void ShapetoBatch4D( const int args.batch_tensor_shape
-    const int32 nthreads, T* space_tensor_ptr,
-                    S2BParameters<NUM_BLOCK_DIMS> args, T* batch_tensor_ptr) {
-  CUDA_1D_KERNEL_LOOP(batch_tensor_idx, nthreads) {
-    int32 remaining_batch_tensor_idx = batch_tensor_idx;
-
-    int32 batch_tensor_pos[NUM_BLOCK_DIMS + 2];
-
-    for (int dim = NUM_BLOCK_DIMS + 1; dim >= 1; --dim) {
-      batch_tensor_pos[dim] =
-          remaining_batch_tensor_idx % args.batch_tensor_shape[dim];
-      remaining_batch_tensor_idx /= args.batch_tensor_shape[dim];
-    }
-    batch_tensor_pos[0] = remaining_batch_tensor_idx;
-
-    int32 remaining_block_idx = batch_tensor_pos[0] / args.space_tensor_batch;
-    int32 space_tensor_idx = batch_tensor_pos[NUM_BLOCK_DIMS + 1];
-    int32 space_tensor_stride = args.batch_tensor_shape[NUM_BLOCK_DIMS + 1];
-    const int32 space_tensor_batch_pos =
-        batch_tensor_pos[0] % args.space_tensor_batch;
-    for (int block_dim = NUM_BLOCK_DIMS - 1; block_dim >= 0; --block_dim) {
-      int32 offset = remaining_block_idx;
-      if (block_dim > 0) {
-        offset %= args.block_shape[block_dim];
-      }
-      int32 space_tensor_pos =
-          batch_tensor_pos[block_dim + 1] * args.block_shape[block_dim] +
-          offset - args.pad_start[block_dim];
-      if (space_tensor_pos < 0 ||
-          space_tensor_pos >= args.space_tensor_spatial_shape[block_dim]) {
-        if (B2S == false) {
-          // In the space-to-batch case, write zero padding.
-          batch_tensor_ptr[batch_tensor_idx] = static_cast<T>(0);
-        }
-        break;
-      }
-      space_tensor_idx += space_tensor_stride * space_tensor_pos;
-      space_tensor_stride *= args.space_tensor_spatial_shape[block_dim];
-      if (block_dim == 0) {
-        space_tensor_idx += space_tensor_stride * space_tensor_batch_pos;
-        if (B2S == false) {
-          batch_tensor_ptr[batch_tensor_idx] =
-              ldg(space_tensor_ptr + space_tensor_idx);
-        } else {
-          space_tensor_ptr[space_tensor_idx] =
-              ldg(batch_tensor_ptr + batch_tensor_idx);
-        }
-      }
-      remaining_block_idx /= args.block_shape[block_dim];
-    }
-  }
-}
-
-*/
 extern "C" __global__
 void adagradfloat(const int length,
                   float *weights, //weights input and output
