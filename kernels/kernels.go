@@ -17,6 +17,7 @@ type Device interface {
 	Minor() int
 }
 
+/*
 const nvcccompute30 = "	nvcc --gpu-architecture=compute_30 --gpu-code=compute_30 --ptx Activation30.cu"
 const nvcccompute35 = "	nvcc --gpu-architecture=compute_35 --gpu-code=compute_35 --ptx Activation35.cu"
 const nvcccompute50 = "	nvcc --gpu-architecture=compute_50 --gpu-code=compute_50 --ptx Activation50.cu"
@@ -81,7 +82,7 @@ func MakeSeveralMakes(directory, dotCUname string) {
 	}
 
 }
-
+*/
 const nvccarg = "nvcc --gpu-architecture=compute_"
 const nvccarg1 = " --gpu-code=compute_"
 const nvccarg2 = " --ptx "

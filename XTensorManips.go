@@ -173,6 +173,180 @@ func stridecalc(dims []int32) []int32 {
 	return strides
 }
 
+//XResizeD is a struct that holds the reshape functions
+type XResizeD struct {
+	nearestfwdnhwc *Kernel
+	nearestbwdnhwc *Kernel
+	nearestfwdnchw *Kernel
+	nearestbwdnchw *Kernel
+	aligncorners   bool
+}
+
+//CreateResizeDesc creates a descriptor that holds the reshpaes
+func (xt Xtra) CreateResizeDesc(handle *XHandle, aligncorners bool) (*XResizeD, error) {
+	nearestfwdnhwc, err := Cuda{}.MakeKernel("nearestneighborNHWC", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	nearestbwdnhwc, err := Cuda{}.MakeKernel("nearestneighborNHWCBack", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	nearestfwdnchw, err := Cuda{}.MakeKernel("nearestneighborNCHW", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	nearestbwdnchw, err := Cuda{}.MakeKernel("nearestneighborNCHWBack", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	return &XResizeD{
+		nearestfwdnhwc: nearestfwdnhwc,
+		nearestbwdnhwc: nearestbwdnhwc,
+		nearestfwdnchw: nearestfwdnchw,
+		nearestbwdnchw: nearestbwdnchw,
+		aligncorners:   aligncorners,
+	}, nil
+}
+
+//ResizeForward does the reshape operation
+func (s *XResizeD) ResizeForward(handle *XHandle, xdesc *TensorD, x Memer, ydesc *TensorD, y Memer) error {
+
+	_, dimsx, _, err := xdesc.GetDescrptor()
+	if err != nil {
+		return err
+	}
+	_, dimsy, _, err := ydesc.GetDescrptor()
+	if err != nil {
+		return err
+	}
+	var fmtflag TensorFormatFlag
+	frmtx, err := xdesc.GetFormat()
+	if err != nil {
+		return err
+	}
+	frmty, err := ydesc.GetFormat()
+	if err != nil {
+		return err
+	}
+	if frmtx != frmty {
+		return errors.New("ResizeForward - tensors must match")
+	}
+
+	switch frmtx {
+	case fmtflag.NHWC():
+		if dimsx[0] != dimsy[0] || dimsx[3] != dimsy[3] {
+			return errors.New("x and y dims n to n or c to c do not equal")
+		}
+		ratioh := float32(dimsx[1]) / float32(dimsy[1])
+		ratiow := float32(dimsx[2]) / float32(dimsy[2])
+		outputvol := findvol(dimsy)
+		conf := handle.LaunchConfig(outputvol)
+		var aligned int32
+		if s.aligncorners == true {
+			aligned = 1
+		}
+		return s.nearestfwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, y)
+	case fmtflag.NCHW():
+
+		if dimsx[0] != dimsy[0] || dimsx[1] != dimsy[1] {
+			return errors.New("x and y dims n to n or c to c do not equal")
+		}
+		ratioh := float32(dimsx[2]) / float32(dimsy[2])
+		ratiow := float32(dimsx[3]) / float32(dimsy[3])
+		outputvol := findvol(dimsy)
+		conf := handle.LaunchConfig(outputvol)
+		var aligned int32
+		if s.aligncorners == true {
+			aligned = 1
+		}
+		return s.nearestfwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[2], dimsx[3], dimsx[1], dimsy[2], dimsy[3], ratioh, ratiow, y)
+
+	}
+	return errors.New("Not Supported Tensor Format")
+}
+
+//ResizeBackward does a reshape backwards but it will add the errors on the backprop.
+func (s *XResizeD) ResizeBackward(handle *XHandle, dxdesc *TensorD, dx Memer, dydesc *TensorD, dy Memer) error {
+	_, dimsx, _, err := dxdesc.GetDescrptor()
+	if err != nil {
+		return err
+	}
+	_, dimsy, _, err := dydesc.GetDescrptor()
+	if err != nil {
+		return err
+	}
+
+	var fmtflag TensorFormatFlag
+	frmtx, err := dxdesc.GetFormat()
+	if err != nil {
+		return err
+	}
+	frmty, err := dydesc.GetFormat()
+	if err != nil {
+		return err
+	}
+	if frmtx != frmty {
+		return errors.New("ResizeForward - tensors must match")
+	}
+
+	switch frmtx {
+	case fmtflag.NHWC():
+		if dimsx[0] != dimsy[0] || dimsx[3] != dimsy[3] {
+			return errors.New("dx and dy dims n to n or c to c do not equal")
+		}
+		ratioh := float32(dimsx[1]) / float32(dimsy[1])
+		ratiow := float32(dimsx[2]) / float32(dimsy[2])
+		inputvol := findvol(dimsx)
+		conf := handle.LaunchConfig(inputvol)
+		var aligned int32
+		if s.aligncorners == true {
+			aligned = 1
+		}
+		mx, ok := dx.(*Malloced)
+		if ok {
+			err = mx.Set(0)
+			dx = mx
+			if err != nil {
+				return err
+
+			}
+		} else {
+			return errors.New("Unsupported Memer")
+
+		}
+
+		return s.nearestbwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+	case fmtflag.NCHW():
+		if dimsx[0] != dimsy[0] || dimsx[1] != dimsy[1] {
+			return errors.New("x and y dims n to n or c to c do not equal")
+		}
+		ratioh := float32(dimsx[2]) / float32(dimsy[2])
+		ratiow := float32(dimsx[3]) / float32(dimsy[3])
+		outputvol := findvol(dimsy)
+		conf := handle.LaunchConfig(outputvol)
+		var aligned int32
+		if s.aligncorners == true {
+			aligned = 1
+		}
+		mx, ok := dx.(*Malloced)
+		if ok {
+			err = mx.Set(0)
+			dx = mx
+			if err != nil {
+				return err
+
+			}
+		} else {
+			return errors.New("Unsupported Memer")
+
+		}
+
+		return s.nearestbwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+	}
+	return errors.New("Not Supported Tensor Format")
+}
+
 //XShapetoBatchD holds the kernel function
 type XShapetoBatchD struct {
 	nhwc *Kernel

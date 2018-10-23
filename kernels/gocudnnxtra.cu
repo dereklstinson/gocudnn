@@ -171,6 +171,74 @@ void nearestneighborNHWC(
 
 }
 extern "C" __global__
+void nearestneighborNCHW(
+        const int aligncorners,
+        const int threads,
+        const float *src,
+        const int src_height,
+        const int src_width,
+        const int channels,
+        const int dest_height,
+        const int dest_width,
+        const float height_scale,
+        const float width_scale,
+        float *dest){
+            CUDA_GRID_LOOP_X(i,threads){
+                int n=i;
+                int dest_x=n%dest_width;
+                n/=dest_width;
+                int dest_y=n%dest_height;
+                n/=dest_height;
+                int c = n%channels;
+                n/=channels;
+                const float *src_data_n=&src[n*channels*src_height*src_width];
+                const int src_y=fminf((aligncorners) ? (roundf(dest_y*height_scale))
+                                                     : (floorf(dest_y*height_scale)),
+                src_height -1);
+
+                const int src_x=fminf((aligncorners) ? (roundf(dest_x*width_scale))
+                                                  : (floorf(dest_x*width_scale)),
+                src_width -1);
+                const int idx = (c*src_height*src_width)+(src_y*src_width)+src_x;
+                dest[i]=src_data_n[idx];
+    }
+
+}
+extern "C" __global__
+void nearestneighborNCHWBack(
+        const int aligncorners,
+        const int threads,
+              float *src,
+        const int src_height,
+        const int src_width,
+        const int channels,
+        const int dest_height,
+        const int dest_width,
+        const float height_scale,
+        const float width_scale,
+        float *dest){
+            CUDA_GRID_LOOP_X(i,threads){
+                int n=i;
+                int src_x=n%src_width;
+                n/=src_width;
+                int src_y=n%src_height;
+                n/=src_height;
+                int c = n%channels;
+                n/=channels;
+                float *src_data_n=&src[n*channels*src_height*src_width];
+                const int dest_y=fminf((aligncorners) ? (roundf(src_y*height_scale))
+                                                     : (floorf(src_y*height_scale)),
+                dest_height -1);
+
+                const int dest_x=fminf((aligncorners) ? (roundf(src_x*width_scale))
+                                                  : (floorf(src_x*width_scale)),
+                dest_width -1);
+                const int idx = (c*dest_width*dest_height)+(dest_y*dest_width)+dest_x;
+                atomicAdd(&src_data_n[idx], dest[i]);  
+    }
+
+}
+extern "C" __global__
 void nearestneighborNHWCBack(
         const int aligncorners,
         const int threads,
