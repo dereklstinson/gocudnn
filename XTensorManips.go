@@ -495,6 +495,41 @@ func copytogpuunified(x *GoPointer) (*Malloced, error) {
 	return y, nil
 }
 
+//GetBatchtoShapeOutputProperties will place the batches into the shape.  It will only work if xdims[0]/(h*w) doesn't have a remainder.
+func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, error) {
+	dtype, dims, _, err := descX.GetDescrptor()
+	if err != nil {
+		return 255, 255, nil, err
+	}
+	var dflag DataTypeFlag
+	if dtype != dflag.Float() {
+		return 255, 255, nil, errors.New("Only Supported Format is float32")
+	}
+	var frmt TensorFormatFlag
+	xfrmt, err := descX.GetFormat()
+	if dims[0]%(h*w) != 0 {
+		return 255, 255, nil, errors.New("descx batches/(h*w) must not have a remainder")
+	}
+	switch xfrmt {
+	case frmt.NCHW():
+		oh := dims[2] * h
+		ow := dims[3] * w
+		n := dims[0] / (h * w)
+
+		return frmt.NCHW(), dtype, []int32{n, dims[1], oh, ow}, nil
+
+	case frmt.NHWC():
+		oh := dims[1] * h
+		ow := dims[2] * w
+		n := dims[0] / (h * w)
+		return frmt.NHWC(), dtype, []int32{n, oh, ow, dims[3]}, nil
+
+	default:
+		return 255, 255, nil, errors.New("NHWC-Vec Not supported")
+	}
+
+}
+
 //GetShapetoBatchOutputProperties creates a tensordescriptor for the segmeented size
 func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
