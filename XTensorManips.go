@@ -2,7 +2,6 @@ package gocudnn
 
 import (
 	"errors"
-	"fmt"
 )
 
 //Reshape is failing ---- changed all to private
@@ -411,7 +410,6 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x Memer
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
 
-		fmt.Println(cfg)
 		zero := int32(0)
 		for i := zero; i < OriginalBatches; i++ {
 			err = s.nhwc.Launch(cfg.BlockCountx,
@@ -446,7 +444,6 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x Memer
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
 
-		fmt.Println(cfg)
 		zero := int32(0)
 		for i := zero; i < OriginalBatches; i++ {
 			err = s.nchw.Launch(cfg.BlockCountx,

@@ -7,8 +7,7 @@ import "C"
 
 //Reduce holds Reduce flags and funcs also used to access create reduce tensor function
 type Reduce struct {
-	Funcs ReduceFuncs
-	Flgs  ReduceFlags
+	Flgs ReduceFlags
 }
 
 //ReduceTensorD is the struct that is used for reduce tensor ops
@@ -39,19 +38,24 @@ func (reduce *ReduceTensorD) Indices() ReduceTensorIndices {
 func (reduce *ReduceTensorD) IndicType() IndiciesType { return IndiciesType(reduce.tensorIndicesType) }
 
 //CreateReduceTensorDescriptor creates the tensor discritper struct
-func (red Reduce) CreateReduceTensorDescriptor(reduceop ReduceTensorOp, datatype DataType, nanprop PropagationNAN, reducetensorinds ReduceTensorIndices, indicietype IndiciesType) (ReduceTensorD, error) {
-	var reduce ReduceTensorD
-	x := Status(C.cudnnCreateReduceTensorDescriptor(&reduce.tensorDesc)).error("CreateReduceTensorDescriptor-create")
+func (red Reduce) CreateReduceTensorDescriptor(reduceop ReduceTensorOp, datatype DataType, nanprop PropagationNAN, reducetensorinds ReduceTensorIndices, indicietype IndiciesType) (*ReduceTensorD, error) {
+	//	var reduce ReduceTensorD
+	var rtensdesc C.cudnnReduceTensorDescriptor_t
+	x := Status(C.cudnnCreateReduceTensorDescriptor(&rtensdesc)).error("CreateReduceTensorDescriptor-create")
 	if x != nil {
-		return reduce, x
+		return nil, x
 	}
-	reduce.tensorOp = C.cudnnReduceTensorOp_t(reduceop)
-	reduce.tensorCompType = C.cudnnDataType_t(datatype)
-	reduce.tensorNanOpt = C.cudnnNanPropagation_t(nanprop)
-	reduce.tensorIndices = C.cudnnReduceTensorIndices_t(reducetensorinds)
-	reduce.tensorIndicesType = C.cudnnIndicesType_t(indicietype)
-	x = reduce.setReduceTensorDescriptor()
-	return reduce, x
+
+	x = Status(C.cudnnSetReduceTensorDescriptor(rtensdesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
+
+	return &ReduceTensorD{
+		tensorDesc:        rtensdesc,
+		tensorOp:          reduceop.c(),
+		tensorCompType:    datatype.c(),
+		tensorNanOpt:      nanprop.c(),
+		tensorIndices:     reducetensorinds.c(),
+		tensorIndicesType: indicietype.c(),
+	}, x
 }
 
 //SetReduceTensorDescriptor Sets the reduce tensor Descriptor
@@ -71,36 +75,33 @@ func (reduce *ReduceTensor) GetReduceTensorDescriptor() (ReduceTensor, error) {
 }
 */
 
-//DestroyReduceTensorDescriptor destroys the reducetensordescriptor
-func (reduce *ReduceTensorD) DestroyReduceTensorDescriptor() error {
+//Destroy destroys the reducetensordescriptor
+func (reduce *ReduceTensorD) Destroy() error {
+	return destroyreducetensordescriptor(reduce)
+}
+func destroyreducetensordescriptor(reduce *ReduceTensorD) error {
 	x := C.cudnnDestroyReduceTensorDescriptor(reduce.tensorDesc)
 	err := Status(x).error("DestroyTensorDescriptor")
 
 	return err
 }
 
-//ReduceFuncs is a nil struct used to call Reduce functions
-type ReduceFuncs struct {
-}
-
-/*GetReductionIndicesSize Helper function to return the minimum size in bytes of the index space to be passed to the reduction given the input and output tensors */
-func (r ReduceFuncs) GetReductionIndicesSize(
+/*IndiciesSize Helper function to return the minimum size in bytes of the index space to be passed to the reduction given the input and output tensors */
+func (reduce *ReduceTensorD) IndiciesSize(
 	handle *Handle,
-	reducer *ReduceTensorD,
 	aDesc, cDesc *TensorD) (SizeT, error) {
 	var sizeinbytes C.size_t
-	x := C.cudnnGetReductionIndicesSize(handle.x, reducer.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+	x := C.cudnnGetReductionIndicesSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
 	return SizeT(sizeinbytes), Status(x).error("GetReductionIndicesSize")
 
 }
 
-//GetReductionWorkspaceSize  Helper function to return the minimum size of the workspace to be passed to the reduction given the input and output tensors
-func (r ReduceFuncs) GetReductionWorkspaceSize(
+//GetWorkSpaceSize  Helper function to return the minimum size of the workspace to be passed to the reduction given the input and output tensors
+func (reduce *ReduceTensorD) GetWorkSpaceSize(
 	handle *Handle,
-	reducer *ReduceTensorD,
 	aDesc, cDesc *TensorD) (SizeT, error) {
 	var sizeinbytes C.size_t
-	x := C.cudnnGetReductionWorkspaceSize(handle.x, reducer.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+	x := C.cudnnGetReductionWorkspaceSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
 	return SizeT(sizeinbytes), Status(x).error("GetReductionWorkspaceSize")
 
 }
@@ -108,11 +109,10 @@ func (r ReduceFuncs) GetReductionWorkspaceSize(
 //ReduceTensorOp Tensor operation : C = reduce op( alpha * A ) + beta * C */
 /* The NaN propagation enum applies to only the min and max reduce ops; the other reduce ops propagate NaN as usual. */
 /* The indices space is ignored for reduce ops other than min or max. */
-func (r ReduceFuncs) ReduceTensorOp(
+func (reduce *ReduceTensorD) ReduceTensorOp(
 	handle *Handle,
 	data DataType,
-	reducer *ReduceTensorD,
-	indices,
+	indices Memer,
 	workspace Memer,
 	alpha CScalar,
 	aDesc *TensorD,
@@ -121,7 +121,7 @@ func (r ReduceFuncs) ReduceTensorOp(
 	cDesc *TensorD,
 	Ce Memer) error {
 
-	x := C.cudnnReduceTensor(handle.x, reducer.tensorDesc, indices.Ptr(),
+	x := C.cudnnReduceTensor(handle.x, reduce.tensorDesc, indices.Ptr(),
 		C.size_t(indices.ByteSize()), workspace.Ptr(), C.size_t(workspace.ByteSize()),
 		alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
 	return Status(x).error("ReduceTensor")
@@ -136,6 +136,10 @@ type ReduceFlags struct {
 
 //ReduceTensorOp used for flags for reduce tensor functions
 type ReduceTensorOp C.cudnnReduceTensorOp_t
+
+func (r ReduceTensorOp) c() C.cudnnReduceTensorOp_t {
+	return C.cudnnReduceTensorOp_t(r)
+}
 
 //ReduceTensorOpFlag is used to pass ReduceTensorOp flags semi safely for users using methods
 type ReduceTensorOpFlag struct {
