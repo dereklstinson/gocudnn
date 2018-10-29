@@ -130,7 +130,7 @@ func (a *ActivationD) DestroyDescriptor() error {
 }
 
 //ActivationForward does the forward activation function yrtn is returned and changed.
-func (a *ActivationD) ActivationForward(
+func (a *ActivationD) Forward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
@@ -142,7 +142,7 @@ func (a *ActivationD) ActivationForward(
 }
 
 //ActivationBackward does the activation backward method
-func (a *ActivationD) ActivationBackward(
+func (a *ActivationD) Backward(
 	handle *Handle,
 	alpha CScalar,
 	yD *TensorD,
