@@ -87,12 +87,7 @@ import "C"
 
 //Activation is a helper func that is used is activation type processes
 type Activation struct {
-	Funcs ActivationFuncs
-	Flgs  ActivationModeFlag
-}
-
-//ActivationFuncs is an empty struct that is used for Activation operation type functions
-type ActivationFuncs struct {
+	Flgs ActivationModeFlag
 }
 
 //ActivationD is an opaque struct that holds the description of an activation operation.
@@ -135,22 +130,20 @@ func (a *ActivationD) DestroyDescriptor() error {
 }
 
 //ActivationForward does the forward activation function yrtn is returned and changed.
-func (op ActivationFuncs) ActivationForward(
+func (a *ActivationD) ActivationForward(
 	handle *Handle,
-	aD *ActivationD,
 	alpha CScalar,
 	xD *TensorD,
 	x Memer,
 	beta CScalar,
 	yD *TensorD,
 	yrtn Memer) error {
-	return Status(C.cudnnActivationForward(handle.x, aD.descriptor, alpha.CPtr(), xD.descriptor, x.Ptr(), beta.CPtr(), yD.descriptor, yrtn.Ptr())).error("ActivationForward")
+	return Status(C.cudnnActivationForward(handle.x, a.descriptor, alpha.CPtr(), xD.descriptor, x.Ptr(), beta.CPtr(), yD.descriptor, yrtn.Ptr())).error("ActivationForward")
 }
 
 //ActivationBackward does the activation backward method
-func (op ActivationFuncs) ActivationBackward(
+func (a *ActivationD) ActivationBackward(
 	handle *Handle,
-	aD *ActivationD,
 	alpha CScalar,
 	yD *TensorD,
 	y Memer,
@@ -161,7 +154,7 @@ func (op ActivationFuncs) ActivationBackward(
 	beta CScalar,
 	dxD *TensorD,
 	dx Memer) error {
-	return Status(C.cudnnActivationBackward(handle.x, aD.descriptor, alpha.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), beta.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
+	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, alpha.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), beta.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
 }
 
 //ActivationModeFlag is used to "safely" pass flags by the use of methods.
