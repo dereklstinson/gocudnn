@@ -38,12 +38,12 @@ func TestActivationHandle(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = Activation.Funcs.ActivationForward(handle, aD, alpha, xD, xmem, beta, yD, ymem)
+	err = aD.Forward(handle, alpha, xD, xmem, beta, yD, ymem)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = Activation.Funcs.ActivationBackward(handle, aD, alpha, yD, ymem, dyD, dymem, xD, xmem, beta, dxD, dxmem)
+	err = aD.Backward(handle, alpha, yD, ymem, dyD, dymem, xD, xmem, beta, dxD, dxmem)
 	if err != nil {
 		t.Error(err)
 	}

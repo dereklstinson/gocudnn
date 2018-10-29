@@ -54,7 +54,7 @@ func TestConvolution(t *testing.T) {
 	}
 	alpha := gocudnn.CFloat(1.0)
 	beta := gocudnn.CFloat(1.0)
-	err = Conv.Funcs.Fwd.ConvolutionForward(handle, alpha, xD, x, wD, w, cD, fwdalgo, wspace, beta, yD, y)
+	err = cD.Forward(handle, alpha, xD, x, wD, w, fwdalgo, wspace, beta, yD, y)
 	if err != nil {
 		t.Error(err)
 	}

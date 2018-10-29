@@ -413,15 +413,14 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataWorkspaceSize(
 	return SizeT(sizebytes), err
 }
 
-//ConvolutionBackwardData does the backwards convolution on data
-func (cbf ConvolutionBwdFuncs) ConvolutionBackwardData(
+//BackwardData does the backwards convolution on data
+func (c *ConvolutionD) BackwardData(
 	handle *Handle,
 	alpha CScalar,
 	wDesc *FilterD,
 	w Memer,
 	dyDesc *TensorD,
 	dy Memer,
-	convDesc *ConvolutionD,
 	algo ConvBwdDataAlgo,
 	wspace Memer,
 	beta CScalar,
@@ -436,7 +435,7 @@ func (cbf ConvolutionBwdFuncs) ConvolutionBackwardData(
 			w.Ptr(),
 			dyDesc.descriptor,
 			dy.Ptr(),
-			convDesc.descriptor,
+			c.descriptor,
 			algo.c(),
 			nil,
 			SizeT(0).c(),
@@ -452,7 +451,7 @@ func (cbf ConvolutionBwdFuncs) ConvolutionBackwardData(
 		w.Ptr(),
 		dyDesc.descriptor,
 		dy.Ptr(),
-		convDesc.descriptor,
+		c.descriptor,
 		algo.c(),
 		wspace.Ptr(),
 		wspace.ByteSize().c(),
@@ -722,15 +721,15 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterWorkspaceSize(
 	return SizeT(sizebytes), err
 }
 
-//ConvolutionBackwardFilter does the backwards convolution
-func (cbf ConvolutionBwdFuncs) ConvolutionBackwardFilter(
+//BackwardFilter does the backwards convolution
+func (c *ConvolutionD) BackwardFilter(
 	handle *Handle,
 	alpha CScalar,
 	xDesc *TensorD,
 	x Memer,
 	dyDesc *TensorD,
 	dy Memer,
-	convDesc *ConvolutionD,
+
 	algo ConvBwdFiltAlgo,
 	wspace Memer,
 	beta CScalar,
@@ -745,7 +744,7 @@ func (cbf ConvolutionBwdFuncs) ConvolutionBackwardFilter(
 			x.Ptr(),
 			dyDesc.descriptor,
 			dy.Ptr(),
-			convDesc.descriptor,
+			c.descriptor,
 			algo.c(),
 			nil,
 			SizeT(0).c(),
@@ -761,7 +760,7 @@ func (cbf ConvolutionBwdFuncs) ConvolutionBackwardFilter(
 		x.Ptr(),
 		dyDesc.descriptor,
 		dy.Ptr(),
-		convDesc.descriptor,
+		c.descriptor,
 		algo.c(),
 		wspace.Ptr(),
 		wspace.ByteSize().c(),
@@ -952,15 +951,14 @@ func (cfo ConvolutionFwdFuncs) GetConvolutionForwardWorkspaceSize(
 
 /* Convolution functions: All of the form "output = alpha * Op(inputs) + beta * output" */
 
-//ConvolutionForward Function to perform the forward pass for batch convolution
-func (cfo ConvolutionFwdFuncs) ConvolutionForward(
+//Forward Function to perform the forward pass for batch convolution
+func (c *ConvolutionD) Forward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
 	x Memer,
 	wD *FilterD,
 	w Memer,
-	cD *ConvolutionD,
 	algo ConvFwdAlgo,
 	wspace Memer,
 	beta CScalar,
@@ -968,23 +966,22 @@ func (cfo ConvolutionFwdFuncs) ConvolutionForward(
 	y Memer) error {
 	if wspace == nil {
 		return Status(C.cudnnConvolutionForward(handle.x, alpha.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
-			cD.descriptor, algo.c(), nil, SizeT(0).c(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
+			c.descriptor, algo.c(), nil, SizeT(0).c(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
 	}
 	return Status(C.cudnnConvolutionForward(handle.x, alpha.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
-		cD.descriptor, algo.c(), wspace.Ptr(), wspace.ByteSize().c(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
+		c.descriptor, algo.c(), wspace.Ptr(), wspace.ByteSize().c(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
 
 }
 
-//ConvolutionBiasActivationForward passes a lot of stuff so be carefull
+//BiasActivationForward passes a lot of stuff so be carefull
 /* Fused conv/bias/activation operation : y = Act( alpha1 * conv(x) + alpha2 * z + bias ) */
-func (cfo ConvolutionFwdFuncs) ConvolutionBiasActivationForward(
+func (c *ConvolutionD) BiasActivationForward(
 	handle *Handle,
 	alpha1 CScalar,
 	xD *TensorD,
 	x Memer,
 	wD *FilterD,
 	w Memer,
-	cD *ConvolutionD,
 	algo ConvFwdAlgo,
 	wspace Memer,
 	alpha2 CScalar,
@@ -1005,7 +1002,7 @@ func (cfo ConvolutionFwdFuncs) ConvolutionBiasActivationForward(
 				x.Ptr(),
 				wD.descriptor,
 				w.Ptr(),
-				cD.descriptor,
+				c.descriptor,
 				algo.c(),
 				nil,
 				SizeT(0).c(),
@@ -1027,7 +1024,7 @@ func (cfo ConvolutionFwdFuncs) ConvolutionBiasActivationForward(
 			x.Ptr(),
 			wD.descriptor,
 			w.Ptr(),
-			cD.descriptor,
+			c.descriptor,
 			algo.c(),
 			wspace.Ptr(),
 			wspace.ByteSize().c(),

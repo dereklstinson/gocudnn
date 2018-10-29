@@ -129,7 +129,7 @@ func (a *ActivationD) DestroyDescriptor() error {
 	return Status(C.cudnnDestroyActivationDescriptor(a.descriptor)).error("DestroyDescriptor")
 }
 
-//ActivationForward does the forward activation function yrtn is returned and changed.
+//Forward does the forward activation function yrtn is returned and changed.
 func (a *ActivationD) Forward(
 	handle *Handle,
 	alpha CScalar,
@@ -141,7 +141,7 @@ func (a *ActivationD) Forward(
 	return Status(C.cudnnActivationForward(handle.x, a.descriptor, alpha.CPtr(), xD.descriptor, x.Ptr(), beta.CPtr(), yD.descriptor, yrtn.Ptr())).error("ActivationForward")
 }
 
-//ActivationBackward does the activation backward method
+//Backward does the activation backward method
 func (a *ActivationD) Backward(
 	handle *Handle,
 	alpha CScalar,
