@@ -25,10 +25,6 @@ type Memer interface {
 	Free() error
 	Stored() Location
 	FillSlice(interface{}) error
-	//	IsMalloced() *Malloced
-	//	IsGoPtr() *GoPointer
-
-	//Atributes()Atribs
 }
 
 //Malloced is a non garbage collection memory that is stored on the device.  When done with it be sure to destroy it.

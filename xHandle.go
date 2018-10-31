@@ -34,6 +34,12 @@ func (x *XHandle) SetStream(s *Stream) error {
 	return nil
 }
 
+//MakeXHandleV2 takes the kernel directory already made and in kernels and returns a XHandle
+func (xtra Xtra) MakeXHandleV2(dev *Device) (*XHandle, error) {
+	const directory = "./kernels/"
+	return xtra.MakeXHandle(directory, dev)
+}
+
 //MakeXHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn
 func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *Device) (*XHandle, error) {
 	var cu Cuda
