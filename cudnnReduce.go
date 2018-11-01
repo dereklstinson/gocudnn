@@ -111,7 +111,6 @@ func (reduce *ReduceTensorD) GetWorkSpaceSize(
 /* The indices space is ignored for reduce ops other than min or max. */
 func (reduce *ReduceTensorD) ReduceTensorOp(
 	handle *Handle,
-	data DataType,
 	indices Memer,
 	workspace Memer,
 	alpha CScalar,
