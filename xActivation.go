@@ -75,7 +75,7 @@ type XActivationD struct {
 //NewXActivationDescriptor - Creates a descriptor for the xtra functions made for gocudnn.
 //Note: Only trainable activations will be trained.  tmode will be ignored for unsupported activations
 //Note: Only functions requiring coef will get it.  coef will be ignored for unsupported activations
-func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmode TrainingMode, dtype DataType, coef float64) (*XActivationD, error) {
+func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmode TrainingMode, dtype DataType, invcoef float64) (*XActivationD, error) {
 
 	ctr := int32(1)
 	var ktf kernels.XtraKerns
@@ -118,7 +118,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 		return &XActivationD{
 			fwdmode: fwdmode,
 			bwdmode: bwdmode,
-			coef:    coef,
+			coef:    invcoef,
 			amode:   amode,
 		}, nil
 	}

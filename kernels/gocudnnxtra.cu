@@ -490,19 +490,24 @@ if (j<length){
 }
 }
 extern "C" __global__
-void forwardleakyfloat(const int length,float *x,float *y, const float alpha){
+void forwardleakyfloat(const int length,float *x,float *y, const float invalpha){
+    CUDA_GRID_LOOP_X(i,length){
 
-int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
-if (i<length){
-    if (x[i]>0.0){
-        y[i]=x[i];
-    }else{
-        y[i]=alpha*x[i];
+        if (x[i]>0.0){
+            y[i]=x[i];
+        }else{
+            y[i]=x[i]/invalpha;
+        }
+
+
+
     }
+
+   
     
 }
 
-}   
+  
 
 /*
 extern "C" __global__
@@ -529,13 +534,13 @@ if (i<xBlength){
 */
 
 extern "C" __global__
-void backwardleakyfloat(const int length,float *x, float *dx,float *dy, const float alpha){
-int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
-if (i<length){
+void backwardleakyfloat(const int length,float *x, float *dx,float *dy, const float invalpha){
+
+CUDA_GRID_LOOP_X(i,length){
     if (x[i]>0.0){
         dx[i]=dy[i];
     }else{
-        dx[i]=alpha*dy[i];
+        dx[i]=dy[i]/invalpha;
     }
     
 }

@@ -6,6 +6,14 @@ import (
 
 //Xtra is a holder for Xtra functions that are made by me, and not cuda or cudnn
 type Xtra struct {
+	notdefaultkernallocation bool
+	kernellocation           string
+}
+
+//KernelLocation will set the direct kernel location and make for it kernel location
+func (xtra *Xtra) KernelLocation(kernalfilelocation string) {
+	xtra.notdefaultkernallocation = true
+	xtra.kernellocation = kernalfilelocation
 }
 
 //Handler to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
@@ -36,11 +44,14 @@ func (x *XHandle) SetStream(s *Stream) error {
 
 //MakeXHandleV2 takes the kernel directory already made and in kernels and returns a XHandle
 func (xtra Xtra) MakeXHandleV2(dev *Device) (*XHandle, error) {
-	const directory = "./kernels/"
+	directory := "__default__"
+	if xtra.notdefaultkernallocation == true {
+		directory = xtra.kernellocation
+	}
 	return xtra.MakeXHandle(directory, dev)
 }
 
-//MakeXHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn
+//MakeXHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn. You use MakeXHandleV2 if you want to use the default location
 func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *Device) (*XHandle, error) {
 	var cu Cuda
 	x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
