@@ -311,14 +311,21 @@ void adamfloat(const int length,
  CUDA_GRID_LOOP_X(i,length){ 
 
 
+if (i<length){
 
     gsum[i]=(beta1*gsum[i]) +((1.0-beta1)*dw[i]);
-    xsum[i]= (beta2*xsum[i])+((1.0 -beta2)*(dw[i]*dw[i]));
     float gsumt = gsum[i]/(1.0- powf(beta1,counter));
+    xsum[i]= (beta2*xsum[i])+((1.0 -beta2)*(dw[i]*dw[i]));
     float xsumt = xsum[i]/(1.0 - powf(beta2,counter));
     w[i] += -(rate*gsumt)/(sqrtf(xsumt)+eps);  
     dw[i]=0.0;
 
+
+
+
+
+
+}
 }
     
 }
@@ -356,15 +363,15 @@ void l1regularizationfloat(const int length,
                            const float decay1,
                            const float decay2){
 float decay = decay1;
-CUDA_GRID_LOOP_X(cell,length){
+CUDA_GRID_LOOP_X(i,length){
         
-    if (w[cell]<0){
+    if (w[i]<0){
          decay=-decay1;
     }else{
         decay=decay1;
     }
-        atomicAdd(l1,w[cell]*decay);
-        dw[cell]= (dw[cell] +decay)/batch;
+        atomicAdd(l1,w[i]*decay);
+        dw[i]= (dw[i] +decay/batch);
     }
 }
 //This is paired with the host
