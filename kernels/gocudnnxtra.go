@@ -4,18 +4,67 @@ package kernels
 type XtraKerns struct {
 }
 
+//MSELoss Mean Squared Error Loss
+func (t XtraKerns) MSELoss() string {
+	return "MSELoss"
+}
+
+//ShapeToBatch4DNCHW transfers HW to batch and vice versa for NCHW tensors
+func (t XtraKerns) ShapeToBatch4DNCHW() string {
+	return "ShapetoBatch4DNCHW"
+}
+
+//Transpose switches values around from one dimention to the other
+func (t XtraKerns) Transpose() string {
+	return "Transpose"
+}
+
+//ShapeToBatch4DNHWC transfer HW to batch and vice versa through windows for NHWC tensors
+func (t XtraKerns) ShapeToBatch4DNHWC() string {
+	return "ShapetoBatch4DNHWC"
+}
+
+//NearestNeighborNHWC Resize NearestNeightbor for NHWC tensors
+func (t XtraKerns) NearestNeighborNHWC() string {
+	return "nearestneighborNHWC"
+}
+
+//NearestNeighborNCHW Resize NearestNeightbor for NCHW tensors
+func (t XtraKerns) NearestNeighborNCHW() string {
+	return "nearestneighborNCHW"
+}
+
+//NearestNeighborNHWCBack Resize NearestNeightbor for NHWC tensors and accumulates gradients
+func (t XtraKerns) NearestNeighborNHWCBack() string {
+	return "nearestneighborNHWCBack"
+}
+
+//NearestNeighborNCHWBack Resize NearestNeightbor for NCHW tensors and accumulates gradients
+func (t XtraKerns) NearestNeighborNCHWBack() string {
+	return "nearestneighborNCHWBack"
+}
+
+//ForwardParametricfloat Not working
 func (t XtraKerns) ForwardParametricfloat() string {
 	return "forwardParametricfloat"
 }
+
+//BackwardParametricfloat Not Working
 func (t XtraKerns) BackwardParametricfloat() string {
 	return "backwardParametricfloat"
 }
+
+//ForwardLeakyfloat activation function Relu but negatives get a reduced value
 func (t XtraKerns) ForwardLeakyfloat() string {
 	return "forwardleakyfloat"
 }
+
+//BackwardLeakyfloat activation function Relu but negatives get a reduced value
 func (t XtraKerns) BackwardLeakyfloat() string {
 	return "backwardleakyfloat"
 }
+
+//Batch Just reduces the values of the gradients by dividing the batch size
 func (t XtraKerns) Batch() string {
 	return "batchregfloat"
 }

@@ -12,6 +12,7 @@ import (
 	//	"github.com/dereklstinson/GoCudnn"
 )
 
+//Device just has to return those two things in order to compute the kernels
 type Device interface {
 	Major() int
 	Minor() int

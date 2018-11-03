@@ -517,7 +517,7 @@ CUDA_GRID_LOOP_X(i,length){
 }  
 
 extern "C" __global__
-void MSELoss(const int length ,float *target,float *networkout,float *errors,float *loss){
+void MSELoss(const int length ,float *errors,float *target,float *networkout,float *loss){
     CUDA_GRID_LOOP_X(i,length){
       float y = target[i]-networkout[i];
         errors[i]=y;
