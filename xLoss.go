@@ -103,6 +103,7 @@ func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
 		return -1, errors.New("Dims for tensors Don't Match")
 	}
 	length := findvolume(dxdims)
+	batch := float32(dxdims[0])
 	switch l.mode {
 	case l.flg.MSE():
 		config := h.LaunchConfig(int32(length))
@@ -114,10 +115,10 @@ func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
 		ptr, _ := MakeGoPointer(loss)
 		if l.managed == true {
 			err = CudaMemCopy(ptr, l.loss, 4, l.memflg.Default())
-			return loss[0], err
+			return loss[0] / batch, err
 		}
 		err = CudaMemCopy(ptr, l.loss, 4, l.memflg.DeviceToHost())
-		return loss[0], err
+		return loss[0] / batch, err
 
 	}
 	return 0, errors.New("Unsupported Loss Function")
