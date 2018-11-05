@@ -11,8 +11,8 @@ import (
 
 //Pooling is used to hold flags and funcs for pooling operations
 type Pooling struct {
-	Funcs PoolingFuncs
-	Flgs  PoolingModeFlag
+	PFlg PoolingModeFlag
+	NFlg PropagationNANFlag
 }
 
 //PoolingD handles the pooling descriptor
@@ -166,16 +166,11 @@ func (p *PoolingD) DestroyDescriptor() error {
 	return Status(C.cudnnDestroyPoolingDescriptor(p.descriptor)).error("DestroyDescriptor")
 }
 
-//PoolingFuncs is a nill struct used to call pooling functions
-type PoolingFuncs struct {
-}
-
 /* Pooling functions: All of the form "output = alpha * Op(inputs) + beta * output" */
 
 //PoolingForward does the poolingForward operation
-func (pool PoolingFuncs) PoolingForward(
+func (p *PoolingD) PoolingForward(
 	handle *Handle,
-	p *PoolingD,
 	alpha CScalar,
 	xD *TensorD,
 	x Memer,
@@ -196,9 +191,8 @@ func (pool PoolingFuncs) PoolingForward(
 }
 
 //PoolingBackward does the backward pooling operation
-func (pool PoolingFuncs) PoolingBackward(
+func (p *PoolingD) PoolingBackward(
 	handle *Handle,
-	p *PoolingD,
 	alpha CScalar,
 	yD *TensorD,
 	y Memer,

@@ -104,6 +104,10 @@ func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
 	}
 	length := findvolume(dxdims)
 	batch := float32(dxdims[0])
+
+	if err != nil {
+		return 0, err
+	}
 	switch l.mode {
 	case l.flg.MSE():
 		config := h.LaunchConfig(int32(length))
