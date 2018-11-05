@@ -27,6 +27,8 @@ func (x XActivationMode) tostringfwd(dtype DataType) string {
 		return ktf.ForwardLeakyfloat()
 	case xaflg.ParaPlus():
 		return ktf.ForwardParametricfloat()
+	case xaflg.ParaChan():
+		return ktf.ForwardParamFloatChan()
 	}
 	return "error"
 
@@ -44,6 +46,8 @@ func (x XActivationMode) tostringbwd(dtype DataType) string {
 		return ktf.BackwardLeakyfloat()
 	case xaflg.ParaPlus():
 		return ktf.BackwardParametricfloat()
+	case xaflg.ParaChan():
+		return ktf.BackwardParamFloatChan()
 	}
 	return "error"
 }
@@ -56,6 +60,11 @@ func (x XActivationModeFlag) Leaky() XActivationMode {
 //ParaPlus returns the Parametric flag
 func (x XActivationModeFlag) ParaPlus() XActivationMode {
 	return XActivationMode(2)
+}
+
+//ParaChan returns the ParaChan flag and it is a weighted leaky on the just the channels
+func (x XActivationModeFlag) ParaChan() XActivationMode {
+	return XActivationMode(3)
 }
 
 //XActivationD is the activation descriptor for the "Xtra" stuff that I added to cudnn
@@ -85,6 +94,46 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 	var ktf kernels.XtraKerns
 	switch amode {
 	case XActivationModeFlag{}.ParaPlus():
+		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		bwdmode, err := Cuda{}.MakeKernel(amode.tostringbwd(dtype), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		rmodek, err := Cuda{}.MakeKernel(ktf.L1L2(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		tmodek, err := Cuda{}.MakeKernel(tmode.tostring(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+
+		abcheck, err := Cuda{}.MakeKernel(ktf.AlpaBetaCheck(), h.mod)
+		act := &XActivationD{
+			fwdmode: fwdmode,
+			bwdmode: bwdmode,
+			rmodek:  rmodek,
+			tmodek:  tmodek,
+			amode:   amode,
+			tmode:   tmode,
+			abcheck: abcheck,
+			abeq:    make([]int32, 1),
+			counter: ctr,
+		}
+		ptr, err := MakeGoPointer(act.abeq)
+		if err != nil {
+			return nil, err
+		}
+		act.abptr = ptr
+		act.abdev, err = Malloc(4)
+		if err != nil {
+			return nil, err
+		}
+		return act, nil
+	case XActivationModeFlag{}.ParaChan():
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
@@ -170,6 +219,26 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *Te
 			}
 		}
 		return nil
+	case XActivationModeFlag{}.ParaChan():
+		tf, err := xD.GetFormat()
+		if err != nil {
+			return err
+		}
+		var tflg TensorFormatFlag
+		var NHWC int32
+		if tf == tflg.NHWC() {
+			NHWC = int32(255)
+		}
+		config := h.LaunchConfig3d(dims[1], dims[2], dims[3])
+		for i := int32(0); i < dims[0]; i++ {
+			err := xA.fwdmode.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
+				config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
+				config.Dimx, config.Dimy, config.Dimz, i, x, y, alphas, betas, NHWC)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	return errors.New("Unsupported XActivationMode")
@@ -201,12 +270,32 @@ func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *Tens
 			}
 		}
 		return nil
+	case XActivationModeFlag{}.ParaChan():
+		tf, err := xD.GetFormat()
+		if err != nil {
+			return err
+		}
+		var tflg TensorFormatFlag
+		var NHWC int32
+		if tf == tflg.NHWC() {
+			NHWC = int32(255)
+		}
+		config := h.LaunchConfig3d(dims[1], dims[2], dims[3])
+		for i := int32(0); i < dims[0]; i++ {
+			err := xA.bwdmode.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
+				config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
+				config.Dimx, config.Dimy, config.Dimz, i, x, dx, dy, alphas, dalphas, betas, dbetas, NHWC)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 	return errors.New("Unsupported XActivationMode")
 }
 
-//UpdateParaPlus will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
-func (xA *XActivationD) UpdateParaPlus(h *XHandle, dxD *TensorD, alphas, dalphas, betas, dbetas, xsuma, gsuma, xsumb, gsumb, l1, l2 *Malloced, t TrainingParams, r RegParams) error {
+//UpdateParas will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
+func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, betas, dbetas, xsuma, gsuma, xsumb, gsumb, l1, l2 *Malloced, t TrainingParams, r RegParams) error {
 	var dtf DataTypeFlag
 	dtype, _, _, err := dxD.GetDescrptor()
 	if dtype != dtf.Float() {
