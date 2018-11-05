@@ -24,7 +24,7 @@ func TestTensor(t *testing.T) {
 		t.Error(err)
 	}
 
-	x, y, z := int32(1), int32(2), int32(2)
+	x, y, z := int32(1), int32(4), int32(4)
 	xyz := x * y * z
 	yz := y * z
 	stride := []int32{ostride[0] * xyz, ostride[1] * xyz, ostride[2] * yz, ostride[3] * z}
@@ -78,8 +78,7 @@ func TestTensor(t *testing.T) {
 	gocudnn.CudaMemCopy(ycpuptr, dy, ysize, gocudnn.MemcpyKindFlag{}.DeviceToHost())
 
 	//fmt.Println(yslice)
-	t.Error(xslice)
-	t.Error(yslice)
+
 	fmt.Println("Strided")
 	printnchwwithstride(sharedims, stride, yslice)
 	fmt.Println("WithZeros")
