@@ -61,7 +61,6 @@ func TestTrainer(t *testing.T) {
 		trainhandle,
 		gocudnn.TrainingModeFlag{}.Adam(),
 		gocudnn.DataTypeFlag{}.Float(),
-		gocudnn.RegularizationFlag{}.L1L2(),
 	)
 	//trainhandle.SetStream(stream)
 	if err != nil {

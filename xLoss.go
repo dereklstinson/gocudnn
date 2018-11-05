@@ -73,11 +73,11 @@ func (xtra Xtra) NewLossDescriptor(h *XHandle, mode XLossMode, unified bool) (*X
 //and right now they can only be datatype float
 func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
 	dxD *TensorD, //output -errors going back
-	dx Memer, // output -errors going back
+	dx *Malloced, // output -errors going back
 	yD *TensorD, //input - target values
-	y Memer, //input -target values
+	y *Malloced, //input -target values
 	dyD *TensorD, //input network output values
-	dy Memer, //input network output values
+	dy *Malloced, //input network output values
 	//loss Memer, // this is the loss calculated by the network
 ) (float32, error) {
 	dxdtype, dxdims, _, err := dxD.GetDescrptor()

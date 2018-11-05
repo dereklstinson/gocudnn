@@ -27,7 +27,6 @@ Written in the style of cudnn/GoCudnn. This is an added set of functions to calc
 type TrainerD struct {
 	data    DataType
 	mode    TrainingMode
-	reg     Regularization
 	counter uint32
 	kmode   *Kernel
 	kreg    *Kernel
@@ -106,34 +105,6 @@ func (xtra Xtra) CreateParamsFloat32(eps, rate, beta1, beta2 float32) TrainingPa
 	}
 }
 
-//Regularization will regulate the training.  L1 and/or L2
-type Regularization int32
-
-//RegularizationFlag allows the passing of regularization flags
-type RegularizationFlag struct {
-}
-
-//L1 performs l1 regularization batch is included in this
-func (r RegularizationFlag) L1() Regularization {
-	return Regularization(1)
-}
-
-//L2 performs L2 regularization batch is included in this
-func (r RegularizationFlag) L2() Regularization {
-	return Regularization(2)
-}
-
-//L1L2 performs l1l2 regularization batch is included in this
-func (r RegularizationFlag) L1L2() Regularization {
-	return Regularization(12)
-}
-
-//Batch performs only the batch regularization which the other ones do also.
-func (r RegularizationFlag) Batch() Regularization {
-	return Regularization(3)
-
-}
-
 //TrainingModeFlag is a nil struct that passes TrainingMode Flags through methods.
 type TrainingModeFlag struct {
 }
@@ -170,24 +141,12 @@ func (t TrainingMode) tostring() string {
 }
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
-func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataType, reg Regularization) (*TrainerD, error) {
+func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataType) (*TrainerD, error) {
 	var ktf kernels.XtraKerns
 	var cu Cuda
 
-	var rflg RegularizationFlag
-	var regname string
-	switch reg {
-	case rflg.L1():
-		regname = ktf.L1()
-	case rflg.L2():
-		regname = ktf.L2()
-	case rflg.L1L2():
-		regname = ktf.L1L2()
-	case rflg.Batch():
-		regname = ktf.Batch()
-	default:
-		return nil, errors.New("Regularization Not Supported")
-	}
+	regname := ktf.L1L2()
+
 	var mflg TrainingModeFlag
 	var mname string
 	switch mode {
@@ -224,7 +183,6 @@ func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataT
 	return &TrainerD{ //all true then we will set TrainerD
 		mode:    mode,
 		data:    data,
-		reg:     reg,
 		kmode:   kmode,
 		kreg:    kreg,
 		counter: uint32(1),
@@ -232,15 +190,15 @@ func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataT
 }
 
 //GetTrainingDescriptor returns the info that was set for the training descriptor
-func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType, Regularization) {
-	return d.mode, d.data, d.reg
+func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType) {
+	return d.mode, d.data
 }
 func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw Memer, rate, beta1, beta2, eps, counter interface{}) error {
 	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter)
 }
 
 //L1L2Regularization does the l1l2 regularization
-func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 Memer, params RegParams) error {
+func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 *Malloced, params RegParams) error {
 	var size int32
 	switch d.data {
 	case DataTypeFlag{}.Float():
@@ -250,13 +208,22 @@ func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 Memer, params Re
 
 	}
 	config := h.LaunchConfig(size)
+	if params.decay1 == 0 && params.decay2 == 0 {
+		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, nil, params.batch, params.decay1, params.decay2)
+	} else if params.decay1 == 0 {
+		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, l2, params.batch, params.decay1, params.decay2)
+	} else if params.decay2 == 0 {
+		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, nil, params.batch, params.decay1, params.decay2)
+	} else {
+		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+	}
 
-	return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+	//return errors.New("Shouldn't have Reached here")
 
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum Memer, params TrainingParams) error {
+func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum *Malloced, params TrainingParams) error {
 	var size int32
 	var err error
 	if xsum != nil {
@@ -275,7 +242,6 @@ func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum Memer, params Train
 			wbs := strconv.Itoa(int(w.ByteSize()))
 			dwbs := strconv.Itoa(int(dw.ByteSize()))
 			gsbs := strconv.Itoa(int(gsum.ByteSize()))
-			//	xsbs := strconv.Itoa(int(xsum.ByteSize()))
 			return errors.New("Sizes don't match" + sp + wbs + sp + dwbs + sp + gsbs + sp)
 		}
 

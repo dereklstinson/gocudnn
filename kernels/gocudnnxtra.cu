@@ -353,15 +353,24 @@ void adadeltafloat( const int length,
 
 }
 
+
+//This is paired with the host
+extern "C" __global__
+void Segment1stDim(const int start_index, const float *src,float *dst ,const int size){
+    int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
+    int start_location=start_index*size;
+    if (i<size){
+        dst[i]=src[start_location+i];
+    }
+}
+/*
 extern "C" __global__
 void l1regularizationfloat(const int length,
                            float *dw, //input and output
                            float *w,  //input
                            float *l1, //output
-                           float *l2, //output
                            const float batch, // should be an int but just send it as a float
-                           const float decay1,
-                           const float decay2){
+                           const float decay1){
 float decay = decay1;
 CUDA_GRID_LOOP_X(i,length){
         
@@ -374,27 +383,14 @@ CUDA_GRID_LOOP_X(i,length){
         dw[i]= (dw[i] +decay/batch);
     }
 }
-//This is paired with the host
-extern "C" __global__
-void Segment1stDim(const int start_index, const float *src,float *dst ,const int size){
-    int i=  (blockIdx.y*gridDim.x*blockDim.x) +(blockIdx.x*blockDim.x) + threadIdx.x;
-    int start_location=start_index*size;
-    if (i<size){
-        dst[i]=src[start_location+i];
-    }
-}
-
-
 
 extern "C" __global__
 void l2regularizationfloat(
     const int length,
     float *dw, //input and output
     float *w,  //input
-    float *l1, //output
     float *l2, //output
     const float batch, // should be an int but just send it as a float
-    const float decay1,
     const float decay2){
 CUDA_GRID_LOOP_X(i,length){ 
     atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
@@ -410,23 +406,42 @@ void batchregfloat(
 CUDA_GRID_LOOP_X(i,length){ 
 dw[i]/=batch;
     }
-}  
+} 
+*/ 
 extern "C" __global__
 void l1l2regularizationfloat(
     const int length,
     float *dw, //input and output
     float *w,  //input needs to ba an array
-   // int values, //number of values
     float *l1, //output set to zero
     float *l2, //output set to zero
     const float batch, // should be an int but just send it as a float
     const float decay1, //input
     const float decay2){ //input
-float decay =decay1 ;
+if (decay1 ==0 && decay2==0){
+CUDA_GRID_LOOP_X(i,length){ 
+        dw[i]/=batch;
+}
+}else if (decay1==0){
+CUDA_GRID_LOOP_X(i,length){ 
+        atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
+        dw[i]= (dw[i] + w[i]*decay2)/batch;
+}
+}else if(decay2 == 0){
+float decay = decay1;
 CUDA_GRID_LOOP_X(i,length){
- 
+        if (w[i]<0){
+             decay=-decay1;
+        }else{
+            decay=decay1;
+        }
+            atomicAdd(l1,w[i]*decay);
+            dw[i]= (dw[i] +decay/batch);
+}
+}else {
+float decay = decay1;
+CUDA_GRID_LOOP_X(i,length){
 
-        
         if (w[i]<0){
             decay=-decay1;
         }else{
@@ -436,24 +451,99 @@ CUDA_GRID_LOOP_X(i,length){
         atomicAdd(l1,w[i]*decay); 
         atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
         dw[i]= (dw[i] + (w[i]*decay2) +decay1)/batch;
-     }
-
+}
+}
 }  
+extern "C" __global__
+void forwardParametricfloatchannel(const int tx, const int ty, const int tz, const int batchindex  ,float *xx,float *yy,  float *alpha, float *beta,const int NHWC){
+    int stride= tx*ty*tz*batchindex;
+   int ofx = ty*tz;
+   int ofy = tz;
+
+        CUDA_GRID_AXIS_LOOP(i,tx,x){
+
+            CUDA_GRID_AXIS_LOOP(j,ty,y){
+            
+            CUDA_GRID_AXIS_LOOP(k,tz,z){
+                if (NHWC==0){
+                    if (xx[stride+(i*ofx)+(j*ofy)+k]>0.0){
+                        yy[stride+(i*ofx)+(j*ofy)+k]=beta[i]*xx[stride+(i*ofx)+(j*ofy)+k];
+                    }else{
+                        yy[stride+(i*ofx)+(j*ofy)+k]=alpha[i]*xx[stride+(i*ofx)+(j*ofy)+k];
+                    }
+                }else{
+                    if (xx[stride+(i*ofx)+(j*ofy)+k]>0.0){
+                        yy[stride+(i*ofx)+(j*ofy)+k]=beta[k]*xx[stride+(i*ofx)+(j*ofy)+k];
+                    }else{
+                        yy[stride+(i*ofx)+(j*ofy)+k]=alpha[k]*xx[stride+(i*ofx)+(j*ofy)+k];
+                    }
+                }
+               
+
+            }
+        }
+        }
+  
+}
+///backwardParametricfloat does the backprop of the parametric float
+extern "C" __global__  
+void backwardParametricfloatchannel(const int tx,
+                                     const int ty,
+                                     const int tz,
+                                      const int batchindex ,
+                                      float *xx,
+                                       float *dx,
+                                       float *dy,
+                                         float *alpha ,
+                                         float *dalpha,
+                                          float *beta,
+                                          float *dbeta,
+                                          const int NHWC){
+    int stride= tx*ty*tz*batchindex;
+    int ofx = ty*tz;
+    int ofy = tz;
+CUDA_GRID_AXIS_LOOP(i,tx,x){
+
+    CUDA_GRID_AXIS_LOOP(j,ty,y){
+    
+    CUDA_GRID_AXIS_LOOP(k,tz,z){
+        if (NHWC==0){
+            if (xx[stride+(i*ofx)+(j*ofy)+k]>0.0){
+                dx[stride+(i*ofx)+(j*ofy)+k]=beta[i]*dy[stride+(i*ofx)+(j*ofy)+k];
+                atomicAdd(&dbeta[i],xx[stride+(i*ofx)+(j*ofy)+k]*dy[stride+(i*ofx)+(j*ofy)+k]);
+            }else{
+                dx[stride+(i*ofx)+(j*ofy)+k]=alpha[i]*dy[stride+(i*ofx)+(j*ofy)+k];
+                atomicAdd(&dalpha[i],xx[stride+(i*ofx)+(j*ofy)+k]*dy[stride+(i*ofx)+(j*ofy)+k]);
+            }
+        }else{
+            if (xx[stride+(i*ofx)+(j*ofy)+k]>0.0){
+                dx[stride+(i*ofx)+(j*ofy)+k]=beta[k]*dy[stride+(i*ofx)+(j*ofy)+k];
+                atomicAdd(&dbeta[k],xx[stride+(i*ofx)+(j*ofy)+k]*dy[stride+(i*ofx)+(j*ofy)+k]);
+            }else{
+                dx[stride+(i*ofx)+(j*ofy)+k]=alpha[k]*dy[stride+(i*ofx)+(j*ofy)+k];
+                atomicAdd(&dalpha[k],xx[stride+(i*ofx)+(j*ofy)+k]*dy[stride+(i*ofx)+(j*ofy)+k]);
+            }
+        }
+       
+
+    }
+}
+}
+
+}
+
 
 
 extern "C" __global__
-void forwardParametricfloat(const int length, const int alphalength ,float *x,float *y,  float *alpha){
-   int xsize = gridDim.x*blockDim.x;
-   int i= blockIdx.x*blockDim.x+threadIdx.x;
-   int j = xsize*blockIdx.y+i;
-
+void forwardParametricfloat(const int length, const int batchindex  ,float *x,float *y,  float *alpha, float *beta){
+    int stride= length*batchindex;
+    CUDA_GRID_LOOP_X(j,length){
   
-if (j<length){
-    if (i<alphalength){
-        if (x[j]>0.0){
-            y[j]=x[j];
+
+        if (x[stride+j]>0.0){
+            y[stride+j]=beta[j]*x[stride+j];
         }else{
-            y[j]=alpha[i]*x[j];
+            y[stride+j]=alpha[j]*x[stride+j];
         }
 
 
@@ -462,30 +552,43 @@ if (j<length){
     
 }
 
-}
 
-//NHCW, NCWH only matters on the batch channel so for this to work alpha and dalpha are going to have to be the size of 
-// HCW.  
+
+///backwardParametricfloat does the backprop of the parametric float
 extern "C" __global__  
-void backwardParametricfloat(const int length, const int alphalength ,float *x, float *dx,float *dy,  float *alpha, float *dalpha){
+void backwardParametricfloat(const int length, const int batchindex ,float *x, float *dx,float *dy,  float *alpha ,float *dalpha, float *beta,float *dbeta){
+int stride= length*batchindex;
+   
+    CUDA_GRID_LOOP_X(j,length){
 
-    int xsize = gridDim.x*blockDim.x;
-    int i= blockIdx.x*blockDim.x+threadIdx.x;
-    int j = xsize*blockIdx.y+i;
- 
-if (j<length){
-    if (i<alphalength){
-    if (x[j]>0.0){
-        dx[j]=dy[j];
+    if (x[stride+j]>0.0){
+        dx[stride+j]=dy[stride+j]*beta[j];
+         dbeta[j] += x[j]*dy[j];
     }else{
-        dx[j]=alpha[i]*dy[j];
-        atomicAdd(&dalpha[i],x[j]*dy[j]);
+        dx[stride+j]=alpha[j]*dy[stride+j];
+        dalpha[j]+=x[stride+j]*dy[stride+j];
   
     }   
  
 }
 }
+
+///alphabetacheck makes sure that the alphas and betas don't match
+extern "C" __global__  
+void alphabetacheck(const int length, const float *alpha, const float *beta, int *countequal){
+countequal[0]=0;
+   
+    CUDA_GRID_LOOP_X(j,length){
+
+    if (alpha[j]==beta[j]){
+        atomicAdd(countequal,1); 
+    }
+  
+    }   
+ 
 }
+
+
 extern "C" __global__
 void forwardleakyfloat(const int length,float *x,float *y, const float invalpha){
     CUDA_GRID_LOOP_X(i,length){

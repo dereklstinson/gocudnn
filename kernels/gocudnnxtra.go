@@ -44,14 +44,24 @@ func (t XtraKerns) NearestNeighborNCHWBack() string {
 	return "nearestneighborNCHWBack"
 }
 
-//ForwardParametricfloat Not working
+//ForwardParametricfloat Not tested
 func (t XtraKerns) ForwardParametricfloat() string {
 	return "forwardParametricfloat"
 }
 
-//BackwardParametricfloat Not Working
+//BackwardParametricfloat Not tested
 func (t XtraKerns) BackwardParametricfloat() string {
 	return "backwardParametricfloat"
+}
+
+//ForwardParamFloatChan Not tested
+func (t XtraKerns) ForwardParamFloatChan() string {
+	return "forwardParametricfloatchannel"
+}
+
+//BackwardParamFloatChan Not tested
+func (t XtraKerns) BackwardParamFloatChan() string {
+	return "backwardParametricfloatchannel"
 }
 
 //ForwardLeakyfloat activation function Relu but negatives get a reduced value
@@ -62,11 +72,6 @@ func (t XtraKerns) ForwardLeakyfloat() string {
 //BackwardLeakyfloat activation function Relu but negatives get a reduced value
 func (t XtraKerns) BackwardLeakyfloat() string {
 	return "backwardleakyfloat"
-}
-
-//Batch Just reduces the values of the gradients by dividing the batch size
-func (t XtraKerns) Batch() string {
-	return "batchregfloat"
 }
 
 //AdaDelta ..
@@ -84,6 +89,11 @@ func (t XtraKerns) Adam() string {
 	return "adamfloat"
 }
 
+/*
+//Batch Just reduces the values of the gradients by dividing the batch size
+func (t XtraKerns) Batch() string {
+	return "batchregfloat"
+}
 //L1 ..
 func (t XtraKerns) L1() string {
 	return "l1regularizationfloat"
@@ -93,8 +103,14 @@ func (t XtraKerns) L1() string {
 func (t XtraKerns) L2() string {
 	return "l2regularizationfloat"
 }
-
+*/
 //L1L2 ..
 func (t XtraKerns) L1L2() string {
 	return "l1l2regularizationfloat"
+}
+
+//AlpaBetaCheck checks the alpha beta and counts how many of them are equal
+func (t *XtraKerns) AlpaBetaCheck() string {
+	return "alphabetacheck"
+
 }

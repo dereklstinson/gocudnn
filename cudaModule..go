@@ -13,7 +13,6 @@ const CUjit_option * nullJitOptions = NULL;
 import "C"
 import (
 	"errors"
-	"fmt"
 	"unsafe"
 )
 
@@ -122,7 +121,7 @@ func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
 
 	//	kernelParams, err := ifacetounsafe(args)
-	kernelParams, err := ifacetocunsafeprototype(args)
+	kernelParams, err := ifacetounsafe(args)
 	if err != nil {
 		return err
 	}
@@ -219,6 +218,33 @@ func (k *KernelArguments) SetArguments(args ...interface{}) {
 func (k *KernelArguments) GetArguments() []interface{} {
 	return k.args
 }
+func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
+	array := make([]unsafe.Pointer, len(args))
+	for i := 0; i < len(args); i++ {
+		y := args[i]
+		switch x := y.(type) {
+		case *Malloced:
+			if x == nil {
+				array[i] = unsafe.Pointer(nil)
+			}
+			if x.ptr == nil {
+				return nil, errors.New("Memory Doesn't Have A Pointer")
+			}
+			array[i] = unsafe.Pointer(&x.ptr)
+		case *GoPointer:
+			return nil, errors.New("*GoPointer not supported")
+		default:
+			//fmt.Println("Got to:", i, "value is", x)
+			scalar := CScalarConversion(x)
+			if scalar == nil {
+				return nil, errors.New("Not a supported value")
+			}
+			array[i] = scalar.CPtr()
+		}
+
+	}
+	return array, nil
+}
 
 /*
 //LaunchV2 is like launch but it takes KernelArgument struct.
@@ -252,7 +278,7 @@ func (k *Kernel) LaunchV2(p KernelArguments) error {
 		))
 }
 */
-
+/*
 func ifacetocunsafeprototype(args []interface{}) ([]unsafe.Pointer, error) {
 
 	//	fmt.Println("arguments passed", args)
@@ -303,7 +329,6 @@ func ifacetocunsafeprototype(args []interface{}) ([]unsafe.Pointer, error) {
 			}
 			array[i] = unsafe.Pointer(&x.ptr)
 		default:
-			//fmt.Println("Got to:", i, "value is", x)
 			scalar := CScalarConversion(x)
 			if scalar == nil {
 				fmt.Println(unzippedargs[i])
@@ -314,48 +339,6 @@ func ifacetocunsafeprototype(args []interface{}) ([]unsafe.Pointer, error) {
 
 	}
 	return array, nil
-}
-func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
-	array := make([]unsafe.Pointer, len(args))
-	//	fmt.Println("arguments passed", args)
-	//fmt.Println("Length of Args", len(args))
-
-	for i := 0; i < len(args); i++ {
-		y := args[i]
-		switch x := y.(type) {
-		case *Malloced:
-			if x.ptr == nil {
-				return nil, errors.New("Memory Doesn't Have A Pointer")
-			}
-			array[i] = unsafe.Pointer(&x.ptr)
-		default:
-			//fmt.Println("Got to:", i, "value is", x)
-			scalar := CScalarConversion(x)
-			if scalar == nil {
-				return nil, errors.New("Not a supported value")
-			}
-			array[i] = scalar.CPtr()
-		}
-
-	}
-	return array, nil
-}
-
-/*
-func convertargs (args []interface{})([]unsafe.Pointer,error){
-	array:=make([]unsafe.Pointer,0)
-	for i:=0;i<len(args);i++{
-		argpointer:=unsafe.Pointer(C.malloc(C.maxArgSize))
-		defer C.free(argpointer)
-		switch x:=args[i].(type){
-		case *Malloced:
-			x.ptr==nil{
-				return nil,errors.New("Memory Doesn't Have A Pointer")
-			}
-			c.memcpy(argpointer,unsafePointer(&x.ptr,C.ptrSize)
-			array=append(array,)
-		}
-	}
 }
 
 */

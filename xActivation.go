@@ -25,7 +25,7 @@ func (x XActivationMode) tostringfwd(dtype DataType) string {
 	switch x {
 	case xaflg.Leaky():
 		return ktf.ForwardLeakyfloat()
-	case xaflg.parametric():
+	case xaflg.ParaPlus():
 		return ktf.ForwardParametricfloat()
 	}
 	return "error"
@@ -42,7 +42,7 @@ func (x XActivationMode) tostringbwd(dtype DataType) string {
 	switch x {
 	case xaflg.Leaky():
 		return ktf.BackwardLeakyfloat()
-	case xaflg.parametric():
+	case xaflg.ParaPlus():
 		return ktf.BackwardParametricfloat()
 	}
 	return "error"
@@ -53,8 +53,8 @@ func (x XActivationModeFlag) Leaky() XActivationMode {
 	return XActivationMode(1)
 }
 
-//Parametric returns the Parametric flag
-func (x XActivationModeFlag) parametric() XActivationMode {
+//ParaPlus returns the Parametric flag
+func (x XActivationModeFlag) ParaPlus() XActivationMode {
 	return XActivationMode(2)
 }
 
@@ -69,6 +69,10 @@ type XActivationD struct {
 	bwdmode *Kernel
 	rmodek  *Kernel
 	tmodek  *Kernel
+	abcheck *Kernel
+	abeq    []int32
+	abptr   *GoPointer
+	abdev   *Malloced
 	coef    float64
 }
 
@@ -80,7 +84,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 	ctr := int32(1)
 	var ktf kernels.XtraKerns
 	switch amode {
-	case XActivationModeFlag{}.parametric():
+	case XActivationModeFlag{}.ParaPlus():
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
@@ -89,7 +93,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 		if err != nil {
 			return nil, err
 		}
-		rmodek, err := Cuda{}.MakeKernel(ktf.Batch(), h.mod)
+		rmodek, err := Cuda{}.MakeKernel(ktf.L1L2(), h.mod)
 		if err != nil {
 			return nil, err
 		}
@@ -97,15 +101,29 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 		if err != nil {
 			return nil, err
 		}
-		return &XActivationD{
+
+		abcheck, err := Cuda{}.MakeKernel(ktf.AlpaBetaCheck(), h.mod)
+		act := &XActivationD{
 			fwdmode: fwdmode,
 			bwdmode: bwdmode,
 			rmodek:  rmodek,
 			tmodek:  tmodek,
 			amode:   amode,
 			tmode:   tmode,
+			abcheck: abcheck,
+			abeq:    make([]int32, 1),
 			counter: ctr,
-		}, nil
+		}
+		ptr, err := MakeGoPointer(act.abeq)
+		if err != nil {
+			return nil, err
+		}
+		act.abptr = ptr
+		act.abdev, err = Malloc(4)
+		if err != nil {
+			return nil, err
+		}
+		return act, nil
 	default:
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
@@ -125,43 +143,70 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 
 }
 
-//ForwardProp does the feed forward operation alphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y
-func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x Memer, yD *TensorD, y Memer, alphas Memer) error {
-	dtype, _, _, err := xD.GetDescrptor()
-	sizeinbytes, err := xD.GetSizeInBytes()
+//ForwardProp does the feed forward operation alphas and betas can be nil iff it is not supported (leaky right now). ParaPlus needs both alphas and betas
+func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, alphas, betas *Malloced) error {
+	dtype, _, dims, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	length := FindLength(sizeinbytes, dtype)
+	var df DataTypeFlag
+	if dtype != df.Float() {
+		return errors.New("Only Float is the supported datatype")
+	}
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
+
+		length := findvolume(dims)
 		config := h.LaunchConfig(int32(length))
 		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef))
-
+	case XActivationModeFlag{}.ParaPlus():
+		length := findvolume(dims[1:])
+		config := h.LaunchConfig(int32(length))
+		for i := int32(0); i < dims[0]; i++ {
+			err := xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, i, x, y, alphas, betas)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
+
 	return errors.New("Unsupported XActivationMode")
 }
 
 //BackProp does the feed forward operation alphas and dalphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y(parametric right now)
-func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x Memer, dxD *TensorD, dx Memer, dyD *TensorD, dy Memer, alphas, dalphas Memer) error {
-	dtype, _, _, err := dxD.GetDescrptor()
-	sizeinbytes, err := dxD.GetSizeInBytes()
+func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, alphas, dalphas, betas, dbetas *Malloced) error {
+	dtype, _, dims, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	length := FindLength(sizeinbytes, dtype)
+	var df DataTypeFlag
+	if dtype != df.Float() {
+		return errors.New("Only Float is the supported datatype")
+	}
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
+		length := findvolume(dims)
 		config := h.LaunchConfig(int32(length))
 		return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef))
+	case XActivationModeFlag{}.ParaPlus():
+		length := findvolume(dims[1:])
+		config := h.LaunchConfig(int32(length))
+		for i := int32(0); i < dims[0]; i++ {
+			err := xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, i, x, dx, dy, alphas, dalphas, betas, dbetas)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 	return errors.New("Unsupported XActivationMode")
 }
 
-//UpdateAlphas will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
-func (xA *XActivationD) UpdateAlphas(h *XHandle, batch int, dxD *TensorD, alphas, dalphas, xsum, gsum Memer, t TrainingParams) error {
+//UpdateParaPlus will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
+func (xA *XActivationD) UpdateParaPlus(h *XHandle, dxD *TensorD, alphas, dalphas, betas, dbetas, xsuma, gsuma, xsumb, gsumb, l1, l2 *Malloced, t TrainingParams, r RegParams) error {
 	var dtf DataTypeFlag
 	dtype, _, _, err := dxD.GetDescrptor()
 	if dtype != dtf.Float() {
@@ -178,24 +223,77 @@ func (xA *XActivationD) UpdateAlphas(h *XHandle, batch int, dxD *TensorD, alphas
 	if xA.rmodek == nil {
 		return errors.New("regularization mode not set this is internal and if not using parmetric activation then you shouldn't update the alphas")
 	}
-	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, float32(batch))
+	if r.decay1 == 0 && r.decay2 == 0 {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, nil, nil, nil, r.batch, r.decay1, r.decay2)
+	} else if r.decay1 == 0 {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, nil, l2, r.batch, r.decay1, r.decay2)
+	} else if r.decay2 == 0 {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, nil, r.batch, r.decay1, r.decay2)
+	} else {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
+	}
+	if err != nil {
+		return err
+	}
+	if r.decay1 == 0 && r.decay2 == 0 {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, nil, nil, nil, r.batch, r.decay1, r.decay2)
+	} else if r.decay1 == 0 {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, nil, l2, r.batch, r.decay1, r.decay2)
+	} else if r.decay2 == 0 {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, l1, nil, r.batch, r.decay1, r.decay2)
+	} else {
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, l1, l2, r.batch, r.decay1, r.decay2)
+	}
+
 	if err != nil {
 		return err
 	}
 	switch xA.tmode {
 	case TrainingModeFlag{}.Adam():
 
-		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, gsum, xsum, dalphas, t.rate, t.beta1, t.beta2, t.eps, float32(xA.counter))
-
-		///void adamfloat(const int length,float *w,float *gsum,float *xsum,float *dw,const float rate,const float beta1,const float beta2,const float eps,const float counter){
+		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, gsuma, xsuma, dalphas, t.rate, t.beta1, t.beta2, t.eps, float32(xA.counter))
+		if err != nil {
+			return err
+		}
+		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, betas, gsumb, xsumb, dbetas, t.rate, t.beta1, t.beta2, t.eps, float32(xA.counter))
+		if err != nil {
+			return err
+		}
 		xA.counter++
-		return err
+
 	case TrainingModeFlag{}.AdaDelta():
-		return xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, gsum, xsum, dalphas, t.rate, t.eps)
+		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, gsuma, xsuma, dalphas, t.rate, t.eps)
+		if err != nil {
+			return err
+		}
+		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, betas, gsumb, xsumb, dbetas, t.rate, t.eps)
+		if err != nil {
+			return err
+		}
+
 	case TrainingModeFlag{}.AdaGrad():
-		return xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, dalphas, gsum, t.rate, t.eps)
+		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, dalphas, gsuma, t.rate, t.eps)
+		if err != nil {
+			return err
+		}
+		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, betas, dbetas, gsumb, t.rate, t.eps)
+		if err != nil {
+			return err
+		}
 
+	default:
+		return errors.New("Unsupported Update")
 	}
-
-	return errors.New("Unsupported Update")
+	err = xA.abcheck.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, betas, xA.abdev)
+	if err != nil {
+		return err
+	}
+	err = CudaMemCopy(xA.abptr, xA.abdev, 4, MemcpyKindFlag{}.DeviceToHost())
+	if err != nil {
+		return err
+	}
+	if length == uint32(xA.abeq[0]) {
+		return errors.New("Betas[i] == Alphas[i] for all of i. You have lost all nonlinearity")
+	}
+	return nil
 }

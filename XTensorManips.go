@@ -60,7 +60,7 @@ func findnewdims(original, perm []int32) []int32 {
 }
 
 //Transpose will transpose the values of src to dest . only works on non sliding Tensors
-func (t *XTransposeD) Transpose(handle *XHandle, perm []int32, srcdesc *TensorD, src Memer, destdesc *TensorD, dest Memer) error {
+func (t *XTransposeD) Transpose(handle *XHandle, perm []int32, srcdesc *TensorD, src *Malloced, destdesc *TensorD, dest *Malloced) error {
 
 	xfrmt, err := srcdesc.GetFormat()
 	if err != nil {
