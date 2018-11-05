@@ -3,6 +3,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"fmt"
 
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
@@ -173,7 +174,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 			return nil, err
 		}
 		return act, nil
-	default:
+	case XActivationModeFlag{}.Leaky():
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
@@ -189,7 +190,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 			amode:   amode,
 		}, nil
 	}
-
+	return nil, errors.New("Unsupported Activation")
 }
 
 //ForwardProp does the feed forward operation alphas and betas can be nil iff it is not supported (leaky right now). ParaPlus needs both alphas and betas
@@ -206,7 +207,12 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *Te
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
 
-		length := findvolume(dims)
+		sib, err := xD.GetSizeInBytes()
+		if err != nil {
+			return err
+		}
+		length := FindLength(sib, dtype)
+		//	length := findvolume(dims)
 		config := h.LaunchConfig(int32(length))
 		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef))
 	case XActivationModeFlag{}.ParaPlus():
@@ -257,7 +263,14 @@ func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *Tens
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
-		length := findvolume(dims)
+
+		sib, err := xD.GetSizeInBytes()
+		if err != nil {
+			return err
+		}
+		length := FindLength(sib, dtype)
+
+		//	length := findvolume(dims)
 		config := h.LaunchConfig(int32(length))
 		return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef))
 	case XActivationModeFlag{}.ParaPlus():
@@ -296,6 +309,7 @@ func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *Tens
 
 //UpdateParas will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
 func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, betas, dbetas, xsuma, gsuma, xsumb, gsumb, l1, l2 *Malloced, t TrainingParams, r RegParams) error {
+	fmt.Println("updating params for activation")
 	var dtf DataTypeFlag
 	dtype, _, _, err := dxD.GetDescrptor()
 	if dtype != dtf.Float() {

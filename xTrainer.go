@@ -34,9 +34,9 @@ type TrainerD struct {
 
 //RegParams holds the regulator paramaters
 type RegParams struct {
-	decay1 interface{}
-	decay2 interface{}
-	batch  interface{}
+	decay1 float32
+	decay2 float32
+	batch  float32
 }
 
 //CreateRegParamsFloat32 creates the RegParams for float32 ,,, I really don't like this function.
@@ -51,46 +51,46 @@ func (xtra Xtra) CreateRegParamsFloat32(decay1, decay2, batch float32) RegParams
 }
 
 //SetDecay1 sets decay1
-func (a *RegParams) SetDecay1(decay1 interface{}) {
+func (a *RegParams) SetDecay1(decay1 float32) {
 	a.decay1 = decay1
 }
 
 //SetDecay2 sets decay 2
-func (a *RegParams) SetDecay2(decay2 interface{}) {
+func (a *RegParams) SetDecay2(decay2 float32) {
 	a.decay2 = decay2
 }
 
 //SetBatch SetsBatch
-func (a *RegParams) SetBatch(batch interface{}) {
+func (a *RegParams) SetBatch(batch float32) {
 	a.batch = batch
 }
 
 //TrainingParams is a struct can be use for training params.
 //When selecting the training mode the params that are not part of the training mode will be ignored.
 type TrainingParams struct {
-	eps   interface{}
-	rate  interface{}
-	beta1 interface{}
-	beta2 interface{}
+	eps   float32
+	rate  float32
+	beta1 float32
+	beta2 float32
 }
 
 //SetBeta1 sets beta1
-func (a *TrainingParams) SetBeta1(beta1 interface{}) {
+func (a *TrainingParams) SetBeta1(beta1 float32) {
 	a.beta1 = beta1
 }
 
 //SetBeta2 sets beta2
-func (a *TrainingParams) SetBeta2(beta2 interface{}) {
+func (a *TrainingParams) SetBeta2(beta2 float32) {
 	a.beta2 = beta2
 }
 
 //SetRate sets rate
-func (a *TrainingParams) SetRate(rate interface{}) {
+func (a *TrainingParams) SetRate(rate float32) {
 	a.rate = rate
 }
 
 //SetEps sets eps
-func (a *TrainingParams) SetEps(eps interface{}) {
+func (a *TrainingParams) SetEps(eps float32) {
 	a.eps = eps
 }
 
@@ -226,6 +226,7 @@ func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 *Malloced, param
 func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum *Malloced, params TrainingParams) error {
 	var size int32
 	var err error
+	h.s.Sync()
 	if xsum != nil {
 		if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
 			sp := " "
