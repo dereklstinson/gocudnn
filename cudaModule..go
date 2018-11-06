@@ -239,6 +239,8 @@ func ifacetounsafe(args []interface{}, array []unsafe.Pointer) error {
 	for i := 0; i < len(args); i++ {
 
 		switch x := args[i].(type) {
+		case nil:
+			array[i] = unsafe.Pointer(C.voiddptrnull)
 		case *Malloced:
 			if x == nil {
 				array[i] = unsafe.Pointer(C.voiddptrnull)

@@ -36,6 +36,10 @@ const (
 type TensorD struct {
 	descriptor C.cudnnTensorDescriptor_t
 	dims       C.int
+	dimsarray  []int32
+	dtype      DataType
+	stride     []int32
+	strided    bool
 	frmt       TensorFormat
 	flag       descflag
 }
@@ -58,6 +62,7 @@ func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape 
 	if len(shape) != 4 {
 		return nil, errors.New("Shape array has to be length 4")
 	}
+	stride := stridecalc(shape)
 	var descriptor C.cudnnTensorDescriptor_t
 	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptor-create")
 	if err != nil {
@@ -67,7 +72,7 @@ func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape 
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, frmt: format, dims: C.int(4), flag: t4d}, nil
+	return &TensorD{descriptor: descriptor, frmt: format, stride: stride, dims: C.int(4), flag: t4d}, nil
 }
 
 //NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
@@ -85,7 +90,7 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, dims: C.int(4), flag: t4dex}, nil
+	return &TensorD{descriptor: descriptor, stride: stride, strided: true, dims: C.int(4), flag: t4dex}, nil
 
 }
 
@@ -110,7 +115,7 @@ func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*Te
 		return nil, err
 	}
 
-	return &TensorD{descriptor: descriptor, dims: dims, flag: tnd}, nil
+	return &TensorD{descriptor: descriptor, strided: true, stride: stride, dims: dims, flag: tnd}, nil
 }
 
 //NewTensorNdDescriptorEx creates and sets an ND descriptor ex
@@ -118,6 +123,8 @@ func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shap
 	if len(shape) < 4 {
 		return nil, errors.New("Shape array has to be greater than  4")
 	}
+
+	stride := stridecalc(shape)
 	var descriptor C.cudnnTensorDescriptor_t
 	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensorNdDescriptorEx-create")
 	if err != nil {
@@ -130,7 +137,7 @@ func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shap
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, dims: dims, flag: tndex}, nil
+	return &TensorD{descriptor: descriptor, stride: stride, dims: dims, flag: tndex}, nil
 }
 
 //GetFormat returns the format of the tensor error will return if tensor supports slide//
@@ -159,6 +166,54 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 
 	return DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tensor Not t4d,or tnd")
 }
+
+//Dims returns the dims
+func (t *TensorD) Dims() []int32 {
+	return t.dimsarray
+}
+
+//Strides returns the strides
+func (t *TensorD) Strides() []int32 {
+	return t.stride
+}
+
+//Format returns the format
+func (t *TensorD) Format() TensorFormat {
+	return t.frmt
+}
+
+//DataType holds the datatype
+func (t *TensorD) DataType() DataType {
+	return t.dtype
+
+}
+
+/*
+
+n, c, h, w := int32(1), int32(3), int32(4), int32(2)
+	sharedims := []int32{n, c, h, w}
+	//tensor dims a 1,4,4,2... slide is 32,8,2,1
+	chw := c * h * w
+	hw := h * w
+	ostride := []int32{chw, hw, w, 1}
+	xDesc, err := tensor.NewTensor4dDescriptorEx(float, sharedims, ostride)
+	if err != nil {
+		t.Error(err)
+	}
+
+	x, y, z := int32(1), int32(4), int32(4)
+	xyz := x * y * z
+	yz := y * z
+	stride := []int32{ostride[0] * xyz, ostride[1] * xyz, ostride[2] * yz, ostride[3] * z}
+	outputdims := []int32{(stride[0] * sharedims[0]) / (chw * xyz), (sharedims[1] * stride[1]) / (yz * hw), (sharedims[2] * stride[2]) / (w * z), sharedims[3] * stride[3]}
+
+
+	//if stride = []int32(w,x,y,z)
+	outputdims = []int32{stride[0]}
+	//tensor dims a 1,4,4,2...
+
+
+*/
 
 //GetSizeInBytes returns the SizeT in bytes and Status
 func (t *TensorD) GetSizeInBytes() (SizeT, error) {

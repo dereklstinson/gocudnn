@@ -162,16 +162,6 @@ func (t *XTransposeD) Transpose(handle *XHandle, perm []int32, srcdesc *TensorD,
 	return devbuffer.Free()
 }
 
-func stridecalc(dims []int32) []int32 {
-	strides := make([]int32, len(dims))
-	stride := int32(1)
-	for i := len(dims) - 1; i >= 0; i-- {
-		strides[i] = stride
-		stride *= dims[i]
-	}
-	return strides
-}
-
 //XResizeD is a struct that holds the reshape functions
 type XResizeD struct {
 	nearestfwdnhwc *Kernel

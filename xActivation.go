@@ -3,7 +3,6 @@ package gocudnn
 import "C"
 import (
 	"errors"
-	"fmt"
 
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
@@ -195,7 +194,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 
 //ForwardProp does the feed forward operation alphas and betas can be nil iff it is not supported (leaky right now). ParaPlus needs both alphas and betas
 func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, alphas, betas *Malloced) error {
-	dtype, _, dims, err := xD.GetDescrptor()
+	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
@@ -203,7 +202,6 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *Te
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
-
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
 
@@ -212,10 +210,10 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *Te
 			return err
 		}
 		length := FindLength(sib, dtype)
-		//	length := findvolume(dims)
 		config := h.LaunchConfig(int32(length))
 		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef))
 	case XActivationModeFlag{}.ParaPlus():
+
 		length := findvolume(dims[1:])
 		config := h.LaunchConfig(int32(length))
 		for i := int32(0); i < dims[0]; i++ {
@@ -252,7 +250,7 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *Te
 
 //BackProp does the feed forward operation alphas and dalphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y(parametric right now)
 func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, alphas, dalphas, betas, dbetas *Malloced) error {
-	dtype, _, dims, err := xD.GetDescrptor()
+	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
@@ -309,7 +307,7 @@ func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *Tens
 
 //UpdateParas will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
 func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, betas, dbetas, xsuma, gsuma, xsumb, gsumb, l1, l2 *Malloced, t TrainingParams, r RegParams) error {
-	fmt.Println("updating params for activation")
+
 	var dtf DataTypeFlag
 	dtype, _, _, err := dxD.GetDescrptor()
 	if dtype != dtf.Float() {
@@ -327,27 +325,39 @@ func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, b
 		return errors.New("regularization mode not set this is internal and if not using parmetric activation then you shouldn't update the alphas")
 	}
 	if r.decay1 == 0 && r.decay2 == 0 {
-		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, nil, nil, nil, r.batch, r.decay1, r.decay2)
+
+		//	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, nil, nil, nil, r.batch, r.decay1, r.decay2)
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
 	} else if r.decay1 == 0 {
-		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, nil, l2, r.batch, r.decay1, r.decay2)
+
+		//	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, nil, l2, r.batch, r.decay1, r.decay2)
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
 	} else if r.decay2 == 0 {
-		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, nil, r.batch, r.decay1, r.decay2)
+
+		//	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, nil, r.batch, r.decay1, r.decay2)
+		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
 	} else {
+
 		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
 	}
 	if err != nil {
 		return err
 	}
-	if r.decay1 == 0 && r.decay2 == 0 {
-		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, nil, nil, nil, r.batch, r.decay1, r.decay2)
-	} else if r.decay1 == 0 {
-		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, nil, l2, r.batch, r.decay1, r.decay2)
-	} else if r.decay2 == 0 {
-		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, l1, nil, r.batch, r.decay1, r.decay2)
-	} else {
-		err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, l1, l2, r.batch, r.decay1, r.decay2)
-	}
-
+	/*
+		if r.decay1 == 0 && r.decay2 == 0 {
+			//	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, nil, nil, nil, r.batch, r.decay1, r.decay2)
+			err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
+		} else if r.decay1 == 0 {
+			err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
+			//	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, nil, l2, r.batch, r.decay1, r.decay2)
+		} else if r.decay2 == 0 {
+			err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
+			//	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, l1, nil, r.batch, r.decay1, r.decay2)
+		} else {
+			err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dalphas, alphas, l1, l2, r.batch, r.decay1, r.decay2)
+			//	err = xA.rmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dbetas, betas, l1, l2, r.batch, r.decay1, r.decay2)
+		}
+	*/
 	if err != nil {
 		return err
 	}
@@ -373,7 +383,16 @@ func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, b
 		if err != nil {
 			return err
 		}
-
+		/*
+			err = dalphas.Set(0)
+			if err != nil {
+				return err
+			}
+			dbetas.Set(0)
+			if err != nil {
+				return err
+			}
+		*/
 	case TrainingModeFlag{}.AdaGrad():
 		err = xA.tmodek.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, dalphas, gsuma, t.rate, t.eps)
 		if err != nil {
@@ -386,6 +405,7 @@ func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, b
 
 	default:
 		return errors.New("Unsupported Update")
+
 	}
 	err = xA.abcheck.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alphas, betas, xA.abdev)
 	if err != nil {
@@ -398,5 +418,6 @@ func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, b
 	if length == uint32(xA.abeq[0]) {
 		return errors.New("Betas[i] == Alphas[i] for all of i. You have lost all nonlinearity")
 	}
+
 	return nil
 }

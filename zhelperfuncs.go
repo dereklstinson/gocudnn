@@ -43,6 +43,15 @@ func findvolume(dims []int32) int32 {
 	}
 	return mult
 }
+func stridecalc(dims []int32) []int32 {
+	strides := make([]int32, len(dims))
+	stride := int32(1)
+	for i := len(dims) - 1; i >= 0; i-- {
+		strides[i] = stride
+		stride *= dims[i]
+	}
+	return strides
+}
 
 //FindLength returns the length of of the array considering the number of bytes and the Datatype
 func FindLength(s SizeT, dtype DataType) uint32 {
