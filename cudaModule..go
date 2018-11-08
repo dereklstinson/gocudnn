@@ -113,21 +113,6 @@ func (cu Cuda) MakeKernel(kname string, m *Module) (*Kernel, error) {
 
 const pointerSize = 8
 
-func safeUintToC(x uint32) C.uint {
-	if x > uint32(^C.uint(0)) {
-		panic("uint value out of bounds")
-	}
-	return C.uint(x)
-}
-
-func safeIntToC(x int32) C.int {
-	if x > int32(C.int(^C.uint(0)/2)) {
-		panic("int value out of bounds")
-	} else if x < int32((-C.int(^C.uint(0)/2))-1) {
-		panic("int value out of bounds")
-	}
-	return C.int(x)
-}
 func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(ptr) + pointerSize*uintptr(i))
 }
@@ -135,26 +120,22 @@ func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 //Launch will launch a kernal that is in it
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
 
-	//	kernelParams, err := ifacetounsafe(args)
-	kernelParams := make([]unsafe.Pointer, len(args))
-	err := ifacetounsafe(args, kernelParams)
+	kernelParams, err := ifacetounsafe(args)
+
 	if err != nil {
 		return err
 	}
-	//fmt.Println("Length of params:", len(kernelParams))
+
 	//Start straight up took this from gorgonia/cu
 	argv := C.malloc(C.size_t(len(kernelParams) * pointerSize))
 	argp := C.malloc(C.size_t(len(kernelParams) * pointerSize))
-
-	for i := 0; i < len(kernelParams); i++ {
-		//fmt.Println(i)
-		*((*unsafe.Pointer)(offSet(argp, i))) = offSet(argv, i) // argp[i] = &argv[i]
-		//fmt.Println("kernel address "+strconv.Itoa(i), ":", kernelParams[i])
-		//holder :=
-		*((*uint64)(offSet(argv, i))) = *((*uint64)(kernelParams[i])) //holder // argv[i] = *kernelParams[i]
-	}
 	defer C.free(argv)
 	defer C.free(argp)
+	for i := range kernelParams {
+		*((*unsafe.Pointer)(offSet(argp, i))) = offSet(argv, i) // argp[i] = &argv[i]
+		holder := *((*uint64)(kernelParams[i]))
+		*((*uint64)(offSet(argv, i))) = holder // argv[i] = *kernelParams[i]
+	}
 
 	if err != nil {
 
@@ -179,7 +160,7 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 			C.uint(shared),
 			shold,
 			(*unsafe.Pointer)(argp),
-			C.voiddptrnull,
+			(*unsafe.Pointer)(nil),
 		))
 }
 
@@ -234,8 +215,8 @@ func (k *KernelArguments) SetArguments(args ...interface{}) {
 func (k *KernelArguments) GetArguments() []interface{} {
 	return k.args
 }
-func ifacetounsafe(args []interface{}, array []unsafe.Pointer) error {
-	//array := make([]unsafe.Pointer, len(args))
+func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
+	array := make([]unsafe.Pointer, len(args))
 	for i := 0; i < len(args); i++ {
 
 		switch x := args[i].(type) {
@@ -246,63 +227,39 @@ func ifacetounsafe(args []interface{}, array []unsafe.Pointer) error {
 				array[i] = unsafe.Pointer(C.voiddptrnull)
 			}
 			if x.ptr == nil {
-				return errors.New("Memory Doesn't Have A Pointer")
+				return nil, errors.New("Memory Doesn't Have A Pointer")
 			}
 			array[i] = unsafe.Pointer(&x.ptr)
 		case *GoPointer:
-			return errors.New("*GoPointer not supported")
+			return nil, errors.New("*GoPointer not supported")
 		default:
 			scalar := CScalarConversion(x)
 			if scalar == nil {
-				return errors.New("Not a supported value")
+				return nil, errors.New("Not a supported value")
 			}
 			array[i] = scalar.CPtr()
 		}
 
 	}
-	return nil
+	return array, nil
 }
 
-/*
-
-func cleanKernelArguments(args []interface{}, newArgs []unsafe.Pointer,
-	f func(args []unsafe.Pointer) error) error {
-	if len(args) == 0 {
-		return f(newArgs)
+func safeUintToC(x uint32) C.uint {
+	if x > uint32(^C.uint(0)) {
+		panic("uint value out of bounds")
 	}
+	return C.uint(x)
+}
 
-	if buf, ok := args[0].(Buffer); ok {
-		var res error
-		buf.WithPtr(func(ptr unsafe.Pointer) {
-			tempArgs := append([]interface{}{ptr}, args[1:]...)
-			res = cleanKernelArguments(tempArgs, newArgs, f)
-		})
-		return res
+func safeIntToC(x int32) C.int {
+	if x > int32(C.int(^C.uint(0)/2)) {
+		panic("int value out of bounds")
+	} else if x < int32((-C.int(^C.uint(0)/2))-1) {
+		panic("int value out of bounds")
 	}
+	return C.int(x)
+}
 
-	valPtr := unsafe.Pointer(C.malloc(C.maxArgSize))
-	defer C.free(valPtr)
-
-	switch x := args[0].(type) {
-	case uint:
-		val := safeUintToC(x)
-		C.memcpy(valPtr, unsafe.Pointer(&val), 4)
-	case int:
-		val := safeIntToC(x)
-		C.memcpy(valPtr, unsafe.Pointer(&val), 4)
-	case float32:
-		val := C.float(x)
-		C.memcpy(valPtr, unsafe.Pointer(&val), 4)
-	case float64:
-		val := C.double(x)
-		C.memcpy(valPtr, unsafe.Pointer(&val), 8)
-	case unsafe.Pointer:
-		C.memcpy(valPtr, unsafe.Pointer(&x), C.ptrSize)
-	}
-
-
-
-*/
 /*
 //LaunchV2 is like launch but it takes KernelArgument struct.
 func (k *Kernel) LaunchV2(p KernelArguments) error {

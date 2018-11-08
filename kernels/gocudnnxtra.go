@@ -44,14 +44,14 @@ func (t XtraKerns) NearestNeighborNCHWBack() string {
 	return "nearestneighborNCHWBack"
 }
 
-//ForwardParametricfloat Not tested
-func (t XtraKerns) ForwardParametricfloat() string {
-	return "forwardParametricfloat"
+//AdvanceThreshRandomReluForward Not tested
+func (t XtraKerns) AdvanceThreshRandomReluForward() string {
+	return "AdvanceThreshRandomReluForward"
 }
 
-//BackwardParametricfloat Not tested
-func (t XtraKerns) BackwardParametricfloat() string {
-	return "backwardParametricfloat"
+//AdvanceThreshRandomReluBackward Not tested
+func (t XtraKerns) AdvanceThreshRandomReluBackward() string {
+	return "AdvanceThreshRandomReluBackward"
 }
 
 //ForwardParamFloatChan Not tested
@@ -107,10 +107,4 @@ func (t XtraKerns) L2() string {
 //L1L2 ..
 func (t XtraKerns) L1L2() string {
 	return "l1l2regularizationfloat"
-}
-
-//AlpaBetaCheck checks the alpha beta and counts how many of them are equal
-func (t *XtraKerns) AlpaBetaCheck() string {
-	return "alphabetacheck"
-
 }
