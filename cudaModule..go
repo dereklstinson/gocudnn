@@ -33,7 +33,7 @@ func (m *Module) c() C.CUmodule { return m.m }
 
 //extern __host__ cudaError_t CUDARTAPI cudaLaunchKernel(const void *func, dim3 gridDim, dim3 blockDim, void **args, size_t sharedMem, cudaStream_t stream);
 
-//NewModule creates a module in the current context.  The current context needs to be a cuda context not a cudnn handle.
+//NewModule creates a module in the current context.
 func (cu Cuda) NewModule(filename string) (*Module, error) {
 	var mod C.CUmodule
 	fname := C.CString(filename)
