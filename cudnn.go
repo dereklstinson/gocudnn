@@ -24,6 +24,7 @@ func (s SizeT) c() C.size_t { return C.size_t(s) }
 type CScalar interface {
 	CPtr() unsafe.Pointer
 	Bytes() int
+	SizeT() SizeT
 }
 
 //CScalarByDataType takes the DataType flag and puts num into a CScalar interface. The value of num will be bound by what is passed for DataType.
@@ -93,6 +94,9 @@ func (f CFloat) CPtr() unsafe.Pointer { return unsafe.Pointer(&f) }
 //Bytes returns the number of bytes the CScalar has
 func (f CFloat) Bytes() int { return 4 }
 
+//SizeT returns the number of bytes the CScalar has
+func (f CFloat) SizeT() SizeT { return SizeT(4) }
+
 //CDouble is a double in C
 type CDouble C.double
 
@@ -103,6 +107,9 @@ func (d CDouble) CPtr() unsafe.Pointer { return unsafe.Pointer(&d) }
 
 //Bytes returns the number of bytes the CScalar has
 func (d CDouble) Bytes() int { return 8 }
+
+//SizeT returns the number of bytes the CScalar has
+func (d CDouble) SizeT() SizeT { return SizeT(8) }
 
 //CInt is a int in C
 type CInt C.int
@@ -115,6 +122,9 @@ func (i CInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
 //Bytes returns the number of bytes the CScalar has
 func (i CInt) Bytes() int { return 4 }
 
+//SizeT returns the number of bytes the CScalar has
+func (i CInt) SizeT() SizeT { return SizeT(4) }
+
 //CUInt is an unsigned int in C
 type CUInt C.uint
 
@@ -124,6 +134,9 @@ func (i CUInt) CPtr() unsafe.Pointer { return unsafe.Pointer(&i) }
 //Bytes returns the number of bytes the CScalar has
 func (i CUInt) Bytes() int { return 4 }
 func (i CUInt) c() C.uint  { return C.uint(i) }
+
+//SizeT returns the number of bytes the CScalar has
+func (i CUInt) SizeT() SizeT { return SizeT(4) }
 
 //CInt8 is a signed char
 type CInt8 C.char
@@ -136,6 +149,9 @@ func (c CInt8) CPtr() unsafe.Pointer { return unsafe.Pointer(&c) }
 //Bytes returns the number of bytes the CScalar has
 func (c CInt8) Bytes() int { return 1 }
 
+//SizeT returns the number of bytes the CScalar has
+func (c CInt8) SizeT() SizeT { return SizeT(1) }
+
 //CUInt8 is a C.uchar
 type CUInt8 C.uchar
 
@@ -146,6 +162,9 @@ func (c CUInt8) Bytes() int { return 1 }
 
 //CPtr retunrs an unsafe pointer for CUInt8
 func (c CUInt8) CPtr() unsafe.Pointer { return unsafe.Pointer(&c) }
+
+//SizeT returns the number of bytes the CScalar has
+func (c CUInt8) SizeT() SizeT { return SizeT(1) }
 
 //RuntimeTag is a type that cudnn uses that I am not sure of yet
 type RuntimeTag C.cudnnRuntimeTag_t

@@ -254,7 +254,7 @@ cudnnStatus_t cudnnTransformTensor(
 y = Transfomr((alpha *x),(beta * y))
 This will change the layout of a tensor stride wise
 */
-func (t Tensor) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x Memer, beta CScalar, ty *TensorD, y Memer) error {
+func (t Tensor) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x *Malloced, beta CScalar, ty *TensorD, y *Malloced) error {
 	var s Status
 
 	s = Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), ty.descriptor, y.Ptr()))

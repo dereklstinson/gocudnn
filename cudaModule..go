@@ -1,8 +1,14 @@
 package gocudnn
 
+import (
+	"fmt"
+)
+
 /*
+#include <string.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+
 const void ** voiddptrnull = NULL;
 const size_t ptrSize = sizeof(void *);
 const size_t maxArgSize = 8;
@@ -13,6 +19,7 @@ const CUjit_option * nullJitOptions = NULL;
 import "C"
 import (
 	"errors"
+	"sync"
 	"unsafe"
 )
 
@@ -21,6 +28,8 @@ type Kernel struct {
 	name string
 	f    C.CUfunction
 	m    *Module
+	args []unsafe.Pointer
+	mux  sync.Mutex
 }
 
 //Module are used to hold kernel functions on the device that is in use
@@ -120,7 +129,37 @@ func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 //Launch will launch a kernal that is in it
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
 
-	kernelParams, err := ifacetounsafe(args)
+	err := k.ifacetounsafecomplete(args)
+	if err != nil {
+		return err
+	}
+	var shold C.cudaStream_t
+
+	if stream == nil {
+		shold = nil
+	} else {
+		shold = stream.stream
+	}
+
+	return newErrorDriver("cuLaunchKernel",
+		C.cuLaunchKernel(k.f,
+			C.uint(gx),
+			C.uint(gy),
+			C.uint(gz),
+			C.uint(bx),
+			C.uint(by),
+			C.uint(bz),
+			C.uint(shared),
+			shold,
+			&k.args[0],
+			C.voiddptrnull,
+		))
+}
+
+//LaunchOld will launch a kernal that is in it was running into a seg fault
+func (k *Kernel) LaunchOld(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, args ...interface{}) error {
+
+	kernelParams, err := k.ifacetounsafe(args)
 
 	if err != nil {
 		return err
@@ -215,7 +254,78 @@ func (k *KernelArguments) SetArguments(args ...interface{}) {
 func (k *KernelArguments) GetArguments() []interface{} {
 	return k.args
 }
-func ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
+func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
+
+	k.args = make([]unsafe.Pointer, len(args))
+	for i := range args {
+		k.args[i] = unsafe.Pointer(C.malloc(C.maxArgSize))
+		switch x := args[i].(type) {
+		case nil:
+			C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
+
+		case *Malloced:
+			if x == nil {
+				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
+			}
+			C.memcpy(k.args[i], unsafe.Pointer(&x.ptr), C.ptrSize)
+
+		default:
+			scalar := CScalarConversion(x)
+			if scalar == nil {
+				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
+			}
+			C.memcpy(k.args[i], scalar.CPtr(), scalar.SizeT().c())
+
+		}
+
+	}
+	return nil
+}
+func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
+	if k.args == nil {
+		return k.ifacetounsafefirst(args)
+	}
+	if len(k.args) == 0 {
+		return k.ifacetounsafefirst(args)
+	}
+	if len(k.args) != len(args) {
+		k.destroyargs()
+		return k.ifacetounsafefirst(args)
+	}
+	for i := range args {
+		switch x := args[i].(type) {
+		case nil:
+			C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
+
+		case *Malloced:
+			if x == nil {
+				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
+			}
+			C.memcpy(k.args[i], unsafe.Pointer(&x.ptr), C.ptrSize)
+
+		default:
+			scalar := CScalarConversion(x)
+			if scalar == nil {
+				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
+			}
+			C.memcpy(k.args[i], scalar.CPtr(), scalar.SizeT().c())
+
+		}
+
+	}
+	return nil
+}
+func (k *Kernel) destroyargs() {
+	for i := range k.args {
+		C.free(k.args[i])
+	}
+}
+
+//Destroy destroys the argument array
+func (k *Kernel) Destroy() {
+	k.destroyargs()
+}
+func (k *Kernel) ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 	array := make([]unsafe.Pointer, len(args))
 	for i := 0; i < len(args); i++ {
 
