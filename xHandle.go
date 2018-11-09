@@ -16,11 +16,12 @@ func (xtra *Xtra) KernelLocation(kernalfilelocation string) {
 	xtra.kernellocation = kernalfilelocation
 }
 
+/*
 //Handler to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
 type Handler interface {
 	SetStream(s *Stream) error
 }
-
+*/
 //XHandle is a handle for xtra functions. Right now all functions that use XHandle are strictly float32.
 // Because I use gtx 1080ti(s) and there is basically no motivation to expand the capability.  Maybe if someone wants to get me
 //A RTX2080ti I will do something about that. heh heh heh

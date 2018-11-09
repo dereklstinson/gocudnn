@@ -71,23 +71,22 @@ func (x XActivationModeFlag) ParaChan() XActivationMode {
 
 //XActivationD is the activation descriptor for the "Xtra" stuff that I added to cudnn
 type XActivationD struct {
-	data    DataType
-	amode   XActivationMode
-	dtype   DataType
-	tmode   TrainingMode
-	counter int32
-	fwdmode *Kernel
-	bwdmode *Kernel
-	rmodek  *Kernel
-	tmodek  *Kernel
-	coef    float64
-	propnan int32
+	data      DataType
+	amode     XActivationMode
+	dtype     DataType
+	tmode     TrainingMode
+	counter   int32
+	fwdmode   *Kernel
+	bwdmode   *Kernel
+	coef      float32
+	propnan   int32
+	istrained bool
 }
 
 //NewXActivationDescriptor - Creates a descriptor for the xtra functions made for gocudnn.
 //Note: Only trainable activations will be trained.  tmode will be ignored for unsupported activations
 //Note: Only functions requiring coef will get it.  coef will be ignored for unsupported activations
-func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmode TrainingMode, dtype DataType, nanprop PropagationNAN, coef float64) (*XActivationD, error) {
+func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, dtype DataType, nanprop PropagationNAN, coef float64) (*XActivationD, error) {
 	var nanflg PropagationNANFlag
 	var nan int32
 	if nanflg.NotPropagateNan() == nanprop {
@@ -96,7 +95,6 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 		nan = 1
 	}
 	ctr := int32(1)
-	var ktf kernels.XtraKerns
 	switch amode {
 	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
@@ -125,24 +123,14 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 		if err != nil {
 			return nil, err
 		}
-		rmodek, err := Cuda{}.MakeKernel(ktf.L1L2(), h.mod)
-		if err != nil {
-			return nil, err
-		}
-		tmodek, err := Cuda{}.MakeKernel(tmode.tostring(), h.mod)
-		if err != nil {
-			return nil, err
-		}
 
 		act := &XActivationD{
-			fwdmode: fwdmode,
-			bwdmode: bwdmode,
-			rmodek:  rmodek,
-			tmodek:  tmodek,
-			amode:   amode,
-			tmode:   tmode,
-			counter: ctr,
-			propnan: nan,
+			fwdmode:   fwdmode,
+			bwdmode:   bwdmode,
+			amode:     amode,
+			counter:   ctr,
+			propnan:   nan,
+			istrained: true,
 		}
 
 		return act, nil
@@ -158,7 +146,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 		return &XActivationD{
 			fwdmode: fwdmode,
 			bwdmode: bwdmode,
-			coef:    coef,
+			coef:    float32(coef),
 			amode:   amode,
 			propnan: nan,
 		}, nil
@@ -166,8 +154,13 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, tmo
 	return nil, errors.New("Unsupported Activation")
 }
 
-//ForwardProp does the feed forward operation alphas and betas can be nil iff it is not supported (leaky right now). ParaPlus needs both alphas and betas
-func (xA *XActivationD) ForwardProp(h *XHandle, alpha, beta float32, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, coefs, coefs1 *Malloced) error {
+//ForwardProp does the forward propagation for xactivation.
+//All of the functions use alpha, beta,xD, x ,yD,y..
+//alpha and beta is used like y=alpha *Op +beta*y for all xactivation modes
+//Parachan uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
+//AdvanceThreshRandomRelu uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]<coefs1[i]
+//The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
+func (xA *XActivationD) ForwardProp(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, coefs, coefs1 *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -185,7 +178,8 @@ func (xA *XActivationD) ForwardProp(h *XHandle, alpha, beta float32, xD *TensorD
 		}
 		length := FindLength(sib, dtype)
 		config := h.LaunchConfig(int32(length))
-		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, y, float32(xA.coef), xA.propnan)
+
+		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, y, float32(xA.coef), xA.propnan) //, xA.propnan)
 	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
 
 		length := findvolume(dims[1:])
@@ -223,7 +217,27 @@ func (xA *XActivationD) ForwardProp(h *XHandle, alpha, beta float32, xD *TensorD
 
 	return errors.New("Unsupported XActivationMode")
 }
-func (xA *XActivationD) backpropparachan(h *XHandle, alpha float32, beta float32, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
+
+//BackProp does the forward propagation for xactivation
+//All of the functions use alpha, beta,xD, x ,dxD, dx, dyD, dy..
+//alpha and beta is used like dx=alpha *Op +beta*dx for all xactivation modes
+//Parachan uses coefs and dcoefs. dx[i]=coefs[i]* dx[i] where x[i]<0   dcoefs=dy[i]*x[i]
+//AdvanceThreshRandomRelu uses coefs and coefs1 for dx[i]=dy[i]*coefs[i] where x[i]<coefs1[i]
+//The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
+func (xA *XActivationD) BackProp(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
+
+	switch xA.amode {
+	case XActivationModeFlag{}.Leaky():
+		return xA.backpropropleaky(h, alpha, beta, xD, x, dxD, dx, dyD, dy)
+	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
+		return xA.backpropParaPlus(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
+	case XActivationModeFlag{}.ParaChan():
+		return xA.backpropparachan(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
+	}
+	return errors.New("Unsupported XActivationMode")
+}
+
+func (xA *XActivationD) backpropparachan(h *XHandle, alpha CScalar, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -257,7 +271,7 @@ func (xA *XActivationD) backpropparachan(h *XHandle, alpha float32, beta float32
 	return nil
 
 }
-func (xA *XActivationD) backpropropleaky(h *XHandle, alpha, beta float32, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced) error {
+func (xA *XActivationD) backpropropleaky(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced) error {
 	dtype, _, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -273,9 +287,11 @@ func (xA *XActivationD) backpropropleaky(h *XHandle, alpha, beta float32, xD *Te
 	length := FindLength(sib, dtype)
 
 	config := h.LaunchConfig(int32(length))
-	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, dx, dy, float32(xA.coef), xA.propnan)
+	//	fmt.Println("alpha beta coef length", alpha, beta, float32(xA.coef))
+	//	fmt.Println("Config:", config)
+	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, dx, dy, float32(xA.coef), xA.propnan) //, xA.propnan)
 }
-func (xA *XActivationD) backpropParaPlus(h *XHandle, alpha, beta float32, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
+func (xA *XActivationD) backpropParaPlus(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -294,18 +310,4 @@ func (xA *XActivationD) backpropParaPlus(h *XHandle, alpha, beta float32, xD *Te
 		}
 	}
 	return nil
-}
-
-//BackProp does the feed forward operation alphas and dalphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y(parametric right now)
-func (xA *XActivationD) BackProp(h *XHandle, alpha, beta float32, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
-
-	switch xA.amode {
-	case XActivationModeFlag{}.Leaky():
-		return xA.backpropropleaky(h, alpha, beta, xD, x, dxD, dx, dyD, dy)
-	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
-		return xA.backpropParaPlus(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
-	case XActivationModeFlag{}.ParaChan():
-		return xA.backpropparachan(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
-	}
-	return errors.New("Unsupported XActivationMode")
 }

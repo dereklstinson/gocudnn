@@ -1,9 +1,6 @@
 package gocudnn
 
-import (
-	"errors"
-)
-
+/*
 //UpdateParas will update the alphas using the optimizer specified.  Adagrad doesn't use xsum so that can be nil if using adagrad.
 func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, xsum, gsum, l1, l2 *Malloced, t TrainingParams, r RegParams) error {
 	//	fmt.Println("TrainingParams", t)
@@ -60,3 +57,4 @@ func (xA *XActivationD) UpdateParas(h *XHandle, dxD *TensorD, alphas, dalphas, x
 
 	return nil
 }
+*/

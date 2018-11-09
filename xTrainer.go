@@ -226,7 +226,6 @@ func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 *Malloced, param
 func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum *Malloced, params TrainingParams) error {
 	var size int32
 	var err error
-	h.s.Sync()
 	if xsum != nil {
 		if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
 			sp := " "
