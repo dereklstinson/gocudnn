@@ -640,9 +640,19 @@ CUDA_GRID_AXIS_LOOP(i,tx,x){
     CUDA_GRID_AXIS_LOOP(j,ty,y){  
         CUDA_GRID_AXIS_LOOP(k,tz,z){
             int xyindex = stride+(i*ofx)+(j*ofy)+k;
-            dx[xyindex]=(alpha *dy[xyindex]*(xx[xyindex]>0)) + ((xx[xyindex]<=0)*alphas[k]*alpha) +(beta*dx[xyindex]);
-            float value = dy[xyindex]*xx[xyindex]*(xx[xyindex]<=0);
-            atomicAdd(&dalphas[k],value);
+            float value=(alpha *dy[xyindex]*(xx[xyindex]>0)) + ((xx[xyindex]<=0)*alphas[k]*alpha) +(beta*dx[xyindex]);
+            if (PropNan>0){
+                dx[xyindex]=value;
+                float value2 = dy[xyindex]*xx[xyindex]*(xx[xyindex]<=0);
+                atomicAdd(&dalphas[k],value2);
+            }else {
+                dx[xyindex]=value*(!(isnan(value)==0));
+                float value2 = (dy[xyindex]*xx[xyindex]*(xx[xyindex]<=0))*(!(isnan(value)==0));
+                atomicAdd(&dalphas[k],value2);
+            }
+         
+          
+         
             
         }
     }
@@ -652,11 +662,16 @@ CUDA_GRID_AXIS_LOOP(i,tx,x){
         CUDA_GRID_AXIS_LOOP(j,ty,y){  
         CUDA_GRID_AXIS_LOOP(k,tz,z){
             int xyindex = stride+(i*ofx)+(j*ofy)+k;
-            dx[xyindex]=(alpha *dy[xyindex]*(xx[xyindex]>0)) + ((xx[xyindex]<=0)*alphas[i]*alpha) +(beta*dx[xyindex]);
-            float value = dy[xyindex]*xx[xyindex]*(xx[xyindex]<=0);
-            atomicAdd(&dalphas[i],value);
-                   
-                
+            float value=(alpha *dy[xyindex]*(xx[xyindex]>0)) + ((xx[xyindex]<=0)*alphas[i]*alpha) +(beta*dx[xyindex]);
+            if (PropNan>0){
+                dx[xyindex]=value;
+                float value2 = dy[xyindex]*xx[xyindex]*(xx[xyindex]<=0);
+                atomicAdd(&dalphas[i],value2);
+            }else {
+                dx[xyindex]=value*(!(isnan(value)==0));
+                float value2 = (dy[xyindex]*xx[xyindex]*(xx[xyindex]<=0))*(!(isnan(value)==0));
+                atomicAdd(&dalphas[i],value2);
+            }
                
         
             }
@@ -675,12 +690,26 @@ void forwardleakyfloat(const int length,
                        const float beta,
                        const float *x,
                              float *y,
-                       const float coef){
+                       const float coef,
+                       const int PropNan){
     CUDA_GRID_LOOP_X(i,length){
         if (x[i]>0.0){
-            y[i]=(alpha+x[i])+(beta*y[i]);
+            float value = (alpha+x[i])+(beta*y[i]);
+            if (PropNan>0){
+                y[i]=value;
+            }else{
+                y[i]=value*(!(isnan(value)==0));
+            }
+           
+         
         }else{
-            y[i]=(x[i]*coef*alpha)+(beta*y[i]);
+            float value = (x[i]*coef*alpha)+(beta*y[i]);
+            if (PropNan>0){
+                y[i]=value;
+            }else{
+                y[i]=value*(!(isnan(value)==0));
+            }
+          
         }
     }  
     
@@ -697,13 +726,26 @@ void backwardleakyfloat(const int length,
                         const float *x, 
                               float *dx,
                         const float *dy, 
-                        const float coef){
+                        const float coef,
+                        const int PropNan){
 
 CUDA_GRID_LOOP_X(i,length){
     if (x[i]>0.0){
-        dx[i]=(dy[i]*alpha)+(beta*dx[i]);
+        float value =(dy[i]*alpha)+(beta*dx[i]);
+        if (PropNan>0){
+            dx[i]=value;
+        }else{
+            dx[i]=value*(!(isnan(value)==0));
+        }
+     
     }else{
-        dx[i]=(dy[i]*coef*alpha)+(beta*dx[i]);
+        float value =(dy[i]*coef*alpha)+(beta*dx[i]);
+        if (PropNan>0){
+            dx[i]=value;
+        }else{
+            dx[i]=value*(!(isnan(value)==0));
+        }
+      
     }
     
 }
