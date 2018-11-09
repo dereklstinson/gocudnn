@@ -213,7 +213,7 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *Te
 
 	return errors.New("Unsupported XActivationMode")
 }
-func (xA *XActivationD) backpropparachan(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, alphas, dalphas *Malloced) error {
+func (xA *XActivationD) backpropparachan(h *XHandle, alpha float32, beta float32, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -239,7 +239,7 @@ func (xA *XActivationD) backpropparachan(h *XHandle, xD *TensorD, x *Malloced, d
 	for i := int32(0); i < dims[0]; i++ {
 		err := xA.bwdmode.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
 			config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
-			config.Dimx, config.Dimy, config.Dimz, i, x, dx, dy, alphas, dalphas, NHWC)
+			config.Dimx, config.Dimy, config.Dimz, alpha, beta, i, x, dx, dy, coefs, dcoefs, NHWC)
 		if err != nil {
 			return err
 		}
@@ -247,7 +247,7 @@ func (xA *XActivationD) backpropparachan(h *XHandle, xD *TensorD, x *Malloced, d
 	return nil
 
 }
-func (xA *XActivationD) backpropropleaky(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced) error {
+func (xA *XActivationD) backpropropleaky(h *XHandle, alpha, beta, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced) error {
 	dtype, _, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -263,7 +263,7 @@ func (xA *XActivationD) backpropropleaky(h *XHandle, xD *TensorD, x *Malloced, d
 	length := FindLength(sib, dtype)
 
 	config := h.LaunchConfig(int32(length))
-	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef))
+	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, dx, dy, float32(xA.coef))
 }
 func (xA *XActivationD) backpropParaPlus(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, alphas, dalphas *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
@@ -287,15 +287,15 @@ func (xA *XActivationD) backpropParaPlus(h *XHandle, xD *TensorD, x *Malloced, d
 }
 
 //BackProp does the feed forward operation alphas and dalphas can be nil iff it is not supported (leaky right now).  otherwise it needs to be the same size as x and y(parametric right now)
-func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, alphas, dalphas *Malloced) error {
+func (xA *XActivationD) BackProp(h *XHandle, alpha, beta, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, alphas, dalphas *Malloced) error {
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
-		return xA.backpropropleaky(h, xD, x, dxD, dx, dyD, dy)
+		return xA.backpropropleaky(h, alpha, beta, xD, x, dxD, dx, dyD, dy)
 	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
-		return xA.backpropParaPlus(h, xD, x, dxD, dx, dyD, dy, alphas, dalphas)
+		return xA.backpropParaPlus(h, alpha, beta, xD, x, dxD, dx, dyD, dy, alphas, dalphas)
 	case XActivationModeFlag{}.ParaChan():
-		return xA.backpropparachan(h, xD, x, dxD, dx, dyD, dy, alphas, dalphas)
+		return xA.backpropparachan(h, alpha, beta, xD, x, dxD, dx, dyD, dy, alphas, dalphas)
 	}
 	return errors.New("Unsupported XActivationMode")
 }
