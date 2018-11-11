@@ -15,7 +15,6 @@ func TestTensor(t *testing.T) {
 	var err error
 	n, c, h, w := int32(1), int32(3), int32(4), int32(2)
 	sharedims := []int32{n, c, h, w}
-	//tensor dims a 1,4,4,2... slide is 32,8,2,1
 	chw := c * h * w
 	hw := h * w
 	ostride := []int32{chw, hw, w, 1}

@@ -90,6 +90,7 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 	if err != nil {
 		return nil, err
 	}
+
 	return &TensorD{descriptor: descriptor, stride: stride, strided: true, dims: C.int(4), flag: t4dex}, nil
 
 }
@@ -154,11 +155,11 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 	shape := make([]C.int, t.dims)
 	stride := make([]C.int, t.dims)
 	var data C.cudnnDataType_t
-	if t.flag == t4d {
+	if t.flag == t4d || t.flag == t4dex {
 		x := C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])
 		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 
-	} else if t.flag == tnd {
+	} else if t.flag == tnd || t.flag == tndex {
 		var holder C.int
 		x := C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])
 		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")

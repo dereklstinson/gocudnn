@@ -517,7 +517,7 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *TensorD, h, w in
 
 }
 
-//GetShapetoBatchOutputProperties creates a tensordescriptor for the segmeented size
+//GetShapetoBatchOutputProperties returns properties to make a new descriptor
 func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
@@ -549,6 +549,37 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w in
 
 }
 
+//GetShapetoBatchOutputPropertiesPLUS returns properties to make a new descriptor. PLUS the N1,N2 used to resize the dims
+func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, []int32, error) {
+	dtype, dims, _, err := descX.GetDescrptor()
+	if err != nil {
+		return 255, 255, nil, nil, err
+	}
+	var dflag DataTypeFlag
+	if dtype != dflag.Float() {
+		return 255, 255, nil, nil, errors.New("Only Supported Format is float32")
+	}
+	var frmt TensorFormatFlag
+	xfrmt, err := descX.GetFormat()
+
+	switch xfrmt {
+	case frmt.NCHW():
+
+		n1 := int32(divideandroundup(dims[2], h))
+		n2 := int32(divideandroundup(dims[3], w))
+
+		return frmt.NCHW(), dtype, []int32{n1 * n2 * dims[0], dims[1], h, w}, []int32{n1, n2}, nil
+
+	case frmt.NHWC():
+		n1 := int32(divideandroundup(dims[1], h))
+		n2 := int32(divideandroundup(dims[2], w))
+		return frmt.NHWC(), dtype, []int32{n1 * n2 * dims[0], h, w, dims[3]}, []int32{n1, n2}, nil
+
+	default:
+		return 255, 255, nil, nil, errors.New("NHWC-Vec Not supported")
+	}
+
+}
 func findvol(dims []int32) int32 {
 	mult := int32(1)
 	for i := 0; i < len(dims); i++ {
