@@ -8,6 +8,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"strconv"
 )
 
 //Tensor is used for calling Tensor Funcs and also holds the flags
@@ -72,13 +73,13 @@ func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape 
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, frmt: format, stride: stride, dims: C.int(4), flag: t4d}, nil
+	return &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: C.int(4), flag: t4d}, nil
 }
 
 //NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
 func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*TensorD, error) {
 	if len(shape) != 4 || len(stride) != 4 {
-		return nil, errors.New("len(shape) len(stride) both have to equal 4")
+		return nil, errors.New("len(shape) = " + strconv.Itoa(len(shape)) + " len(stride) = " + strconv.Itoa(len(stride)) + " .. both have to equal 4")
 	}
 
 	var descriptor C.cudnnTensorDescriptor_t
@@ -91,7 +92,7 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 		return nil, err
 	}
 
-	return &TensorD{descriptor: descriptor, stride: stride, strided: true, dims: C.int(4), flag: t4dex}, nil
+	return &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, strided: true, dims: C.int(4), flag: t4dex}, nil
 
 }
 
@@ -116,7 +117,7 @@ func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*Te
 		return nil, err
 	}
 
-	return &TensorD{descriptor: descriptor, strided: true, stride: stride, dims: dims, flag: tnd}, nil
+	return &TensorD{descriptor: descriptor, dimsarray: shape, strided: true, stride: stride, dims: dims, flag: tnd}, nil
 }
 
 //NewTensorNdDescriptorEx creates and sets an ND descriptor ex
@@ -138,7 +139,7 @@ func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shap
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, stride: stride, dims: dims, flag: tndex}, nil
+	return &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, dims: dims, flag: tndex}, nil
 }
 
 //GetFormat returns the format of the tensor error will return if tensor supports slide//
