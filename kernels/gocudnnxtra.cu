@@ -170,6 +170,83 @@ void nearestneighborNHWC(
     }
 
 }
+
+//When calling this function it will have to do the stuff indexes on the destination
+extern "C" __global__
+void nearestneighborv2NCHW(
+        const int xThreads,
+        const int yThreads,
+        const int zThreads,
+        const int batches, 
+        const float *src,
+        const int src_height,
+        const int src_width,
+       // const int dest_height,
+      //  const int dest_width,
+        const float hratio,
+        const float wratio,
+        float *dest){
+           const int dbatchslide= xThreads*yThreads*zThreads;
+           const int dchanslide = yThreads*zThreads;
+           const int dhslide = zThreads;
+           const int schanslide = src_height*src_width;
+           const int sbatchslide = schanslide*xThreads;
+            for (int i=1;i<batches;i++){
+
+                CUDA_GRID_AXIS_LOOP(xIdx,xThreads,x){
+                    CUDA_GRID_AXIS_LOOP(yIdx,yThreads,y){
+                        CUDA_GRID_AXIS_LOOP(zIdx,zThreads,z){
+                                float ph= floorf(yIdx * hratio);
+                                float pw= floorf(zIdx * wratio);
+                            dest[(i*dbatchslide)+(xIdx*dchanslide)+(yIdx*dhslide)+zIdx]=
+                            src[(int)((i*sbatchslide)+(schanslide*xIdx)+(ph*src_height)+pw)];   
+
+            }
+           
+          
+    }
+
+}
+}
+}
+//When calling this function it will have to do the stuff indexes on the destination
+extern "C" __global__
+void nearestneighborv2NCHWAddGradient(
+        const int xThreads,
+        const int yThreads,
+        const int zThreads,
+        const int batches, 
+        const float *src,
+        const int src_height,
+        const int src_width,
+       // const int dest_height,
+      //  const int dest_width,
+        const float hratio,
+        const float wratio,
+        float *dest){
+           const int dbatchslide= xThreads*yThreads*zThreads;
+           const int dchanslide = yThreads*zThreads;
+           const int dhslide = zThreads;
+           const int schanslide = src_height*src_width;
+           const int sbatchslide = schanslide*xThreads;
+            for (int i=1;i<batches;i++){
+
+                CUDA_GRID_AXIS_LOOP(xIdx,xThreads,x){
+                    CUDA_GRID_AXIS_LOOP(yIdx,yThreads,y){
+                        CUDA_GRID_AXIS_LOOP(zIdx,zThreads,z){
+                                float ph= floorf(yIdx * hratio);
+                                float pw= floorf(zIdx * wratio);
+                            dest[(i*dbatchslide)+(xIdx*dchanslide)+(yIdx*dhslide)+zIdx]+=
+                            src[(int)((i*sbatchslide)+(schanslide*xIdx)+(ph*src_height)+pw)];   
+
+            }
+           
+          
+    }
+
+}
+}
+}
 extern "C" __global__
 void nearestneighborNCHW(
         const int aligncorners,
