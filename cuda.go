@@ -28,6 +28,14 @@ type Device struct {
 	//	thread int32
 }
 
+//DeviceSync Blocks until the device has completed all preceding requested tasks.
+//DeviceSync() returns an error if one of the preceding tasks has failed.
+//If the cudaDeviceScheduleBlockingSync flag was set for this device,
+// the host thread will block until the device has finished its work.
+func (cu Cuda) DeviceSync() error {
+	return newErrorRuntime("cudaDeviceSynchronize: ", C.cudaDeviceSynchronize())
+}
+
 //GetDeviceList returns a list of *Devices that are not set yet.
 func (cu Cuda) GetDeviceList() ([]*Device, error) {
 

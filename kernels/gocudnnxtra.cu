@@ -395,7 +395,7 @@ void adamfloat(const int length,
     xsum[i]= (beta2*xsum[i])+((1.0 -beta2)*(dw[i]*dw[i]));
     float xsumt = xsum[i]/(1.0 - powf(beta2,counter));
     w[i] += -(rate*gsumt)/(sqrtf(xsumt)+eps);  
-    dw[i]=0.0;
+  //  dw[i]=0.0;
 
 
 
