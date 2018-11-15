@@ -395,7 +395,7 @@ void adamfloat(const int length,
     xsum[i]= (beta2*xsum[i])+((1.0 -beta2)*(dw[i]*dw[i]));
     float xsumt = xsum[i]/(1.0 - powf(beta2,counter));
     w[i] += -(rate*gsumt)/(sqrtf(xsumt)+eps);  
-  //  dw[i]=0.0;
+    dw[i]=0.0;
 
 
 
@@ -530,12 +530,12 @@ if (decay1 ==0 && decay2==0){
 CUDA_GRID_LOOP_X(i,length){ 
         dw[i]/=batch;
 }
-}else if (decay1==0){
+}else if (decay1==0 && decay2!=0){
 CUDA_GRID_LOOP_X(i,length){ 
         atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
         dw[i]= (dw[i] + w[i]*decay2)/batch;
 }
-}else if(decay2 == 0){
+}else if(decay2 == 0 && decay1 !=0){
 float decay = decay1;
 CUDA_GRID_LOOP_X(i,length){
         if (w[i]<0){
@@ -544,7 +544,7 @@ CUDA_GRID_LOOP_X(i,length){
             decay=decay1;
         }
             atomicAdd(l1,w[i]*decay);
-            dw[i]= (dw[i] +decay/batch);
+            dw[i]= (dw[i] +decay)/batch;
 }
 }else {
 float decay = decay1;
@@ -558,7 +558,7 @@ CUDA_GRID_LOOP_X(i,length){
 
         atomicAdd(l1,w[i]*decay); 
         atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
-        dw[i]= (dw[i] + (w[i]*decay2) +decay1)/batch;
+        dw[i]= (dw[i] + (w[i]*decay2) +decay)/batch;
 }
 }
 }

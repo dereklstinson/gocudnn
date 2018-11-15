@@ -269,7 +269,7 @@ func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum *Malloced, params T
 			d.counter = 1
 		}
 
-		return dw.Set(0)
+		return nil
 
 	case TrainingModeFlag{}.AdaDelta():
 		config := h.LaunchConfig(size)
