@@ -746,7 +746,7 @@ CUDA_GRID_AXIS_LOOP(i,tx,x){
 }
 
 
-extern "C" __global__
+extern "C" __global__ 
 void forwardleakyfloat(const int length,
                        const float alpha,
                        const float beta,
@@ -763,28 +763,28 @@ void forwardleakyfloat(const int length,
     }  
     
 }
-extern "C" __global__
+extern "C" __global__ 
 void backwardleakyfloat(const int length,
-                        const float alpha,
-                        const float beta,
-                        const float *x, 
-                              float *dx,
-                        const float *dy, 
-                        const float coef,
-                        const int PropNan){
-
-CUDA_GRID_LOOP_X(i,length){
-
-    if (x[i]>0.0){
-
-        dx[i]=dy[i];
-    }else{
-
-        dx[i]=dy[i]*coef;
-    }
+                            const float alpha,
+                            const float beta,
+                            const float *x, 
+                                  float *dx,
+                            const float *dy, 
+                            const float coef,
+                            const int PropNan){
     
-}
-}  
+    CUDA_GRID_LOOP_X(i,length){
+    
+        if (x[i]>0.0){
+    
+            dx[i]=dy[i];
+        }else{
+    
+            dx[i]=dy[i]*coef;
+        }
+        
+    }
+    }  
 /*
 extern "C" __global__
 void forwardleakyfloat(const int length,
