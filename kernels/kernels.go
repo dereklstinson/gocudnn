@@ -18,9 +18,14 @@ type Device interface {
 	Minor() int
 }
 
-const nvccarg = "nvcc --gpu-architecture=compute_"
-const nvccarg1 = " --gpu-code=compute_"
-const nvccarg2 = " --ptx "
+const nvcccmd = "nvcc "
+
+//const nvccarg = " --gpu-architecture=compute_"
+//const nvccarg1 = " --gpu-code=compute_"
+//const nvccarg2 = " --ptx "
+const nvccarg = "--gpu-architecture=compute_"
+const nvccarg1 = "--gpu-code=compute_"
+const nvccarg2 = "--ptx "
 
 const defaultmakedirectory = "/home/derek/go/src/github.com/dereklstinson/GoCudnn/kernels/"
 
@@ -39,7 +44,7 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 	majstr := strconv.Itoa(device.Major())
 
 	minstr := strconv.Itoa(device.Minor())
-	computecapability := majstr + minstr
+	computecapability := majstr + minstr + " "
 
 	newname := dotCUname
 
@@ -54,7 +59,7 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 	//some.lines=make([]string,13)
 	some.lines = make([]string, 2)
 	some.lines[0] = "run:\n"
-	some.lines[1] = "\t" + nvccarg + computecapability + nvccarg1 + computecapability + nvccarg2 + dotCUname + "\n"
+	some.lines[1] = "\t" + nvcccmd + nvccarg + computecapability + nvccarg1 + computecapability + nvccarg2 + dotCUname + "\n"
 
 	data := []byte(some.lines[0] + some.lines[1])
 	err := os.MkdirAll(directory, 0644)
@@ -68,6 +73,8 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 		fmt.Println(err)
 		panic(err)
 	}
+
+	//	newcommand := exec.Command(nvcccmd, nvccarg+computecapability, nvccarg1+computecapability, nvccarg2+dotCUname)
 	newcommand := exec.Command("make")
 	newcommand.Dir = directory
 	time.Sleep(time.Millisecond)
