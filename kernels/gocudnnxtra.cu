@@ -566,7 +566,7 @@ CUDA_GRID_LOOP_X(i,length){
 
 extern "C" __global__
 void AdvanceThreshRandomReluForward(const int length,
-                                    const int batchindex,
+                                    const int batchs,
                                     const float alpha,
                                     const float beta,
                                     const float *x,
@@ -574,31 +574,44 @@ void AdvanceThreshRandomReluForward(const int length,
                                     const float *coefs,
                                     const float *threshhold,
                                     const int   PropNan){
-    int stride= length*batchindex;
-   
-    CUDA_GRID_LOOP_X(j,length){
-        
-    if (x[stride+j]>threshhold[j]){
-        float value = (alpha*x[stride+j])+beta*y[stride +j];
-        if (PropNan>0){
-            y[stride+j]= value;
-        }else{
-            y[stride+j]=value*(!(isnan(value)==0));
-        }
+    for (int i=0;i<batchs;i++){
+        int stride=length*i;
+        CUDA_GRID_LOOP_X(j,length){
+            /*
+            if (x[stride+j]>alpha){
+                y[stride+j]= x[stride+j]*threshhold[j];
+         
+           
+        }else if (x[stride+j]<beta){
+          
+                y[stride+j]= x[stride+j]*coefs[j];
        
-    }else{
-        float value = (x[stride+j]*coefs[j]*alpha)+(beta*y[stride+j]);
-        if (PropNan>0){
-            y[stride+j]= value;
         }else{
-            y[stride+j]=value*(!(isnan(value)==0));
-        }  
-    }   
-}
+            y[stride+j]= x[stride+j];
+        }   
+        */
+                
+        if (x[stride+j]>threshhold[j]){
+           
+    
+                y[stride+j]= x[stride+j];
+         
+           
+        }else{
+          
+                y[stride+j]= x[stride+j]*coefs[j];
+       
+        }   
+    
+    }
+    __syncthreads();
+    }
+
+
 }
 extern "C" __global__
 void AdvanceThreshRandomReluBackward(const int length, 
-                                        const int batchindex,
+                                        const int batchs,
                                         const float alpha,
                                         const float beta,        
                                         const float *x,
@@ -607,27 +620,40 @@ void AdvanceThreshRandomReluBackward(const int length,
                                         const float *coefs,
                                         const float *threshhold,
                                         const int PropNan){
-    int stride= length*batchindex;
+                                           
+ for (int i=0;i<batchs;i++){
+      int stride=length*i;
    
     CUDA_GRID_LOOP_X(j,length){
+      /*
+        if (x[stride+j]>alpha){
+            dx[stride+j]= dy[stride+j]*threshhold[j];
+     
+       
+    }else if (x[stride+j]<beta){
+      
+            dx[stride+j]= dy[stride+j]*coefs[j];
+   
+    }else{
+        dx[stride+j]= dy[stride+j];
+    }   
+        
+    */   
+
 
     if (x[stride+j]>threshhold[j]){
-       float value = (alpha*dy[stride+j])+(beta *dx[stride+j]);
-            if (PropNan>0){
-                dx[stride+j]=  value;
-            }else{
-                dx[stride+j]= value*(!(isnan(value)==0));
-            }
+                dx[stride+j]= dy[stride+j];
     }else{
-       float value =(alpha*dy[stride+j]*coefs[j])+(beta *dx[stride+j]);
-            if (PropNan>0){
-                dx[stride+j] =  value;
-            }else{
-                dx[stride+j]= value*(!(isnan(value)==0));
-            }
-    }   
+
+       
+                dx[stride+j] = dy[stride+j]*coefs[j];
+
+    }
+      
 }
+__syncthreads();
 }
+                                        }
 
 extern "C" __global__
 void forwardParametricfloatchannel(const int tx, 

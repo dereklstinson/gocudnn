@@ -184,12 +184,12 @@ func (xA *XActivationD) ForwardProp(h *XHandle, alpha, beta CScalar, xD *TensorD
 
 		length := findvolume(dims[1:])
 		config := h.LaunchConfig(int32(length))
-		for i := int32(0); i < dims[0]; i++ {
-			err := xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, i, alpha, beta, x, y, coefs, coefs1, xA.propnan)
-			if err != nil {
-				return err
-			}
+
+		err = xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dims[0], alpha, beta, x, y, coefs, coefs1, xA.propnan)
+		if err != nil {
+			return err
 		}
+
 		return nil
 	case XActivationModeFlag{}.ParaChan():
 		tf, err := xD.GetFormat()
@@ -230,7 +230,7 @@ func (xA *XActivationD) BackProp(h *XHandle, alpha, beta CScalar, xD *TensorD, x
 	case XActivationModeFlag{}.Leaky():
 		return xA.backpropropleaky(h, alpha, beta, xD, x, dxD, dx, dyD, dy)
 	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
-		return xA.backpropParaPlus(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
+		return xA.attr(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
 	case XActivationModeFlag{}.ParaChan():
 		return xA.backpropparachan(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
 	}
@@ -290,6 +290,26 @@ func (xA *XActivationD) backpropropleaky(h *XHandle, alpha, beta CScalar, xD *Te
 	//	fmt.Println("alpha beta coef length", alpha, beta, float32(xA.coef))
 	//	fmt.Println("Config:", config)
 	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, dx, dy, float32(xA.coef), xA.propnan) //, xA.propnan)
+}
+func (xA *XActivationD) attr(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
+	dtype, dims, _, err := xD.GetDescrptor()
+	if err != nil {
+		return err
+	}
+	var df DataTypeFlag
+	if dtype != df.Float() {
+		return errors.New("Only Float is the supported datatype")
+	}
+
+	length := findvolume(dims[1:])
+	config := h.LaunchConfig(int32(length))
+
+	err = xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dims[0], alpha, beta, x, dx, dy, coefs, dcoefs, xA.propnan)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 func (xA *XActivationD) backpropParaPlus(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
