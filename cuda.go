@@ -67,6 +67,16 @@ func (cu Cuda) GetDeviceList() ([]*Device, error) {
 	return x, nil
 }
 
+//MemGetInfo returns the free and total memory for the currently set device.
+func (cu Cuda) MemGetInfo() (free, total int, err error) {
+	var (
+		x C.size_t
+		y C.size_t
+	)
+	err = newErrorRuntime("GetMemInfo", C.cudaMemGetInfo(&x, &y))
+	return int(x), int(y), err
+}
+
 //DeviceCount returns the number of cuda devices
 func (cu Cuda) devicecount() (CInt, error) {
 	var x C.int
