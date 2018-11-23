@@ -6,18 +6,14 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"runtime"
 	"strconv"
 )
 
 //LRN is a struct that is used in making lrn layers. It holds the Funcs, and Flags
 type LRN struct {
-	Funcs   LRNFuncs
 	LRNFlgs LRNmodeFlag
 	DivFlgs DivNormModeFlag
-}
-
-//LRNFuncs is a nill struct used to call LRN functions
-type LRNFuncs struct {
 }
 
 // LRND holds the LRN Descriptor
@@ -58,14 +54,14 @@ func (l LRN) NewLRNDecriptor(
 	lrnAlpha,
 	lrnBeta,
 	lrnK float64,
-) (*LRND, error) {
+) (descriptor *LRND, err error) {
 	if lrnN < lrnminN || lrnN > lrnmaxN || lrnK < lrnminK || lrnBeta < 0.01 {
 		min := strconv.Itoa(int(lrnminN))
 		max := strconv.Itoa(int(lrnmaxN))
 		return nil, errors.New("NewLRNDecriptor: lrnN <" + min + "|| lrnN>" + max + "or lrnminK<1e-5|| lrnBeta < 0.01")
 	}
 	var desc C.cudnnLRNDescriptor_t
-	err := Status(C.cudnnCreateLRNDescriptor(&desc)).error("NewLRNDecriptor-create")
+	err = Status(C.cudnnCreateLRNDescriptor(&desc)).error("NewLRNDecriptor-create")
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +75,14 @@ func (l LRN) NewLRNDecriptor(
 	if err != nil {
 		return nil, err
 	}
-	return &LRND{descriptor: desc}, nil
+	descriptor = &LRND{descriptor: desc}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroylrndescriptor)
+	}
+	return descriptor, nil
+}
+func (l *LRND) keepsalive() {
+	runtime.KeepAlive(l)
 }
 
 //GetDescriptor returns the descriptor values
@@ -94,31 +97,39 @@ func (l *LRND) GetDescriptor() (uint32, float64, float64, float64, error) {
 		&Bet,
 		&K,
 	)).error("GetDescriptor-LRN")
+	if setkeepalive {
+		l.keepsalive()
+	}
 	return uint32(N), float64(Al), float64(Bet), float64(K), err
 }
 
 //DestroyDescriptor destroys the descriptor
 func (l *LRND) DestroyDescriptor() error {
+	return destroylrndescriptor(l)
+}
+func destroylrndescriptor(l *LRND) error {
 	return Status(C.cudnnDestroyLRNDescriptor(l.descriptor)).error("DestroyDescriptor")
 }
 
 /* LRN functions: output = alpha * normalize(x) + beta * old_y */
 
 //LRNCrossChannelForward  LRN cross-channel forward computation. Double parameters cast to tensor data type
-func (l LRNFuncs) LRNCrossChannelForward(
+func (l *LRND) LRNCrossChannelForward(
 	handle *Handle,
-	norm *LRND,
 	mode LRNmode,
 	alpha CScalar,
 	xD *TensorD,
-	x Memer,
+	x *Malloced,
 	beta CScalar,
 	yD *TensorD,
-	y Memer,
+	y *Malloced,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, l, xD, x, yD, y)
+	}
 	return Status(C.cudnnLRNCrossChannelForward(
 		handle.x,
-		norm.descriptor,
+		l.descriptor,
 		mode.c(),
 		alpha.CPtr(),
 		xD.descriptor,
@@ -130,24 +141,26 @@ func (l LRNFuncs) LRNCrossChannelForward(
 }
 
 //LRNCrossChannelBackward  LRN cross-channel backward computation. Double parameters cast to tensor data type
-func (l LRNFuncs) LRNCrossChannelBackward(
+func (l *LRND) LRNCrossChannelBackward(
 	handle *Handle,
-	norm *LRND,
 	mode LRNmode,
 	alpha CScalar,
 	yD *TensorD,
-	y Memer,
+	y *Malloced,
 	dyD *TensorD,
-	dy Memer,
+	dy *Malloced,
 	xD *TensorD,
-	x Memer,
+	x *Malloced,
 	beta CScalar,
 	dxD *TensorD,
-	dx Memer,
+	dx *Malloced,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, l, xD, x, yD, y, dyD, dy, dxD, dx)
+	}
 	return Status(C.cudnnLRNCrossChannelBackward(
 		handle.x,
-		norm.descriptor,
+		l.descriptor,
 		mode.c(),
 		alpha.CPtr(),
 		yD.descriptor,
@@ -163,23 +176,25 @@ func (l LRNFuncs) LRNCrossChannelBackward(
 }
 
 //DivisiveNormalizationForward   LCN/divisive normalization functions: y = alpha * normalize(x) + beta * y
-func (l LRNFuncs) DivisiveNormalizationForward(
+func (l *LRND) DivisiveNormalizationForward(
 	handle *Handle,
-	norm LRND,
 	mode DivNormMode,
 	alpha CScalar,
 	xD TensorD, /* same desc for means, temp, temp2 */
-	x Memer,
-	means Memer, /* if NULL, means are assumed to be zero */
-	temp Memer,
-	temp2 Memer,
+	x *Malloced,
+	means *Malloced, /* if NULL, means are assumed to be zero */
+	temp *Malloced,
+	temp2 *Malloced,
 	beta CScalar,
 	yD TensorD,
-	y Memer,
+	y *Malloced,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, l, xD, x, means, temp, temp2, yD, y)
+	}
 	return Status(C.cudnnDivisiveNormalizationForward(
 		handle.x,
-		norm.descriptor,
+		l.descriptor,
 		mode.c(),
 		alpha.CPtr(),
 		xD.descriptor,
@@ -194,25 +209,27 @@ func (l LRNFuncs) DivisiveNormalizationForward(
 }
 
 //DivisiveNormalizationBackward  LRN cross-channel backward computation. Double parameters cast to tensor data type
-func (l LRNFuncs) DivisiveNormalizationBackward(
+func (l *LRND) DivisiveNormalizationBackward(
 	handle *Handle,
-	norm *LRND,
 	mode DivNormMode,
 	alpha CScalar,
 	xD *TensorD, /* same desc for x, means, dy, temp, temp2 */
-	x Memer,
-	means Memer, /* if NULL, means are assumed to be zero */
-	dy Memer,
-	temp Memer,
-	temp2 Memer,
+	x *Malloced,
+	means *Malloced, /* if NULL, means are assumed to be zero */
+	dy *Malloced,
+	temp *Malloced,
+	temp2 *Malloced,
 	beta CScalar,
 	dXdMeansDesc *TensorD, /* same desc for dx, dMeans */
-	dx Memer, /* output x differential */
-	dMeans Memer, /* output means differential, can be NULL */
+	dx *Malloced, /* output x differential */
+	dMeans *Malloced, /* output means differential, can be NULL */
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, l, xD, x, means, dy, temp, temp2, dXdMeansDesc, dx, dMeans)
+	}
 	return Status(C.cudnnDivisiveNormalizationBackward(
 		handle.x,
-		norm.descriptor,
+		l.descriptor,
 		mode.c(),
 		alpha.CPtr(),
 		xD.descriptor,

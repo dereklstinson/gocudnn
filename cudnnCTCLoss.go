@@ -9,6 +9,9 @@ void MakeAlgorithmforCTCL(cudnnAlgorithm_t *input,cudnnCTCLossAlgo_t Algo ){
 }
 */
 import "C"
+import (
+	"runtime"
+)
 
 //CTCLoss is used to call CTC funcs and flags
 type CTCLoss struct {
@@ -28,10 +31,14 @@ type CTCLossD struct {
 	descriptor C.cudnnCTCLossDescriptor_t
 }
 
+func (c *CTCLossD) keepsalive() {
+	runtime.KeepAlive(c)
+}
+
 //NewCTCLossDescriptor Creates and sets a CTCLossD if there is no error
-func (ctc CTCLoss) NewCTCLossDescriptor(data DataType) (*CTCLossD, error) {
+func (ctc CTCLoss) NewCTCLossDescriptor(data DataType) (descriptor *CTCLossD, err error) {
 	var desc C.cudnnCTCLossDescriptor_t
-	err := Status(C.cudnnCreateCTCLossDescriptor(&desc)).error("CreateCTCLossDescriptor-create")
+	err = Status(C.cudnnCreateCTCLossDescriptor(&desc)).error("CreateCTCLossDescriptor-create")
 	if err != nil {
 		return nil, err
 	}
@@ -39,21 +46,31 @@ func (ctc CTCLoss) NewCTCLossDescriptor(data DataType) (*CTCLossD, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &CTCLossD{
+	descriptor = &CTCLossD{
 		descriptor: desc,
-	}, nil
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroyctclossdescriptor)
+	}
+	return descriptor, nil
 }
 
 //GetDescriptor returns the datatype and error
 func (c *CTCLossD) GetDescriptor() (DataType, error) {
 	var data C.cudnnDataType_t
 	err := Status(C.cudnnGetCTCLossDescriptor(c.descriptor, &data)).error("GetDescriptor")
+	if setkeepalive {
+		c.keepsalive()
+	}
 	return DataType(data), err
 
 }
 
 //DestroyDescriptor destroys the descriptor inside CTCLossD
 func (c *CTCLossD) DestroyDescriptor() error {
+	return destroyctclossdescriptor(c)
+}
+func destroyctclossdescriptor(c *CTCLossD) error {
 	return Status(C.cudnnDestroyCTCLossDescriptor(c.descriptor)).error("DestroyDescriptor")
 }
 
@@ -85,19 +102,18 @@ type CTCLossFuncs struct {
 //Need to finish this
 
 //CTCLoss calculates loss
-func (ctc CTCLossFuncs) CTCLoss(
+func (c *CTCLossD) CTCLoss(
 	handle *Handle,
 	probsD *TensorD, /* Tensor descriptor for probabilities, the dimensions are T,N,A (T is the timing steps, N is the mini batch size, A is the alphabet size)  */
-	probs Memer, /* probabilities after softmax, in GPU memory */
+	probs *Malloced, /* probabilities after softmax, in GPU memory */
 	labels []int32, /* labels, in CPU memory */
 	labelLengths []int32, /* the length of each label, in CPU memory */
 	inputLengths []int32, /* the lengths of timing steps in each batch, in CPU memory */
-	costs Memer, //output /* the returned costs of CTC, in GPU memory */
+	costs *Malloced, //output /* the returned costs of CTC, in GPU memory */
 	gradientsD *TensorD, /* Tensor descriptor for gradients, the dimensions are T,N,A */
-	gradients Memer, //output  /* the returned CTC gradients, in GPU memory, to compute costs only, set it to NULL */
+	gradients *Malloced, //output  /* the returned CTC gradients, in GPU memory, to compute costs only, set it to NULL */
 	algo CTCLossAlgo, /* algorithm selected, supported now 0 and 1 */
-	ctclossD CTCLossD,
-	wspace Memer, /* pointer to the workspace, in GPU memory */
+	wspace *Malloced, /* pointer to the workspace, in GPU memory */
 ) error {
 	toclabels := int32Tocint(labels)
 	toclablen := int32Tocint(labelLengths)
@@ -113,15 +129,18 @@ func (ctc CTCLossFuncs) CTCLoss(
 		gradientsD.descriptor,
 		gradients.Ptr(),
 		algo.c(),
-		ctclossD.descriptor,
+		c.descriptor,
 		wspace.Ptr(),
 		wspace.ByteSize().c(),
 	)).error("CTCLoss")
+	if setkeepalive {
+		keepsalivebuffer(handle, probsD, probs, costs, gradientsD, gradients, c, wspace)
+	}
 	return err
 }
 
 //GetCTCLossWorkspaceSize calculates workspace size
-func (ctc CTCLossFuncs) GetCTCLossWorkspaceSize(
+func (c *CTCLossD) GetCTCLossWorkspaceSize(
 	handle *Handle,
 	probsD *TensorD, /* Tensor descriptor for probabilities, the dimensions are T,N,A (T is the timing steps, N is the mini batch size, A is the alphabet size)  */
 	gradientsD *TensorD, /* Tensor descriptor for gradients, the dimensions are T,N,A */
@@ -129,7 +148,6 @@ func (ctc CTCLossFuncs) GetCTCLossWorkspaceSize(
 	labelLengths []int32, /* the length of each label, in CPU memory */
 	inputLengths []int32, /* the lengths of timing steps in each batch, in CPU memory */
 	algo CTCLossAlgo, /* algorithm selected, supported now 0 and 1 */
-	ctclossD CTCLossD,
 ) (SizeT, error) {
 	toclabels := int32Tocint(labels)
 	toclablen := int32Tocint(labelLengths)
@@ -143,8 +161,11 @@ func (ctc CTCLossFuncs) GetCTCLossWorkspaceSize(
 		&toclablen[0],
 		&tocinlen[0],
 		algo.c(),
-		ctclossD.descriptor,
+		c.descriptor,
 		&bsize,
 	)).error("GetCTCLossWorkspaceSize")
+	if setkeepalive {
+		keepsalivebuffer(handle, probsD, gradientsD, c)
+	}
 	return SizeT(bsize), err
 }

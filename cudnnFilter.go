@@ -7,6 +7,7 @@ import "C"
 
 import (
 	"errors"
+	"runtime"
 )
 
 //Filter is a struct that is used to call Flgs for filter descriptor, and also to create a filter descriptor
@@ -24,7 +25,13 @@ type FilterD struct {
 
 //TensorD returns the tensor descripter of FilterD.  //Kind of a hack
 func (f *FilterD) TensorD() *TensorD {
+	if setkeepalive {
+		f.keepsalive()
+	}
 	return f.tensorD
+}
+func (f *FilterD) keepsalive() {
+	runtime.KeepAlive(f)
 }
 
 //CreateFilterDescriptor creates a filter distriptor
@@ -36,13 +43,13 @@ func (f *FilterD) TensorD() *TensorD {
 */
 
 //NewFilter4dDescriptor Creates and sets an Filter 4d Descpripter
-func (f Filter) NewFilter4dDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
+func (f Filter) NewFilter4dDescriptor(data DataType, format TensorFormat, shape []int32) (descriptor *FilterD, err error) {
 	if len(shape) != 4 {
 		return nil, errors.New("length of shape != 4")
 	}
-	var descriptor C.cudnnFilterDescriptor_t
+	var desc C.cudnnFilterDescriptor_t
 	var tensordescriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateFilterDescriptor(&descriptor)).error("NewFilter4dDescriptor-create-Filter")
+	err = Status(C.cudnnCreateFilterDescriptor(&desc)).error("NewFilter4dDescriptor-create-Filter")
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +58,7 @@ func (f Filter) NewFilter4dDescriptor(data DataType, format TensorFormat, shape 
 		return nil, err
 	}
 	cshape := int32Tocint(shape)
-	err = Status(C.cudnnSetFilter4dDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), cshape[0], cshape[1], cshape[2], cshape[3])).error("NewFilter4dDescriptor-set-Filter")
+	err = Status(C.cudnnSetFilter4dDescriptor(desc, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), cshape[0], cshape[1], cshape[2], cshape[3])).error("NewFilter4dDescriptor-set-Filter")
 	if err != nil {
 		return nil, err
 	}
@@ -60,26 +67,29 @@ func (f Filter) NewFilter4dDescriptor(data DataType, format TensorFormat, shape 
 	if err != nil {
 		return nil, err
 	}
-
-	return &FilterD{
-		descriptor: descriptor,
+	descriptor = &FilterD{
+		descriptor: desc,
 		tensorD: &TensorD{
 			descriptor: tensordescriptor,
 			dims:       C.int(4),
 			flag:       t4d,
 		},
 		dims:  C.int(4),
-		flags: t4d}, nil
+		flags: t4d}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroyfilterdescriptor)
+	}
+	return descriptor, nil
 }
 
 //NewFilterNdDescriptor creates and sets an FilterNDDescriptor
-func (f Filter) NewFilterNdDescriptor(data DataType, format TensorFormat, shape []int32) (*FilterD, error) {
+func (f Filter) NewFilterNdDescriptor(data DataType, format TensorFormat, shape []int32) (descriptor *FilterD, err error) {
 	if len(shape) < 4 {
 		return nil, errors.New("length of shape >= 4")
 	}
-	var descriptor C.cudnnFilterDescriptor_t
+	var desc C.cudnnFilterDescriptor_t
 	var tensordescriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateFilterDescriptor(&descriptor)).error("NewFilter4dDescriptor-create")
+	err = Status(C.cudnnCreateFilterDescriptor(&desc)).error("NewFilter4dDescriptor-create")
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +99,7 @@ func (f Filter) NewFilterNdDescriptor(data DataType, format TensorFormat, shape 
 	}
 	cshape := int32Tocint(shape)
 	dims := C.int(len(shape))
-	err = Status(C.cudnnSetFilterNdDescriptor(descriptor, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), dims, &cshape[0])).error("NewFilterNdDescriptor-set-filter")
+	err = Status(C.cudnnSetFilterNdDescriptor(desc, C.cudnnDataType_t(data), C.cudnnTensorFormat_t(format), dims, &cshape[0])).error("NewFilterNdDescriptor-set-filter")
 	if err != nil {
 		return nil, err
 	}
@@ -97,16 +107,19 @@ func (f Filter) NewFilterNdDescriptor(data DataType, format TensorFormat, shape 
 	if err != nil {
 		return nil, err
 	}
-
-	return &FilterD{
-		descriptor: descriptor,
+	descriptor = &FilterD{
+		descriptor: desc,
 		tensorD: &TensorD{
 			descriptor: tensordescriptor,
 			dims:       dims,
 			flag:       tnd,
 		},
 		dims:  dims,
-		flags: tnd}, nil
+		flags: tnd}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroyfilterdescriptor)
+	}
+	return descriptor, nil
 }
 
 //GetDescriptor returns a copy of the ConvolutionD
@@ -123,12 +136,18 @@ func (f *FilterD) GetDescriptor() (DataType, TensorFormat, []int32, error) {
 	} else {
 		err = errors.New("Unsupported flag for descriptor")
 	}
-
+	if setkeepalive {
+		runtime.KeepAlive(f)
+	}
 	return DataType(data), TensorFormat(format), cintToint32(shape), err
 }
 
 //DestroyDescriptor Destroys Filter Descriptor
 func (f *FilterD) DestroyDescriptor() error {
+	return destroyfilterdescriptor(f)
+}
+
+func destroyfilterdescriptor(f *FilterD) error {
 	var flagger1 bool
 	var flagger2 bool
 

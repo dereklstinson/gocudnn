@@ -193,7 +193,7 @@ func (xtra Xtra) NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataT
 func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, DataType) {
 	return d.mode, d.data
 }
-func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw Memer, rate, beta1, beta2, eps, counter interface{}) error {
+func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, length int32, w, gsum, xsum, dw *Malloced, rate, beta1, beta2, eps, counter interface{}) error {
 	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter)
 }
 

@@ -9,13 +9,13 @@ void MakeAlgorithmforRNN(cudnnAlgorithm_t *input,cudnnRNNAlgo_t RNNAlgo ){
 */
 import "C"
 import (
+	"runtime"
 	"unsafe"
 )
 
 //RNN holds the funcs and flags that are used for RNN stuff it is also used for the creation of an RNND
 type RNN struct {
-	Funcs RNNFuncs
-	Flgs  RNNFlags
+	Flgs RNNFlags
 }
 
 //Algo returns an Algorithm used for
@@ -36,6 +36,9 @@ type RNND struct {
 	descriptor C.cudnnRNNDescriptor_t
 }
 
+func (r *RNND) keepsalive() {
+	runtime.KeepAlive(r)
+}
 func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
 	array := make([]C.cudnnRNNDescriptor_t, len(input))
 	for i := 0; i < len(input); i++ {
@@ -45,19 +48,27 @@ func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
 }
 
 //CreateRNNDescriptor creates an RNND descriptor
-func (rn RNN) CreateRNNDescriptor() (*RNND, error) {
+func (rn RNN) CreateRNNDescriptor() (descriptor *RNND, err error) {
 	var desc C.cudnnRNNDescriptor_t
-	err := Status(C.cudnnCreateRNNDescriptor(&desc)).error("CreateRNNDescriptor")
+	err = Status(C.cudnnCreateRNNDescriptor(&desc)).error("CreateRNNDescriptor")
 	if err != nil {
 		return nil, err
 	}
-	return &RNND{
+	descriptor = &RNND{
 		descriptor: desc,
-	}, nil
+	}
+	if setfinalizer == true {
+		runtime.SetFinalizer(descriptor, destroyrnnddescriptor)
+	}
+
+	return descriptor, err
 }
 
 //DestroyDescriptor destroys the descriptor
 func (r *RNND) DestroyDescriptor() error {
+	return destroyrnnddescriptor(r)
+}
+func destroyrnnddescriptor(r *RNND) error {
 	return Status(C.cudnnDestroyRNNDescriptor(r.descriptor)).error("DestroyDescriptor-rnn")
 }
 
@@ -74,6 +85,10 @@ func (r *RNND) SetRNNDescriptor(
 	data DataType,
 
 ) error {
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle, doD)
+	}
+
 	return Status(C.cudnnSetRNNDescriptor(
 		handle.x,
 		r.descriptor,
@@ -94,6 +109,10 @@ func (r *RNND) SetRNNProjectionLayers(
 	recProjsize int32,
 	outProjSize int32,
 ) error {
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle)
+	}
+
 	return Status(C.cudnnSetRNNProjectionLayers(
 		handle.x,
 		r.descriptor,
@@ -105,8 +124,11 @@ func (r *RNND) SetRNNProjectionLayers(
 //GetRNNProjectionLayers sets the rnnprojection layers
 func (r *RNND) GetRNNProjectionLayers(
 	handle *Handle,
-
 ) (int32, int32, error) {
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle)
+	}
+
 	var rec, out C.int
 
 	err := Status(C.cudnnGetRNNProjectionLayers(
@@ -123,6 +145,9 @@ func (r *RNND) SetRNNAlgorithmDescriptor(
 	handle *Handle,
 	algo *AlgorithmD,
 ) error {
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle)
+	}
 	return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error("SetRNNAlgorithmDescriptor")
 }
 
@@ -150,12 +175,18 @@ func (r *RNND) GetRNNDescriptor(
 		&algo,
 		&dataType,
 	)).error("GetRNNDescriptor")
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle)
+	}
 	return int32(hiddensize), int32(numLayers), &DropOutD{descriptor: dropoutdescriptor},
 		RNNInputMode(inputMode), DirectionMode(direction), RNNmode(mode), RNNAlgo(algo), DataType(dataType), err
 }
 
 //SetRNNMatrixMathType Sets the math type for the descriptor
 func (r *RNND) SetRNNMatrixMathType(math MathType) error {
+	if setkeepalive == true {
+		keepsalivebuffer(r)
+	}
 	return Status(C.cudnnSetRNNMatrixMathType(r.descriptor, math.c())).error("SetRNNMatrixMathType")
 }
 
@@ -163,6 +194,9 @@ func (r *RNND) SetRNNMatrixMathType(math MathType) error {
 func (r *RNND) GetRNNMatrixMathType() (MathType, error) {
 	var math C.cudnnMathType_t
 	err := Status(C.cudnnGetRNNMatrixMathType(r.descriptor, &math)).error("SetRNNMatrixMathType")
+	if setkeepalive == true {
+		keepsalivebuffer(r)
+	}
 	return MathType(math), err
 }
 
@@ -184,6 +218,12 @@ func (r *RNND) GetRNNWorkspaceSize(
 		&tocxD[0],
 		&sizeinbytes,
 	)).error("GetRNNWorkspaceSize")
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+	}
 	return SizeT(sizeinbytes), err
 }
 
@@ -202,6 +242,12 @@ func (r *RNND) GetRNNTrainingReserveSize(
 		&tocxD[0],
 		&sizeinbytes,
 	)).error("GetRNNTrainingReserveSize")
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+	}
 	return SizeT(sizeinbytes), err
 }
 
@@ -209,7 +255,7 @@ func (r *RNND) GetRNNTrainingReserveSize(
 func (r *RNND) GetRNNParamsSize(
 	handle *Handle,
 	xD *TensorD,
-	data *DataType,
+	data DataType,
 ) (SizeT, error) {
 	var sizeinbytes C.size_t
 	err := Status(C.cudnnGetRNNParamsSize(
@@ -219,6 +265,9 @@ func (r *RNND) GetRNNParamsSize(
 		&sizeinbytes,
 		data.c(),
 	)).error("GetRNNParamsSize")
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle, xD)
+	}
 	return SizeT(sizeinbytes), err
 }
 
@@ -239,7 +288,7 @@ func (r *RNND) GetRNNLinLayerMatrixParams(
 	*/
 	xD *TensorD,
 	wD *FilterD,
-	w Memer,
+	w *Malloced,
 	linlayerID int32,
 	/*
 	   Input. The linear layer to obtain information about:
@@ -275,6 +324,9 @@ func (r *RNND) GetRNNLinLayerMatrixParams(
 		linLayerMatDesc.descriptor,
 		&linLayerMat,
 	)).error("GetRNNLinLayerMatrixParams")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, xD, wD, w, linLayerMatDesc, linLayerMat)
+	}
 	return linLayerMatDesc, linLayerMat, err
 }
 
@@ -295,7 +347,7 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 	*/
 	xD *TensorD,
 	wD *FilterD,
-	w Memer,
+	w *Malloced,
 	linlayerID int32,
 	/*
 	   Input. The linear layer to obtain information about:
@@ -331,6 +383,9 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 		linLayerBiasDesc.descriptor,
 		&linLayerBias,
 	)).error("GetRNNLinLayerBiasParams")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, xD, wD, w, linLayerBiasDesc)
+	}
 	return linLayerBiasDesc, linLayerBias, err
 }
 
@@ -339,26 +394,33 @@ type PersistentRNNPlan struct {
 	plan C.cudnnPersistentRNNPlan_t
 }
 
-//CreatePersistentRNNPlan creates a PersistentRNNPlan
-func (r *RNND) CreatePersistentRNNPlan(minibatch int32, data DataType) (PersistentRNNPlan, error) {
-	var plan C.cudnnPersistentRNNPlan_t
-	err := Status(C.cudnnCreatePersistentRNNPlan(
+//NewPersistentRNNPlan creates and sets a PersistentRNNPlan
+func (r *RNND) NewPersistentRNNPlan(minibatch int32, data DataType) (plan *PersistentRNNPlan, err error) {
+	var plan1 C.cudnnPersistentRNNPlan_t
+	err = Status(C.cudnnCreatePersistentRNNPlan(
 		r.descriptor,
 		C.int(minibatch),
 		data.c(),
-		&plan,
+		&plan1,
 	)).error("CreatePersistentRNNPlan")
-	return PersistentRNNPlan{
-		plan: plan}, err
-}
+	plan = &PersistentRNNPlan{
+		plan: plan1}
+	err = Status(C.cudnnSetPersistentRNNPlan(r.descriptor, plan.plan)).error("SetPersistentRNNPlan")
 
-//SetPersistentRNNPlan sets a SetPersistentRNNPlan
-func (r *RNND) SetPersistentRNNPlan(plan PersistentRNNPlan) error {
-	return Status(C.cudnnSetPersistentRNNPlan(r.descriptor, plan.plan)).error("SetPersistentRNNPlan")
+	if setfinalizer == true {
+		runtime.SetFinalizer(plan, destroypersistantrnnplan)
+	}
+	return plan, err
+}
+func (p *PersistentRNNPlan) keepsalive() {
+	runtime.KeepAlive(p)
 }
 
 //DestroyPersistentRNNPlan destroys the C.cudnnPersistentRNNPlan_t in the PersistentRNNPlan struct
 func (p *PersistentRNNPlan) DestroyPersistentRNNPlan() error {
+	return destroypersistantrnnplan(p)
+}
+func destroypersistantrnnplan(p *PersistentRNNPlan) error {
 	return Status(C.cudnnDestroyPersistentRNNPlan(p.plan)).error("DestroyPersistentRNNPlan")
 }
 
@@ -370,46 +432,43 @@ RNN Fluncs
 
 */
 
-//RNNFuncs is a nil struct used to call rnn functions
-type RNNFuncs struct {
-}
-
 //GetRNNForwardInferenceAlgorithmMaxCount returns the maxcount and error
-func (rn RNNFuncs) GetRNNForwardInferenceAlgorithmMaxCount(
+func (r *RNND) GetRNNForwardInferenceAlgorithmMaxCount(
 	handle *Handle,
-	rnnD RNND,
 ) (int32, error) {
 	var count C.int
 	err := Status(C.cudnnGetRNNForwardInferenceAlgorithmMaxCount(
 		handle.x,
-		rnnD.descriptor,
+		r.descriptor,
 		&count,
 	)).error("GetRNNForwardInferenceAlgorithmMaxCount")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r)
+	}
 	return int32(count), err
 }
 
 //FindRNNForwardInferenceAlgorithmEx finds the inference algorithmEx
-func (rn RNNFuncs) FindRNNForwardInferenceAlgorithmEx(
+func (r *RNND) FindRNNForwardInferenceAlgorithmEx(
 	handle *Handle,
-	rnnD *RNND,
 	seqlength int32,
 	xD []*TensorD, //Input. An array of fully packed tensor descriptors describing the input to each recurrent iteration (one descriptor per iteration).
-	x Memer, //input
+	x *Malloced, //input
 	hxD *TensorD, //Input. A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx Memer, //input
+	hx *Malloced, //input
 	cxD *TensorD, //Input. A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx Memer, //input
+	cx *Malloced, //input
 	wD *FilterD, //Input. Handle to a previously initialized filter descriptor describing the weights for the RNN.
-	w Memer, //Input
+	w *Malloced, //Input
 	yD []*TensorD, //input An array of fully packed tensor descriptors.
-	y Memer, //Output Data pointer to GPU memory associated with the output tensor descriptor yDesc
+	y *Malloced, //Output Data pointer to GPU memory associated with the output tensor descriptor yDesc
 	hyD *TensorD, //input  A fully packed tensor descriptor describing the final hidden state of the RNN.
-	hy Memer, //Output. Data pointer to GPU memory associated with the tensor descriptor hyDesc. If
+	hy *Malloced, //Output. Data pointer to GPU memory associated with the tensor descriptor hyDesc. If
 	cyD *TensorD, //Input. A fully packed tensor descriptor describing the final cell state for LSTM networks.
-	cy Memer, //output
+	cy *Malloced, //output
 	findIntensity float32,
 	algocount int32,
-	wspace Memer,
+	wspace *Malloced,
 
 ) ([]AlgorithmPerformance, error) {
 	tocxD := tensorDArrayToC(xD)
@@ -419,7 +478,7 @@ func (rn RNNFuncs) FindRNNForwardInferenceAlgorithmEx(
 	reqcount := C.int(algocount)
 	err := Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
 		handle.x,
-		rnnD.descriptor,
+		r.descriptor,
 		C.int(seqlength),
 		&tocxD[0],
 		x.Ptr(),
@@ -442,43 +501,54 @@ func (rn RNNFuncs) FindRNNForwardInferenceAlgorithmEx(
 		wspace.Ptr(),
 		wspace.ByteSize().c(),
 	)).error("FindRNNForwardInferenceAlgorithmEx")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, x, hxD, hx, cxD, cx, wD, w, y, hyD, hy, cyD, cy, wspace)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
 
+	}
 	return calgoperftogoarray(perfResults), err
 }
 
 //GetRNNForwardTrainingAlgorithmMaxCount gets the max number of algorithms for rnnforward training algo
-func (rn RNNFuncs) GetRNNForwardTrainingAlgorithmMaxCount(handle *Handle, rnn RNND) (int32, error) {
+func (r *RNND) GetRNNForwardTrainingAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	stat := C.cudnnGetRNNForwardTrainingAlgorithmMaxCount(
 		handle.x,
-		rnn.descriptor,
+		r.descriptor,
 		&count)
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r)
+	}
 	return int32(count), Status(stat).error("GetRNNForwardTrainingAlgorithmMaxCount")
 }
 
 //FindRNNForwardTrainingAlgorithmEx finds and orders the performance of rnn algos for training returns that list with an error
-func (rn RNNFuncs) FindRNNForwardTrainingAlgorithmEx(
+func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 	handle *Handle,
-	rnn *RNND,
 	seqLen int32, //input
 	xD []*TensorD, //input
-	x Memer, //input
+	x *Malloced, //input
 	hxD *TensorD, //input: A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx Memer, //input
+	hx *Malloced, //input
 	cxD *TensorD, // :input A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx Memer, //input
+	cx *Malloced, //input
 	wD *FilterD, //input
-	w Memer, //input
+	w *Malloced, //input
 	yD []*TensorD, //Input. An array of fully packed tensor descriptors describing the output from each recurrent iteration (one descriptor per iteration).
-	y Memer, //output
+	y *Malloced, //output
 	hyD *TensorD, //input
-	hy Memer, //output
+	hy *Malloced, //output
 	cyD *TensorD,
-	cy Memer, //output
+	cy *Malloced, //output
 	findIntensity float32, //input
 	reqAlgocount int32, //input
-	wspace Memer, ///input
-	rspace Memer, //input/output
+	wspace *Malloced, ///input
+	rspace *Malloced, //input/output
 
 ) ([]AlgorithmPerformance, error) {
 	tocxD := tensorDArrayToC(xD)
@@ -488,7 +558,7 @@ func (rn RNNFuncs) FindRNNForwardTrainingAlgorithmEx(
 	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
 	err := Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
 		handle.x,
-		rnn.descriptor,
+		r.descriptor,
 		C.int(seqLen),
 		&tocxD[0],
 		x.Ptr(),
@@ -513,61 +583,72 @@ func (rn RNNFuncs) FindRNNForwardTrainingAlgorithmEx(
 		rspace.Ptr(),
 		rspace.ByteSize().c(),
 	)).error("FindRNNForwardTrainingAlgorithmEx")
-
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, x, hxD, hx, cxD, cx, wD, w, y, hyD, hy, cyD, cy, wspace, rspace)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
+	}
 	return calgoperftogoarray(perfresults), err
 }
 
 //GetRNNBackwardDataAlgorithmMaxCount gets the max number of algorithms for the back prop rnn
-func (rn RNNFuncs) GetRNNBackwardDataAlgorithmMaxCount(handle *Handle, rnnd *RNND) (int32, error) {
+func (r *RNND) GetRNNBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	err := Status(C.cudnnGetRNNBackwardDataAlgorithmMaxCount(
 		handle.x,
-		rnnd.descriptor,
+		r.descriptor,
 		&count,
 	)).error("GetRNNBackwardDataAlgorithmMaxCount")
+	if setkeepalive == true {
+		keepsalivebuffer(r, handle)
+	}
 	return int32(count), err
 }
 
 //FindRNNBackwardDataAlgorithmEx finds a list of algos for backprop this passes like 26 parameters and pointers and stuff so watch out.
-func (rn RNNFuncs) FindRNNBackwardDataAlgorithmEx(
+func (r *RNND) FindRNNBackwardDataAlgorithmEx(
 	handle *Handle,
-	rnnD *RNND,
+
 	seqLen int32,
 
 	yD []*TensorD, //an array of fully packed tensor descriptors
-	y Memer,
+	y *Malloced,
 
 	dyD []*TensorD, //an array of fully packed tensor descriptors
-	dy Memer,
+	dy *Malloced,
 
 	dhyD *TensorD, //fully packed tensor descriptor describing the gradients at the final hidden state of the RNN
-	dhy Memer,
+	dhy *Malloced,
 
 	dcyD *TensorD, // fully packed tensor descriptor describing the gradients at the final cell state of the RNN.
-	dcy Memer,
+	dcy *Malloced,
 
 	wD *FilterD,
-	w Memer,
+	w *Malloced,
 
 	hxD *TensorD, // A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx Memer,
+	hx *Malloced,
 
 	cxD *TensorD, //A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx Memer,
+	cx *Malloced,
 
 	dxD []*TensorD, //
-	dx Memer,
+	dx *Malloced,
 
 	dhxD *TensorD, //A fully packed tensor descriptor describing the gradient at the initial hidden state of the RNN.
-	dhx Memer,
+	dhx *Malloced,
 
 	dcxD *TensorD, // A fully packed tensor descriptor describing the gradient at the initial cell state of the RNN.
-	dcx Memer,
+	dcx *Malloced,
 
 	findIntensity float32,
 	reqAlgocount int32,
-	wspace Memer,
-	rspace Memer,
+	wspace *Malloced,
+	rspace *Malloced,
 
 ) ([]AlgorithmPerformance, error) {
 	cyD := tensorDArrayToC(yD)
@@ -577,7 +658,7 @@ func (rn RNNFuncs) FindRNNBackwardDataAlgorithmEx(
 	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
 	err := Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
 		handle.x,
-		rnnD.descriptor,
+		r.descriptor,
 		C.int(seqLen),
 
 		&cyD[0],
@@ -621,38 +702,51 @@ func (rn RNNFuncs) FindRNNBackwardDataAlgorithmEx(
 		rspace.ByteSize().c(),
 		//31 total?
 	)).error("FindRNNBackwardDataAlgorithmEx")
-
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, dx, dy, hxD, hx, cxD, cx, dhxD, dhx, dcxD, dcx, wD, w, y, dhyD, dhy, dcyD, dcy, wspace, rspace)
+		for i := range dyD {
+			dyD[i].keepsalive()
+		}
+		for i := range dxD {
+			dxD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
+	}
 	return calgoperftogoarray(perfresults), err
 }
 
 //GetRNNBackwardWeightsAlgorithmMaxCount gets the max number of algos for weights
-func (rn RNNFuncs) GetRNNBackwardWeightsAlgorithmMaxCount(handle *Handle, rnnD *RNND) (int32, error) {
+func (r *RNND) GetRNNBackwardWeightsAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	err := Status(C.cudnnGetRNNBackwardWeightsAlgorithmMaxCount(
 		handle.x,
-		rnnD.descriptor,
+		r.descriptor,
 		&count,
 	)).error("GetRNNBackwardWeightsAlgorithmMaxCount")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r)
+	}
 	return int32(count), err
 }
 
 //FindRNNBackwardWeightsAlgorithmEx returns some algos and their performance and stuff
-func (rn RNNFuncs) FindRNNBackwardWeightsAlgorithmEx(
+func (r *RNND) FindRNNBackwardWeightsAlgorithmEx(
 	handle *Handle,
-	rnnD *RNND,
 	seqLen int32,
 	xD []*TensorD,
-	x Memer,
+	x *Malloced,
 	hxD *TensorD, //Initial Hidden State
-	hx Memer,
+	hx *Malloced,
 	yD []*TensorD,
-	y Memer,
+	y *Malloced,
 	findIntensity float32, //unused for future use
 	reqAlgocount int32, //the max number of elements
-	wspace Memer,
+	wspace *Malloced,
 	dwD *FilterD,
-	dw Memer,
-	rspace Memer,
+	dw *Malloced,
+	rspace *Malloced,
 
 ) ([]AlgorithmPerformance, error) {
 	var actualcount C.int
@@ -661,7 +755,7 @@ func (rn RNNFuncs) FindRNNBackwardWeightsAlgorithmEx(
 	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
 	err := Status(C.cudnnFindRNNBackwardWeightsAlgorithmEx(
 		handle.x,
-		rnnD.descriptor,
+		r.descriptor,
 		C.int(seqLen),
 		&inCxD[0], //input array
 		x.Ptr(),
@@ -684,36 +778,52 @@ func (rn RNNFuncs) FindRNNBackwardWeightsAlgorithmEx(
 		rspace.Ptr(),
 		rspace.ByteSize().c(),
 	)).error("FindRNNBackwardWeightsAlgorithmEx")
-
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, x, y, hxD, hx, hxD, hx, dwD, dw, y, wspace, rspace)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
+	}
 	return calgoperftogoarray(perfresults), err
 }
 
 //RNNForwardInference is the forward inference
-func (rn RNNFuncs) RNNForwardInference(
+func (r *RNND) RNNForwardInference(
 	handle *Handle,
-	rnnd *RNND,
 	seqLength int32,
 	xD []*TensorD,
-	x Memer,
+	x *Malloced,
 	hxD *TensorD,
-	hx Memer,
+	hx *Malloced,
 	cxD *TensorD,
-	cx Memer,
+	cx *Malloced,
 	wD *FilterD,
-	w Memer,
+	w *Malloced,
 	yD []*TensorD,
-	y Memer,
+	y *Malloced,
 	hyD TensorD,
-	hy Memer,
+	hy *Malloced,
 	cyD TensorD,
-	cy Memer,
-	wspace Memer,
+	cy *Malloced,
+	wspace *Malloced,
 ) error {
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, x, y, hxD, hx, hxD, hx, wD, w, y, wspace, cy, cyD, hy, hyD, cx, cxD)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
+	}
 	return Status(C.cudnnRNNForwardInference(
 		handle.x,
-		rnnd.descriptor,
+		r.descriptor,
 		C.int(seqLength),
 		&tocxD[0],
 		x.Ptr(),
@@ -735,26 +845,25 @@ func (rn RNNFuncs) RNNForwardInference(
 }
 
 //RNNForwardTraining is the forward algo for an RNN
-func (rn RNNFuncs) RNNForwardTraining(
+func (r *RNND) RNNForwardTraining(
 	handle *Handle,
-	r *RNND,
 	seqLen int32,
 	xD []*TensorD,
-	x Memer,
+	x *Malloced,
 	hxD *TensorD,
-	hx Memer,
+	hx *Malloced,
 	cxD *TensorD,
-	cx Memer,
+	cx *Malloced,
 	wD *FilterD,
-	w Memer,
+	w *Malloced,
 	yD []*TensorD,
-	y Memer,
+	y *Malloced,
 	hyD *TensorD,
-	hy Memer,
+	hy *Malloced,
 	cyD *TensorD,
-	cy Memer,
-	wspace Memer,
-	rspace Memer,
+	cy *Malloced,
+	wspace *Malloced,
+	rspace *Malloced,
 ) error {
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
@@ -781,47 +890,55 @@ func (rn RNNFuncs) RNNForwardTraining(
 		rspace.Ptr(),
 		rspace.ByteSize().c(),
 	)).error("RNNForwardTraining")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, x, y, hxD, hx, hxD, hx, wD, w, y, wspace, rspace, cy, cyD, hy, hyD, cx, cxD)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
+	}
 	return err
 }
 
 //RNNBackwardData is the backward algo for an RNN
-func (rn RNNFuncs) RNNBackwardData(
+func (r *RNND) RNNBackwardData(
 	handle *Handle,
-	r *RNND,
 	seqLen int32,
 
 	yD []*TensorD,
-	y Memer,
+	y *Malloced,
 
 	dyD []*TensorD,
-	dy Memer,
+	dy *Malloced,
 
 	dhyD *TensorD,
-	dhy Memer,
+	dhy *Malloced,
 
 	dcyD *TensorD,
-	dcy Memer,
+	dcy *Malloced,
 
 	wD *FilterD,
-	w Memer,
+	w *Malloced,
 
 	hxD *TensorD,
-	hx Memer,
+	hx *Malloced,
 
 	cxD *TensorD,
-	cx Memer,
+	cx *Malloced,
 
 	dxD []*TensorD,
-	dx Memer,
+	dx *Malloced,
 
 	dhxD *TensorD,
-	dhx Memer,
+	dhx *Malloced,
 
 	dcxD *TensorD,
-	dcx Memer,
+	dcx *Malloced,
 
-	wspace Memer,
-	rspace Memer,
+	wspace *Malloced,
+	rspace *Malloced,
 ) error {
 	tocdxD := tensorDArrayToC(dxD)
 	tocdyD := tensorDArrayToC(dyD)
@@ -855,24 +972,35 @@ func (rn RNNFuncs) RNNBackwardData(
 		rspace.Ptr(),
 		rspace.ByteSize().c(),
 	)).error("RNNBackwardData")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, dx, dy, y, dhyD, dhy, dcyD, dcy, wD, w, hxD, hx, cxD, cx, dx, dhxD, dhx, dcxD, dcx, wspace, rspace)
+		for i := range dxD {
+			dxD[i].keepsalive()
+		}
+		for i := range dyD {
+			dyD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
+	}
 	return err
 }
 
 //BackwardWeights does the backward weight function
-func (rn RNNFuncs) BackwardWeights(
+func (r *RNND) BackwardWeights(
 	handle *Handle,
-	r *RNND,
 	seqLen int32,
 	xD []*TensorD,
-	x Memer,
+	x *Malloced,
 	hxD *TensorD,
-	hx Memer,
+	hx *Malloced,
 	yD []*TensorD,
-	y Memer,
-	wspace Memer,
+	y *Malloced,
+	wspace *Malloced,
 	dwD *FilterD,
-	dw Memer,
-	rspace Memer,
+	dw *Malloced,
+	rspace *Malloced,
 ) error {
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
@@ -893,7 +1021,16 @@ func (rn RNNFuncs) BackwardWeights(
 		rspace.Ptr(),
 		rspace.ByteSize().c(),
 	)).error("BackwardWeights")
+	if setkeepalive == true {
+		keepsalivebuffer(handle, r, x, hxD, hx, y, wspace, dwD, dw, rspace)
+		for i := range xD {
+			xD[i].keepsalive()
+		}
+		for i := range yD {
+			yD[i].keepsalive()
+		}
 
+	}
 	return err
 }
 

@@ -4,6 +4,9 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
+import (
+	"runtime"
+)
 
 //Spatial hods the funcs and flags of Spatial Stuff
 type Spatial struct {
@@ -16,15 +19,17 @@ type SpatialFuncs struct {
 }
 
 //SpatialTfGridGeneratorForward This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
-func (space SpatialFuncs) SpatialTfGridGeneratorForward(
+func (st *SpatialTransformerD) SpatialTfGridGeneratorForward(
 	handle *Handle,
-	st *SpatialTransformerD,
-	theta Memer, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
-	grid Memer, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
+	theta *Malloced, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
+	grid *Malloced, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
 	h, w is specified in stDesc . In the 4th dimension, the first coordinate is x, and the
 	second coordinate is y*/
 
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(st, handle, grid, theta)
+	}
 	return Status(C.cudnnSpatialTfGridGeneratorForward(
 		handle.x,
 		st.descriptor,
@@ -34,13 +39,15 @@ func (space SpatialFuncs) SpatialTfGridGeneratorForward(
 }
 
 //SpatialTfGridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
-func (space SpatialFuncs) SpatialTfGridGeneratorBackward(
+func (st *SpatialTransformerD) SpatialTfGridGeneratorBackward(
 	handle *Handle,
-	st *SpatialTransformerD,
-	grid Memer,
-	theta Memer,
-
+	grid *Malloced,
+	theta *Malloced,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(st, handle, grid, theta)
+	}
+
 	return Status(C.cudnnSpatialTfGridGeneratorBackward(
 		handle.x,
 		st.descriptor,
@@ -50,17 +57,20 @@ func (space SpatialFuncs) SpatialTfGridGeneratorBackward(
 }
 
 //SpatialTfSamplerForward performs the spatialtfsampleforward
-func (space SpatialFuncs) SpatialTfSamplerForward(
+func (st *SpatialTransformerD) SpatialTfSamplerForward(
 	handle *Handle,
-	st *SpatialTransformerD,
 	alpha CScalar,
 	xD *TensorD,
-	x Memer,
-	grid Memer,
+	x *Malloced,
+	grid *Malloced,
 	beta CScalar,
 	yD *TensorD,
-	y Memer,
+	y *Malloced,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, st, xD, x, grid, yD, y)
+	}
+
 	return Status(C.cudnnSpatialTfSamplerForward(
 		handle.x,
 		st.descriptor,
@@ -75,23 +85,26 @@ func (space SpatialFuncs) SpatialTfSamplerForward(
 }
 
 //SpatialTfSamplerBackward does the spatial Tranform Sample Backward
-func (space SpatialFuncs) SpatialTfSamplerBackward(
+func (st *SpatialTransformerD) SpatialTfSamplerBackward(
 	handle *Handle,
-	st *SpatialTransformerD,
 	alpha CScalar,
 	xD *TensorD,
-	x Memer,
+	x *Malloced,
 	beta CScalar,
 	dxD *TensorD,
-	dx Memer,
+	dx *Malloced,
 	alphaDgrid CScalar,
 	dyD *TensorD,
-	dy Memer,
-	grid Memer,
+	dy *Malloced,
+	grid *Malloced,
 	betaDgrid CScalar,
-	dGrid Memer,
+	dGrid *Malloced,
 
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, st, xD, x, dxD, dx, dyD, dy, grid, dGrid)
+	}
+
 	return Status(C.cudnnSpatialTfSamplerBackward(
 		handle.x,
 		st.descriptor,
@@ -135,9 +148,9 @@ func (sp Spatial) NewSpatialTransformerNdDescriptor(
 	sampler SamplerType,
 	data DataType,
 	dimA []int32,
-) (*SpatialTransformerD, error) {
+) (descriptor *SpatialTransformerD, err error) {
 	var desc C.cudnnSpatialTransformerDescriptor_t
-	err := Status(C.cudnnCreateSpatialTransformerDescriptor(&desc)).error("NewSpatialTransformerNdDescriptor-create")
+	err = Status(C.cudnnCreateSpatialTransformerDescriptor(&desc)).error("NewSpatialTransformerNdDescriptor-create")
 	if err != nil {
 		return nil, err
 	}
@@ -153,13 +166,24 @@ func (sp Spatial) NewSpatialTransformerNdDescriptor(
 	if err != nil {
 		return nil, err
 	}
-	return &SpatialTransformerD{
+	descriptor = &SpatialTransformerD{
 		descriptor: desc,
 		dims:       dims,
-	}, nil
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroyspatialtransformdescriptor)
+	}
+
+	return descriptor, nil
+}
+func (st *SpatialTransformerD) keepsalive() {
+	runtime.KeepAlive(st)
 }
 
 //DestroyDescriptor destroys the spatial Transformer Desctiptor
-func (sp *SpatialTransformerD) DestroyDescriptor() error {
-	return Status(C.cudnnDestroySpatialTransformerDescriptor(sp.descriptor)).error("DestroyDescriptor")
+func (st *SpatialTransformerD) DestroyDescriptor() error {
+	return destroyspatialtransformdescriptor(st)
+}
+func destroyspatialtransformdescriptor(st *SpatialTransformerD) error {
+	return Status(C.cudnnDestroySpatialTransformerDescriptor(st.descriptor)).error("DestroyDescriptor")
 }

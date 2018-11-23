@@ -4,6 +4,9 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
+import (
+	"runtime"
+)
 
 //Reduce holds Reduce flags and funcs also used to access create reduce tensor function
 type Reduce struct {
@@ -18,6 +21,10 @@ type ReduceTensorD struct {
 	tensorNanOpt      C.cudnnNanPropagation_t
 	tensorIndices     C.cudnnReduceTensorIndices_t
 	tensorIndicesType C.cudnnIndicesType_t
+}
+
+func (reduce *ReduceTensorD) keepsalive() {
+	runtime.KeepAlive(reduce)
 }
 
 //TensorOP returns the tensorop value for the ReduceTensor
@@ -37,25 +44,32 @@ func (reduce *ReduceTensorD) Indices() ReduceTensorIndices {
 //IndicType returns the IndicieType flag
 func (reduce *ReduceTensorD) IndicType() IndiciesType { return IndiciesType(reduce.tensorIndicesType) }
 
-//CreateReduceTensorDescriptor creates the tensor discritper struct
-func (red Reduce) CreateReduceTensorDescriptor(reduceop ReduceTensorOp, datatype DataType, nanprop PropagationNAN, reducetensorinds ReduceTensorIndices, indicietype IndiciesType) (*ReduceTensorD, error) {
+//NewReduceTensorDescriptor creates and sets a reduce tensor Descriptor
+func (red Reduce) NewReduceTensorDescriptor(
+	reduceop ReduceTensorOp,
+	datatype DataType,
+	nanprop PropagationNAN,
+	reducetensorinds ReduceTensorIndices,
+	indicietype IndiciesType) (descriptor *ReduceTensorD, err error) {
 	//	var reduce ReduceTensorD
 	var rtensdesc C.cudnnReduceTensorDescriptor_t
-	x := Status(C.cudnnCreateReduceTensorDescriptor(&rtensdesc)).error("CreateReduceTensorDescriptor-create")
-	if x != nil {
-		return nil, x
+	err = Status(C.cudnnCreateReduceTensorDescriptor(&rtensdesc)).error("CreateReduceTensorDescriptor-create")
+	if err != nil {
+		return nil, err
 	}
-
-	x = Status(C.cudnnSetReduceTensorDescriptor(rtensdesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
-
-	return &ReduceTensorD{
+	descriptor = &ReduceTensorD{
 		tensorDesc:        rtensdesc,
 		tensorOp:          reduceop.c(),
 		tensorCompType:    datatype.c(),
 		tensorNanOpt:      nanprop.c(),
 		tensorIndices:     reducetensorinds.c(),
 		tensorIndicesType: indicietype.c(),
-	}, x
+	}
+	err = Status(C.cudnnSetReduceTensorDescriptor(rtensdesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
+	if setfinalizer == true {
+		runtime.SetFinalizer(descriptor, destroyreducetensordescriptor)
+	}
+	return descriptor, err
 }
 
 //SetReduceTensorDescriptor Sets the reduce tensor Descriptor
@@ -92,6 +106,9 @@ func (reduce *ReduceTensorD) IndiciesSize(
 	aDesc, cDesc *TensorD) (SizeT, error) {
 	var sizeinbytes C.size_t
 	x := C.cudnnGetReductionIndicesSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+	if setkeepalive == true {
+		keepsalivebuffer(reduce, handle, aDesc, cDesc)
+	}
 	return SizeT(sizeinbytes), Status(x).error("GetReductionIndicesSize")
 
 }
@@ -102,6 +119,9 @@ func (reduce *ReduceTensorD) GetWorkSpaceSize(
 	aDesc, cDesc *TensorD) (SizeT, error) {
 	var sizeinbytes C.size_t
 	x := C.cudnnGetReductionWorkspaceSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+	if setkeepalive == true {
+		keepsalivebuffer(reduce, handle, aDesc, cDesc)
+	}
 	return SizeT(sizeinbytes), Status(x).error("GetReductionWorkspaceSize")
 
 }
@@ -111,14 +131,14 @@ func (reduce *ReduceTensorD) GetWorkSpaceSize(
 /* The indices space is ignored for reduce ops other than min or max. */
 func (reduce *ReduceTensorD) ReduceTensorOp(
 	handle *Handle,
-	indices Memer,
-	workspace Memer,
+	indices *Malloced,
+	workspace *Malloced,
 	alpha CScalar,
 	aDesc *TensorD,
-	A Memer,
+	A *Malloced,
 	beta CScalar,
 	cDesc *TensorD,
-	Ce Memer) error {
+	Ce *Malloced) error {
 	var x C.cudnnStatus_t
 	if indices == nil && workspace != nil {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, nil,
@@ -140,7 +160,9 @@ func (reduce *ReduceTensorD) ReduceTensorOp(
 			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	}
-
+	if setkeepalive == true {
+		keepsalivebuffer(reduce, handle, aDesc, cDesc, A, Ce, workspace)
+	}
 	return Status(x).error("ReduceTensor")
 }
 

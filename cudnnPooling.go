@@ -7,6 +7,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"runtime"
 )
 
 //Pooling is used to hold flags and funcs for pooling operations
@@ -28,12 +29,12 @@ func (pool Pooling) NewPooling2dDescriptor(
 	window []int32, // height and wideth
 	padding []int32, //height and width
 	stride []int32, //height and width
-) (*PoolingD, error) {
+) (descriptor *PoolingD, err error) {
 	if len(window) != len(padding) || len(window) != len(stride) || len(window) != 2 {
 		return nil, errors.New("Window Padding and Stride array lengths need to be 2")
 	}
 	var desc C.cudnnPoolingDescriptor_t
-	err := Status(C.cudnnCreatePoolingDescriptor(&desc)).error("NewPooling2dDescriptor-create")
+	err = Status(C.cudnnCreatePoolingDescriptor(&desc)).error("NewPooling2dDescriptor-create")
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +52,14 @@ func (pool Pooling) NewPooling2dDescriptor(
 	if err != nil {
 		return nil, err
 	}
-	return &PoolingD{descriptor: desc, dims: C.int(2)}, nil
+	descriptor = &PoolingD{descriptor: desc, dims: C.int(2)}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroypoolingdescriptor)
+	}
+	return descriptor, nil
+}
+func (p *PoolingD) keepsalive() {
+	runtime.KeepAlive(p)
 }
 
 //GetPoolingDescriptor returns the pooling descriptors and the error
@@ -73,6 +81,9 @@ func (p *PoolingD) GetPoolingDescriptor() (PoolingMode, PropagationNAN, []int32,
 			&stride[0],
 			&stride[1],
 		)).error("GetPooling2dDescriptor-2d")
+		if setkeepalive {
+			p.keepsalive()
+		}
 		return PoolingMode(mode), PropagationNAN(nan), cintToint32(window), cintToint32(padding), cintToint32(stride), err
 	}
 	var actual C.int
@@ -86,6 +97,9 @@ func (p *PoolingD) GetPoolingDescriptor() (PoolingMode, PropagationNAN, []int32,
 		&padding[0],
 		&stride[0],
 	)).error("GetPoolingDescriptor-nd")
+	if setkeepalive {
+		p.keepsalive()
+	}
 	return PoolingMode(mode), PropagationNAN(nan), cintToint32(window), cintToint32(padding), cintToint32(stride), err
 }
 
@@ -97,12 +111,12 @@ func (pool Pooling) CreatePoolingNdDescriptor(
 	window []int32, // height and wideth
 	padding []int32, //height and width
 	stride []int32, //height and width
-) (*PoolingD, error) {
+) (descriptor *PoolingD, err error) {
 	if len(window) != len(padding) || len(window) != len(stride) || len(window) < 3 {
 		return nil, errors.New("Window Padding and Stride array lengths need to be equal and 3 or greater")
 	}
 	var desc C.cudnnPoolingDescriptor_t
-	err := Status(C.cudnnCreatePoolingDescriptor(&desc)).error("NewPoolingNdDescriptor-create")
+	err = Status(C.cudnnCreatePoolingDescriptor(&desc)).error("NewPoolingNdDescriptor-create")
 	if err != nil {
 		return nil, err
 	}
@@ -121,10 +135,14 @@ func (pool Pooling) CreatePoolingNdDescriptor(
 	if err != nil {
 		return nil, err
 	}
-	return &PoolingD{
+	descriptor = &PoolingD{
 		descriptor: desc,
 		dims:       C.int(dims),
-	}, nil
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroypoolingdescriptor)
+	}
+	return descriptor, nil
 }
 
 //GetPoolingForwardOutputDim will return the forward output dims from the pooling desc, and the tensor passed
@@ -147,6 +165,9 @@ func (p *PoolingD) GetPoolingForwardOutputDim(
 			p.dims,
 			&outputdims[0],
 		)).error("GetPoolingForwardOutputDim-nd")
+		if setkeepalive {
+			keepsalivebuffer(p, input)
+		}
 		return cintToint32(outputdims), err
 	}
 	outputdims := make([]C.int, 4)
@@ -158,11 +179,17 @@ func (p *PoolingD) GetPoolingForwardOutputDim(
 		&outputdims[2],
 		&outputdims[3],
 	)).error("GetPoolingForwardOutputDim-2d")
+	if setkeepalive {
+		keepsalivebuffer(p, input)
+	}
 	return cintToint32(outputdims), err
 }
 
 //DestroyDescriptor destroys the pooling descriptor
 func (p *PoolingD) DestroyDescriptor() error {
+	return destroypoolingdescriptor(p)
+}
+func destroypoolingdescriptor(p *PoolingD) error {
 	return Status(C.cudnnDestroyPoolingDescriptor(p.descriptor)).error("DestroyDescriptor")
 }
 
@@ -173,11 +200,14 @@ func (p *PoolingD) PoolingForward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
-	x Memer,
+	x *Malloced,
 	beta CScalar,
 	yD *TensorD,
-	y Memer,
+	y *Malloced,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(p, handle, xD, x, yD, y)
+	}
 	return Status(C.cudnnPoolingForward(
 		handle.x,
 		p.descriptor,
@@ -195,15 +225,18 @@ func (p *PoolingD) PoolingBackward(
 	handle *Handle,
 	alpha CScalar,
 	yD *TensorD,
-	y Memer,
+	y *Malloced,
 	dyD *TensorD,
-	dy Memer,
+	dy *Malloced,
 	xD *TensorD,
-	x Memer,
+	x *Malloced,
 	beta CScalar,
 	dxD *TensorD,
-	dx Memer,
+	dx *Malloced,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(p, handle, xD, x, yD, y, dyD, dy, dxD, dx)
+	}
 	return Status(C.cudnnPoolingBackward(
 		handle.x,
 		p.descriptor,

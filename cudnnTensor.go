@@ -8,6 +8,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"runtime"
 	"strconv"
 )
 
@@ -45,6 +46,9 @@ type TensorD struct {
 	flag       descflag
 }
 
+func (t *TensorD) keepsalive() {
+	runtime.KeepAlive(t)
+}
 func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 	descs := make([]C.cudnnTensorDescriptor_t, len(input))
 	for i := 0; i < len(input); i++ {
@@ -73,7 +77,13 @@ func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape 
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: C.int(4), flag: t4d}, nil
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: C.int(4), flag: t4d}
+	if setfinalizer == true {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
+
+	return x, nil
+
 }
 
 //NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
@@ -91,8 +101,12 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 	if err != nil {
 		return nil, err
 	}
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, strided: true, dims: C.int(4), flag: t4dex}
+	if setfinalizer == true {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
 
-	return &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, strided: true, dims: C.int(4), flag: t4dex}, nil
+	return x, nil
 
 }
 
@@ -116,8 +130,11 @@ func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*Te
 	if err != nil {
 		return nil, err
 	}
-
-	return &TensorD{descriptor: descriptor, dimsarray: shape, strided: true, stride: stride, dims: dims, flag: tnd}, nil
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, strided: true, stride: stride, dims: dims, flag: tnd}
+	if setfinalizer == true {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
+	return x, nil
 }
 
 //NewTensorNdDescriptorEx creates and sets an ND descriptor ex
@@ -139,13 +156,22 @@ func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shap
 	if err != nil {
 		return nil, err
 	}
-	return &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, dims: dims, flag: tndex}, nil
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, dims: dims, flag: tndex}
+	if setfinalizer == true {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
+	return x, nil
+
 }
 
 //GetFormat returns the format of the tensor error will return if tensor supports slide//
 func (t *TensorD) GetFormat() (TensorFormat, error) {
+
 	if t.flag == tndex || t.flag == t4d {
 		return t.frmt, nil
+	}
+	if setkeepalive == true {
+		t.keepsalive()
 	}
 	return 255, errors.New("Tensor Uses slide method")
 
@@ -153,6 +179,7 @@ func (t *TensorD) GetFormat() (TensorFormat, error) {
 
 //GetDescrptor returns Data Type the Dims for shape and stride and error.  for Descriptors without stride it will still return junk info. so be mindful when you code.
 func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
+
 	shape := make([]C.int, t.dims)
 	stride := make([]C.int, t.dims)
 	var data C.cudnnDataType_t
@@ -165,7 +192,9 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 		x := C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])
 		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 	}
-
+	if setkeepalive == true {
+		t.keepsalive()
+	}
 	return DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tensor Not t4d,or tnd")
 }
 
@@ -219,9 +248,12 @@ n, c, h, w := int32(1), int32(3), int32(4), int32(2)
 
 //GetSizeInBytes returns the SizeT in bytes and Status
 func (t *TensorD) GetSizeInBytes() (SizeT, error) {
+
 	var sizebytes C.size_t
 	x := C.cudnnGetTensorSizeInBytes(t.descriptor, &sizebytes)
-
+	if setkeepalive == true {
+		t.keepsalive()
+	}
 	return SizeT(sizebytes), Status(x).error("GetTensorNdDescriptor")
 }
 
@@ -230,6 +262,9 @@ func (t *TensorD) GetSizeInBytes() (SizeT, error) {
 //DestroyDescriptor destroys the tensor
 func (t *TensorD) DestroyDescriptor() error {
 
+	return destroytensordescriptor(t)
+}
+func destroytensordescriptor(t *TensorD) error {
 	return Status(C.cudnnDestroyTensorDescriptor(t.descriptor)).error("DestroyDescriptor")
 
 }
@@ -257,9 +292,14 @@ y = Transfomr((alpha *x),(beta * y))
 This will change the layout of a tensor stride wise
 */
 func (t Tensor) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x *Malloced, beta CScalar, ty *TensorD, y *Malloced) error {
+
 	var s Status
 
 	s = Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), ty.descriptor, y.Ptr()))
+	if setkeepalive == true {
+		keepsalivebuffer(h, tx, x, ty, y)
+	}
+
 	return s.error("TransformTensor")
 }
 
@@ -271,21 +311,29 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A Memer, beta CScalar, cD *TensorD, c Memer) error {
+func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A *Malloced, beta CScalar, cD *TensorD, c *Malloced) error {
 
 	s := Status(C.cudnnAddTensor(h.x, alpha.CPtr(), aD.descriptor, A.Ptr(), beta.CPtr(), cD.descriptor, c.Ptr()))
+	if setkeepalive == true {
+		keepsalivebuffer(h, aD, A, cD, c)
+	}
+
 	return s.error("AddTensor")
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y Memer, alpha CScalar) error {
+func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y *Malloced, alpha CScalar) error {
+	keepsalivebuffer(h, yD, y)
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), alpha.CPtr())).error("ScaleTensor")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func (t Tensor) SetTensor(handle *Handle, yDesc *TensorD, y Memer, v CScalar) error {
+func (t Tensor) SetTensor(h *Handle, yD *TensorD, y *Malloced, v CScalar) error {
 
-	x := C.cudnnSetTensor(handle.x, yDesc.descriptor, y.Ptr(), v.CPtr())
+	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), v.CPtr())
+	if setkeepalive == true {
+		keepsalivebuffer(h, yD, y)
+	}
 	return Status(x).error("SetTensor")
 }
 

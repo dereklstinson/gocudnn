@@ -199,7 +199,7 @@ func (xt Xtra) CreateResizeDesc(handle *XHandle, aligncorners bool) (*XResizeD, 
 }
 
 //ResizeForward does the reshape operation
-func (s *XResizeD) ResizeForward(handle *XHandle, xdesc *TensorD, x Memer, ydesc *TensorD, y Memer) error {
+func (s *XResizeD) ResizeForward(handle *XHandle, xdesc *TensorD, x *Malloced, ydesc *TensorD, y *Malloced) error {
 
 	_, dimsx, _, err := xdesc.GetDescrptor()
 	if err != nil {
@@ -256,7 +256,7 @@ func (s *XResizeD) ResizeForward(handle *XHandle, xdesc *TensorD, x Memer, ydesc
 }
 
 //ResizeBackward does a reshape backwards but it will add the errors on the backprop.
-func (s *XResizeD) ResizeBackward(handle *XHandle, dxdesc *TensorD, dx Memer, dydesc *TensorD, dy Memer) error {
+func (s *XResizeD) ResizeBackward(handle *XHandle, dxdesc *TensorD, dx *Malloced, dydesc *TensorD, dy *Malloced) error {
 	_, dimsx, _, err := dxdesc.GetDescrptor()
 	if err != nil {
 		return err
@@ -292,18 +292,7 @@ func (s *XResizeD) ResizeBackward(handle *XHandle, dxdesc *TensorD, dx Memer, dy
 		if s.aligncorners == true {
 			aligned = 1
 		}
-		mx, ok := dx.(*Malloced)
-		if ok {
-			err = mx.Set(0)
-			dx = mx
-			if err != nil {
-				return err
-
-			}
-		} else {
-			return errors.New("Unsupported Memer")
-
-		}
+		dx.Set(0)
 
 		return s.nearestbwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
 	case fmtflag.NCHW():
@@ -318,19 +307,7 @@ func (s *XResizeD) ResizeBackward(handle *XHandle, dxdesc *TensorD, dx Memer, dy
 		if s.aligncorners == true {
 			aligned = 1
 		}
-		mx, ok := dx.(*Malloced)
-		if ok {
-			err = mx.Set(0)
-			dx = mx
-			if err != nil {
-				return err
-
-			}
-		} else {
-			return errors.New("Unsupported Memer")
-
-		}
-
+		dx.Set(0)
 		return s.nearestbwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
 	}
 	return errors.New("Not Supported Tensor Format")
@@ -357,7 +334,7 @@ func (xt Xtra) CreateShapetoBatchDesc(handle *XHandle) (*XShapetoBatchD, error) 
 //if S2B is false the y values will be placed into the x tensor. The C channel is the only thing that needs to be the same between tensor x and y.
 //Any values that don't fit will get the zero value
 //To get the y tensor please use FindShapetoBatchoutputTensor.
-func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x Memer, yDesc *TensorD, y Memer, S2B bool) error {
+func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Malloced, yDesc *TensorD, y *Malloced, S2B bool) error {
 
 	dtype, xdims, _, err := xDesc.GetDescrptor()
 	var dflag DataTypeFlag

@@ -19,6 +19,9 @@ type Handle struct {
 
 //Pointer is a pointer to the handle
 func (handle *Handle) Pointer() unsafe.Pointer {
+	if setkeepalive {
+		handle.keepsalive()
+	}
 	return unsafe.Pointer(handle.x)
 }
 
@@ -32,13 +35,18 @@ func NewHandle() *Handle {
 		panic(err)
 	}
 	var handler = &Handle{x: handle}
-	runtime.SetFinalizer(handler, destroyhandle)
+	if setfinalizer {
+		runtime.SetFinalizer(handler, destroycudnnhandle)
+	}
+
 	return handler
 }
-func destroyhandle(handle *Handle) {
-	C.cudnnDestroy(handle.x)
+
+func (handle *Handle) keepsalive() {
+	runtime.KeepAlive(handle)
 }
 
+/*
 //Create creates the handle
 func (handle *Handle) create() error {
 
@@ -46,13 +54,14 @@ func (handle *Handle) create() error {
 
 	return Status(y).error("(*Handle).Create")
 }
+*/
 
 //Destroy destroys the handle
 func (handle *Handle) Destroy() error {
-
-	y := C.cudnnDestroy(handle.x)
-
-	return Status(y).error("(*Handle).Destroy")
+	return destroycudnnhandle(handle)
+}
+func destroycudnnhandle(handle *Handle) error {
+	return Status(C.cudnnDestroy(handle.x)).error("(*Handle).Destroy")
 }
 
 //typedefed CUstream_st *CUstream
@@ -62,17 +71,22 @@ func (handle *Handle) Destroy() error {
 func (handle *Handle) SetStream(s *Stream) error {
 
 	y := C.cudnnSetStream(handle.x, s.stream)
-
+	if setkeepalive {
+		keepsalivebuffer(handle, s)
+	}
 	return Status(y).error("(*Handle).SetStream")
 }
 
 //GetStream will return a stream that the handle is using
 func (handle *Handle) GetStream() (Stream, error) {
 	var s Stream
-	var some *C.cudaStream_t
+	//var some *C.cudaStream_t
 	//x := C.cudnnHandle_t(handle.Pointer())
 
-	y := C.cudnnGetStream(handle.x, some)
-	s.stream = *some
+	y := C.cudnnGetStream(handle.x, &s.stream)
+	//	s.stream = *some
+	if setkeepalive {
+		keepsalivebuffer(handle, s)
+	}
 	return s, Status(y).error("(*Handle).GetStream")
 }

@@ -2,6 +2,10 @@ package gocudnn
 
 import "log"
 
+//for debugging purposes
+const setkeepalive = false
+const setfinalizer = false
+
 type keeper interface {
 	keepsalive()
 }

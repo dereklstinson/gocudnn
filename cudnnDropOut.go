@@ -4,7 +4,10 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
-import "unsafe"
+import (
+	"runtime"
+	"unsafe"
+)
 
 //DropOut is the struct that is used to call dropout functions
 type DropOut struct {
@@ -20,49 +23,61 @@ type DropOutD struct {
 	descriptor C.cudnnDropoutDescriptor_t
 }
 
-//CreateDropoutDescriptor creates a dropout descriptor
-func (d DropOut) CreateDropoutDescriptor() (*DropOutD, error) {
+func (d *DropOutD) keepsalive() {
+	runtime.KeepAlive(d)
+}
+
+//NewDropoutDescriptor creates a dropout descriptor
+func (d DropOut) NewDropoutDescriptor(handle *Handle,
+	dropout float32, //probability that the input value is set to zero
+	states *Malloced,
+	bytes SizeT,
+	seed uint64,
+) (descriptor *DropOutD, err error) {
 	var desc C.cudnnDropoutDescriptor_t
-	err := Status(C.cudnnCreateDropoutDescriptor(&desc)).error("CreateDropoutDescriptor")
+	err = Status(C.cudnnCreateDropoutDescriptor(&desc)).error("CreateDropoutDescriptor")
 	if err != nil {
 		return nil, err
 	}
-	return &DropOutD{
-		descriptor: desc,
-	}, nil
-}
-
-//DestroyDescriptor destroys the dropout descriptor
-func (d *DropOutD) DestroyDescriptor() error {
-	return Status(C.cudnnDestroyDropoutDescriptor(d.descriptor)).error("DestroyDescriptor")
-}
-
-//SetDropoutDescriptor sets the Drop Out Descriptor
-func (d *DropOutD) SetDropoutDescriptor(
-	handle *Handle,
-	dropout float32, //probability that the input value is set to zero
-	states Memer,
-	bytes SizeT,
-	seed uint64,
-) error {
-	return Status(C.cudnnSetDropoutDescriptor(
-		d.descriptor,
+	err = Status(C.cudnnSetDropoutDescriptor(
+		desc,
 		handle.x,
 		C.float(dropout),
 		states.Ptr(),
 		C.size_t(bytes),
 		C.ulonglong(seed),
 	)).error("SetDropoutDescriptor")
+	if err != nil {
+		return nil, err
+	}
+	descriptor = &DropOutD{
+		descriptor: desc,
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroydropoutdescriptor)
+	}
+	return descriptor, nil
+}
+
+//DestroyDescriptor destroys the dropout descriptor
+func (d *DropOutD) DestroyDescriptor() error {
+	return destroydropoutdescriptor(d)
+}
+func destroydropoutdescriptor(d *DropOutD) error {
+	return Status(C.cudnnDestroyDropoutDescriptor(d.descriptor)).error("DestroyDescriptor")
 }
 
 //RestoreDropoutDescriptor restors the descriptor to a previously saved-off state
 func (d *DropOutD) RestoreDropoutDescriptor(
 	handle *Handle,
 	dropout float32, //probability that the input value is set to zero
-	states Memer,
+	states *Malloced,
 	bytes SizeT,
 	seed uint64,
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(d, handle, states)
+	}
 	return Status(C.cudnnRestoreDropoutDescriptor(
 		d.descriptor,
 		handle.x,
@@ -76,9 +91,9 @@ func (d *DropOutD) RestoreDropoutDescriptor(
 //GetDropoutDescriptor gets the descriptor to a previously saved-off state
 func (d *DropOutD) GetDropoutDescriptor(
 	handle *Handle,
-	states Memer,
+	states *Malloced,
 
-) (float32, Memer, uint64, error) {
+) (float32, *Malloced, uint64, error) {
 	var seed C.ulonglong
 	var dropout C.float
 	var x unsafe.Pointer
@@ -90,6 +105,9 @@ func (d *DropOutD) GetDropoutDescriptor(
 		&x,
 		&seed,
 	)).error("GetDropoutDescriptor")
+	if setkeepalive {
+		keepsalivebuffer(d, handle, states)
+	}
 	return float32(dropout), states, uint64(seed), err
 }
 
@@ -97,6 +115,9 @@ func (d *DropOutD) GetDropoutDescriptor(
 func (d DropOutFuncs) DropoutGetStateSize(handle *Handle) (SizeT, error) {
 	var size C.size_t
 	err := Status(C.cudnnDropoutGetStatesSize(handle.x, &size)).error("DropoutGetStateSize")
+	if setkeepalive {
+		keepsalivebuffer(handle)
+	}
 	return SizeT(size), err
 }
 
@@ -104,22 +125,27 @@ func (d DropOutFuncs) DropoutGetStateSize(handle *Handle) (SizeT, error) {
 func (d DropOutFuncs) DropoutGetReserveSpaceSize(t *TensorD) (SizeT, error) {
 	var size C.size_t
 	err := Status(C.cudnnDropoutGetReserveSpaceSize(t.descriptor, &size)).error("DropoutGetReserveSpaceSize")
+	if setkeepalive {
+		keepsalivebuffer(t)
+	}
 	return SizeT(size), err
 }
 
 //DropoutForward performs the dropoutForward
-func (d DropOutFuncs) DropoutForward(
+func (d *DropOutD) DropoutForward(
 	handle *Handle,
-	doD *DropOutD, //intput
 	xD *TensorD, //input
-	x Memer, //input
+	x *Malloced, //input
 	yD *TensorD, //input
-	y Memer, //input/output
-	reserveSpace Memer, //input/output
+	y *Malloced, //input/output
+	reserveSpace *Malloced, //input/output
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, d, xD, x, yD, y, reserveSpace)
+	}
 	return Status(C.cudnnDropoutForward(
 		handle.x,
-		doD.descriptor,
+		d.descriptor,
 		xD.descriptor,
 		x.Ptr(),
 		yD.descriptor,
@@ -130,18 +156,20 @@ func (d DropOutFuncs) DropoutForward(
 }
 
 //DropoutBackward performs the dropoutForward
-func (d DropOutFuncs) DropoutBackward(
+func (d *DropOutD) DropoutBackward(
 	handle *Handle,
-	doD *DropOutD, //intput
 	dyD *TensorD, //input
-	dy Memer, //input
+	dy *Malloced, //input
 	dxD *TensorD, //input
-	dx Memer, //input/output
-	reserveSpace Memer, //input/output
+	dx *Malloced, //input/output
+	reserveSpace *Malloced, //input/output
 ) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, d, dxD, dx, dyD, dy, reserveSpace)
+	}
 	return Status(C.cudnnDropoutBackward(
 		handle.x,
-		doD.descriptor,
+		d.descriptor,
 		dyD.descriptor,
 		dy.Ptr(),
 		dxD.descriptor,
