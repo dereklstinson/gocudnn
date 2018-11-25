@@ -515,7 +515,36 @@ void l1l2regularizationfloat(
 
 
     }
-  */  
+  */ 
+
+
+ extern "C" __global__
+void l1l2regularizationfloat(
+    const int length,
+    float *dw, //input and output
+   const float *w,  //input needs to ba an array
+    float *l1, //output set to zero
+    float *l2, //output set to zero
+    const float batch, // should be an int but just send it as a float
+    const float decay1, //input
+    const float decay2){ //input
+
+
+
+
+
+CUDA_GRID_LOOP_X(i,length){
+
+        atomicAdd(l1,abs(w[i])*decay1); 
+        atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
+      const float gradl1= decay1*(w[i]>0 ? 1:-1);
+       const float gradl2=w[i]*decay2;
+        dw[i]= (dw[i] +gradl2 +gradl1)/batch;
+}
+}
+
+
+  /*
 extern "C" __global__
 void l1l2regularizationfloat(
     const int length,
@@ -544,9 +573,9 @@ CUDA_GRID_LOOP_X(i,length){
             decay=decay1;
         }
             atomicAdd(l1,w[i]*decay);
-            dw[i]= (dw[i] +decay)/batch;
+            dw[i]= (dw[i] +decay1)/batch;
 }
-}else {
+}else if (decay2 !=0 && decay1 !=0) {
 float decay = decay1;
 CUDA_GRID_LOOP_X(i,length){
 
@@ -558,12 +587,13 @@ CUDA_GRID_LOOP_X(i,length){
 
         atomicAdd(l1,w[i]*decay); 
         atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
-        dw[i]= (dw[i] + (w[i]*decay2) +decay)/batch;
-}
+        dw[i]= (dw[i] + (w[i]*decay2) +decay1)/batch;
 }
 }
 
+}
 
+*/
 extern "C" __global__
 void AdvanceThreshRandomReluForward(const int length,
                                     const int batchs,
@@ -927,10 +957,10 @@ CUDA_GRID_LOOP_X(i,length){
 }  
 */
 extern "C" __global__
-void MSELoss(const int length ,float *errors,float *target,float *networkout,float *loss){
-    loss[0]=0;
+void MSELoss(const int length ,float *errors,const float *target,const float *networkout,float *loss){
+
     CUDA_GRID_LOOP_X(i,length){
-      float y = networkout[i]-target[i];
+    const float y = networkout[i]-target[i];
         errors[i]=y;
         atomicAdd(loss,(y*y)/2);
     }

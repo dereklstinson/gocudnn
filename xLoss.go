@@ -11,6 +11,8 @@ type XLossD struct {
 	mode     XLossMode
 	lossfunc *Kernel
 	loss     *Malloced
+	cpuloss  []float32
+	cpuptr   *GoPointer
 	flg      XLossModeFlag
 	dflg     DataTypeFlag
 	memflg   MemcpyKindFlag
@@ -34,6 +36,7 @@ func (xtra Xtra) NewLossDescriptor(h *XHandle, mode XLossMode, unified bool) (*X
 	var cu Cuda
 	var ktf kernels.XtraKerns
 	var flg XLossModeFlag
+
 	switch mode {
 	case flg.MSE():
 		mse, err := cu.MakeKernel(ktf.MSELoss(), h.mod)
@@ -46,10 +49,17 @@ func (xtra Xtra) NewLossDescriptor(h *XHandle, mode XLossMode, unified bool) (*X
 			if err != nil {
 				return nil, err
 			}
+			cpuloss := make([]float32, 1)
+			cpuptr, err := MakeGoPointer(cpuloss)
+			if err != nil {
+				return nil, err
+			}
 			return &XLossD{
 				mode:     mode,
 				lossfunc: mse,
 				loss:     lossptr,
+				cpuloss:  cpuloss,
+				cpuptr:   cpuptr,
 				managed:  true,
 			}, nil
 		}
@@ -58,10 +68,17 @@ func (xtra Xtra) NewLossDescriptor(h *XHandle, mode XLossMode, unified bool) (*X
 		if err != nil {
 			return nil, err
 		}
+		cpuloss := make([]float32, 1)
+		cpuptr, err := MakeGoPointer(cpuloss)
+		if err != nil {
+			return nil, err
+		}
 		return &XLossD{
 			mode:     mode,
 			lossfunc: mse,
 			loss:     lossptr,
+			cpuloss:  cpuloss,
+			cpuptr:   cpuptr,
 			managed:  false,
 		}, nil
 
@@ -110,19 +127,24 @@ func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
 	}
 	switch l.mode {
 	case l.flg.MSE():
+		err = l.loss.Set(0)
+		if err != nil {
+			return 0, err
+		}
 		config := h.LaunchConfig(int32(length))
 		err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.loss)
 		if err != nil {
 			return -1, err
 		}
-		loss := make([]float32, 1)
-		ptr, _ := MakeGoPointer(loss)
+
 		if l.managed == true {
-			err = CudaMemCopy(ptr, l.loss, 4, l.memflg.Default())
-			return loss[0] / batch, err
+			err = UnifiedMemCopy(l.cpuptr, l.loss)
+
+		} else {
+			err = CudaMemCopy(l.cpuptr, l.loss, 4, l.memflg.DeviceToHost())
 		}
-		err = CudaMemCopy(ptr, l.loss, 4, l.memflg.DeviceToHost())
-		return loss[0] / batch, err
+
+		return l.cpuloss[0] / batch, err
 
 	}
 	return 0, errors.New("Unsupported Loss Function")

@@ -2,88 +2,11 @@ package gocudnn
 
 /*
 #include <cudnn.h>
-
-cudnnStatus_t ConcatActivationForward4DNCHW(
-								 cudnnHandle_t handle,
-								 cudnnActivationDescriptor_t        activationDesc,
-								 const void						    *alpha,
-								 const void 						*beta,
-								 const cudnnTensorDescriptor_t       xDescA,
-                                 const void                         *xA,
-						         const cudnnTensorDescriptor_t       xDescB,
-                                 const void                         *xB,
-	      						 const cudnnTensorDescriptor_t       yDescC, //Descriptor describing All of y.
-								 void                               *y){
-
-
-		int nA,nB,cA,cB,hA,hB,wA,wB,sn,sc,sh,sw ,cC;
-		cudnnDataType_t dtype;
-        cudnnStatus_t status;
-	status=	cudnnGetTensor4dDescriptor(xDescA,&dtype,&nA,&cA,&hA,&wA,&sn,&sc,&sh,&sw);
-  	if (status!=CUDNN_STATUS_SUCCESS){
-	  return status;
-	  }
-	      int chwA = cA*hA*wA;
-  	status=	cudnnGetTensor4dDescriptor(xDescB,&dtype,&nB,&cB,&hB,&wB,&sn,&sc,&sh,&sw);
-	if (status!=CUDNN_STATUS_SUCCESS){
-	  return status;
-	  }
-	  int chwB=cB*hB*wB;
-
-  	if (nA!=nB || hA!=hB || wA!=wB){
-	  return CUDNN_STATUS_BAD_PARAM;
-	}
-
-
-	cudnnTensorDescriptor_t tempdescXA,tempdescXB;
-	status= cudnnCreateTensorDescriptor(&tempdescXA);
-			if (status!=CUDNN_STATUS_SUCCESS){
-              return status;
-        	}
-
-	status= cudnnSetTensor4dDescriptor(tempdescXA,  CUDNN_TENSOR_NCHW,dtype,1,cA,hA,wA);
-          	if (status!=CUDNN_STATUS_SUCCESS){
-              return status;
-        	}
-
-	status= cudnnCreateTensorDescriptor(&tempdescXB);
-			if (status!=CUDNN_STATUS_SUCCESS){
-              return status;
-        	}
-
-	status= cudnnSetTensor4dDescriptor(tempdescXB,  CUDNN_TENSOR_NCHW,dtype,1,cB,hB,wB);
-          	if (status!=CUDNN_STATUS_SUCCESS){
-              return status;
-        	}
-   status=	cudnnGetTensor4dDescriptor(yDescC,&dtype,&nB,&cC,&hB,&wB,&sn,&sc,&sh,&sw);
-    if (nA!=nB || hA!=hB || wA!=wB || cC!=cA+cB){
-	  return CUDNN_STATUS_BAD_PARAM;
-	}
-	int chwC=hB*wB*cC;
-    int chwCstep=chwA+chwC;
-
-        for (int i =0;i<nA;i++){
-
-       status =cudnnActivationForward(handle,activationDesc,alpha,tempdescXA,xA+(i*chwA),beta,tempdescXA,y +(i*chwC));
-       status =cudnnActivationForward(handle,activationDesc,alpha,tempdescXB,xB+(i*chwB),beta,tempdescXB,y +(i*chwCstep));
-
-
-        	  }
-cudnnDestroyTensorDescriptor(tempdescXB);
-return cudnnDestroyTensorDescriptor(tempdescXA);
-
-	}
-
-
-
-
-
-
-
-
-
 */
 import "C"
+import (
+	"runtime"
+)
 
 //Activation is a helper func that is used is activation type processes
 type Activation struct {
@@ -97,22 +20,29 @@ type ActivationD struct {
 }
 
 //NewActivationDescriptor creates and sets and returns an activation descriptor in ActivationD and the error
-func (new Activation) NewActivationDescriptor(mode ActivationMode, nan PropagationNAN, coef float64) (*ActivationD, error) {
+func (new Activation) NewActivationDescriptor(mode ActivationMode, nan PropagationNAN, coef float64) (descriptor *ActivationD, err error) {
 
-	var descriptor C.cudnnActivationDescriptor_t
-	err := Status(C.cudnnCreateActivationDescriptor(&descriptor)).error("NewActivationDescriptor-create")
+	var desc C.cudnnActivationDescriptor_t
+	err = Status(C.cudnnCreateActivationDescriptor(&desc)).error("NewActivationDescriptor-create")
 	if err != nil {
 		return nil, err
 	}
 
-	err = Status(C.cudnnSetActivationDescriptor(descriptor, mode.c(), nan.c(), C.double(coef))).error("NewActivationDescriptor-set")
+	err = Status(C.cudnnSetActivationDescriptor(desc, mode.c(), nan.c(), C.double(coef))).error("NewActivationDescriptor-set")
 	if err != nil {
 		return nil, err
 	}
-	return &ActivationD{
-		descriptor: descriptor,
+	descriptor = &ActivationD{
+		descriptor: desc,
 		coef:       C.double(coef),
-	}, err
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(descriptor, destroyactivationdescriptor)
+	}
+	return descriptor, err
+}
+func (a *ActivationD) keepsalive() {
+	runtime.KeepAlive(a)
 }
 
 //GetDescriptor gets the descriptor info for ActivationD
@@ -121,11 +51,17 @@ func (a *ActivationD) GetDescriptor() (ActivationMode, PropagationNAN, float64, 
 	var mode C.cudnnActivationMode_t
 	var nan C.cudnnNanPropagation_t
 	err := Status(C.cudnnGetActivationDescriptor(a.descriptor, &mode, &nan, &coef)).error("GetDescriptor")
+	if setkeepalive {
+		a.keepsalive()
+	}
 	return ActivationMode(mode), PropagationNAN(nan), float64(coef), err
 }
 
 //DestroyDescriptor destroys the activation descriptor
 func (a *ActivationD) DestroyDescriptor() error {
+	return destroyactivationdescriptor(a)
+}
+func destroyactivationdescriptor(a *ActivationD) error {
 	return Status(C.cudnnDestroyActivationDescriptor(a.descriptor)).error("DestroyDescriptor")
 }
 
@@ -134,11 +70,14 @@ func (a *ActivationD) Forward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
-	x Memer,
+	x *Malloced,
 	beta CScalar,
 	yD *TensorD,
-	yrtn Memer) error {
-	return Status(C.cudnnActivationForward(handle.x, a.descriptor, alpha.CPtr(), xD.descriptor, x.Ptr(), beta.CPtr(), yD.descriptor, yrtn.Ptr())).error("ActivationForward")
+	y *Malloced) error {
+	if setkeepalive {
+		keepsalivebuffer(a, handle, xD, x, yD, y)
+	}
+	return Status(C.cudnnActivationForward(handle.x, a.descriptor, alpha.CPtr(), xD.descriptor, x.Ptr(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
 }
 
 //Backward does the activation backward method
@@ -146,14 +85,17 @@ func (a *ActivationD) Backward(
 	handle *Handle,
 	alpha CScalar,
 	yD *TensorD,
-	y Memer,
+	y *Malloced,
 	dyD *TensorD,
-	dy Memer,
+	dy *Malloced,
 	xD *TensorD,
-	x Memer,
+	x *Malloced,
 	beta CScalar,
 	dxD *TensorD,
-	dx Memer) error {
+	dx *Malloced) error {
+	if setkeepalive {
+		keepsalivebuffer(a, handle, xD, x, yD, y, dyD, dy, dxD, dx)
+	}
 	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, alpha.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), beta.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
 }
 

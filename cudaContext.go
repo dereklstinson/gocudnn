@@ -4,11 +4,16 @@ package gocudnn
 #include <cuda.h>
 */
 import "C"
+import (
+	"runtime"
+)
 
 //Context holds a CUcontext.
 type Context struct {
 	ctx C.CUcontext
 }
+
+const contextsetfinalizer = false
 
 /*
 CtxCreate creates a context.  --Flags are listed below just pass the equivelant uint32 for the flag.  I know it is lazy, but cuda was kind of lazy in this respect, too.  Default to zero if you don't know what the stuff does.
@@ -37,29 +42,34 @@ CU_CTX_FLAGS_MASK = 0x1f -> uint32(31)
 */
 
 //CtxCreate creates a context with the flags on the device passed if -1 is passed in flags then it sets the default CU_CTX_SCHED_BLOCKING_SYNC = 0x04
-func (cu Cuda) CtxCreate(flags int32, device *Device) (*Context, error) {
+func (cu Cuda) CtxCreate(flags int32, device *Device) (context *Context, err error) {
 
 	var ctx C.CUcontext
 	if flags == -1 {
 		x := C.cuCtxCreate(&ctx, C.uint(4), device.id)
 
-		err := newErrorDriver("cuCtxCreate", x)
+		err = newErrorDriver("cuCtxCreate", x)
 		if err != nil {
 			return nil, err
 		}
-		return &Context{
+		context = &Context{
 			ctx: ctx,
-		}, nil
+		}
+		if setfinalizer && contextsetfinalizer {
+			runtime.SetFinalizer(context, destroycudacontext)
+		}
+		return context, nil
 	}
 	x := C.cuCtxCreate(&ctx, C.uint(flags), device.id)
 
-	err := newErrorDriver("cuCtxCreate", x)
-	if err != nil {
-		return nil, err
-	}
-	return &Context{
+	err = newErrorDriver("cuCtxCreate", x)
+	context = &Context{
 		ctx: ctx,
-	}, nil
+	}
+	if setfinalizer && contextsetfinalizer {
+		runtime.SetFinalizer(context, destroycudacontext)
+	}
+	return context, nil
 }
 
 //GetCurrentContext returns the context bound to the calling thread
@@ -117,4 +127,7 @@ func (c *Context) Push() error {
 func (c *Context) Destroy() error {
 
 	return newErrorDriver("cuCtxDestroy", C.cuCtxDestroy(c.ctx))
+}
+func destroycudacontext(c *Context) error {
+	return c.Destroy()
 }

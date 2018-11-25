@@ -4,7 +4,7 @@ import "log"
 
 //for debugging purposes
 const setkeepalive = false
-const setfinalizer = false
+const setfinalizer = true
 
 type keeper interface {
 	keepsalive()

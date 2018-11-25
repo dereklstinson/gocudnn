@@ -213,7 +213,9 @@ func (handle *Handle) QueryRuntimeError(mode ErrQueryMode, tag *RuntimeTag) (Sta
 
 		return Status(rstatus), err
 	}
-
+	if setkeepalive {
+		keepsalivebuffer(handle)
+	}
 	return Status(rstatus), errors.New("Tag flags not supported")
 
 }

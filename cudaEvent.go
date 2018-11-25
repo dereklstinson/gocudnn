@@ -16,20 +16,27 @@ type Event struct {
 }
 
 //CreateEvent will create and return an Event
-func (cu Cuda) CreateEvent() (Event, error) {
+func (cu Cuda) CreateEvent() (event *Event, err error) {
 	var e Event
-	err := newErrorRuntime("CreateEvent", C.cudaEventCreate(&e.x))
+	err = newErrorRuntime("CreateEvent", C.cudaEventCreate(&e.x))
 	if err != nil {
-		return e, err
+		return nil, err
 	}
-	return e, nil
+	event = &e
+	if setfinalizer {
+		runtime.SetFinalizer(event, destroyevent)
+	}
+	return event, err
 }
 func (e *Event) keepsalive() {
 	runtime.KeepAlive(e)
 }
 
 //Record records an event
-func (e *Event) Record(s Stream) error {
+func (e *Event) Record(s *Stream) error {
+	if setkeepalive {
+		e.keepsalive()
+	}
 	return newErrorRuntime("Record", C.cudaEventRecord(e.x, s.stream))
 }
 
@@ -45,7 +52,9 @@ func (e *Event) Status() (bool, error) {
 	if x == C.cudaErrorNotReady {
 		return false, nil
 	}
-
+	if setkeepalive {
+		e.keepsalive()
+	}
 	return false, newErrorRuntime("Status", x)
 
 }
@@ -69,6 +78,9 @@ func destroyevent(e *Event) error {
 func (e *Event) ElapsedTime(previous *Event) (float32, error) {
 	var time C.float
 	err := newErrorRuntime("Elapsed Time", C.cudaEventElapsedTime(&time, previous.x, e.x))
+	if setkeepalive {
+		e.keepsalive()
+	}
 	return float32(time), err
 
 }

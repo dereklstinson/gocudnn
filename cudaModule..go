@@ -2,6 +2,7 @@ package gocudnn
 
 import (
 	"fmt"
+	"runtime"
 )
 
 /*
@@ -43,14 +44,15 @@ func (m *Module) c() C.CUmodule { return m.m }
 //extern __host__ cudaError_t CUDARTAPI cudaLaunchKernel(const void *func, dim3 gridDim, dim3 blockDim, void **args, size_t sharedMem, cudaStream_t stream);
 
 //NewModule creates a module in the current context.
-func (cu Cuda) NewModule(filename string) (*Module, error) {
+func (cu Cuda) NewModule(filename string) (module *Module, err error) {
 	var mod C.CUmodule
 	fname := C.CString(filename)
 	x := C.cuModuleLoad(&mod, fname)
-	return &Module{
+	module = &Module{
 		m:      mod,
 		loaded: true,
-	}, newErrorDriver("NewModule", x)
+	}
+	return module, newErrorDriver("NewModule", x)
 }
 
 //NewModuleEx takes a string of the ptx data
@@ -94,22 +96,26 @@ func (m *Module) LoadEx(ptx string) error {
 }
 
 //MakeKernel makes a kernel.  (basically a function in cuda) If module is unloaded, then the kernel returned won't work
-func (cu Cuda) MakeKernel(kname string, m *Module) (*Kernel, error) {
+func (cu Cuda) MakeKernel(kname string, m *Module) (k *Kernel, err error) {
 	var kern C.CUfunction
 	if m.loaded == false {
 		return nil, errors.New("MakeKernel: Module Not Loaded")
 	}
 
 	name := C.CString(kname)
-	err := newErrorDriver("MakeKernel", C.cuModuleGetFunction(&kern, m.m, name))
+	err = newErrorDriver("MakeKernel", C.cuModuleGetFunction(&kern, m.m, name))
 	if err != nil {
 		return nil, err
 	}
-	return &Kernel{
+	k = &Kernel{
 		name: kname,
 		m:    m,
 		f:    kern,
-	}, nil
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(k, destroycudakernel)
+	}
+	return k, nil
 }
 
 //Launch launches the kernel that is stored in the hidden module in this struct.
@@ -140,7 +146,10 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream, a
 	} else {
 		shold = stream.stream
 	}
+	if setkeepalive {
+		k.keepsalive()
 
+	}
 	return newErrorDriver("cuLaunchKernel",
 		C.cuLaunchKernel(k.f,
 			C.uint(gx),
@@ -187,7 +196,10 @@ func (k *Kernel) LaunchOld(gx, gy, gz, bx, by, bz, shared uint32, stream *Stream
 	} else {
 		shold = stream.stream
 	}
+	if setkeepalive {
+		k.keepsalive()
 
+	}
 	return newErrorDriver("cuLaunchKernel",
 		C.cuLaunchKernel(k.f,
 			C.uint(gx),
@@ -268,7 +280,9 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
 			C.memcpy(k.args[i], unsafe.Pointer(&x.ptr), C.ptrSize)
-
+			if setkeepalive {
+				keepsalivebuffer(x)
+			}
 		default:
 			scalar := CScalarConversion(x)
 			if scalar == nil {
@@ -279,6 +293,7 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 		}
 
 	}
+
 	return nil
 }
 func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
@@ -302,7 +317,9 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
 			C.memcpy(k.args[i], unsafe.Pointer(&x.ptr), C.ptrSize)
-
+			if setkeepalive {
+				keepsalivebuffer(x)
+			}
 		default:
 			scalar := CScalarConversion(x)
 			if scalar == nil {
@@ -313,12 +330,20 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 		}
 
 	}
+
 	return nil
 }
 func (k *Kernel) destroyargs() {
 	for i := range k.args {
 		C.free(k.args[i])
 	}
+}
+func (k *Kernel) keepsalive() {
+	runtime.KeepAlive(k)
+
+}
+func destroycudakernel(k *Kernel) {
+	k.destroyargs()
 }
 
 //Destroy destroys the argument array
@@ -353,116 +378,3 @@ func (k *Kernel) ifacetounsafe(args []interface{}) ([]unsafe.Pointer, error) {
 	}
 	return array, nil
 }
-
-func safeUintToC(x uint32) C.uint {
-	if x > uint32(^C.uint(0)) {
-		panic("uint value out of bounds")
-	}
-	return C.uint(x)
-}
-
-func safeIntToC(x int32) C.int {
-	if x > int32(C.int(^C.uint(0)/2)) {
-		panic("int value out of bounds")
-	} else if x < int32((-C.int(^C.uint(0)/2))-1) {
-		panic("int value out of bounds")
-	}
-	return C.int(x)
-}
-
-/*
-//LaunchV2 is like launch but it takes KernelArgument struct.
-func (k *Kernel) LaunchV2(p KernelArguments) error {
-	unsafearray, err := ifacetounsafe(p.args)
-	if err != nil {
-		return err
-	}
-
-
-
-	var shold C.cudaStream_t
-
-	if p.stream == nil {
-		shold = nil
-	} else {
-		shold = p.stream.stream
-	}
-	return newErrorDriver("cuLaunchKernel",
-		C.cuLaunchKernel(k.f,
-			p.gx.c(),
-			p.gy.c(),
-			p.gz.c(),
-			p.bx.c(),
-			p.by.c(),
-			p.bz.c(),
-			p.shared.c(),
-			shold,
-			&unsafearray[0],
-			nil,
-		))
-}
-*/
-/*
-func ifacetocunsafeprototype(args []interface{}) ([]unsafe.Pointer, error) {
-
-	//	fmt.Println("arguments passed", args)
-	//fmt.Println("Length of Args", len(args))
-	unzippedargs := make([]interface{}, 0)
-	for i := range args {
-		switch x := args[i].(type) {
-		case []int32:
-			for j := range x {
-				unzippedargs = append(unzippedargs, x[j])
-			}
-		case []float64:
-			for j := range x {
-				unzippedargs = append(unzippedargs, x[j])
-			}
-		case []float32:
-			for j := range x {
-				unzippedargs = append(unzippedargs, x[j])
-			}
-		case []int:
-			for j := range x {
-				unzippedargs = append(unzippedargs, x[j])
-			}
-		case []uint32:
-			for j := range x {
-				unzippedargs = append(unzippedargs, x[j])
-			}
-		case []uint:
-			for j := range x {
-				unzippedargs = append(unzippedargs, x[j])
-			}
-		case []byte:
-			for j := range x {
-				unzippedargs = append(unzippedargs, x[j])
-			}
-		default:
-			unzippedargs = append(unzippedargs, args[i])
-		}
-	}
-	array := make([]unsafe.Pointer, len(unzippedargs))
-
-	for i := range unzippedargs {
-
-		switch x := unzippedargs[i].(type) {
-		case *Malloced:
-			if x.ptr == nil {
-				return nil, errors.New("Memory Doesn't Have A Pointer")
-			}
-			array[i] = unsafe.Pointer(&x.ptr)
-		default:
-			scalar := CScalarConversion(x)
-			if scalar == nil {
-				fmt.Println(unzippedargs[i])
-				return nil, errors.New("Not a supported value")
-			}
-			array[i] = scalar.CPtr()
-		}
-
-	}
-	return array, nil
-}
-
-*/

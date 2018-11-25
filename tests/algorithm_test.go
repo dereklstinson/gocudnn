@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/dereklstinson/GoCudnn"
@@ -8,16 +9,12 @@ import (
 
 func TestAlgorithm(t *testing.T) {
 	var Algo gocudnn.Algorithm
-
-	AlgoD, err := Algo.CreateAlgorithmDescriptor()
-	if err != nil {
-		t.Error(err)
-	}
 	var algo gocudnn.Algos
-	err = AlgoD.SetAlgorithmDescriptor(algo)
+	AlgoD, err := Algo.NewAlgorithmDescriptor(algo)
 	if err != nil {
 		t.Error(err)
 	}
+
 	_, err = AlgoD.GetAlgorithmDescriptor()
 	if err != nil {
 		t.Error(err)
@@ -33,11 +30,11 @@ func TestAlgorithm(t *testing.T) {
 
 	for i := 0; i < len(algoperf); i++ {
 
-		_, _, _, _, err := algoperf[i].GetAlgorithmPerformance()
+		a, b, c, d, err := algoperf[i].GetAlgorithmPerformance()
 		if err != nil {
 			t.Error(err)
 		}
-		//	fmt.Println(a, b, c, d, err)
+		fmt.Println(a, b, c, d, err)
 	}
 
 }
