@@ -71,7 +71,7 @@ export CPATH="$CUDA_PATH/include/"
 export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudnn.so $CUDA_PATH/lib64/libcublas.so $CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so"
 ```
 
-I would also like to get this to work on windows, also, but I am finding that windows,go,cuda don't like to mesh together so well, at least not as intuitive as linux,go,cuda.
+I would also like to get this to work on windows, also, but I am finding that windows, go, and cuda don't like to mesh together so well, at least not as intuitive as linux, go, and cuda.
 
 ## Warnings/Notes
 
