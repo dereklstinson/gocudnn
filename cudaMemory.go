@@ -45,6 +45,11 @@ func (mem *Malloced) keepsalive() {
 	runtime.KeepAlive(mem)
 }
 
+//KeepAlive keeps the mem alive
+func (mem *Malloced) KeepAlive() {
+	runtime.KeepAlive(mem)
+}
+
 //Atribs are a memories attributes on the device side
 type Atribs struct {
 	Type    MemType
