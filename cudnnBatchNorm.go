@@ -354,8 +354,8 @@ func (bnm BatchNormModeFlag) PerActivation() BatchNormMode {
 	return BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION)
 }
 
-//Spacial returns  BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL) flag
-func (bnm BatchNormModeFlag) Spacial() BatchNormMode {
+//Spatial returns  BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL) flag
+func (bnm BatchNormModeFlag) Spatial() BatchNormMode {
 	return BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL)
 }
 
