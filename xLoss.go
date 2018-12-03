@@ -136,14 +136,14 @@ func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
 		if err != nil {
 			return -1, err
 		}
-
+		h.s.Sync()
 		if l.managed == true {
 			err = UnifiedMemCopy(l.cpuptr, l.loss)
 
 		} else {
 			err = CudaMemCopy(l.cpuptr, l.loss, 4, l.memflg.DeviceToHost())
 		}
-
+		h.s.Sync()
 		return l.cpuloss[0] / batch, err
 
 	}
