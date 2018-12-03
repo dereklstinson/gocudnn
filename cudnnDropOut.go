@@ -67,7 +67,7 @@ func destroydropoutdescriptor(d *DropOutD) error {
 	return Status(C.cudnnDestroyDropoutDescriptor(d.descriptor)).error("DestroyDescriptor")
 }
 
-//RestoreDropoutDescriptor restors the descriptor to a previously saved-off state
+//RestoreDropoutDescriptor restores the descriptor to a previously saved-off state
 func (d *DropOutD) RestoreDropoutDescriptor(
 	handle *Handle,
 	dropout float32, //probability that the input value is set to zero
