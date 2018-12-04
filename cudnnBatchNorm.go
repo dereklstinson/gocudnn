@@ -15,7 +15,10 @@ type BatchNorm struct {
 	Funcs batchNormFuncs
 }
 
-//type BatchNormD TensorD
+//BatchD is the Descriptor that holds the batchnorm descriptor
+type BatchD struct {
+	d *TensorD
+}
 
 //DeriveBNTensorDescriptor Derives a BN Tensor Descriptor from the one passed.
 /*
@@ -341,6 +344,237 @@ func (bnf batchNormFuncs) BatchNormalizationBackward(
 		savedInvVariance.Ptr(),
 	)).error("BatchNormalizationBackward")
 }
+
+/*
+
+
+
+
+
+
+
+
+Version 2
+
+
+
+
+
+
+
+
+
+
+
+*/
+
+//DeriveBNTensorDescriptorV2 is a new one
+func (b BatchNorm) DeriveBNTensorDescriptorV2(xDesc *TensorD, mode BatchNormMode) (descriptor *BatchD, err error) {
+	if xDesc.dims > 5 || xDesc.dims < 4 {
+		return nil, errors.New("dims for descriptor must be 4 or 5")
+	}
+	var desc C.cudnnTensorDescriptor_t
+	err = Status(C.cudnnCreateTensorDescriptor(&desc)).error("DeriveBNTensorDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	err = Status(C.cudnnDeriveBNTensorDescriptor(desc, xDesc.descriptor, mode.c())).error("DeriveBNTensorDescriptor-Derive")
+	if err != nil {
+		return nil, err
+	}
+	descriptor = &BatchD{
+		d: &TensorD{
+			descriptor: desc,
+			dims:       xDesc.dims,
+		},
+	}
+
+	if setfinalizer == true {
+		runtime.SetFinalizer(descriptor.d, destroytensordescriptor)
+	}
+	return descriptor, nil
+}
+
+//BatchNormalizationForwardTrainingV2 is like regular but the method is for the shared descriptor
+/* Shared desc for the next 6 tensors in the argument list.
+   Data type to be set as follows:
+   type = (typeOf(x) == double) ? double : float
+   Dimensions for this descriptor depend on normalization mode
+   - Spatial Normalization : tensors are expected to have dims 1xCx1x1
+	(normalization is performed across NxHxW)
+   - Per-Activation Normalization : tensors are expected to have dims of 1xCxHxW
+	(normalization is performed across N) */
+func (bnd *BatchD) BatchNormalizationForwardTrainingV2(
+	handle *Handle,
+	mode BatchNormMode,
+	alpha CScalar, /* alpha[0] = result blend factor */
+	beta CScalar, /* beta[0] = dest layer blend factor */
+	xD *TensorD,
+	x *Malloced,
+	yD *TensorD,
+	y *Malloced,
+
+	/* 'Gamma' and 'Beta' respectively in Ioffe and Szegedy's paper's notation */
+	bnscale *Malloced,
+	bnBias *Malloced,
+	/* MUST use factor=1 in the very first call of a complete training cycle.
+	        Use a factor=1/(1+n) at N-th call to the function to get
+	        Cumulative Moving Average (CMA) behavior
+	        CMA[n] = (x[1]+...+x[n])/n
+	        Since CMA[n+1] = (n*CMA[n]+x[n+1])/(n+1) =
+	        ((n+1)*CMA[n]-CMA[n])/(n+1) + x[n+1]/(n+1) =
+			CMA[n]*(1-1/(n+1)) + x[n+1]*1/(n+1) */
+	expAveFactor float64,
+
+	/* Used in Training phase only.
+	   runningMean = newMean*factor + runningMean*(1-factor) */
+	resultrunningmean *Malloced,
+	/* Output in training mode, input in inference. Is the moving average
+	   of  variance[x] (factor is applied in the same way as for runningMean) */
+	resultRunningVariance *Malloced,
+	/* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
+	epsilon float64,
+	/* Optionally save intermediate results from the forward pass here
+	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveMean *Malloced,
+	resultSaveInvVariance *Malloced,
+
+) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, xD, x, yD, y, bnd.d, bnscale, bnBias, resultrunningmean, resultRunningVariance, resultSaveMean, resultSaveInvVariance)
+	}
+	return Status(C.cudnnBatchNormalizationForwardTraining(
+		handle.x,
+		mode.c(),
+		alpha.CPtr(),
+		beta.CPtr(),
+		xD.descriptor,
+		x.Ptr(),
+		yD.descriptor,
+		y.Ptr(),
+		bnd.d.descriptor,
+		bnscale.Ptr(),
+		bnBias.Ptr(),
+		C.double(expAveFactor),
+		resultrunningmean.Ptr(),
+		resultRunningVariance.Ptr(),
+		C.double(epsilon),
+		resultSaveMean.Ptr(),
+		resultSaveInvVariance.Ptr(),
+	)).error("BatchNormalizationForwardTraining")
+}
+
+//BatchNormalizationForwardInferenceV2 is like the original but  With the batch norm descriptor moved
+func (bnd *BatchD) BatchNormalizationForwardInferenceV2(
+	handle *Handle,
+	mode BatchNormMode,
+	alpha CScalar, /* alpha[0] = result blend factor */
+	beta CScalar, /* beta[0] = dest layer blend factor */
+	xD *TensorD,
+	x *Malloced, /* NxCxHxW */
+	yD *TensorD,
+	y *Malloced, /* NxCxHxW */
+
+	bnscale *Malloced,
+	bnBias *Malloced,
+	estimatedMean *Malloced, //same descriptor as bias and scale
+	estimatedVariance *Malloced, //same descriptor as bias and scale
+	epsilon float64,
+
+) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, mode, xD, x, yD, y, bnd.d, bnscale, bnBias, estimatedMean, estimatedVariance)
+	}
+	return Status(C.cudnnBatchNormalizationForwardInference(
+		handle.x,
+		mode.c(),
+		alpha.CPtr(),
+		beta.CPtr(),
+		xD.descriptor,
+		x.Ptr(),
+		yD.descriptor,
+		y.Ptr(),
+		bnd.d.descriptor,
+		bnscale.Ptr(),
+		bnBias.Ptr(),
+		estimatedMean.Ptr(),     //from resultRunningMean
+		estimatedVariance.Ptr(), //from  resultRunningVariance
+		C.double(epsilon),
+	)).error("BatchNormalizationForwardInference")
+}
+
+//BatchNormalizationBackwardV2 I don't know if this is set up correctly
+/*
+* Performs backward pass of Batch Normalization layer. Returns x gradient,
+* bnScale gradient and bnBias gradient */
+func (bnd *BatchD) BatchNormalizationBackwardV2(
+	handle *Handle,
+	mode BatchNormMode,
+	alphaDataDiff CScalar,
+	betaDataDiff CScalar,
+	alphaParamDiff CScalar,
+	betaParamDiff CScalar,
+	xD *TensorD, /* same desc for x, dx, dy */
+	x *Malloced,
+	dyD *TensorD,
+	dy *Malloced,
+	dxD *TensorD,
+	dx *Malloced,
+	/* Shared tensor desc for the 4 tensors below */
+
+	bnScale *Malloced, /* bnBias doesn't affect backpropagation */
+	/* scale and bias diff are not backpropagated below this layer */
+	dBnScaleResult *Malloced,
+	dBnBiasResult *Malloced,
+	/* Same epsilon as forward pass */
+	epsilon float64,
+	/* Optionally cached intermediate results from forward pass */
+	savedMean *Malloced,
+	savedInvVariance *Malloced,
+) error {
+	if setkeepalive {
+		keepsalivebuffer(handle, mode, xD, x, dyD, dy, dxD, dx, bnd.d, bnScale, dBnScaleResult, dBnBiasResult, savedMean, savedInvVariance)
+	}
+	return Status(C.cudnnBatchNormalizationBackward(
+		handle.x,
+		mode.c(),
+		alphaDataDiff.CPtr(),
+		betaDataDiff.CPtr(),
+		alphaParamDiff.CPtr(),
+		betaParamDiff.CPtr(),
+		xD.descriptor,
+		x.Ptr(),
+		dyD.descriptor,
+		dy.Ptr(),
+		dxD.descriptor,
+		dx.Ptr(),
+		bnd.d.descriptor,
+		bnScale.Ptr(),
+		dBnScaleResult.Ptr(),
+		dBnBiasResult.Ptr(),
+		C.double(epsilon),
+		savedMean.Ptr(),
+		savedInvVariance.Ptr(),
+	)).error("BatchNormalizationBackward")
+}
+
+/*
+
+
+
+
+
+
+FLAGS
+
+
+
+
+
+
+
+
+*/
 
 //BatchNormModeFlag used to pass BatchNormMode Flags user safe like using methods
 type BatchNormModeFlag struct {
