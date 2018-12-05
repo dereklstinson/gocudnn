@@ -344,6 +344,9 @@ func (bnf batchNormFuncs) BatchNormalizationBackward(
 		savedInvVariance.Ptr(),
 	)).error("BatchNormalizationBackward")
 }
+func (bnf batchNormFuncs) MinEpsilon() float64 {
+	return float64(C.CUDNN_BN_MIN_EPSILON)
+}
 
 /*
 

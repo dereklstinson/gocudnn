@@ -201,10 +201,12 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 		}
 		return DataType(data), cintToint32(shape), cintToint32(stride), nil
 	}
-	if setkeepalive == true {
-		t.keepsalive()
-	}
-	return DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tensor Not t4d,or tnd")
+	/*
+		if setkeepalive == true {
+			t.keepsalive()
+		}
+		return DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tensor Not t4d,or tnd")
+	*/
 }
 
 //Dims returns the dims
