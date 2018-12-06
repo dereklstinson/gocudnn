@@ -15,11 +15,11 @@ func TestBatchNorm(t *testing.T) {
 	alpha := gocudnn.CFloat(1)
 	beta := gocudnn.CFloat(0)
 
-	xD, x, xGtr, xGslice, err := helperwithdifferentelements([]int32{4, 5, 5, 5})
+	xD, x, xGtr, xGslice, err := helperwithdifferentelements([]int32{1, 2, 3, 4})
 	if err != nil {
 		t.Error(err)
 	}
-	yD, y, yGtr, yGslice, err := maketestingmatrial4dnchw(0, []int32{4, 5, 5, 5})
+	yD, y, yGtr, yGslice, err := maketestingmatrial4dnchw(0, []int32{1, 2, 3, 4})
 	if err != nil {
 		t.Error(err)
 	}
@@ -31,8 +31,8 @@ func TestBatchNorm(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	bnbias := []float32{1, 1, 1, 1, 1}
-	bnscale := []float32{1, 1, 1, 1, 1}
+	bnbias := []float32{0, 0}  //, 1, 1, 1}
+	bnscale := []float32{1, 1} //, 1, 1, 1}
 	scaleptr, _ := gocudnn.MakeGoPointer(bnscale)
 	biasptr, _ := gocudnn.MakeGoPointer(bnbias)
 	gocudnn.UnifiedMemCopy(BNormMems[0], scaleptr)

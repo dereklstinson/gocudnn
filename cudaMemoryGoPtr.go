@@ -129,6 +129,7 @@ func (mem *GoPointer) Free() error {
 	mem.size = 0
 	mem.ptr = nil
 	mem.typevalue = ""
+	mem = nil
 	return nil
 }
 func freegopointer(mem *GoPointer) error {

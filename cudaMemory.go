@@ -174,6 +174,7 @@ func (mem *Malloced) Free() error {
 	mem.ptr = nil
 	mem.size = 0
 	mem.typevalue = ""
+	mem = nil
 	return newErrorRuntime("Free", err)
 }
 func freecudamallocedmemory(mem *Malloced) error {

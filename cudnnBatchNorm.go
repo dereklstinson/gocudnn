@@ -43,8 +43,14 @@ func (b BatchNorm) DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) 
 		descriptor: desc,
 		dims:       xDesc.dims,
 	}
+	descriptor.frmt = xDesc.Format()
+	descriptor.dtype, descriptor.dimsarray, descriptor.stride, err = descriptor.GetDescrptor()
+
 	if setfinalizer == true {
 		runtime.SetFinalizer(descriptor, destroytensordescriptor)
+	}
+	if err != nil {
+		return nil, err
 	}
 	return descriptor, nil
 }
