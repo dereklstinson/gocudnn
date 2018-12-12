@@ -208,18 +208,22 @@ func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 *Malloced, param
 
 	}
 	config := h.LaunchConfig(size)
-	if params.decay1 == 0 && params.decay2 == 0 {
-		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, nil, params.batch, params.decay1, params.decay2)
-	} else if params.decay1 == 0 {
-		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, l2, params.batch, params.decay1, params.decay2)
-	} else if params.decay2 == 0 {
-		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, nil, params.batch, params.decay1, params.decay2)
-	} else {
-		return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
-	}
+	return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+	/*
 
-	//return errors.New("Shouldn't have Reached here")
 
+		if params.decay1 == 0 && params.decay2 == 0 {
+			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, nil, params.batch, params.decay1, params.decay2)
+		} else if params.decay1 == 0 {
+			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, l2, params.batch, params.decay1, params.decay2)
+		} else if params.decay2 == 0 {
+			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, nil, params.batch, params.decay1, params.decay2)
+		} else {
+			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+		}
+
+		//return errors.New("Shouldn't have Reached here")
+	*/
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
