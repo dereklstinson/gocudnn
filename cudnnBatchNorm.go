@@ -164,12 +164,11 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 	/* Output in training mode, input in inference. Is the moving average
 	   of  variance[x] (factor is applied in the same way as for runningMean) */
 	resultRunningVariance *Malloced,
-	/* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
-	epsilon float64,
-	/* Optionally save intermediate results from the forward pass here
-	- can be reused to speed up backward pass. NULL if unused */
-	resultSaveMean *Malloced,
-	resultSaveInvVariance *Malloced,
+
+	epsilon float64, /* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
+
+	resultSaveMean *Malloced, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveInvVariance *Malloced, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
 
 ) error {
 	if setkeepalive {
