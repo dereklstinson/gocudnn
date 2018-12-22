@@ -185,11 +185,17 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 	var data C.cudnnDataType_t
 	if t.flag == t4d || t.flag == t4dex {
 		x := C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])
+		if setkeepalive == true {
+			t.keepsalive()
+		}
 		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 
 	} else if t.flag == tnd || t.flag == tndex {
 		var holder C.int
 		x := C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])
+		if setkeepalive == true {
+			t.keepsalive()
+		}
 		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 	} else {
 		var holder C.int
@@ -199,14 +205,11 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 			}
 			return DataType(data), cintToint32(shape), cintToint32(stride), nil
 		}
-		return DataType(data), cintToint32(shape), cintToint32(stride), nil
-	}
-	/*
 		if setkeepalive == true {
 			t.keepsalive()
 		}
-		return DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tensor Not t4d,or tnd")
-	*/
+		return DataType(data), cintToint32(shape), cintToint32(stride), nil
+	}
 }
 
 //Dims returns the dims

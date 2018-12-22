@@ -48,18 +48,6 @@ type ConvolutionD struct {
 	flag       descflag
 }
 
-/*
-//Pads is a convienence func
-func Pads(pad ...int32) []int32 {
-	return pad
-}
-
-//Dialation is a convienence func
-func Dialation(dialation ...int32) []int32 {
-	return dialation
-}
-*/
-
 //NewConvolution2dDescriptor creates and sets a 2d convolution descriptor
 func (conv Convolution) NewConvolution2dDescriptor(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) (descriptor *ConvolutionD, err error) {
 	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) != 2 {
@@ -270,18 +258,17 @@ func (cbd ConvBwdDataAlgo) print() {
 	}
 }
 
-/*
 //Print prints a human readable copy of the algorithm
-func (cbd ConvBwdDataAlgoPerf) Print() {
-	ConvBwdFiltAlgo(cbd.algo).print()
-	fmt.Println("Status:", Status(cbd.algo).GetErrorString())
-	fmt.Println("Time:", cbd.time)
-	fmt.Println("Memory:", cbd.memory)
-	fmt.Println("Determinism:", cbd.determinism)
-	fmt.Println("MathType:", cbd.mathType)
+func (cbd ConvBwdDataAlgoPerformance) Print() {
+	ConvBwdFiltAlgo(cbd.Algo).print()
+	fmt.Println("Status:", Status(cbd.Algo).GetErrorString())
+	fmt.Println("Time:", cbd.Time)
+	fmt.Println("Memory:", cbd.Memory)
+	fmt.Println("Determinism:", cbd.Determinism)
+	fmt.Println("MathType:", cbd.MathType)
 }
 
-
+/*
 //Algo returns the Pref Algo
 func (cbd ConvBwdDataAlgoPerf) Algo() ConvBwdFiltAlgo {
 	return ConvBwdFiltAlgo(cbd.algo)
@@ -589,17 +576,19 @@ func convertConvBwdFiltAlgoPerformance(input C.cudnnConvolutionBwdFilterAlgoPerf
 	return x
 }
 
-/*
 //Print prints a human readable copy of the algorithm
-func (cb ConvBwdFiltAlgoPerf) Print() {
-	ConvBwdFiltAlgo(cb.algo).print()
-	fmt.Println("Status:", Status(cb.algo).GetErrorString())
-	fmt.Println("Time:", cb.time)
-	fmt.Println("Memory:", cb.memory)
-	fmt.Println("Determinism:", cb.determinism)
-	fmt.Println("MathType:", cb.mathType)
+func (cb ConvBwdFiltAlgoPerformance) Print() {
+	fmt.Println("Convolution Backward FIlter Algorithm Performance")
+	fmt.Println("-------------------------------------------------")
+	ConvBwdFiltAlgo(cb.Algo).print()
+	fmt.Println("Status:", Status(cb.Algo).GetErrorString())
+	fmt.Println("Time:", cb.Time)
+	fmt.Println("Memory:", cb.Memory)
+	fmt.Println("Determinism:", cb.Determinism)
+	fmt.Println("MathType:", cb.MathType)
 }
 
+/*
 //PrefAlgo returns the Pref Algo
 func (cb ConvBwdFiltAlgoPerf) PrefAlgo() ConvBwdFiltAlgo {
 	return ConvBwdFiltAlgo(cb.algo)
@@ -890,23 +879,16 @@ func (a ConvFwdAlgo) toString() string {
 	return x
 }
 
-//PrintReadable prints this so that it is readable to a human
-func (algoPerf ConvFwdAlgoPerformance) PrintReadable(index int) {
-	fmt.Println("")
-	fmt.Println("")
-	holder := make([]interface{}, 6)
-	holder[0] = algoPerf.Algo.toString()
-	holder[1] = algoPerf.Status.GetErrorString()
-	holder[2] = algoPerf.Time
-	holder[3] = algoPerf.Memory
-	holder[4] = algoPerf.Determinism.string()
-	holder[5] = algoPerf.Mathtype.string()
-
-	fmt.Println("Algo Perf", index)
-	fmt.Println("---------------")
-	for i := 0; i < len(holder); i++ {
-		fmt.Println(holder[i])
-	}
+//Print prints a human readable copy of the algorithm
+func (algoPerf ConvFwdAlgoPerformance) Print() {
+	fmt.Println("Convolution Forward Filter Algorithm Performance")
+	fmt.Println("-------------------------------------------------")
+	ConvBwdFiltAlgo(algoPerf.Algo).print()
+	fmt.Println("Status:", Status(algoPerf.Algo).GetErrorString())
+	fmt.Println("Time:", algoPerf.Time)
+	fmt.Println("Memory:", algoPerf.Memory)
+	fmt.Println("Determinism:", algoPerf.Determinism)
+	fmt.Println("MathType:", algoPerf.MathType)
 }
 
 //ConvFwdAlgoPerformance is a struct that holds the performance of the algorithm
@@ -916,7 +898,7 @@ type ConvFwdAlgoPerformance struct {
 	Time        float32
 	Memory      SizeT
 	Determinism Determinism
-	Mathtype    MathType
+	MathType    MathType
 }
 
 func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFwdAlgoPerformance {
@@ -926,7 +908,7 @@ func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFw
 	x.Time = float32(input.time)
 	x.Memory = SizeT(input.memory)
 	x.Determinism = Determinism(input.determinism)
-	x.Mathtype = MathType(input.mathType)
+	x.MathType = MathType(input.mathType)
 
 	return x
 }
