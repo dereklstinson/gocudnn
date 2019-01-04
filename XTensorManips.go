@@ -334,7 +334,7 @@ func (xt Xtra) CreateShapetoBatchDesc(handle *XHandle) (*XShapetoBatchD, error) 
 //if S2B is false the y values will be placed into the x tensor. The C channel is the only thing that needs to be the same between tensor x and y.
 //Any values that don't fit will get the zero value
 //To get the y tensor please use FindShapetoBatchoutputTensor.
-func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Malloced, yDesc *TensorD, y *Malloced, S2B bool) error {
+func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Malloced, yDesc *TensorD, y *Malloced, hstride int32, wstride int32, S2B bool) error {
 
 	dtype, xdims, _, err := xDesc.GetDescrptor()
 	var dflag DataTypeFlag
@@ -358,10 +358,22 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 	if frmt != frmt2 {
 		return errors.New("TensorFormats Must be the same")
 	}
+
+	if !S2B { //When going backwards (aka B2S or !S2B) there can be overlap due to adding slide to the function.
+		// This accumulates the values instead of just placing the values like S2B.
+		// So, you have to set all the values of x to zero.
+		err = x.Set(0)
+		if err != nil {
+			return err
+		}
+		handle.s.Sync()
+	}
+
 	switch frmt {
 	case tflag.NHWC():
-		n1 := divideandroundup(xdims[1], ydims[1])
-		n2 := divideandroundup(xdims[2], ydims[2])
+
+		n1 := divideandroundup(xdims[1]-ydims[1], hstride)
+		n2 := divideandroundup(xdims[2]-ydims[2], wstride)
 		if int32(n1*n2)*xdims[0] != ydims[0] || ydims[3] != xdims[3] {
 			return errors.New("N values or C values don't match up please use FindShapetoBatchoutputTensor to get TensorD")
 		}
@@ -378,6 +390,7 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
 
 		zero := int32(0)
+
 		for i := zero; i < OriginalBatches; i++ {
 			err = s.nhwc.Launch(cfg.BlockCountx,
 				cfg.BlockCounty,
@@ -385,7 +398,7 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 				cfg.ThreadPerBlockx,
 				cfg.ThreadPerBlocky,
 				cfg.ThreadPerBlockz,
-				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, (i * BatchedVol), (i * OriginalVol), n1, n2, x, y, S2B)
+				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, (i * BatchedVol), (i * OriginalVol), n1, n2, hstride, wstride, x, y, S2B)
 			//(i * BatchedVol), (i * OriginalVol) are offset values if there are multiple batches that come from x
 			if err != nil {
 				return err
@@ -394,8 +407,8 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 
 		return nil
 	case tflag.NCHW():
-		n1 := divideandroundup(xdims[2], ydims[2])
-		n2 := divideandroundup(xdims[3], ydims[3])
+		n1 := divideandroundup(xdims[2]-ydims[2], hstride)
+		n2 := divideandroundup(xdims[3]-ydims[3], wstride)
 		if int32(n1*n2)*xdims[0] != ydims[0] || ydims[1] != xdims[1] {
 			return errors.New("N values or C values don't match up please use FindShapetoBatchoutputTensor to get TensorD")
 		}
@@ -419,7 +432,7 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 				cfg.ThreadPerBlockx,
 				cfg.ThreadPerBlocky,
 				cfg.ThreadPerBlockz,
-				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, (i * BatchedVol), (i * OriginalVol), n1, n2, x, y, S2B)
+				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, (i * BatchedVol), (i * OriginalVol), n1, n2, hstride, wstride, x, y, S2B)
 			//(i * BatchedVol), (i * OriginalVol) are offset values if there are multiple batches that come from x
 			if err != nil {
 				return err
@@ -460,7 +473,7 @@ func copytogpuunified(x *GoPointer) (*Malloced, error) {
 }
 
 //GetBatchtoShapeOutputProperties will place the batches into the shape.  It will only work if xdims[0]/(h*w) doesn't have a remainder.
-func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, error) {
+func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *TensorD, h, w, hstride, wstride int32) (TensorFormat, DataType, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
 		return 255, 255, nil, err
@@ -478,14 +491,18 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *TensorD, h, w in
 	case frmt.NCHW():
 		oh := dims[2] * h
 		ow := dims[3] * w
-		n := dims[0] / (h * w)
+		n1 := ((oh - dims[2]) / hstride) + 1
+		n2 := ((ow - dims[3]) / wstride) + 1
+		n := dims[0] / (n1 * n2)
 
 		return frmt.NCHW(), dtype, []int32{n, dims[1], oh, ow}, nil
 
 	case frmt.NHWC():
 		oh := dims[1] * h
 		ow := dims[2] * w
-		n := dims[0] / (h * w)
+		n1 := ((oh - dims[1]) / hstride) + 1
+		n2 := ((ow - dims[2]) / wstride) + 1
+		n := dims[0] / (n1 * n2)
 		return frmt.NHWC(), dtype, []int32{n, oh, ow, dims[3]}, nil
 
 	default:
@@ -495,7 +512,7 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *TensorD, h, w in
 }
 
 //GetShapetoBatchOutputProperties returns properties to make a new descriptor
-func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, error) {
+func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w, hstride, wstride int32) (TensorFormat, DataType, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
 		return 255, 255, nil, err
@@ -509,15 +526,15 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w in
 
 	switch xfrmt {
 	case frmt.NCHW():
-
-		n1 := int32(divideandroundup(dims[2], h))
-		n2 := int32(divideandroundup(dims[3], w))
+		//y = (x-w)/slide +1
+		n1 := int32(divideandroundup(dims[2]-h, hstride)) + 1
+		n2 := int32(divideandroundup(dims[3]-w, wstride)) + 1
 
 		return frmt.NCHW(), dtype, []int32{n1 * n2 * dims[0], dims[1], h, w}, nil
 
 	case frmt.NHWC():
-		n1 := int32(divideandroundup(dims[1], h))
-		n2 := int32(divideandroundup(dims[2], w))
+		n1 := int32(divideandroundup(dims[1]-h, hstride)) + 1
+		n2 := int32(divideandroundup(dims[2]-w, wstride)) + 1
 		return frmt.NHWC(), dtype, []int32{n1 * n2 * dims[0], h, w, dims[3]}, nil
 
 	default:
@@ -527,7 +544,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w in
 }
 
 //GetShapetoBatchOutputPropertiesPLUS returns properties to make a new descriptor. PLUS the N1,N2 used to resize the dims
-func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *TensorD, h, w int32) (TensorFormat, DataType, []int32, []int32, error) {
+func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *TensorD, h, w, hstride, wstride int32) (TensorFormat, DataType, []int32, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
 		return 255, 255, nil, nil, err
@@ -542,14 +559,14 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *TensorD, h, 
 	switch xfrmt {
 	case frmt.NCHW():
 
-		n1 := int32(divideandroundup(dims[2], h))
-		n2 := int32(divideandroundup(dims[3], w))
+		n1 := int32(divideandroundup(dims[2]-h, hstride)) + 1
+		n2 := int32(divideandroundup(dims[3]-w, wstride)) + 1
 
 		return frmt.NCHW(), dtype, []int32{n1 * n2 * dims[0], dims[1], h, w}, []int32{n1, n2}, nil
 
 	case frmt.NHWC():
-		n1 := int32(divideandroundup(dims[1], h))
-		n2 := int32(divideandroundup(dims[2], w))
+		n1 := int32(divideandroundup(dims[1]-h, hstride)) + 1
+		n2 := int32(divideandroundup(dims[2]-w, wstride)) + 1
 		return frmt.NHWC(), dtype, []int32{n1 * n2 * dims[0], h, w, dims[3]}, []int32{n1, n2}, nil
 
 	default:
