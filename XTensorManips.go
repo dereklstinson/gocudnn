@@ -372,8 +372,8 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 	switch frmt {
 	case tflag.NHWC():
 
-		n1 := divideandroundup(xdims[1]-ydims[1], hstride)
-		n2 := divideandroundup(xdims[2]-ydims[2], wstride)
+		n1 := divideandroundup(xdims[1]-ydims[1], hstride) + 1
+		n2 := divideandroundup(xdims[2]-ydims[2], wstride) + 1
 		if int32(n1*n2)*xdims[0] != ydims[0] || ydims[3] != xdims[3] {
 			return errors.New("N values or C values don't match up please use FindShapetoBatchoutputTensor to get TensorD")
 		}
@@ -407,8 +407,8 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 
 		return nil
 	case tflag.NCHW():
-		n1 := divideandroundup(xdims[2]-ydims[2], hstride)
-		n2 := divideandroundup(xdims[3]-ydims[3], wstride)
+		n1 := divideandroundup(xdims[2]-ydims[2], hstride) + 1
+		n2 := divideandroundup(xdims[3]-ydims[3], wstride) + 1
 		if int32(n1*n2)*xdims[0] != ydims[0] || ydims[1] != xdims[1] {
 			return errors.New("N values or C values don't match up please use FindShapetoBatchoutputTensor to get TensorD")
 		}
