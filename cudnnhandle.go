@@ -78,15 +78,21 @@ func (handle *Handle) SetStream(s *Stream) error {
 }
 
 //GetStream will return a stream that the handle is using
-func (handle *Handle) GetStream() (Stream, error) {
-	var s Stream
+func (handle *Handle) GetStream() (*Stream, error) {
+
+	var s C.cudaStream_t
 	//var some *C.cudaStream_t
 	//x := C.cudnnHandle_t(handle.Pointer())
 
-	y := C.cudnnGetStream(handle.x, &s.stream)
+	y := C.cudnnGetStream(handle.x, &s)
 	//	s.stream = *some
-	if setkeepalive {
-		keepsalivebuffer(handle, s)
+
+	newstream := &Stream{
+		stream: s,
 	}
-	return s, Status(y).error("(*Handle).GetStream")
+	if setkeepalive {
+		keepsalivebuffer(handle, newstream)
+	}
+
+	return newstream, Status(y).error("(*Handle).GetStream")
 }

@@ -7,8 +7,7 @@
 #define CUDA_GRID_AXIS_LOOP(i, n, axis)                                 \
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
-#define CUDA_GRID_AXIS_LOOP_AND_STRIDE(i, n, axis)                                 \
-         for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; i += blockDim.axis * gridDim.axis)
+
 extern "C" __global__ void Transpose(int numthreads,
                                      const float *src,
                                      const int *buf,
@@ -32,6 +31,93 @@ extern "C" __global__ void Transpose(int numthreads,
         dest[destIdx] = src[srcIdx];
     }
 }
+
+/*SwapBatches will swap the batches between 2 tensors. 
+ It will be either the even or the odd.
+   Both tensors have to be equal in size and dims.
+   if even is >0 then it will do the even batches.
+   Make sure labels are swapped on host end.
+   */
+extern "C" __global__ void SwapBatches(
+    const int xThreads,
+    const int yThreads,
+    const int zThreads,
+    const int totalbatches,
+    float *t1,
+    float *t2,
+    int even)
+{
+const int BVol = xThreads * yThreads * zThreads;
+const int xVol = yThreads * zThreads;
+const int yVol = zThreads;
+    for (int i = 0; i < totalbatches; i++)
+    { 
+        if (even>0)
+        {
+            if (i%2==0)
+            {
+                CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+                {
+                    CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                    {
+                        CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                        {
+                                  float swapper =  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                                  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                                  t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
+                        }
+                    }
+                }
+            }
+        }
+        else  
+        {
+            if (i%2==1)
+            {
+                CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+                {
+                    CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                    {
+                        CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                        {
+                            float swapper =  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                            t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                            t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
+                  
+                        }
+                    }
+                }      
+            }
+        }
+    }
+}
+//InnerSwapBatch will swap batch A and B
+//Make sure labels are swapped on the host end.
+extern "C" __global__ void InnerSwapBatch(
+    const int xThreads,
+    const int yThreads,
+    const int zThreads,
+    const int batchA,
+    const int batchB,
+    float *t1)
+{
+const int BVol = xThreads * yThreads * zThreads;
+const int xVol = yThreads * zThreads;
+const int yVol = zThreads;     
+    CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+    {
+        CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+        {
+            CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+            {
+                      const float swapper = t1[(batchA*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                      t1[(batchA*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t1[(batchB*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                      t1[(batchB*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
+            }
+        }
+    }
+}
+        
 //ShapetoBatch4DNHWC Does a stride shape to batch. Make sure values on receiving end are set to zero when s2b is 0
 extern "C" __global__ void ShapetoBatch4DNHWC(
     const int xThreads,

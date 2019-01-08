@@ -14,6 +14,18 @@ func (t XtraKerns) ShapeToBatch4DNCHW() string {
 	return "ShapetoBatch4DNCHW"
 }
 
+//SwapBatches allows the user to swap batches between to tensors
+//Either the even or the odd tensors.
+func (t XtraKerns) SwapBatches() string {
+	return "SwapBatches"
+}
+
+//InnerSwapBatch allows the user to swap batches between to tensors
+//Either the even or the odd tensors.
+func (t XtraKerns) InnerSwapBatch() string {
+	return "InnerSwapBatch"
+}
+
 //Transpose switches values around from one dimention to the other
 func (t XtraKerns) Transpose() string {
 	return "Transpose"
