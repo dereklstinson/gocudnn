@@ -14,16 +14,26 @@ func (t XtraKerns) ShapeToBatch4DNCHW() string {
 	return "ShapetoBatch4DNCHW"
 }
 
-//SwapBatches allows the user to swap batches between to tensors
+//SwapEveryOther allows the user to swap batches between to tensors
 //Either the even or the odd tensors.
-func (t XtraKerns) SwapBatches() string {
-	return "SwapBatches"
+func (t XtraKerns) SwapEveryOther() string {
+	return "SwapEveryOther"
+}
+
+//SwapUpperLower takes to tensors and swaps the upper or lower batches between the two tensors
+func (t XtraKerns) SwapUpperLower() string {
+	return "SwapUpperLower"
 }
 
 //InnerSwapBatch allows the user to swap batches between to tensors
 //Either the even or the odd tensors.
 func (t XtraKerns) InnerSwapBatch() string {
 	return "InnerSwapBatch"
+}
+
+//InnerSwapLowerUpper this takes a tensor and swaps the batches inside of a tensor
+func (t XtraKerns) InnerSwapLowerUpper() string {
+	return "InnerSwapLowerUpper"
 }
 
 //Transpose switches values around from one dimention to the other
@@ -116,6 +126,7 @@ func (t XtraKerns) L2() string {
 	return "l2regularizationfloat"
 }
 */
+
 //L1L2 ..
 func (t XtraKerns) L1L2() string {
 	return "l1l2regularizationfloat"

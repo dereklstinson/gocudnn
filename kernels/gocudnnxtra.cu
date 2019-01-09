@@ -32,41 +32,34 @@ extern "C" __global__ void Transpose(int numthreads,
     }
 }
 
-/*SwapBatches will swap the batches between 2 tensors. 
+/*SwapEveryOther will swap the batches between 2 tensors. 
  It will be either the even or the odd.
    Both tensors have to be equal in size and dims.
    if even is >0 then it will do the even batches.
    Make sure labels are swapped on host end.
    */
-extern "C" __global__ void SwapBatches(
+   extern "C" __global__ void SwapEveryOther(
     const int xThreads,
-    const int yThreads,
-    const int zThreads,
     const int totalbatches,
     float *t1,
     float *t2,
     int even)
 {
-const int BVol = xThreads * yThreads * zThreads;
-const int xVol = yThreads * zThreads;
-const int yVol = zThreads;
+const int BVol = xThreads;// * yThreads * zThreads;
+//const int xVol = yThreads * zThreads;
+//const int yVol = zThreads;
     for (int i = 0; i < totalbatches; i++)
     { 
         if (even>0)
         {
             if (i%2==0)
             {
-                CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+                CUDA_GRID_LOOP_X(xIdx, xThreads)
                 {
-                    CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
-                    {
-                        CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
-                        {
-                                  float swapper =  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
-                                  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
-                                  t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
-                        }
-                    }
+                   float swapper =  t1[(i*BVol)+(xIdx)];
+                   t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
+                   t2[(i*BVol)+xIdx]=swapper;
+                    
                 }
             }
         }
@@ -74,20 +67,131 @@ const int yVol = zThreads;
         {
             if (i%2==1)
             {
+                CUDA_GRID_LOOP_X(xIdx, xThreads)
+                {
+                   float swapper =  t1[(i*BVol)+(xIdx)];
+                   t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
+                   t2[(i*BVol)+xIdx]=swapper;
+                    
+                }
+            }     
+            }
+        }
+    }
+
+
+//InnerSwapLowerUpper will swap either the upper or lower batches,
+//If inverse is >0 then it will swap the first with the last
+//If inverse <0 then it will start at the middle instead of the end
+extern "C" __global__ void InnerSwapLowerUpper(
+    const int xThreads,
+    const int yThreads,
+    const int zThreads,
+    const int totalbatches,
+    float *t1,
+    const int inverse)
+{
+const int BVol = xThreads * yThreads * zThreads;
+const int xVol = yThreads * zThreads;
+const int yVol = zThreads;
+  
+        if (inverse>0){
+            for (int i = 0; i < totalbatches/2; i++)
+            { 
+            int j =totalbatches-2;
+            if (i !=j)
+            {
                 CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
                 {
                     CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
                     {
                         CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
                         {
+    
                             float swapper =  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
-                            t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
-                            t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
-                  
+                            t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t1[(j*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                            t1[(j*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
                         }
                     }
-                }      
+                }
             }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < totalbatches/2; i++)
+        { 
+        int j =(totalbatches/2)+i;
+            
+            if (j<totalbatches)
+            {
+                CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+                {
+                    CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                    {
+                        CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                        {
+                        
+                            float swapper =  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                            t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t1[(j*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                            t1[(j*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+   
+
+//SwapUpperLower will swap either the upper or lower batches
+extern "C" __global__ void SwapUpperLower(
+    const int xThreads,
+    const int yThreads,
+    const int zThreads,
+    const int totalbatches,
+    float *t1,
+    float *t2,
+    int upper)
+{
+const int BVol = xThreads * yThreads * zThreads;
+const int xVol = yThreads * zThreads;
+const int yVol = zThreads;
+  
+    if (upper>0)
+    {
+        for (int i = 0; i < totalbatches/2; i++)
+        { 
+            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+            {
+                CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                {
+                    CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                    {
+                        float swapper =  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                        t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                        t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
+                    }
+                }
+            }
+        }
+    }
+    else  
+    {
+        for (int i =  totalbatches/2; i < totalbatches; i++)
+        {           
+            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+            {
+                CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                {
+                    CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                    {
+                        float swapper =  t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                        t1[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)];
+                        t2[(i*BVol)+(xIdx*xVol)+(yIdx*yVol)+(zIdx)]=swapper;
+                    }
+                }
+            }      
         }
     }
 }
