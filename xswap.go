@@ -6,33 +6,6 @@ import (
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
-//Need to add functions for the kernels that I made for batch swapping and stuff
-
-/*
-//SwapEveryOther allows the user to swap batches between to tensors
-//Either the even or the odd tensors.
-func (t XtraKerns) SwapEveryOther() string {
-	return "SwapEveryOther"
-}
-
-//SwapUpperLower takes to tensors and swaps the upper or lower batches between the two tensors
-func (t XtraKerns) SwapUpperLower() string {
-	return "SwapUpperLower"
-}
-
-//InnerSwapBatch allows the user to swap batches between to tensors
-//Either the even or the odd tensors.
-func (t XtraKerns) InnerSwapBatch() string {
-	return "InnerSwapBatch"
-}
-
-//InnerSwapLowerUpper this takes a tensor and swaps the batches inside of a tensor
-func (t XtraKerns) InnerSwapLowerUpper() string {
-	return "InnerSwapLowerUpper"
-}
-
-*/
-
 //Swapper contains swap kernels that are used through methods
 type Swapper struct {
 	swapeveryother     *Kernel
@@ -53,8 +26,8 @@ func comparedimsswap(a, b []int32) error {
 	return nil
 }
 
-//SwapUpperLower swaps two different tensor batches. Either the upper half of both tensors or the lower half of both tensors
-func (s *Swapper) SwapUpperLower(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc *TensorD, B *Malloced, upper bool) error {
+//UpperLower swaps two different tensor batches. Either the upper half of both tensors or the lower half of both tensors
+func (s *Swapper) UpperLower(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc *TensorD, B *Malloced, upper bool) error {
 
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
@@ -66,32 +39,34 @@ func (s *Swapper) SwapUpperLower(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc 
 	dims := Adesc.Dims()
 	batches := dims[0]
 	batchvol := findvol(dims[1:])
-	cfg := h.LaunchConfig(batchvol)
+	//cfg := h.LaunchConfig(batchvol)
+	cfg := h.LaunchConfig2d(batches, batchvol)
 	var isupper int32
 	if upper {
 		isupper = 255
 	}
-	return s.swapupperlower.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, isupper)
+	return s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isupper)
 }
 
-//InnerSwapLowerUpper swaps a single tensor top and bottom batches.  Inverse starts with the very top and the very bottom swapping going toward the middle
+//InnerUpperLower swaps a single tensor top and bottom batches.  Inverse starts with the very top and the very bottom swapping going toward the middle
 //Not inverse has it start at the top and the middle. Swapping them.
-func (s *Swapper) InnerSwapLowerUpper(h *XHandle, Adesc *TensorD, A *Malloced, inverse bool) error {
+func (s *Swapper) InnerUpperLower(h *XHandle, Adesc *TensorD, A *Malloced, inverse bool) error {
 
 	dims := Adesc.Dims()
 	batches := dims[0]
 	batchvol := findvol(dims[1:])
-	cfg := h.LaunchConfig(batchvol)
+	//	cfg := h.LaunchConfig(batchvol)
+	cfg := h.LaunchConfig2d(batches, batchvol)
 	var isinverse int32
 	if inverse {
 		isinverse = 255
 	}
-	return s.swapupperlower.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, isinverse)
+	return s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, isinverse)
 
 }
 
-//SwapEveryOther swaps the two tensors by every other batch.  Even does the evens if not even then it does the ood.
-func (s *Swapper) SwapEveryOther(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc *TensorD, B *Malloced, even bool) error {
+//EveryOther swaps the two tensors by every other batch.  Even does the evens if not even then it does the ood.
+func (s *Swapper) EveryOther(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc *TensorD, B *Malloced, even bool) error {
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
 		return err
@@ -102,16 +77,17 @@ func (s *Swapper) SwapEveryOther(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc 
 	dims := Adesc.Dims()
 	batches := dims[0]
 	batchvol := findvol(dims[1:])
-	cfg := h.LaunchConfig(batchvol)
+	cfg := h.LaunchConfig2d(batches, batchvol)
+	//	cfg := h.LaunchConfig(batchvol)
 	var iseven int32
 	if even {
 		iseven = 255
 	}
-	return s.swapupperlower.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, iseven)
+	return s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, iseven)
 }
 
-//InnerSwapBatch takes two batches from the same tensor and swaps them.
-func (s *Swapper) InnerSwapBatch(h *XHandle, Adesc *TensorD, A *Malloced, batcha, batchb int32) error {
+//InnerBatch takes two batches from the same tensor and swaps them.
+func (s *Swapper) InnerBatch(h *XHandle, Adesc *TensorD, A *Malloced, batcha, batchb int32) error {
 
 	dims := Adesc.Dims()
 	batches := dims[0]

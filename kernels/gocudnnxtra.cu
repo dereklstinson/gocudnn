@@ -39,130 +39,135 @@ extern "C" __global__ void Transpose(int numthreads,
    Make sure labels are swapped on host end.
    */
    extern "C" __global__ void SwapEveryOther(
-    const int xThreads,
+    const int xThreads, //total batches
+    const int yThreads, //total batchvol
     const int totalbatches,
     float *t1,
     float *t2,
     int even)
 {
-const int BVol = xThreads;// * yThreads * zThreads;
-//const int xVol = yThreads * zThreads;
-//const int yVol = zThreads;
-    for (int i = 0; i < totalbatches; i++)
-    { 
-        if (even>0)
-        {
-            if (i%2==0)
+const int BVol = yThreads;
+
+    if (even>0)
+    {
+        CUDA_GRID_AXIS_LOOP(xIdx, xThreads,x)
+        { 
+            if (xIdx%2==0)
             {
-                CUDA_GRID_LOOP_X(xIdx, xThreads)
+                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
-                   float swapper =  t1[(i*BVol)+(xIdx)];
-                   t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
-                   t2[(i*BVol)+xIdx]=swapper;
-                    
+                    float swapper =  t1[(xIdx*BVol)+(yIdx)];
+                    t1[(xIdx*BVol) +yIdx]=t2[(xIdx*BVol)+yIdx];
+                    t2[(xIdx*BVol)+yIdx]=swapper;
                 }
             }
-        }
-        else  
-        {
-            if (i%2==1)
-            {
-                CUDA_GRID_LOOP_X(xIdx, xThreads)
-                {
-                   float swapper =  t1[(i*BVol)+(xIdx)];
-                   t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
-                   t2[(i*BVol)+xIdx]=swapper;
-                    
-                }
-            }     
-            }
-        }
+        }   
     }
+    else  
+    {
+        CUDA_GRID_AXIS_LOOP(xIdx, xThreads,x)
+        { 
+            if (xIdx%2==1)
+            {
+                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
+                {
+                    float swapper =  t1[(xIdx*BVol)+(yIdx)];
+                    t1[(xIdx*BVol) +yIdx]=t2[(xIdx*BVol)+yIdx];
+                    t2[(xIdx*BVol)+yIdx]=swapper;
+                }
+            }
+        }    
+    }
+        
+}
 
 
 //InnerSwapLowerUpper will swap either the upper or lower batches,
 //If inverse is >0 then it will swap the first with the last
 //If inverse <0 then it will start at the middle instead of the end
 extern "C" __global__ void InnerSwapLowerUpper(
-    const int xThreads,
-    const int totalbatches,
+    const int xThreads, //total batches
+    const int yThreads,//batch volume
     float *t1,
     const int inverse)
 {
-const int BVol = xThreads;
+const int BVol = yThreads; //Convienence var to make it easier to read 
   
         if (inverse>0){
-            for (int i = 0; i < totalbatches/2; i++)
-            { 
-            int j =totalbatches-2;
-            if (i !=j)
+            CUDA_GRID_AXIS_LOOP(xIdx, xThreads,x)
             {
-                CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+            const int invIdx=xThreads-1-xIdx;
+                if (invIdx != xIdx)
                 {
-                    const float swapper =  t1[(i*BVol)+(xIdx)];
-                    t1[(i*BVol)+(xIdx)]=t1[(j*BVol)+xIdx];
-                            t1[(j*BVol)+xIdx]=swapper;
+                    CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
+                    {
+                        const float swapper =  t1[(xIdx*BVol)+(yIdx)];
+                        t1[(xIdx*BVol) +yIdx]=t1[(invIdx*BVol)+yIdx];
+                        t1[(invIdx*BVol)+yIdx]=swapper;
+                    }
                 }
-            }
-        }
+            }   
     }
     else
     {
-        for (int i = 0; i < totalbatches/2; i++)
-        { 
-        int j =(totalbatches/2)+i;
-            
-            if (j<totalbatches)
+        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
+        {
+         const int halfIdx=(xThreads/2)+xIdx;
+            if (halfIdx < xThreads)
             {
-                CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
-                    const float swapper =  t1[(i*BVol)+(xIdx)];
-                    t1[(i*BVol)+(xIdx)]=t1[(j*BVol)+xIdx];
-                            t1[(j*BVol)+xIdx]=swapper;
+                    const float swapper =  t1[(xIdx*BVol)+(yIdx)];
+                    t1[(xIdx*BVol) +yIdx]=t1[(halfIdx*BVol)+yIdx];
+                    t1[(halfIdx*BVol)+yIdx]=swapper;
                 }
             }
-        }
+        }   
     }
 }
    
 
 //SwapUpperLower will swap either the upper or lower batches
 extern "C" __global__ void SwapUpperLower(
-    const int xThreads,
-    const int totalbatches,
+    const int xThreads, //batchsize
+    const int yThreads, //batchvol
     float *t1,
     float *t2,
-    int upper)
+    const int upper)
 {
-const int BVol = xThreads;
+const int BVol = yThreads;
   
     if (upper>0)
     {
-        for (int i = 0; i < totalbatches/2; i++)
-        { 
-            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
+        {
+
+            if (xIdx < xThreads)
             {
-               
-                const float swapper =  t1[(i*BVol)+(xIdx)];
-                t1[(i*BVol)+(xIdx)]=t2[(i*BVol)+(xIdx)];
-                t2[(i*BVol)+(xIdx)]=swapper;
-           
+                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
+                {
+                    const float swapper =  t1[(xIdx*BVol)+(yIdx)];
+                    t1[(xIdx*BVol) +yIdx]=t2[(xIdx*BVol)+yIdx];
+                    t2[(xIdx*BVol)+yIdx]=swapper;
+                }
             }
-        }
+        }   
     }
     else  
     {
-        for (int i =  totalbatches/2; i < totalbatches; i++)
-        {           
-            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
+        {
+         const int halfIdx=(xThreads/2)+xIdx;
+            if (halfIdx < xThreads)
             {
-         
-            const float swapper =  t1[(i*BVol)+(xIdx)];
-            t1[(i*BVol)+(xIdx)]=t2[(i*BVol)+(xIdx)];
-            t2[(i*BVol)+(xIdx)]=swapper;
-             
-            }      
-        }
+                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
+                {
+                    const float swapper =  t1[(halfIdx*BVol)+(yIdx)];
+                    t1[(halfIdx*BVol) +yIdx]=t2[(halfIdx*BVol)+yIdx];
+                    t2[(halfIdx*BVol)+yIdx]=swapper;
+                }
+            }
+        }   
     }
 }
 //InnerSwapBatch will swap batch A and B
@@ -613,56 +618,6 @@ extern "C" __global__ void l1l2regularizationfloat(
     }
 }
 
-/*
-extern "C" __global__
-void l1l2regularizationfloat(
-    const int length,
-    float *dw, //input and output
-    float *w,  //input needs to ba an array
-    float *l1, //output set to zero
-    float *l2, //output set to zero
-    const float batch, // should be an int but just send it as a float
-    const float decay1, //input
-    const float decay2){ //input
-if (decay1 ==0 && decay2==0){
-CUDA_GRID_LOOP_X(i,length){ 
-        dw[i]/=batch;
-}
-}else if (decay1==0 && decay2!=0){
-CUDA_GRID_LOOP_X(i,length){ 
-        atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
-        dw[i]= (dw[i] + w[i]*decay2)/batch;
-}
-}else if(decay2 == 0 && decay1 !=0){
-float decay = decay1;
-CUDA_GRID_LOOP_X(i,length){
-        if (w[i]<0){
-             decay=-decay1;
-        }else{
-            decay=decay1;
-        }
-            atomicAdd(l1,w[i]*decay);
-            dw[i]= (dw[i] +decay1)/batch;
-}
-}else if (decay2 !=0 && decay1 !=0) {
-float decay = decay1;
-CUDA_GRID_LOOP_X(i,length){
-
-        if (w[i]<0){
-            decay=-decay1;
-        }else{
-            decay=decay1;
-        }
-
-        atomicAdd(l1,w[i]*decay); 
-        atomicAdd(l2,(w[i]*w[i]*decay2)/2.0);
-        dw[i]= (dw[i] + (w[i]*decay2) +decay1)/batch;
-}
-}
-
-}
-
-*/
 extern "C" __global__ void AdvanceThreshRandomReluForward(const int length,
                                                           const int batchs,
                                                           const float alpha,
@@ -678,19 +633,7 @@ extern "C" __global__ void AdvanceThreshRandomReluForward(const int length,
         int stride = length * i;
         CUDA_GRID_LOOP_X(j, length)
         {
-            /*
-            if (x[stride+j]>alpha){
-                y[stride+j]= x[stride+j]*threshhold[j];
-         
-           
-        }else if (x[stride+j]<beta){
-          
-                y[stride+j]= x[stride+j]*coefs[j];
-       
-        }else{
-            y[stride+j]= x[stride+j];
-        }   
-        */
+
 
             if (x[stride + j] > threshhold[j])
             {
@@ -724,20 +667,6 @@ extern "C" __global__ void AdvanceThreshRandomReluBackward(const int length,
 
         CUDA_GRID_LOOP_X(j, length)
         {
-            /*
-        if (x[stride+j]>alpha){
-            dx[stride+j]= dy[stride+j]*threshhold[j];
-     
-       
-    }else if (x[stride+j]<beta){
-      
-            dx[stride+j]= dy[stride+j]*coefs[j];
-   
-    }else{
-        dx[stride+j]= dy[stride+j];
-    }   
-        
-    */
 
             if (x[stride + j] > threshhold[j])
             {
