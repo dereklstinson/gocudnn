@@ -89,6 +89,7 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 	return newname
 }
 
+//LoadPTXFile Loads the ptx file
 func LoadPTXFile(directory, filename string) string {
 
 	ptxdata, err := ioutil.ReadFile(directory + filename)

@@ -40,114 +40,81 @@ extern "C" __global__ void Transpose(int numthreads,
    */
    extern "C" __global__ void SwapEveryOther(
     const int xThreads, //total batches
-    const int yThreads, //total batchvol
     const int totalbatches,
     float *t1,
     float *t2,
     int even)
 {
-const int BVol = yThreads;
+const int BVol = xThreads;
 
     if (even>0)
     {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads,x)
-        { 
-            if (xIdx%2==0)
-            {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
-                {
-                    float swapper =  t1[(xIdx*BVol)+(yIdx)];
-                    t1[(xIdx*BVol) +yIdx]=t2[(xIdx*BVol)+yIdx];
-                    t2[(xIdx*BVol)+yIdx]=swapper;
+        for (int i =0;i<totalbatches;i+=2)
+        {
+     
+            
+                CUDA_GRID_LOOP_X(xIdx, xThreads)
+                { 
+                    const float swapper =  t1[(i*BVol)+(xIdx)];
+                    t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
+                    t2[(i*BVol)+xIdx]=swapper;
                 }
-            }
-        }   
+
+            
+        }
+        
+           
     }
     else  
     {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads,x)
-        { 
-            if (xIdx%2==1)
-            {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
-                {
-                    float swapper =  t1[(xIdx*BVol)+(yIdx)];
-                    t1[(xIdx*BVol) +yIdx]=t2[(xIdx*BVol)+yIdx];
-                    t2[(xIdx*BVol)+yIdx]=swapper;
+        for (int i =1;i<totalbatches;i+=2)
+        {
+            
+                CUDA_GRID_LOOP_X(xIdx, xThreads)
+                { 
+                    const float swapper =  t1[(i*BVol)+(xIdx)];
+                    t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
+                    t2[(i*BVol)+xIdx]=swapper;
                 }
-            }
-        }    
+
+            
+        } 
     }
         
 }
 
 
-//InnerSwapLowerUpper will swap either the upper or lower batches,
-//If inverse is >0 then it will swap the first with the last
-//If inverse <0 then it will start at the middle instead of the end
-extern "C" __global__ void InnerSwapLowerUpper(
-    const int xThreads, //total batches
-    const int yThreads,//batch volume
-    float *t1,
-    const int inverse)
-{
-const int BVol = yThreads; //Convienence var to make it easier to read 
-  
-        if (inverse>0){
-            CUDA_GRID_AXIS_LOOP(xIdx, xThreads,x)
-            {
-            const int invIdx=xThreads-1-xIdx;
-                if (invIdx != xIdx)
-                {
-                    CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
-                    {
-                        const float swapper =  t1[(xIdx*BVol)+(yIdx)];
-                        t1[(xIdx*BVol) +yIdx]=t1[(invIdx*BVol)+yIdx];
-                        t1[(invIdx*BVol)+yIdx]=swapper;
-                    }
-                }
-            }   
-    }
-    else
-    {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
-        {
-         const int halfIdx=(xThreads/2)+xIdx;
-            if (halfIdx < xThreads)
-            {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
-                {
-                    const float swapper =  t1[(xIdx*BVol)+(yIdx)];
-                    t1[(xIdx*BVol) +yIdx]=t1[(halfIdx*BVol)+yIdx];
-                    t1[(halfIdx*BVol)+yIdx]=swapper;
-                }
-            }
-        }   
-    }
-}
-   
-
 //SwapUpperLower will swap either the upper or lower batches
+//Right Now inverse doesn't do anything
 extern "C" __global__ void SwapUpperLower(
     const int xThreads, //batchsize
     const int yThreads, //batchvol
     float *t1,
     float *t2,
-    const int upper)
+    const int t1upper,
+    const int t2upper,
+    const int inverse)
 {
 const int BVol = yThreads;
   
-    if (upper>0)
+    if (t1upper>0)
     {
         CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
-        {
-
-            if (xIdx < xThreads)
+        { 
+            int t2Idx;
+            if (t2upper>0){
+                t2Idx=xIdx;
+            }else{
+                t2Idx=xThreads/2 +xIdx;
+            }
+           
+            if (xIdx < xThreads && t2Idx<xThreads)
             {
                 CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
+                    
                     const float swapper =  t1[(xIdx*BVol)+(yIdx)];
-                    t1[(xIdx*BVol) +yIdx]=t2[(xIdx*BVol)+yIdx];
+                    t1[(xIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
                     t2[(xIdx*BVol)+yIdx]=swapper;
                 }
             }
@@ -157,39 +124,27 @@ const int BVol = yThreads;
     {
         CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
         {
-         const int halfIdx=(xThreads/2)+xIdx;
+            const int halfIdx=(xThreads/2)+xIdx;
+            int t2Idx;
+            if (t2upper>0){
+                t2Idx=xIdx;
+            }else{
+                t2Idx=halfIdx;
+            }
+         
             if (halfIdx < xThreads)
             {
                 CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
                     const float swapper =  t1[(halfIdx*BVol)+(yIdx)];
-                    t1[(halfIdx*BVol) +yIdx]=t2[(halfIdx*BVol)+yIdx];
+                    t1[(halfIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
                     t2[(halfIdx*BVol)+yIdx]=swapper;
                 }
             }
         }   
     }
 }
-//InnerSwapBatch will swap batch A and B
-//Make sure labels are swapped on the host end.
-extern "C" __global__ void InnerSwapBatch(
-    const int xThreads,
-    float *t1,
-    const int batchA,
-    const int batchB)
-{
-const int BVol = xThreads; 
-if (batchA !=batchB){
-    CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
-    {
-        const float swapper =  t1[(batchA*BVol)+(xIdx)];
-        t1[(batchA*BVol)+(xIdx)]=t1[(batchB*BVol)+(xIdx)];
-        t1[(batchA*BVol)+(xIdx)]=swapper;
-    
-    }
-}    
 
-}
         
 //ShapetoBatch4DNHWC Does a stride shape to batch. Make sure values on receiving end are set to zero when s2b is 0
 extern "C" __global__ void ShapetoBatch4DNHWC(
