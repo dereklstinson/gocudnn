@@ -26,10 +26,10 @@ func (x XActivationMode) tostringfwd(dtype DataType) string {
 	case xaflg.Leaky():
 		return ktf.ForwardLeakyfloat()
 	case xaflg.AdvanceThreshRandomRelu():
-		return ktf.AdvanceThreshRandomReluForward()
+		return ktf.ThreshForward()
 	case xaflg.ParaChan():
 
-		return ktf.ForwardParamFloatChan()
+		return ktf.PreluForward()
 	}
 	return "error"
 
@@ -46,10 +46,10 @@ func (x XActivationMode) tostringbwd(dtype DataType) string {
 	case xaflg.Leaky():
 		return ktf.BackwardLeakyfloat()
 	case xaflg.AdvanceThreshRandomRelu():
-		return ktf.AdvanceThreshRandomReluBackward()
+		return ktf.ThreshBackward()
 	case xaflg.ParaChan():
 
-		return ktf.BackwardParamFloatChan()
+		return ktf.PreluBackward()
 	}
 	return "error"
 }

@@ -55,24 +55,24 @@ func (t XtraKerns) NearestNeighborNCHWBack() string {
 	return "nearestneighborNCHWBack"
 }
 
-//AdvanceThreshRandomReluForward Not tested
-func (t XtraKerns) AdvanceThreshRandomReluForward() string {
-	return "AdvanceThreshRandomReluForward"
+//ThreshForward Not tested
+func (t XtraKerns) ThreshForward() string {
+	return "ThreshForward"
 }
 
-//AdvanceThreshRandomReluBackward Not tested
-func (t XtraKerns) AdvanceThreshRandomReluBackward() string {
-	return "AdvanceThreshRandomReluBackward"
+//ThreshBackward Not tested
+func (t XtraKerns) ThreshBackward() string {
+	return "ThreshBackward"
 }
 
-//ForwardParamFloatChan Not tested
-func (t XtraKerns) ForwardParamFloatChan() string {
-	return "forwardParametricfloatchannel"
+//PreluForward Not tested
+func (t XtraKerns) PreluForward() string {
+	return "PreluForward"
 }
 
-//BackwardParamFloatChan Not tested
-func (t XtraKerns) BackwardParamFloatChan() string {
-	return "backwardParametricfloatchannel"
+//PreluBackward Not tested
+func (t XtraKerns) PreluBackward() string {
+	return "PreluBackward"
 }
 
 //ForwardLeakyfloat activation function Relu but negatives get a reduced value

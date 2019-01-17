@@ -572,190 +572,117 @@ extern "C" __global__ void l1l2regularizationfloat(
         dw[i] = (dw[i] + gradl2 + gradl1) / batch;
     }
 }
-
-extern "C" __global__ void AdvanceThreshRandomReluForward(const int length,
-                                                          const int batchs,
-                                                          const float alpha,
-                                                          const float beta,
-                                                          const float *x,
-                                                          float *y,
-                                                          const float *coefs,
-                                                          const float *threshhold,
-                                                          const int PropNan)
+//ThreshForward is kind of memory expensive, mostly because it is experimental.
+//To test start the positive at random uniform numbers between .9 and 1.1
+//and do the negcoefs between .01 and .2 or something along those lines.
+//maybe the threshold should be between -.3 and .3 uniform number
+extern "C" __global__ void ThreshForward(const int XThreads,
+                                         const int batchsize,
+                                         const float *x,
+                                         float *y,
+                                         const float *negcoefs,
+                                         const float *threshhold,
+                                         const float *poscoefs)
 {
-    for (int i = 0; i < batchs; i++)
+    for (int i=0;i<batchsize;i++)
     {
-        int stride = length * i;
-        CUDA_GRID_LOOP_X(j, length)
-        {
-
-
-            if (x[stride + j] > threshhold[j])
+        int stride=XThreads*i;
+            CUDA_GRID_LOOP_X(xIdx,XThreads)
             {
-
-                y[stride + j] = x[stride + j];
-            }
-            else
-            {
-
-                y[stride + j] = x[stride + j] * coefs[j];
-            }
-        }
-        __syncthreads();
-    }
-}
-extern "C" __global__ void AdvanceThreshRandomReluBackward(const int length,
-                                                           const int batchs,
-                                                           const float alpha,
-                                                           const float beta,
-                                                           const float *x,
-                                                           float *dx,
-                                                           const float *dy,
-                                                           const float *coefs,
-                                                           const float *threshhold,
-                                                           const int PropNan)
-{
-
-    for (int i = 0; i < batchs; i++)
-    {
-        int stride = length * i;
-
-        CUDA_GRID_LOOP_X(j, length)
-        {
-
-            if (x[stride + j] > threshhold[j])
-            {
-                dx[stride + j] = dy[stride + j];
-            }
-            else
-            {
-
-                dx[stride + j] = dy[stride + j] * coefs[j];
-            }
-        }
-        __syncthreads();
-    }
-}
-
-extern "C" __global__ void forwardParametricfloatchannel(const int tx,
-                                                         const int ty,
-                                                         const int tz,
-                                                         const int batchindex,
-                                                         const float alpha,
-                                                         const float beta,
-                                                         const float *xx,
-                                                         float *yy,
-                                                         const float *coefs,
-                                                         const int NHWC,
-                                                         const int PropNan)
-{
-
-    const int stride = tx * ty * tz * batchindex;
-    const int ofx = ty * tz;
-    const int ofy = tz;
-    if (NHWC > 0)
-    {
-        CUDA_GRID_AXIS_LOOP(i, tx, x)
-        {
-
-            CUDA_GRID_AXIS_LOOP(j, ty, y)
-            {
-
-                CUDA_GRID_AXIS_LOOP(k, tz, z)
+                if (x[stride+xIdx]>threshhold[xIdx])
                 {
-                    int xyindex = stride + (i * ofx) + (j * ofy) + k;
-
-                    float value = (alpha * xx[xyindex] * (xx[xyindex] > 0)) + (alpha * xx[xyindex] * (xx[xyindex] <= 0) * coefs[k]) + (beta * yy[xyindex]);
-                    if (PropNan > 0)
-                    {
-                        yy[xyindex] = value;
-                    }
-                    else
-                    {
-                        yy[xyindex] = value * (!(isnan(value) == 0));
-                    }
+                    y[stride+xIdx]=  x[stride+xIdx]*poscoefs[xIdx];
+                }
+                else
+                {
+                    y[stride+xIdx]=  negcoefs[xIdx]*x[stride+xIdx];
                 }
             }
-        }
-    }
-    else
-    {
-        CUDA_GRID_AXIS_LOOP(i, tx, x)
-        {
-
-            CUDA_GRID_AXIS_LOOP(j, ty, y)
-            {
-
-                CUDA_GRID_AXIS_LOOP(k, tz, z)
-                {
-                    int xyindex = stride + (i * ofx) + (j * ofy) + k;
-
-                    float value = (alpha * xx[xyindex] * (xx[xyindex] > 0)) + (alpha * xx[xyindex] * (xx[xyindex] <= 0) * coefs[i]) + (beta * yy[xyindex]);
-                    if (PropNan > 0)
-                    {
-                        yy[xyindex] = value;
-                    }
-                    else
-                    {
-                        yy[xyindex] = value * (!(isnan(value) == 0));
-                    }
-                }
-            }
-        }
     }
 }
-//backwardParametricfloat does the backprop of the parametric float
 
-//f(x) = beta*Max(0,x)+alpha*Min(0,x)
-extern "C" __global__ void backwardParametricfloatchannel(const int tx,
-                                                          const int ty,
-                                                          const int tz,
-                                                          const int batchindex,
-                                                          const float alpha,
-                                                          const float beta,
-                                                          const float *xx,
+extern "C" __global__ void ThreshBackward(const int XThreads,
+                                          const int batchsize,
+                                          const float *x,
+                                          float *dx,
+                                          const float *dy,
+                                          const float *negcoefs,
+                                          float *dnegcoefs,
+                                          const float *threshhold,
+                                          const float *poscoefs,
+                                          float *dposcoefs)
+{
+
+    for (int i=0;i<batchsize;i++)
+    {
+        int stride=XThreads*i;
+            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            {
+                if (x[stride+xIdx]>threshhold[xIdx])
+                {
+                    dx[stride+xIdx]=  poscoefs[xIdx]*dy[stride+xIdx];
+                    dposcoefs[xIdx]+=poscoefs[xIdx]*x[stride+xIdx];
+
+                }
+                else
+                {
+                    dx[stride+xIdx]=  negcoefs[xIdx]*dy[stride+xIdx];
+                    dnegcoefs[xIdx]+=negcoefs[xIdx]*x[stride+xIdx];
+                }
+            }
+    }
+}
+//forwardPrelu does the forward Prelu
+extern "C" __global__ void PreluForward(const int XThreads,
+                                        const int batchsize,
+                                        const float *x,
+                                        float *y,
+                                        const float *coefs)
+{
+  
+    for (int i=0;i<batchsize;i++)
+    {
+        int stride=XThreads*i;
+            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            {
+                if (x[stride+xIdx]>0)
+                {
+                    y[stride+xIdx]=  x[stride+xIdx];
+                }
+                else
+                {
+                    y[stride+xIdx]=  coefs[xIdx]*x[stride+xIdx];
+                }
+            }
+    }
+   
+}
+    
+//backwardPrelu does the backprop of the parametric float
+
+extern "C" __global__ void PreluBackward(const int XThreads,
+                                                          const int batchsize,
                                                           float *dx,
+                                                          const float *x,
                                                           const float *dy,
-                                                          const float *alphas,
-                                                          float *dalphas,
-                                                          const int NHWC,
-                                                          const int PropNan)
+                                                          const float *coefs,
+                                                          float *dcoefs)
 {
-    int stride = tx * ty * tz * batchindex;
-    int ofx = ty * tz;
-    int ofy = tz;
-    if (NHWC > 0.0)
+    for (int i=0;i<batchsize;i++)
     {
-
-        CUDA_GRID_AXIS_LOOP(i, tx, x)
-        {
-            CUDA_GRID_AXIS_LOOP(j, ty, y)
+        int stride=XThreads*i;
+            CUDA_GRID_LOOP_X(xIdx,XThreads)
             {
-                CUDA_GRID_AXIS_LOOP(k, tz, z)
+                if (x[stride+xIdx]>0)
                 {
-                    int xyindex = stride + (i * ofx) + (j * ofy) + k;
-                    dx[xyindex] = (alpha * dy[xyindex] * (xx[xyindex] > 0)) + ((xx[xyindex] <= 0) * alphas[k] * alpha) + (beta * dx[xyindex]);
-                    float value = dy[xyindex] * xx[xyindex] * (xx[xyindex] <= 0);
-                    atomicAdd(&dalphas[k], value);
+                    dx[stride+xIdx]=  dy[stride+xIdx];
+                }
+                else
+                {
+                    dx[stride+xIdx]=  coefs[xIdx]*dy[stride+xIdx];
+                    dcoefs[xIdx]+=coefs[xIdx]*x[stride+xIdx];
                 }
             }
-        }
-    }
-    else
-    {
-        CUDA_GRID_AXIS_LOOP(i, tx, x)
-        {
-            CUDA_GRID_AXIS_LOOP(j, ty, y)
-            {
-                CUDA_GRID_AXIS_LOOP(k, tz, z)
-                {
-                    int xyindex = stride + (i * ofx) + (j * ofy) + k;
-                    dx[xyindex] = (alpha * dy[xyindex] * (xx[xyindex] > 0)) + ((xx[xyindex] <= 0) * alphas[i] * alpha) + (beta * dx[xyindex]);
-                    float value = dy[xyindex] * xx[xyindex] * (xx[xyindex] <= 0);
-                    atomicAdd(&dalphas[i], value);
-                }
-            }
-        }
     }
 }
 
@@ -804,121 +731,7 @@ extern "C" __global__ void backwardleakyfloat(const int length,
         }
     }
 }
-/*
-extern "C" __global__
-void forwardleakyfloat(const int length,
-                       const float alpha,
-                       const float beta,
-                       const float *x,
-                             float *y,
-                       const float coef,
-                       const int PropNan){
-    CUDA_GRID_LOOP_X(i,length){
-        if (x[i]>0.0){
-            float value = x[i]*alpha;
-            float value2 = y[i]*beta;
-            y[i]=value +value2;
-           
-        }else{
-            float value = x[i]*alpha*coef;
-            float value2 = y[i]*beta;
-            y[i]=value+value2;
-         
-        }
-    }  
-    
-}
-*/
-/*
-extern "C" __global__
-void forwardleakyfloat(const int length,
-                       const float alpha,
-                       const float beta,
-                       const float *x,
-                             float *y,
-                       const float coef,
-                       const int PropNan){
-    CUDA_GRID_LOOP_X(i,length){
-        if (x[i]>0.0){
-            float value = (alpha+x[i])+(beta*y[i]);
-            if (PropNan>0){
-            y[i]=value;
-            }else{
-            y[i]=value*(!(isnan(value)==0));
-            }
-        }else{
-            float value = (x[i]*coef*alpha)+(beta*y[i]);
-            if (PropNan>0){
-            y[i]=value;
-            }else{
-            y[i]=value*(!(isnan(value)==0));
-            }
-        }
-    }  
-    
-}
 
- */
-/*
-
-extern "C" __global__
-void backwardleakyfloat(const int length,
-                        const float alpha,
-                        const float beta,
-                        const float *x, 
-                              float *dx,
-                        const float *dy, 
-                        const float coef,
-                        const int PropNan){
-
-CUDA_GRID_LOOP_X(i,length){
-
-    if (x[i]>0.0){
-        float value = dy[i]*alpha;
-        float value2 = dx[i]*beta;
-        dx[i]=value+value2;
-    }else{
-        float value = dy[i]*alpha*coef;
-        float value2 = dx[i]*beta;
-        dx[i]=value+value2;
-    }
-    
-}
-}  
-*/
-/*
-extern "C" __global__
-void backwardleakyfloat(const int length,
-                        const float alpha,
-                        const float beta,
-                        const float *x, 
-                              float *dx,
-                        const float *dy, 
-                        const float coef,
-                        const int PropNan){
-
-CUDA_GRID_LOOP_X(i,length){
-
-    if (x[i]>0.0){
-    float value=(dy[i]*alpha)+(beta*dx[i]);
-    if (PropNan>0){
-        dx[i]=value;
-        }else{
-    dx[i]=value*(!(isnan(value)==0));
-        }
-    }else{
-        float value= (dy[i]*coef*alpha)+(beta*dx[i]);
-        if (PropNan>0){
-            dx[i]=value;
-            }else{
-        dx[i]=value*(!(isnan(value)==0));
-            }
-    }
-    
-}
-
-}  
-*/
 extern "C" __global__ void MSELoss(const int length, float *errors, const float *target, const float *networkout, float *loss)
 {
 
@@ -927,5 +740,66 @@ extern "C" __global__ void MSELoss(const int length, float *errors, const float 
         const float y = networkout[i] - target[i];
         errors[i] = y;
         atomicAdd(loss, (y * y) / 2);
+    }
+}
+
+extern "C" __global__ void ConcatForwardNCHW( const int XThreads,
+                                              const int Batches,
+                                              const int Channels1,
+                                              const int src1vol,
+                                              const float *Src1,
+                                              const int Channels2,
+                                              const int src2vol,
+                                              const float *Src2,
+                                              float *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int Stride= Batches*(src1vol+src2vol);
+        const int src1batchstride=src1vol*i;
+        const int src2batchstride=src2vol*i;
+        for (int j=0;j<Channels1;j++)
+        {
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+           dest[Stride+(j*XThreads)+xIdx]  = Src1[src1batchstride+(j*XThreads)+xIdx];
+            }
+        }
+        for (int j=0;j<Channels2;j++){
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+           dest[Stride+(j*XThreads)+src1vol+xIdx]  = Src2[src2batchstride+(j*XThreads)+xIdx];
+            }
+        }
+    }
+}
+extern "C" __global__ void ConcatBackwardNCHW( const int XThreads,
+                                              const int Batches,
+                                              const int Channels1,
+                                              const int src1vol,
+                                               float *Src1,
+                                              const int Channels2,
+                                              const int src2vol,
+                                               float *Src2,
+                                              const float *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int Stride= Batches*(src1vol+src2vol);
+        const int src1batchstride=src1vol*i;
+        const int src2batchstride=src2vol*i;
+        for (int j=0;j<Channels1;j++)
+        {
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+                 Src1[src1batchstride+(j*XThreads)+xIdx]=  dest[Stride+(j*XThreads)+xIdx];  
+            }
+        }
+        for (int j=0;j<Channels2;j++){
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+                Src2[src2batchstride+(j*XThreads)+xIdx]  = dest[Stride+(j*XThreads)+src1vol+xIdx];  
+            }
+        }
     }
 }
