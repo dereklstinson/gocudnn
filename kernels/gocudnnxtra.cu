@@ -621,13 +621,13 @@ extern "C" __global__ void ThreshBackward(const int XThreads,
                 if (x[stride+xIdx]>threshhold[xIdx])
                 {
                     dx[stride+xIdx]=  poscoefs[xIdx]*dy[stride+xIdx];
-                    dposcoefs[xIdx]+=poscoefs[xIdx]*x[stride+xIdx];
+                    dposcoefs[xIdx]+=dy[xIdx]*x[stride+xIdx];
 
                 }
                 else
                 {
                     dx[stride+xIdx]=  negcoefs[xIdx]*dy[stride+xIdx];
-                    dnegcoefs[xIdx]+=negcoefs[xIdx]*x[stride+xIdx];
+                    dnegcoefs[xIdx]+=dy[xIdx]*x[stride+xIdx];
                 }
             }
     }
@@ -680,15 +680,13 @@ extern "C" __global__ void PreluBackward(const int XThreads,
                 else
                 {
                     dx[stride+xIdx]=  coefs[xIdx]*dy[stride+xIdx];
-                    dcoefs[xIdx]+=coefs[xIdx]*x[stride+xIdx];
+                    dcoefs[xIdx]+=dy[xIdx]*x[stride+xIdx];
                 }
             }
     }
 }
 
 extern "C" __global__ void forwardleakyfloat(const int length,
-                                             const float alpha,
-                                             const float beta,
                                              const float *x,
                                              float *y,
                                              const float coef,
@@ -707,8 +705,6 @@ extern "C" __global__ void forwardleakyfloat(const int length,
     }
 }
 extern "C" __global__ void backwardleakyfloat(const int length,
-                                              const float alpha,
-                                              const float beta,
                                               const float *x,
                                               float *dx,
                                               const float *dy,

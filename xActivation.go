@@ -25,9 +25,9 @@ func (x XActivationMode) tostringfwd(dtype DataType) string {
 	switch x {
 	case xaflg.Leaky():
 		return ktf.ForwardLeakyfloat()
-	case xaflg.AdvanceThreshRandomRelu():
+	case xaflg.Threshhold():
 		return ktf.ThreshForward()
-	case xaflg.ParaChan():
+	case xaflg.Prelu():
 
 		return ktf.PreluForward()
 	}
@@ -45,9 +45,9 @@ func (x XActivationMode) tostringbwd(dtype DataType) string {
 	switch x {
 	case xaflg.Leaky():
 		return ktf.BackwardLeakyfloat()
-	case xaflg.AdvanceThreshRandomRelu():
+	case xaflg.Threshhold():
 		return ktf.ThreshBackward()
-	case xaflg.ParaChan():
+	case xaflg.Prelu():
 
 		return ktf.PreluBackward()
 	}
@@ -59,13 +59,13 @@ func (x XActivationModeFlag) Leaky() XActivationMode {
 	return XActivationMode(101)
 }
 
-//AdvanceThreshRandomRelu returns the Parametric flag
-func (x XActivationModeFlag) AdvanceThreshRandomRelu() XActivationMode {
+//Threshhold returns the Parametric flag
+func (x XActivationModeFlag) Threshhold() XActivationMode {
 	return XActivationMode(102)
 }
 
-//ParaChan returns the ParaChan flag and it is a weighted leaky on the just the channels
-func (x XActivationModeFlag) ParaChan() XActivationMode {
+//Prelu returns the ParaChan flag and it is a weighted leaky on the just the channels
+func (x XActivationModeFlag) Prelu() XActivationMode {
 	return XActivationMode(103)
 }
 
@@ -96,7 +96,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, dty
 	}
 	ctr := int32(1)
 	switch amode {
-	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
+	case XActivationModeFlag{}.Threshhold():
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
@@ -113,7 +113,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, dty
 		}
 
 		return act, nil
-	case XActivationModeFlag{}.ParaChan():
+	case XActivationModeFlag{}.Prelu():
 
 		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
@@ -155,12 +155,11 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, dty
 }
 
 //ForwardProp does the forward propagation for xactivation.
-//All of the functions use alpha, beta,xD, x ,yD,y..
-//alpha and beta is used like y=alpha *Op +beta*y for all xactivation modes
-//Parachan uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
-//AdvanceThreshRandomRelu uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]<coefs1[i]
+//All of the functions  us xD, x ,yD,y..
+//Prelu uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
+//Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) ForwardProp(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, coefs, coefs1 *Malloced) error {
+func (xA *XActivationD) ForwardProp(h *XHandle, CScalar, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, coefs, coefs1, thresh *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -179,65 +178,57 @@ func (xA *XActivationD) ForwardProp(h *XHandle, alpha, beta CScalar, xD *TensorD
 		length := FindLength(sib, dtype)
 		config := h.LaunchConfig(int32(length))
 
-		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, y, float32(xA.coef), xA.propnan) //, xA.propnan)
-	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
+		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef), xA.propnan) //, xA.propnan)
+	case XActivationModeFlag{}.Threshhold():
 
 		length := findvolume(dims[1:])
 		config := h.LaunchConfig(int32(length))
 
-		err = xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dims[0], alpha, beta, x, y, coefs, coefs1, xA.propnan)
+		err = xA.fwdmode.Launch(config.BlockCount, 1, 1,
+			config.ThreadPerBlock, 1, 1, 0, h.s,
+			config.Elements, dims[0], x, y, coefs, coefs1, xA.propnan)
 		if err != nil {
 			return err
 		}
 
 		return nil
-	case XActivationModeFlag{}.ParaChan():
-		tf, err := xD.GetFormat()
+	case XActivationModeFlag{}.Prelu():
+
+		length := findvolume(dims[1:])
+		config := h.LaunchConfig(length)
+
+		err = xA.fwdmode.Launch(config.BlockCount, 1, 1,
+			config.ThreadPerBlock, 1, 1, 0, h.s,
+			config.Elements, dims[0], x, y, coefs, thresh, coefs1)
 		if err != nil {
 			return err
 		}
-		var tflg TensorFormatFlag
-		var NHWC int32
-		if tf == tflg.NHWC() {
-			NHWC = int32(255)
-		} else {
-			NHWC = 0
-		}
-		config := h.LaunchConfig3d(dims[1], dims[2], dims[3])
-		for i := int32(0); i < dims[0]; i++ {
-			err := xA.fwdmode.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
-				config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
-				config.Dimx, config.Dimy, config.Dimz, i, alpha, beta, x, y, coefs, NHWC, xA.propnan)
-			if err != nil {
-				return err
-			}
-		}
+
 		return nil
 	}
 
 	return errors.New("Unsupported XActivationMode")
 }
 
-//BackProp does the forward propagation for xactivation
-//All of the functions use alpha, beta,xD, x ,dxD, dx, dyD, dy..
-//alpha and beta is used like dx=alpha *Op +beta*dx for all xactivation modes
-//Parachan uses coefs and dcoefs. dx[i]=coefs[i]* dx[i] where x[i]<0   dcoefs=dy[i]*x[i]
-//AdvanceThreshRandomRelu uses coefs and coefs1 for dx[i]=dy[i]*coefs[i] where x[i]<coefs1[i]
+//BackProp does the back propagation for xactivation
+//All of the functions use xD, x ,dxD, dx, dyD, dy..
+//Prelu uses coefs and dcoefs. dx[i]=coefs[i]* dx[i] where x[i]<0   dcoefs=dy[i]*x[i]
+//Threshhold uses coefs and coefs1 thresh, dcoefs,dthresh,and dcoefs1 for dx[i]=dy[i]*coefs[i] where x[i]<thresh[i] else dx[i]=coefs1[i]*dy[i]. and dcoefs[i]+=x[i]*dy[i] same for dcoefs1
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) BackProp(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
+func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs, coefs1, dcoefs1, thresh *Malloced) error {
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
-		return xA.backpropropleaky(h, alpha, beta, xD, x, dxD, dx, dyD, dy)
-	case XActivationModeFlag{}.AdvanceThreshRandomRelu():
-		return xA.attr(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
-	case XActivationModeFlag{}.ParaChan():
-		return xA.backpropparachan(h, alpha, beta, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
+		return xA.backpropropleaky(h, xD, x, dxD, dx, dyD, dy)
+	case XActivationModeFlag{}.Threshhold():
+		return xA.threshback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs, thresh, coefs1, dcoefs1)
+	case XActivationModeFlag{}.Prelu():
+		return xA.preluback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
 	}
 	return errors.New("Unsupported XActivationMode")
 }
 
-func (xA *XActivationD) backpropparachan(h *XHandle, alpha CScalar, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
+func (xA *XActivationD) preluback(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -246,32 +237,21 @@ func (xA *XActivationD) backpropparachan(h *XHandle, alpha CScalar, beta CScalar
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
-	tf, err := xD.GetFormat()
+
+	length := findvolume(dims[1:])
+	config := h.LaunchConfig(length)
+
+	err = xA.bwdmode.Launch(config.BlockCount, 1, 1,
+		config.ThreadPerBlock, 1, 1, 0, h.s,
+		config.Elements, dims[0], dx, x, dy, coefs, dcoefs)
 	if err != nil {
 		return err
 	}
-	var tflg TensorFormatFlag
-	var NHWC int32
-	if tf == tflg.NHWC() {
-		NHWC = int32(255)
-	}
-	//	err = dalphas.Set(0)
-	if err != nil {
-		return err
-	}
-	config := h.LaunchConfig3d(dims[1], dims[2], dims[3])
-	for i := int32(0); i < dims[0]; i++ {
-		err := xA.bwdmode.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
-			config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
-			config.Dimx, config.Dimy, config.Dimz, i, alpha, beta, x, dx, dy, coefs, dcoefs, NHWC, xA.propnan)
-		if err != nil {
-			return err
-		}
-	}
+
 	return nil
 
 }
-func (xA *XActivationD) backpropropleaky(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced) error {
+func (xA *XActivationD) backpropropleaky(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced) error {
 	dtype, _, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -289,9 +269,9 @@ func (xA *XActivationD) backpropropleaky(h *XHandle, alpha, beta CScalar, xD *Te
 	config := h.LaunchConfig(int32(length))
 	//	fmt.Println("alpha beta coef length", alpha, beta, float32(xA.coef))
 	//	fmt.Println("Config:", config)
-	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, alpha, beta, x, dx, dy, float32(xA.coef), xA.propnan) //, xA.propnan)
+	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef), xA.propnan) //, xA.propnan)
 }
-func (xA *XActivationD) attr(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
+func (xA *XActivationD) threshback(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs, thresh, coefs1, dcoefs1 *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -304,30 +284,12 @@ func (xA *XActivationD) attr(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Ma
 	length := findvolume(dims[1:])
 	config := h.LaunchConfig(int32(length))
 
-	err = xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dims[0], alpha, beta, x, dx, dy, coefs, dcoefs, xA.propnan)
+	err = xA.bwdmode.Launch(config.BlockCount, 1, 1,
+		config.ThreadPerBlock, 1, 1, 0, h.s,
+		config.Elements, dims[0], x, dx, dy, coefs, dcoefs, thresh, coefs1, dcoefs1)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-func (xA *XActivationD) backpropParaPlus(h *XHandle, alpha, beta CScalar, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs *Malloced) error {
-	dtype, dims, _, err := xD.GetDescrptor()
-	if err != nil {
-		return err
-	}
-	var df DataTypeFlag
-	if dtype != df.Float() {
-		return errors.New("Only Float is the supported datatype")
-	}
-
-	length := findvolume(dims[1:])
-	config := h.LaunchConfig(int32(length))
-	for i := int32(0); i < dims[0]; i++ {
-		err := xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, i, alpha, beta, x, dx, dy, coefs, dcoefs, xA.propnan)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
