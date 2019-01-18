@@ -159,7 +159,7 @@ func (xtra Xtra) NewXActivationDescriptor(h *XHandle, amode XActivationMode, dty
 //Prelu uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
 //Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) ForwardProp(h *XHandle, CScalar, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, coefs, coefs1, thresh *Malloced) error {
+func (xA *XActivationD) ForwardProp(h *XHandle, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, coefs, thresh, coefs1 *Malloced) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -215,7 +215,7 @@ func (xA *XActivationD) ForwardProp(h *XHandle, CScalar, xD *TensorD, x *Malloce
 //Prelu uses coefs and dcoefs. dx[i]=coefs[i]* dx[i] where x[i]<0   dcoefs=dy[i]*x[i]
 //Threshhold uses coefs and coefs1 thresh, dcoefs,dthresh,and dcoefs1 for dx[i]=dy[i]*coefs[i] where x[i]<thresh[i] else dx[i]=coefs1[i]*dy[i]. and dcoefs[i]+=x[i]*dy[i] same for dcoefs1
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs, coefs1, dcoefs1, thresh *Malloced) error {
+func (xA *XActivationD) BackProp(h *XHandle, xD *TensorD, x *Malloced, dxD *TensorD, dx *Malloced, dyD *TensorD, dy *Malloced, coefs, dcoefs, thresh, coefs1, dcoefs1 *Malloced) error {
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
