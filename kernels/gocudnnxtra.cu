@@ -8,6 +8,19 @@
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
 
+
+extern "C" __global__ void int8tofloat32(const int XThreads, const signed char *src, float *dest){
+    CUDA_GRID_LOOP_X(xIdx,XThreads)
+    {
+        dest[xIdx]= (float) src[xIdx];
+    }
+}
+extern "C" __global__ void int8tofloat32normalize(const int XThreads, const float avg,const signed char *src, float *dest){
+    CUDA_GRID_LOOP_X(xIdx,XThreads)
+    {
+        dest[xIdx]= ((float) src[xIdx])/avg;
+    }
+}
 extern "C" __global__ void Transpose(int numthreads,
                                      const float *src,
                                      const int *buf,
