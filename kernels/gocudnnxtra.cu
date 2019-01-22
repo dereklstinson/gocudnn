@@ -144,10 +144,10 @@ const int BVol = yThreads;
     }
 }
 extern "C" __global__ void SwapEveryOtherInt8(
-    const int xThreads, //total batches
+    const int xThreads, 
     const int totalbatches,
-    float *t1,
-    float *t2,
+   signed char *t1,
+   signed  char *t2,
     const int start,
     const int stride)
 {
@@ -160,7 +160,7 @@ const int BVol = xThreads;
             
                 CUDA_GRID_LOOP_X(xIdx, xThreads)
                 { 
-                    const float swapper =  t1[(i*BVol)+(xIdx)];
+                    const signed char swapper =  t1[(i*BVol)+(xIdx)];
                     t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
                     t2[(i*BVol)+xIdx]=swapper;
                 }
