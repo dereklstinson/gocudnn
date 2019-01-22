@@ -61,8 +61,7 @@ const int stride)
 {
 const int BVol = xThreads;
 
-    if (even>0)
-    {
+
         for (int i =start;i<totalbatches;i+=stride)
         {
      
@@ -78,7 +77,7 @@ const int BVol = xThreads;
         }
         
            
-    }
+    
  
         
 }
