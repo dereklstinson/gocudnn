@@ -25,6 +25,27 @@ func (t XtraKerns) SwapUpperLower() string {
 	return "SwapUpperLower"
 }
 
+//SwapEveryOtherInt8 allows the user to swap batches between to tensors
+//Either the even or the odd tensors.
+func (t XtraKerns) SwapEveryOtherInt8() string {
+	return "SwapEveryOther"
+}
+
+//SwapUpperLowerInt8 takes to tensors and swaps the upper or lower batches between the two tensors
+func (t XtraKerns) SwapUpperLowerInt8() string {
+	return "SwapUpperLower"
+}
+
+//Int8ToFloat32Normalize takes an array of bytes or int8 and converts it to a float and divides by 255
+func (t XtraKerns) Int8ToFloat32Normalize() string {
+	return "Int8ToFloat32Normalize"
+}
+
+//Int8ToFloat32 takes bytes or chars or int8 and converts each byte to a float
+func (t XtraKerns) Int8ToFloat32() string {
+	return "Int8ToFloat32"
+}
+
 //Transpose switches values around from one dimention to the other
 func (t XtraKerns) Transpose() string {
 	return "Transpose"

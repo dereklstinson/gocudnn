@@ -10,6 +10,8 @@ import "C"
 import (
 	"errors"
 	"unsafe"
+
+	"github.com/dereklstinson/half"
 )
 
 //DimMax is the max dims for tensors
@@ -42,6 +44,7 @@ func CScalarByDataType(dtype DataType, num float64) CScalar {
 		return CInt8(num)
 	case x.UInt8():
 		return CUInt8(num)
+
 	default:
 		return nil
 	}
@@ -69,7 +72,10 @@ func CScalarConversion(gotype interface{}) CScalar {
 		return CUInt(x)
 	case uint:
 		return CUInt(x)
+	case half.Float16:
+		return CHalf(x)
 	case bool:
+
 		if x == true {
 			return CInt(255)
 		}
@@ -82,6 +88,19 @@ func CScalarConversion(gotype interface{}) CScalar {
 		return nil
 	}
 }
+
+type CHalf C.ushort
+
+func (f CHalf) c() C.ushort { return C.ushort(f) }
+
+//CPtr returns an unsafe pointer of the half
+func (f CHalf) CPtr() unsafe.Pointer { return unsafe.Pointer(&f) }
+
+//Bytes returns the number of bytes the CScalar has as an int
+func (f CHalf) Bytes() int { return 4 }
+
+//SizeT returns the number of bytes the CScalar has as an sizeT
+func (f CHalf) SizeT() SizeT { return SizeT(4) }
 
 //CFloat is a float in C
 type CFloat C.float

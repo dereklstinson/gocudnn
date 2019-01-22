@@ -10,6 +10,8 @@ import (
 	"errors"
 	"runtime"
 	"strconv"
+
+	"github.com/dereklstinson/half"
 )
 
 //Tensor is used for calling Tensor Funcs and also holds the flags
@@ -386,6 +388,8 @@ func FindScalar(datatype DataType, x float64) CScalar {
 		return CInt8(x)
 	case DataType(C.CUDNN_DATA_INT32):
 		return CInt(x)
+	case DataType(C.CUDNN_DATA_HALF):
+		return CHalf(half.NewFloat16(float32(x)))
 	default:
 		return CInt(x)
 	}
@@ -409,6 +413,11 @@ func (d DataTypeFlag) Int8() DataType {
 // Int32 return DataType(C.CUDNN_DATA_INT32)
 func (d DataTypeFlag) Int32() DataType {
 	return DataType(C.CUDNN_DATA_INT32)
+}
+
+// Half returns DataType(C.CUDNN_DATA_HALF)
+func (d DataTypeFlag) Half() DataType {
+	return DataType(C.CUDNN_DATA_HALF)
 }
 
 // UInt8 return DataType(C.CUDNN_DATA_INT8)

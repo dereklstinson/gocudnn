@@ -14,6 +14,8 @@ import (
 	"runtime"
 	"unsafe"
 
+	"github.com/dereklstinson/half"
+
 	"github.com/pkg/errors"
 )
 
@@ -199,6 +201,8 @@ func checkinterface(input interface{}) (string, error) {
 		return "[]byte", nil
 	case []int8:
 		return "[]int8", nil
+	case []half.Float16:
+		return "[]half.Float16", nil
 	default:
 		return "", errors.New("No Support")
 	}
@@ -267,6 +271,15 @@ func tobytearray(input interface{}) []byte {
 		return nil
 	}
 
+}
+func tohalfarray(input interface{}) []half.Float16 {
+	switch x := input.(type) {
+	case []half.Float16:
+		return x
+
+	default:
+		return nil
+	}
 }
 func toint8array(input interface{}) []int8 {
 	switch x := input.(type) {
@@ -393,6 +406,8 @@ func FindSizeT(input interface{}) (SizeT, error) {
 		return SizeT(len(val) * 4), nil
 	case []uint32:
 		return SizeT(len(val) * 4), nil
+	case []half.Float16:
+		return SizeT(len(val) * 2), nil
 	case int:
 		return SizeT(4), nil
 	case byte:
@@ -407,6 +422,8 @@ func FindSizeT(input interface{}) (SizeT, error) {
 		return SizeT(4), nil
 	case uint32:
 		return SizeT(4), nil
+	case half.Float16:
+		return SizeT(2), nil
 	default:
 		return SizeT(0), errors.New("FindSizeT: Unsupported Type")
 	}

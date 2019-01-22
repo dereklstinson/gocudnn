@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"unsafe"
 
+	"github.com/dereklstinson/half"
+
 	"github.com/pkg/errors"
 )
 
@@ -88,6 +90,11 @@ func (mem *GoPointer) FillSlice(input interface{}) error {
 		}
 	case []byte:
 		y := tobytearray(mem.slice)
+		for i := 0; i < len(x); i++ {
+			x[i] = y[i]
+		}
+	case []half.Float16:
+		y := tohalfarray(mem.slice)
 		for i := 0; i < len(x); i++ {
 			x[i] = y[i]
 		}
