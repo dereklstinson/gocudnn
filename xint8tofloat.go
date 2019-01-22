@@ -6,6 +6,7 @@ import (
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
+//XInt8ToFloatD converts an Int8 to A Float
 type XInt8ToFloatD struct {
 	inttofloat *Kernel
 	//innerswaploweruper *Kernel
@@ -14,7 +15,7 @@ type XInt8ToFloatD struct {
 }
 
 //MakeIntToFloatD will return an IntToFloatD which will do a conversion from ints to float.  It is a good way to save on memory.
-func MakeIntToFloatD(handle *XHandle) (*XInt8ToFloatD, error) {
+func (x Xtra) MakeIntToFloatD(handle *XHandle) (*XInt8ToFloatD, error) {
 	var kern kernels.XtraKerns
 	var cu Cuda
 	k1, err := cu.MakeKernel(kern.Int8ToFloat32(), handle.mod)
@@ -30,7 +31,7 @@ func MakeIntToFloatD(handle *XHandle) (*XInt8ToFloatD, error) {
 		inttofloatnorm: k2,
 	}, nil
 }
-func (xint *XInt8ToFloatD) IntToFloat(handle *XHandle, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, normal bool) error {
+func (xint *XInt8ToFloatD) Int8ToFloat(handle *XHandle, xD *TensorD, x *Malloced, yD *TensorD, y *Malloced, normal bool) error {
 	var dflg DataTypeFlag
 	xdata, xdims, _, err := xD.GetDescrptor()
 	if err != nil {
