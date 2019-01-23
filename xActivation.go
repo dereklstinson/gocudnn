@@ -14,7 +14,6 @@ type XActivationMode uint
 type XActivationModeFlag struct {
 }
 
-//asdfasdf
 func (x XActivationMode) tostringfwd(dtype DataType) string {
 	dtf := DataTypeFlag{}
 	var xaflg XActivationModeFlag
