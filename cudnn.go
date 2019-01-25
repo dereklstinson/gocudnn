@@ -89,6 +89,7 @@ func CScalarConversion(gotype interface{}) CScalar {
 	}
 }
 
+//CHalf is a half precision
 type CHalf C.ushort
 
 func (f CHalf) c() C.ushort { return C.ushort(f) }

@@ -34,6 +34,9 @@ func (status Status) error(comment string) error {
 func (status Status) c() C.cudnnStatus_t {
 	return C.cudnnStatus_t(status)
 }
+func (status Status) Error(comment string) error {
+	return status.error("::Exported Error Function:: " + comment)
+}
 
 //WrapErrorWithStatus  if the error string contains a cudnnStatus_t string then it will return the Status and nil,
 // if it doens't the Status will be the flag for   CUDNN_STATUS_RUNTIME_FP_OVERFLOW but the error will not return a nil

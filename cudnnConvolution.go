@@ -217,12 +217,12 @@ func (cbd ConvBwdDataAlgo) Algo() Algos {
 
 //ConvBwdDataAlgoPerformance is the return struct in the finding algorithm funcs
 type ConvBwdDataAlgoPerformance struct {
-	Algo        ConvBwdDataAlgo
-	Status      Status
-	Time        float32
-	Memory      SizeT
-	Determinism Determinism
-	MathType    MathType
+	Algo        ConvBwdDataAlgo `json:"algo,omitempty"`
+	Status      Status          `json:"status,omitempty"`
+	Time        float32         `json:"time,omitempty"`
+	Memory      SizeT           `json:"memory,omitempty"`
+	Determinism Determinism     `json:"determinism,omitempty"`
+	MathType    MathType        `json:"math_type,omitempty"`
 }
 
 func convertConvBwdDataAlgoPerformance(input C.cudnnConvolutionBwdDataAlgoPerf_t) ConvBwdDataAlgoPerformance {
@@ -267,38 +267,6 @@ func (cbd ConvBwdDataAlgoPerformance) Print() {
 	fmt.Println("Determinism:", cbd.Determinism)
 	fmt.Println("MathType:", cbd.MathType)
 }
-
-/*
-//Algo returns the Pref Algo
-func (cbd ConvBwdDataAlgoPerf) Algo() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(cbd.algo)
-}
-
-//Status returns the status which can be changed to error
-func (cbd ConvBwdDataAlgoPerf) Status() Status {
-	return Status(cbd.status)
-}
-
-//Time returns the time
-func (cbd ConvBwdDataAlgoPerf) Time() float32 {
-	return float32(cbd.time)
-}
-
-//Memory returns the memory
-func (cbd ConvBwdDataAlgoPerf) Memory() SizeT {
-	return SizeT(cbd.memory)
-}
-
-//Determinism returns the determinism
-func (cbd ConvBwdDataAlgoPerf) Determinism() Determinism {
-	return Determinism(cbd.determinism)
-}
-
-//Mathtype returns the mathtype
-func (cbd ConvBwdDataAlgoPerf) Mathtype() MathType {
-	return MathType(cbd.mathType)
-}
-*/
 
 //GetConvolutionBackwardDataAlgorithmMaxCount returns the max number of algos
 func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
@@ -557,12 +525,12 @@ func (cb ConvBwdFiltAlgo) print() {
 
 //ConvBwdFiltAlgoPerformance is the return struct in the finding algorithm funcs
 type ConvBwdFiltAlgoPerformance struct {
-	Algo        ConvBwdFiltAlgo
-	Status      Status
-	Time        float32
-	Memory      SizeT
-	Determinism Determinism
-	MathType    MathType
+	Algo        ConvBwdFiltAlgo `json:"algo,omitempty"`
+	Status      Status          `json:"status,omitempty"`
+	Time        float32         `json:"time,omitempty"`
+	Memory      SizeT           `json:"memory,omitempty"`
+	Determinism Determinism     `json:"determinism,omitempty"`
+	MathType    MathType        `json:"math_type,omitempty"`
 }
 
 func convertConvBwdFiltAlgoPerformance(input C.cudnnConvolutionBwdFilterAlgoPerf_t) ConvBwdFiltAlgoPerformance {
@@ -587,38 +555,6 @@ func (cb ConvBwdFiltAlgoPerformance) Print() {
 	fmt.Println("Determinism:", cb.Determinism)
 	fmt.Println("MathType:", cb.MathType)
 }
-
-/*
-//PrefAlgo returns the Pref Algo
-func (cb ConvBwdFiltAlgoPerf) PrefAlgo() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(cb.algo)
-}
-
-//Status returns the status which can be changed to error
-func (cb ConvBwdFiltAlgoPerf) Status() Status {
-	return Status(cb.status)
-}
-
-//Time returns the time
-func (cb ConvBwdFiltAlgoPerf) Time() float32 {
-	return float32(cb.time)
-}
-
-//Memory returns the memory
-func (cb ConvBwdFiltAlgoPerf) Memory() SizeT {
-	return SizeT(cb.memory)
-}
-
-//Determinism returns the determinism
-func (cb ConvBwdFiltAlgoPerf) Determinism() Determinism {
-	return Determinism(cb.determinism)
-}
-
-//Mathtype returns the mathtype
-func (cb ConvBwdFiltAlgoPerf) Mathtype() MathType {
-	return MathType(cb.mathType)
-}
-*/
 
 //ConvolutionBwdFuncs is an empty struct that is used to organize and call backward convolution functions and helper functions
 type ConvolutionBwdFuncs struct {
@@ -893,12 +829,12 @@ func (algoPerf ConvFwdAlgoPerformance) Print() {
 
 //ConvFwdAlgoPerformance is a struct that holds the performance of the algorithm
 type ConvFwdAlgoPerformance struct {
-	Algo        ConvFwdAlgo
-	Status      Status
-	Time        float32
-	Memory      SizeT
-	Determinism Determinism
-	MathType    MathType
+	Algo        ConvFwdAlgo `json:"algo,omitempty"`
+	Status      Status      `json:"status,omitempty"`
+	Time        float32     `json:"time,omitempty"`
+	Memory      SizeT       `json:"memory,omitempty"`
+	Determinism Determinism `json:"determinism,omitempty"`
+	MathType    MathType    `json:"math_type,omitempty"`
 }
 
 func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFwdAlgoPerformance {
