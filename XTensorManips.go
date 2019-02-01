@@ -371,9 +371,26 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 
 	switch frmt {
 	case tflag.NHWC():
+		var n1 int32
+		var n2 int32
+		var HOverScan int32
+		var WOverScan int32
+		if ydims[1] == hstride {
+			n1 = int32(divideandroundup(xdims[1]-ydims[1], hstride) + 1)
+			HOverScan = 255
 
-		n1 := divideandroundup(xdims[1]-ydims[1], hstride) + 1
-		n2 := divideandroundup(xdims[2]-ydims[2], wstride) + 1
+		} else {
+			n1 = int32(divideandroundup(xdims[1]-ydims[1], hstride))
+		}
+		if ydims[2] == wstride {
+			n2 = int32(divideandroundup(xdims[2]-ydims[2], wstride) + 1)
+			WOverScan = 255
+		} else {
+			n2 = int32(divideandroundup(xdims[2]-ydims[2], wstride))
+		}
+
+		//n1 := divideandroundup(xdims[1]-ydims[1], hstride) + 1
+		//	n2 := divideandroundup(xdims[2]-ydims[2], wstride) + 1
 		if int32(n1*n2)*xdims[0] != ydims[0] || ydims[3] != xdims[3] {
 			return errors.New("N values or C values don't match up please use FindShapetoBatchoutputTensor to get TensorD")
 		}
@@ -389,26 +406,30 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
 
-		zero := int32(0)
+		return s.nhwc.Launch(
+			cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
+			cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
+			0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
 
-		for i := zero; i < OriginalBatches; i++ {
-			err = s.nhwc.Launch(cfg.BlockCountx,
-				cfg.BlockCounty,
-				cfg.BlockCountz,
-				cfg.ThreadPerBlockx,
-				cfg.ThreadPerBlocky,
-				cfg.ThreadPerBlockz,
-				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, (i * BatchedVol), (i * OriginalVol), n1, n2, hstride, wstride, x, y, S2B)
-			//(i * BatchedVol), (i * OriginalVol) are offset values if there are multiple batches that come from x
-			if err != nil {
-				return err
-			}
+	case tflag.NCHW():
+		var n1 int32
+		var n2 int32
+		var HOverScan int32
+		var WOverScan int32
+		if ydims[2] == hstride {
+			n1 = int32(divideandroundup(xdims[2]-ydims[2], hstride) + 1)
+			HOverScan = 255
+
+		} else {
+			n1 = int32(divideandroundup(xdims[2]-ydims[2], hstride))
+		}
+		if ydims[3] == wstride {
+			n2 = int32(divideandroundup(xdims[3]-ydims[3], wstride) + 1)
+			WOverScan = 255
+		} else {
+			n2 = int32(divideandroundup(xdims[3]-ydims[3], wstride))
 		}
 
-		return nil
-	case tflag.NCHW():
-		n1 := divideandroundup(xdims[2]-ydims[2], hstride) + 1
-		n2 := divideandroundup(xdims[3]-ydims[3], wstride) + 1
 		if int32(n1*n2)*xdims[0] != ydims[0] || ydims[1] != xdims[1] {
 			return errors.New("N values or C values don't match up please use FindShapetoBatchoutputTensor to get TensorD")
 		}
@@ -424,22 +445,13 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *TensorD, x *Mall
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
 
-		zero := int32(0)
-		for i := zero; i < OriginalBatches; i++ {
-			err = s.nchw.Launch(cfg.BlockCountx,
-				cfg.BlockCounty,
-				cfg.BlockCountz,
-				cfg.ThreadPerBlockx,
-				cfg.ThreadPerBlocky,
-				cfg.ThreadPerBlockz,
-				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, (i * BatchedVol), (i * OriginalVol), n1, n2, hstride, wstride, x, y, S2B)
-			//(i * BatchedVol), (i * OriginalVol) are offset values if there are multiple batches that come from x
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return s.nchw.Launch(cfg.BlockCountx,
+			cfg.BlockCounty,
+			cfg.BlockCountz,
+			cfg.ThreadPerBlockx,
+			cfg.ThreadPerBlocky,
+			cfg.ThreadPerBlockz,
+			0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
 
 	}
 	return errors.New("Unsupported Tensor Format")
@@ -489,6 +501,7 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *TensorD, h, w, h
 	}
 	switch xfrmt {
 	case frmt.NCHW():
+
 		oh := dims[2] * h
 		ow := dims[3] * w
 		n1 := ((oh - dims[2]) / hstride) + 1
@@ -526,15 +539,40 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *TensorD, h, w, h
 
 	switch xfrmt {
 	case frmt.NCHW():
-		//y = (x-w)/slide +1
-		n1 := int32(divideandroundup(dims[2]-h, hstride)) + 1
-		n2 := int32(divideandroundup(dims[3]-w, wstride)) + 1
+
+		var n1 int32
+		var n2 int32
+		if h == hstride {
+			n1 = int32(divideandroundup(dims[2]-h, hstride) + 1)
+
+		} else {
+			n1 = int32(divideandroundup(dims[2]-h, hstride))
+		}
+		if w == wstride {
+			n2 = int32(divideandroundup(dims[3]-w, wstride) + 1)
+
+		} else {
+			n2 = int32(divideandroundup(dims[3]-w, wstride))
+		}
 
 		return frmt.NCHW(), dtype, []int32{n1 * n2 * dims[0], dims[1], h, w}, nil
 
 	case frmt.NHWC():
-		n1 := int32(divideandroundup(dims[1]-h, hstride)) + 1
-		n2 := int32(divideandroundup(dims[2]-w, wstride)) + 1
+		var n1 int32
+		var n2 int32
+		if h == hstride {
+			n1 = int32(divideandroundup(dims[1]-h, hstride) + 1)
+
+		} else {
+			n1 = int32(divideandroundup(dims[1]-h, hstride))
+		}
+		if w == wstride {
+			n2 = int32(divideandroundup(dims[2]-w, wstride) + 1)
+
+		} else {
+			n2 = int32(divideandroundup(dims[2]-w, wstride))
+		}
+
 		return frmt.NHWC(), dtype, []int32{n1 * n2 * dims[0], h, w, dims[3]}, nil
 
 	default:
@@ -559,14 +597,38 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *TensorD, h, 
 	switch xfrmt {
 	case frmt.NCHW():
 
-		n1 := int32(divideandroundup(dims[2]-h, hstride)) + 1
-		n2 := int32(divideandroundup(dims[3]-w, wstride)) + 1
+		var n1 int32
+		var n2 int32
+		if h == hstride {
+			n1 = int32(divideandroundup(dims[2]-h, hstride) + 1)
+
+		} else {
+			n1 = int32(divideandroundup(dims[2]-h, hstride))
+		}
+		if w == wstride {
+			n2 = int32(divideandroundup(dims[3]-w, wstride) + 1)
+
+		} else {
+			n2 = int32(divideandroundup(dims[3]-w, wstride))
+		}
 
 		return frmt.NCHW(), dtype, []int32{n1 * n2 * dims[0], dims[1], h, w}, []int32{n1, n2}, nil
 
 	case frmt.NHWC():
-		n1 := int32(divideandroundup(dims[1]-h, hstride)) + 1
-		n2 := int32(divideandroundup(dims[2]-w, wstride)) + 1
+		var n1 int32
+		var n2 int32
+		if h == hstride {
+			n1 = int32(divideandroundup(dims[1]-h, hstride) + 1)
+
+		} else {
+			n1 = int32(divideandroundup(dims[1]-h, hstride))
+		}
+		if w == wstride {
+			n2 = int32(divideandroundup(dims[2]-w, wstride) + 1)
+
+		} else {
+			n2 = int32(divideandroundup(dims[2]-w, wstride))
+		}
 		return frmt.NHWC(), dtype, []int32{n1 * n2 * dims[0], h, w, dims[3]}, []int32{n1, n2}, nil
 
 	default:
