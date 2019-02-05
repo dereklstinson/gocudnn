@@ -15,7 +15,6 @@ import (
 	"unsafe"
 
 	"github.com/dereklstinson/half"
-
 	"github.com/pkg/errors"
 )
 
@@ -37,6 +36,11 @@ type Malloced struct {
 	onhost    bool
 	onmanaged bool
 	devptr    C.CUdeviceptr
+}
+
+//Offset returns the offset pointer
+func (mem *Malloced) Offset(offset uint) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(mem.ptr) + uintptr(offset))
 }
 
 //OffSet will return the offset address from the pointer passed
@@ -299,6 +303,15 @@ func CudaMemCopy(dest Memer, src Memer, count SizeT, kind MemcpyKind) error {
 	return newErrorRuntime("cudaMemcpy", err)
 }
 
+//CudaMemCopyUnsafe takes unsafe Pointers and does the cuda mem copy
+func CudaMemCopyUnsafe(dest unsafe.Pointer, src unsafe.Pointer, count SizeT, kind MemcpyKind) error {
+	err := C.cudaMemcpy(dest, src, count.c(), kind.c())
+	if setkeepalive {
+		keepsalivebuffer(dest, src)
+	}
+	return newErrorRuntime("cudaMemcpy", err)
+}
+
 //UnifiedMemCopy does a mem copy based on the default
 func UnifiedMemCopy(dest Memer, src Memer) error {
 	if dest.ByteSize() != src.ByteSize() {
@@ -308,6 +321,28 @@ func UnifiedMemCopy(dest Memer, src Memer) error {
 		keepsalivebuffer(dest, src)
 	}
 	return CudaMemCopy(dest, src, dest.ByteSize(), MemcpyKind(C.cudaMemcpyDefault))
+}
+
+//UnifiedMemCopyUnsafe  does a memcopy but with unsafe pointers
+func UnifiedMemCopyUnsafe(dest, src unsafe.Pointer, size SizeT) error {
+	return CudaMemCopyUnsafe(dest, src, size, MemcpyKind(C.cudaMemcpyDefault))
+}
+
+//CudaMallocUnsafe returns an unsafe pointer that points to cuda gpu allocated mem.
+func CudaMallocUnsafe(totalbytes SizeT) (unsafe.Pointer, error) {
+	var gpumem unsafe.Pointer
+	err := newErrorRuntime("Malloc", C.cudaMalloc(&gpumem, totalbytes.c()))
+	if err != nil {
+		return nil, err
+	}
+	err = newErrorRuntime("CudaMallocUnsafe-MemSet", C.cudaMemset(gpumem, C.int(0), totalbytes.c()))
+	if err != nil {
+		return nil, err
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(gpumem, C.cudaFree)
+	}
+	return gpumem, nil
 }
 
 //Malloc returns struct Malloced that has a pointer memory that is now allocated to the device. Values are set to 0.
@@ -406,6 +441,8 @@ func FindSizeT(input interface{}) (SizeT, error) {
 		return SizeT(len(val) * 4), nil
 	case []uint32:
 		return SizeT(len(val) * 4), nil
+	case []CHalf:
+		return SizeT(len(val) * 2), nil
 	case []half.Float16:
 		return SizeT(len(val) * 2), nil
 	case int:
@@ -423,6 +460,8 @@ func FindSizeT(input interface{}) (SizeT, error) {
 	case uint32:
 		return SizeT(4), nil
 	case half.Float16:
+		return SizeT(2), nil
+	case CHalf:
 		return SizeT(2), nil
 	default:
 		return SizeT(0), errors.New("FindSizeT: Unsupported Type")

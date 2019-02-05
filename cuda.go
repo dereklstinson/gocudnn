@@ -84,7 +84,29 @@ func (cu Cuda) devicecount() (CInt, error) {
 	return CInt(x), newErrorDriver("DeviceCount", rte)
 }
 
+//CanAccessPeer checks to see if peer's memory can be accessed my device called by method.
+//Does NOT set device calling method.
+func (d *Device) CanAccessPeer(peer *Device) (bool, error) {
+	var x C.int
+	rte := newErrorRuntime("CanAccessPeer", C.cudaDeviceCanAccessPeer(&x, d.idinC.c(), peer.idinC.c()))
+	if x > 0 {
+		return true, rte
+	}
+	return false, rte
+}
+
+//DisablePeerAccess check cudaDeviceDisablePeerAccess
+//Device calling method will be set
+func (d *Device) DisablePeerAccess(peer *Device) error {
+	err := d.Set()
+	if err != nil {
+		return err
+	}
+	return newErrorRuntime("DisablePeerAccess", C.cudaDeviceDisablePeerAccess(peer.idinC.c()))
+}
+
 //EnablePeerAccess check cudaDeviceEnablePeerAccess
+//Device calling method will be made current
 func (d *Device) EnablePeerAccess(peer *Device) error {
 	err := d.Set()
 	if err != nil {
