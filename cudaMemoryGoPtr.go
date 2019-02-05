@@ -194,7 +194,15 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		if err != nil {
 			return nil, err
 		}
-
+		return &ptr, nil
+	case []uint32:
+		ptr.ptr = unsafe.Pointer(&val[0])
+		ptr.typevalue = "uint32"
+		ptr.size, err = FindSizeT(val)
+		ptr.array = true
+		if err != nil {
+			return nil, err
+		}
 		return &ptr, nil
 	case []float32:
 
@@ -218,17 +226,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 
 		return &ptr, nil
-	case []uint32:
 
-		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.typevalue = "uint32"
-		ptr.size, err = FindSizeT(val)
-		ptr.array = true
-		if err != nil {
-			return nil, err
-		}
-
-		return &ptr, nil
 	case []CHalf:
 		ptr.ptr = unsafe.Pointer(&val[0])
 		ptr.typevalue = "uint32"
@@ -242,7 +240,7 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 
 	case []half.Float16:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.typevalue = "uint32"
+		ptr.typevalue = "float16"
 		ptr.size, err = FindSizeT(val)
 		ptr.array = true
 		if err != nil {
@@ -314,7 +312,6 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case *uint32:
-
 		ptr.ptr = unsafe.Pointer(val)
 		ptr.typevalue = "uint32"
 		ptr.size, err = FindSizeT(val)
@@ -323,13 +320,11 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		}
 		return &ptr, nil
 	case *CInt:
-
 		ptr.ptr = val.CPtr()
 		ptr.typevalue = "CInt"
 		ptr.size = SizeT(val.Bytes())
 		return &ptr, nil
 	case *CDouble:
-
 		ptr.ptr = val.CPtr()
 		ptr.typevalue = "CDouble"
 		ptr.size = SizeT(val.Bytes())

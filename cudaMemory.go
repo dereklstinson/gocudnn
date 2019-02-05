@@ -39,14 +39,16 @@ type Malloced struct {
 }
 
 //Offset returns the offset pointer
-func (mem *Malloced) Offset(offset uint) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(mem.ptr) + uintptr(offset))
+func (mem *Malloced) Offset(offset uint, numofbyteintype uint) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(mem.ptr) + uintptr(offset*numofbyteintype))
 }
 
+/*
 //OffSet will return the offset address from the pointer passed
 func OffSet(point unsafe.Pointer, unitsize int, offset int) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(point) + uintptr(unitsize*offset))
 }
+*/
 func (mem *Malloced) keepsalive() {
 	runtime.KeepAlive(mem)
 }
