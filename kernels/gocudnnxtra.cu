@@ -18,7 +18,7 @@ extern "C" __global__ void Int8ToFloat32(const int XThreads, const signed char *
 extern "C" __global__ void Int8ToFloat32Normalize(const int XThreads,const signed char *src, float *dest){
     CUDA_GRID_LOOP_X(xIdx,XThreads)
     {
-        dest[xIdx]= ((float) src[xIdx])/255.0;
+        dest[xIdx]= ((float) src[xIdx])/128.0;
     }
 }
 extern "C" __global__ void Transpose(int numthreads,
