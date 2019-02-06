@@ -151,6 +151,7 @@ extern "C" __global__ void SwapEveryOtherInt8(
     const int start,
     const int stride)
 {
+    
 const int BVol = xThreads;
 
  
@@ -204,7 +205,7 @@ const int BVol = yThreads;
                 CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
                     
-                    const float swapper =  t1[(xIdx*BVol)+(yIdx)];
+                    const signed char swapper =  t1[(xIdx*BVol)+(yIdx)];
                     t1[(xIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
                     t2[(xIdx*BVol)+yIdx]=swapper;
                 }
@@ -227,7 +228,7 @@ const int BVol = yThreads;
             {
                 CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
-                    const float swapper =  t1[(halfIdx*BVol)+(yIdx)];
+                    const signed char swapper =  t1[(halfIdx*BVol)+(yIdx)];
                     t1[(halfIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
                     t2[(halfIdx*BVol)+yIdx]=swapper;
                 }
