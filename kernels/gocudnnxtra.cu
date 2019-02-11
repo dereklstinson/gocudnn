@@ -9,7 +9,8 @@
          i += blockDim.axis * gridDim.axis)
 
 
-extern "C" __global__ void Int8ToFloat32(const int XThreads, const signed char *src, float *dest){
+extern "C" __global__ void 
+Int8ToFloat32(const int XThreads, const signed char *src, float *dest){
     CUDA_GRID_LOOP_X(xIdx,XThreads)
     {
         dest[xIdx]= (float) src[xIdx];
