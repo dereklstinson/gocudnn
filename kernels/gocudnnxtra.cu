@@ -8,20 +8,12 @@
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
 
+         #define CUDA_GRID_AXIS_LOOP_STRIDED(i, n, axis, stride)                                 \
+         for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
+              i += blockDim.axis * gridDim.axis*stride)
+     
+     
 
-extern "C" __global__ void 
-Int8ToFloat32(const int XThreads, const signed char *src, float *dest){
-    CUDA_GRID_LOOP_X(xIdx,XThreads)
-    {
-        dest[xIdx]= (float) src[xIdx];
-    }
-}
-extern "C" __global__ void Int8ToFloat32Normalize(const int XThreads,const signed char *src, float *dest){
-    CUDA_GRID_LOOP_X(xIdx,XThreads)
-    {
-        dest[xIdx]= ((float) src[xIdx])/128.0;
-    }
-}
 extern "C" __global__ void Transpose(int numthreads,
                                      const float *src,
                                      const int *buf,
@@ -62,8 +54,7 @@ const int stride)
 {
 const int BVol = xThreads;
 
-
-        for (int i =start;i<totalbatches;i+=stride)
+            for (int i =start;i<totalbatches;i+=stride)
         {
      
             
@@ -82,7 +73,6 @@ const int BVol = xThreads;
  
         
 }
-
 
 //SwapUpperLower will swap either the upper or lower batches
 //Right Now inverse doesn't do anything
@@ -144,100 +134,7 @@ const int BVol = yThreads;
         }   
     }
 }
-extern "C" __global__ void SwapEveryOtherInt8(
-    const int xThreads, 
-    const int totalbatches,
-   signed char *t1,
-   signed  char *t2,
-    const int start,
-    const int stride)
-{
-    
-const int BVol = xThreads;
-
- 
-        for (int i =start;i<totalbatches;i+=stride)
-        {
-     
-            
-                CUDA_GRID_LOOP_X(xIdx, xThreads)
-                { 
-                    const signed char swapper =  t1[(i*BVol)+(xIdx)];
-                    t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
-                    t2[(i*BVol)+xIdx]=swapper;
-                }
-
-            
-        }
-        
-           
-    }
-
-        
-
-
-
-//SwapUpperLower will swap either the upper or lower batches
-//Right Now inverse doesn't do anything
-extern "C" __global__ void SwapUpperLowerInt8(
-    const int xThreads, //batchsize
-    const int yThreads, //batchvol
-    signed char *t1,
-    signed char *t2,
-    const int t1upper,
-    const int t2upper,
-    const int inverse)
-{
-const int BVol = yThreads;
   
-    if (t1upper>0)
-    {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
-        { 
-            int t2Idx;
-            if (t2upper>0){
-                t2Idx=xIdx;
-            }else{
-                t2Idx=xThreads/2 +xIdx;
-            }
-           
-            if (xIdx < xThreads && t2Idx<xThreads)
-            {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
-                {
-                    
-                    const signed char swapper =  t1[(xIdx*BVol)+(yIdx)];
-                    t1[(xIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
-                    t2[(xIdx*BVol)+yIdx]=swapper;
-                }
-            }
-        }   
-    }
-    else  
-    {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
-        {
-            const int halfIdx=(xThreads/2)+xIdx;
-            int t2Idx;
-            if (t2upper>0){
-                t2Idx=xIdx;
-            }else{
-                t2Idx=halfIdx;
-            }
-         
-            if (halfIdx < xThreads)
-            {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
-                {
-                    const signed char swapper =  t1[(halfIdx*BVol)+(yIdx)];
-                    t1[(halfIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
-                    t2[(halfIdx*BVol)+yIdx]=swapper;
-                }
-            }
-        }   
-    }
-}
-        
 //ShapetoBatch4DNHWC Does a stride shape to batch. Make sure values on receiving end are set to zero when s2b is 0
 extern "C" __global__ void ShapetoBatch4DNHWC(
     const int xThreads,

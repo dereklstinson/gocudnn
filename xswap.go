@@ -8,10 +8,8 @@ import (
 
 //Swapper contains swap kernels that are used through methods
 type Swapper struct {
-	swapeveryother     *Kernel
-	swapupperlower     *Kernel
-	swapupperlowerint8 *Kernel
-	swapeveryotherint8 *Kernel
+	swapeveryother *Kernel
+	swapupperlower *Kernel
 }
 
 func comparedimsswap(a, b []int32) error {
@@ -57,9 +55,8 @@ func (s *Swapper) UpperLower(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc *Ten
 	var dflg DataTypeFlag
 	if Adesc.DataType() == dflg.Float() {
 		return s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
-	} else if Adesc.DataType() == dflg.Int8() {
-		return s.swapupperlowerint8.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
 	}
+
 	return errors.New("Unsupported Datatype")
 
 }
@@ -81,8 +78,6 @@ func (s *Swapper) EveryOther(h *XHandle, Adesc *TensorD, A *Malloced, Bdesc *Ten
 	var dflg DataTypeFlag
 	if Adesc.DataType() == dflg.Float() {
 		return s.swapeveryother.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
-	} else if Adesc.DataType() == dflg.Int8() {
-		return s.swapeveryotherint8.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
 	}
 	return errors.New("Unsupported Datatype")
 }
@@ -99,19 +94,10 @@ func (xtra Xtra) NewBatchSwapper(h *XHandle) (*Swapper, error) {
 	if err != nil {
 		return nil, err
 	}
-	swapeveryotherint8, err := cu.MakeKernel(kernels.XtraKerns{}.SwapEveryOtherInt8(), h.mod)
-	if err != nil {
-		return nil, err
-	}
 
-	swapupperlowerint8, err := cu.MakeKernel(kernels.XtraKerns{}.SwapUpperLowerInt8(), h.mod)
-	if err != nil {
-		return nil, err
-	}
 	return &Swapper{
-		swapeveryother:     swapeveryother,
-		swapeveryotherint8: swapeveryotherint8,
-		swapupperlower:     swapupperlower,
-		swapupperlowerint8: swapupperlowerint8,
+		swapeveryother: swapeveryother,
+
+		swapupperlower: swapupperlower,
 	}, nil
 }
