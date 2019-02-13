@@ -358,12 +358,11 @@ func DecodePhaseThree(h *Handle, j *JpegState, data *byte, dest *Image, stream *
 	return status(C.nvjpegDecodePhaseThree(h.h, j.j, &dest.img, C.cudaStream_t(stream.Ptr()))).error()
 }
 
-/*
 //////////////////////////////////////////////
 /////////////// Batch decoding ///////////////
 //////////////////////////////////////////////
 
-// Resets and initizlizes batch decoder for working on the batches of specified size
+// DecodeBatchedInitialize - Resets and initizlizes batch decoder for working on the batches of specified size
 // Should be called once for decoding bathes of this specific size, also use to reset failed batches
 // IN/OUT     handle          : Library handle
 // INT/OUT    jpeg_handle     : Decoded jpeg image state handle
@@ -372,14 +371,11 @@ func DecodePhaseThree(h *Handle, j *JpegState, data *byte, dest *Image, stream *
 // IN         output_format   : Output data format. Will be the same for every image in batch
 //
 // \return NVJPEG_STATUS_SUCCESS if successful
-nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatchedInitialize(
-          nvjpegHandle_t handle,
-          nvjpegJpegState_t jpeg_handle,
-          int batch_size,
-          int max_cpu_threads,
-          nvjpegOutputFormat_t output_format);
+func DecodeBatchedInitialize(h *Handle, j *JpegState, batchsize, maxCPUthreads int, frmt OutputFormat) error {
+	return status(C.nvjpegDecodeBatchedInitialize(h.h, j.j, C.int(batchsize), C.int(maxCPUthreads), frmt.c())).error()
+}
 
-// Decodes batch of images. Output buffers should be large enough to be able to store
+//DecodeBatched - Decodes batch of images. Output buffers should be large enough to be able to store
 // outputs of specified format, see single image decoding description for details. Call to
 // nvjpegDecodeBatchedInitialize() is required prior to this call, batch size is expected to be the same as
 // parameter to this batch initialization function.
@@ -392,13 +388,20 @@ nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatchedInitialize(
 // IN/OUT     stream        : CUDA stream where to submit all GPU work
 //
 // \return NVJPEG_STATUS_SUCCESS if successful
-nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatched(
-          nvjpegHandle_t handle,
-          nvjpegJpegState_t jpeg_handle,
-          const unsigned char *const *data,
-          const size_t *lengths,
-          nvjpegImage_t *destinations,
-          cudaStream_t stream);
+func DecodeBatched(h *Handle, j *JpegState, data []*byte, lengths []uint, dest []*Image, stream *gocudnn.Stream) error {
+	x := make([]*C.uchar, len(data))
+	y := make([]C.size_t, len(lengths))
+	z := make([]C.nvjpegImage_t, len(dest))
+	for i := range data {
+		x[i] = (*C.uchar)(data[i])
+		y[i] = C.size_t(lengths[i])
+		z[i] = dest[i].img
+	}
+
+	return status(C.nvjpegDecodeBatched(h.h, j.j, &x[0], &y[0], &z[0], C.cudaStream_t(stream.Ptr()))).error()
+}
+
+//Phased Decoding Batches.
 
 // Same functionality as nvjpegDecodePlanarBatched but done in separate consecutive steps:
 // 1) nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
@@ -409,15 +412,30 @@ nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatched(
 // Actual amount of work done in each separate step depends on the selected backend. But in any way all
 // of those functions must be called in this specific order. If one of the steps returns error -
 // reset batch with nvjpegDecodeBatchedInitialize().
-nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatchedPhaseOne(
-          nvjpegHandle_t handle,
-          nvjpegJpegState_t jpeg_handle,
-          const unsigned char *data,
-          size_t length,
-          int image_idx,
-          int thread_idx,
-          cudaStream_t stream);
 
+//DecodeBatchedPhaseOne - nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
+// This function is thread safe and could be called by multiple threads simultaneously, by providing
+// thread_idx (thread_idx should be less than max_cpu_threads from nvjpegDecodeBatchedInitialize())
+func DecodeBatchedPhaseOne(h *Handle, j *JpegState, data *byte, length uint, imageidx, threadidx int, stream *gocudnn.Stream) error {
+	return status(C.nvjpegDecodeBatchedPhaseOne(h.h, j.j, (*C.uchar)(data), C.size_t(length), C.int(imageidx), C.int(threadidx), C.cudaStream_t(stream.Ptr()))).error()
+}
+
+//DecodeBatchedPhaseTwo - nvjpegDecodePlanarBatchedMixed. Any previous call to nvjpegDecodeBatchedGPU() should be done by this point
+func DecodeBatchedPhaseTwo(h *Handle, j *JpegState, stream *gocudnn.Stream) error {
+	return status(C.nvjpegDecodeBatchedPhaseTwo(h.h, j.j, C.cudaStream_t(stream.Ptr()))).error()
+}
+
+//DecodeBatchedPhaseThree - nvjpegDecodePlanarBatchedGPU
+func DecodeBatchedPhaseThree(h *Handle, j *JpegState, dest []*Image, stream *gocudnn.Stream) error {
+	z := make([]C.nvjpegImage_t, len(dest))
+	for i := range z {
+
+		z[i] = dest[i].img
+	}
+	return status(C.nvjpegDecodeBatchedPhaseThree(h.h, j.j, &z[0], C.cudaStream_t(stream.Ptr()))).error()
+}
+
+/*
 nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatchedPhaseTwo(
           nvjpegHandle_t handle,
           nvjpegJpegState_t jpeg_handle,
