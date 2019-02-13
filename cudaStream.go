@@ -3,16 +3,31 @@ package gocudnn
 /*
 #include <cudnn.h>
 #include <cuda_runtime_api.h>
+const cudaStream_t gocunullstream = NULL;
 */
 import "C"
 import (
 	"errors"
 	"runtime"
+	"unsafe"
 )
 
 //Stream holds a C.cudaStream_t
 type Stream struct {
 	stream C.cudaStream_t
+}
+
+func (s *Stream) Ptr() unsafe.Pointer {
+	if s == nil {
+		return unsafe.Pointer(C.cudaStream_t(C.NULL))
+	}
+	return unsafe.Pointer(s.stream)
+}
+func (s *Stream) c() C.cudaStream_t {
+	if s == nil {
+		return C.cudaStream_t(C.NULL)
+	}
+	return s.stream
 }
 
 //CreateBlockingStream creats an asyncronus stream stream for the user

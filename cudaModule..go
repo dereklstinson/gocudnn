@@ -1,10 +1,5 @@
 package gocudnn
 
-import (
-	"fmt"
-	"runtime"
-)
-
 /*
 #include <string.h>
 #include <cuda.h>
@@ -20,6 +15,8 @@ const CUjit_option * nullJitOptions = NULL;
 import "C"
 import (
 	"errors"
+	"fmt"
+	"runtime"
 	"sync"
 	"unsafe"
 )
