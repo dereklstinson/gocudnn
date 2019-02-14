@@ -2,7 +2,6 @@ package gocudnn
 
 /*
 #include <cudnn.h>
-#include <cuda.h>
 #include <cuda_runtime_api.h>
 */
 import "C"

@@ -35,7 +35,7 @@ extern "C" __global__ void Transpose(int numthreads,
             srcIdx += (ratio * src_strides[perm[i]]);
         }
         dest[destIdx] = src[srcIdx];
-    }
+    }  
 }
 
 /*SwapEveryOther will swap the batches between 2 tensors. 

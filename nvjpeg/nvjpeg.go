@@ -324,8 +324,9 @@ func GetImageInfo(handle *Handle, data *byte, length uint) (nComponents int32, s
 // IN/OUT     stream        : CUDA stream where to submit all GPU work
 //
 // \return NVJPEG_STATUS_SUCCESS if successful
-func Decode(h *Handle, j *JpegState, data *byte, length uint, frmt OutputFormat, dest *Image, stream *gocudnn.Stream) error {
-	d := (*C.uchar)(data)
+func Decode(h *Handle, j *JpegState, data []byte, frmt OutputFormat, dest *Image, stream *gocudnn.Stream) error {
+	d := (*C.uchar)(&data[0])
+	length := len(data)
 	return status(C.nvjpegDecode(h.h, j.j, d, C.size_t(length), frmt.c(), &dest.img, C.cudaStream_t(stream.Ptr()))).error()
 }
 
@@ -340,8 +341,9 @@ func Decode(h *Handle, j *JpegState, data *byte, length uint, frmt OutputFormat,
 // of those functions must be called in this specific order. If one of the steps returns error - decode should be done from the beginning.
 
 //DecodePhaseOne - CPU processing
-func DecodePhaseOne(h *Handle, j *JpegState, data *byte, length uint, frmt OutputFormat, stream *gocudnn.Stream) error {
-	d := (*C.uchar)(data)
+func DecodePhaseOne(h *Handle, j *JpegState, data []byte, frmt OutputFormat, stream *gocudnn.Stream) error {
+	d := (*C.uchar)(&data[0])
+	length := len(data)
 	return status(C.nvjpegDecodePhaseOne(h.h, j.j, d, C.size_t(length), frmt.c(), C.cudaStream_t(stream.Ptr()))).error()
 }
 
@@ -354,7 +356,7 @@ func DecodePhaseTwo(h *Handle, j *JpegState, stream *gocudnn.Stream) error {
 //DecodePhaseThree GPU processing
 // Actual amount of work done in each separate step depends on the selected backend. But in any way all
 // of those functions must be called in this specific order. If one of the steps returns error - decode should be done from the beginning.
-func DecodePhaseThree(h *Handle, j *JpegState, data *byte, dest *Image, stream *gocudnn.Stream) error {
+func DecodePhaseThree(h *Handle, j *JpegState, dest *Image, stream *gocudnn.Stream) error {
 	return status(C.nvjpegDecodePhaseThree(h.h, j.j, &dest.img, C.cudaStream_t(stream.Ptr()))).error()
 }
 
@@ -388,13 +390,15 @@ func DecodeBatchedInitialize(h *Handle, j *JpegState, batchsize, maxCPUthreads i
 // IN/OUT     stream        : CUDA stream where to submit all GPU work
 //
 // \return NVJPEG_STATUS_SUCCESS if successful
-func DecodeBatched(h *Handle, j *JpegState, data []*byte, lengths []uint, dest []*Image, stream *gocudnn.Stream) error {
+func DecodeBatched(h *Handle, j *JpegState, data [][]byte, dest []*Image, stream *gocudnn.Stream) error {
 	x := make([]*C.uchar, len(data))
-	y := make([]C.size_t, len(lengths))
+	y := make([]C.size_t, len(data))
 	z := make([]C.nvjpegImage_t, len(dest))
+	var length int
 	for i := range data {
-		x[i] = (*C.uchar)(data[i])
-		y[i] = C.size_t(lengths[i])
+		length = len(data[i])
+		x[i] = (*C.uchar)(&data[i][0])
+		y[i] = C.size_t(length)
 		z[i] = dest[i].img
 	}
 
@@ -416,8 +420,9 @@ func DecodeBatched(h *Handle, j *JpegState, data []*byte, lengths []uint, dest [
 //DecodeBatchedPhaseOne - nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
 // This function is thread safe and could be called by multiple threads simultaneously, by providing
 // thread_idx (thread_idx should be less than max_cpu_threads from nvjpegDecodeBatchedInitialize())
-func DecodeBatchedPhaseOne(h *Handle, j *JpegState, data *byte, length uint, imageidx, threadidx int, stream *gocudnn.Stream) error {
-	return status(C.nvjpegDecodeBatchedPhaseOne(h.h, j.j, (*C.uchar)(data), C.size_t(length), C.int(imageidx), C.int(threadidx), C.cudaStream_t(stream.Ptr()))).error()
+func DecodeBatchedPhaseOne(h *Handle, j *JpegState, data []byte, length uint, imageidx, threadidx int, stream *gocudnn.Stream) error {
+
+	return status(C.nvjpegDecodeBatchedPhaseOne(h.h, j.j, (*C.uchar)(&data[0]), C.size_t(len(data)), C.int(imageidx), C.int(threadidx), C.cudaStream_t(stream.Ptr()))).error()
 }
 
 //DecodeBatchedPhaseTwo - nvjpegDecodePlanarBatchedMixed. Any previous call to nvjpegDecodeBatchedGPU() should be done by this point
