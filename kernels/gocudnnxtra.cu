@@ -20,7 +20,7 @@ extern "C" __global__ void Transpose(int numthreads,
                                      const int ndims,
                                      float *dest)
 {
-    const int *src_strides = buf;
+    const int *src_strides = buf; 
     const int *dest_strides = &buf[ndims];
     const int *perm = &buf[ndims * 2];
 
