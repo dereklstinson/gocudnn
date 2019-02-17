@@ -1,12 +1,12 @@
 # GoCudnn [![Coverage Status](https://coveralls.io/repos/github/dereklstinson/GoCudnn/badge.svg?branch=master)](https://coveralls.io/github/dereklstinson/GoCudnn?branch=master)
 <p><img alt="Gopher" title="GoCu" src="GoCu.png" /></p>
-Go Bindings for cuDNN 7.1 using Cuda 9.2 \(Just some Cuda 9.2\)
+Go Bindings for cuDNN 7.4 (I added the functions up to 7.1, I need to added the newer 7.4 functions) using Cuda 10.0 \(Just some Cuda 10.0\) 
 
 # Now In Alpha Stage
 To be honest I haven't tested all the functions.  If there is a bug. Please let me know. Even better make a pull request. I will only be testing the functions that are being used for my thesis.
 I don't plan on changing any of the function names.  I don't plan on deleting any functions.  I do plan on adding functions if needed.  Like maybe some cuda_runtime_api module stuff so that more than 2 types
 of trainers can be used.  I might add the jpeg image stuff, when that gets out of the beta phase.  
-I was able to get MNIST to work, and it is fast. 70,000 images in a few seconds.  WOW!
+
 
 Note on how cudnn uses softmax, because to be honest it isn't entirely clear in the documentation how it works.  
 You place what I like to call the answers in the dy part of the function. y is the output of the softmaxforward function.  dx is the gradient going backward.
@@ -52,23 +52,16 @@ CUDA Toolkit found at or around [https://developer.nvidia.com/cuda-downloads](ht
 
 Golang V1.10 found at or around [https://golang.org/dl/](https://golang.org/dl/)
 
-For the least amount of hassle use Ubuntu 16.04. This can work on Ubuntu 18.04, but for the time being there is no official Toolkit for 18.04.
 
 Will need to set the environmental variables to something along the lines as below.
 
 ```text
-export PATH=/usr/local/cuda-9.2/bin${PATH:+:${PATH}}
-export LD_LIBRARY_PATH=/usr/local/cuda-9.2/lib64\
+export PATH=/usr/local/cuda-10.0/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64\
                          ${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 export PATH=$PATH:/usr/local/go/bin
 
-
-export CUDA_PATH=/usr/local/cuda
-
-export CPATH="$CUDA_PATH/include/"
-
-export CGO_LDFLAGS="$CUDA_PATH/lib64/libcudnn.so $CUDA_PATH/lib64/libcublas.so $CUDA_PATH/lib64/libcudart.so $CUDA_PATH/lib64/stubs/libcuda.so"
 ```
 
 I would also like to get this to work on windows, also, but I am finding that windows, go, and cuda don't like to mesh together so well, at least not as intuitive as linux, go, and cuda.
@@ -132,9 +125,7 @@ Here is a little info on contexts/handles \(correct me if I am wrong on this too
 
 ## CUBLAS and CUDA additions
 
-As far as I can tell cudnn doesn't have/support training and loss functions.  I am going to add at least the training part. Loss is a different story. So that being said cuda will have its own context.  Sharing memory between contexts shouldn't be a problem if it is on one graphics card because only one context can run on a device at a time (multiple devices could pose a problem if I am not mistaken).  I will create a subpackage for the kernels that are going to be used for training.  
-
-I started to make a cublas section for fully connected neural networks, but I think I will not do that.  You can create a fully connected neuron, by setting the tensor filter size to be the size of the input dims.  Then don't have padding on the convolution. Make sure the dilation is set to zero  
+There will be no cublas.  I added nvjpeg, and I want to add NPP features, but NPP is absolutly huge.  I will probably added some fp32 and fp16 features of npp, but we will have to see.  If DALI ever gets a C api then I will add that too, but I don't see that happening in the near future.
 
 
 ## Other Notes
