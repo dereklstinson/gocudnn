@@ -8,9 +8,7 @@
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
 
-         #define CUDA_GRID_AXIS_LOOP_STRIDED(i, n, axis, stride)                                 \
-         for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
-              i += blockDim.axis * gridDim.axis*stride)
+       
      
      
 

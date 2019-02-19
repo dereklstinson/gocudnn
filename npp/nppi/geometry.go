@@ -1,6 +1,8 @@
 package nppi
 
 /*
+//This Package is out of date moving everything to npp.  It is so much easier to work around the stupid unexported C types
+
 #include <nppi_geometry_transforms.h>
 #include <nppdefs.h>
 */
@@ -171,1235 +173,2007 @@ import "C"
  } NppiWarpAffineBatchCXR;
 */
 /*
-
- NppStatus nppiGetResizeRect(NppiRect oSrcROI, NppiRect *pDstRect, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI,double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_8u_P3R(const Npp8u * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_8u_P4R(const Npp8u * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16u_P3R(const Npp16u * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16u_P4R(const Npp16u * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16s_C1R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16s_C3R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16s_C4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16s_AC4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16s_P3R(const Npp16s * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst[3], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_16s_P4R(const Npp16s * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_32f_P3R(const Npp32f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[3], int nDstStep, NppiRect oDstROI,double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_32f_P4R(const Npp32f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_64f_C1R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_64f_C3R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_64f_C4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_64f_AC4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_64f_P3R(const Npp64f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst[3], int nDstStep, NppiRect oDstROI,double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeSqrPixel_64f_P4R(const Npp64f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)
- NppStatus nppiResizeAdvancedGetBufferHostSize_8u_C1R(NppiSize oSrcROI, NppiSize oDstROI, int * hpBufferSize , int eInterpolationMode)
- NppStatus nppiResizeSqrPixel_8u_C1R_Advanced(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, Npp8u * pBuffer, int eInterpolationMode)
- NppStatus nppiGetResizeTiledSourceOffset(NppiRect oSrcRectROI, NppiRect oDstRectROI, NppiPoint * pNewSrcRectOffset)
- NppStatus nppiResize_8u_C1R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_8u_C3R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_8u_C4R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_8u_AC4R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_8u_P3R(const Npp8u * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_8u_P4R(const Npp8u * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16u_C1R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16u_C3R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16u_C4R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16u_AC4R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16u_P3R(const Npp16u * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16u_P4R(const Npp16u * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16s_C1R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16s_C3R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16s_C4R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16s_AC4R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16s_P3R(const Npp16s * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_16s_P4R(const Npp16s * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_32f_C1R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_32f_C3R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_32f_C4R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_32f_AC4R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_32f_P3R(const Npp32f * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResize_32f_P4R(const Npp32f * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)
- NppStatus nppiResizeBatch_8u_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_8u_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_8u_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_8u_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_32f_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_32f_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_32f_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_32f_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)
- NppStatus nppiResizeBatch_8u_C1R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiResizeBatch_8u_C3R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiResizeBatch_8u_C4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiResizeBatch_8u_AC4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiResizeBatch_32f_C1R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiResizeBatch_32f_C3R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiResizeBatch_32f_C4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiResizeBatch_32f_AC4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)
- NppStatus nppiRemap_8u_C1R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_8u_C3R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_8u_C4R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_8u_AC4R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_8u_P3R(const Npp8u  * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_8u_P4R(const Npp8u  * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16u_P3R(const Npp16u * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16u_P4R(const Npp16u * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16s_C1R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)
- NppStatus nppiRemap_16s_C3R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_16s_C4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_16s_AC4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					 const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						   Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_16s_P3R(const Npp16s * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp16s * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_16s_P4R(const Npp16s * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp16s * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					 const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						   Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_32f_P3R(const Npp32f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp32f * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_32f_P4R(const Npp32f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,
-						  Npp32f * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_64f_C1R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep,
-						  Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_64f_C3R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep,
-						  Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_64f_C4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep,
-						  Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_64f_AC4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					 const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep,
-						   Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_64f_P3R(const Npp64f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep,
-						  Npp64f * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatus nppiRemap_64f_P4R(const Npp64f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-					const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep,
-						  Npp64f * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation);
-
-
- NppStatusnppiGetRotateQuad(NppiRect oSrcROI, double aQuad[4][2], double nAngle, double nShiftX, double nShiftY);
-
-
- NppStatus nppiGetRotateBound(NppiRect oSrcROI, double aBoundingBox[2][2], double nAngle, double nShiftX, double nShiftY);
-
-
- NppStatus nppiRotate_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-				   double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-				   double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-				   double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-					double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-					double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-					double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-					double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-					 double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-					double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-					double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-					double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
-
- NppStatus nppiRotate_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-						   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-					 double nAngle, double nShiftX, double nShiftY, int eInterpolation);
-
- NppStatus nppiMirror_8u_C1R(const Npp8u * pSrc, int nSrcStep,
-						 Npp8u * pDst, int nDstStep,
-				   NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_8u_C1IR(Npp8u * pSrcDst, int nSrcDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_8u_C3R(const Npp8u * pSrc, int nSrcStep,
-						 Npp8u * pDst, int nDstStep,
-				   NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_8u_C3IR(Npp8u * pSrcDst, int nSrcDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_8u_C4R(const Npp8u * pSrc, int nSrcStep,
-						 Npp8u * pDst, int nDstStep,
-				   NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_8u_C4IR(Npp8u * pSrcDst, int nSrcDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_8u_AC4R(const Npp8u * pSrc, int nSrcStep,
-						  Npp8u * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_8u_AC4IR(Npp8u * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
- NppStatus nppiMirror_16u_C1R(const Npp16u * pSrc, int nSrcStep,
-						  Npp16u * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16u_C1IR(Npp16u * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16u_C3R(const Npp16u * pSrc, int nSrcStep,
-						  Npp16u * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16u_C3IR(Npp16u * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16u_C4R(const Npp16u * pSrc, int nSrcStep,
-						  Npp16u * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16u_C4IR(Npp16u * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16u_AC4R(const Npp16u * pSrc, int nSrcStep,
-						   Npp16u * pDst, int nDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
- NppStatus nppiMirror_16u_AC4IR(Npp16u * pSrcDst, int nSrcDstStep,
-					  NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_C1R(const Npp16s * pSrc, int nSrcStep,
-						  Npp16s * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_C1IR(Npp16s * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_C3R(const Npp16s * pSrc, int nSrcStep,
-						  Npp16s * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_C3IR(Npp16s * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_C4R(const Npp16s * pSrc, int nSrcStep,
-						  Npp16s * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_C4IR(Npp16s * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_AC4R(const Npp16s * pSrc, int nSrcStep,
-						   Npp16s * pDst, int nDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_16s_AC4IR(Npp16s * pSrcDst, int nSrcDstStep,
-					  NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32s_C1R(const Npp32s * pSrc, int nSrcStep,
-						  Npp32s * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32s_C1IR(Npp32s * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32s_C3R(const Npp32s * pSrc, int nSrcStep,
-						  Npp32s * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32s_C3IR(Npp32s * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32s_C4R(const Npp32s * pSrc, int nSrcStep,
-						  Npp32s * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32s_C4IR(Npp32s * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
-
- NppStatus nppiMirror_32s_AC4R(const Npp32s * pSrc, int nSrcStep,
-						   Npp32s * pDst, int nDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32s_AC4IR(Npp32s * pSrcDst, int nSrcDstStep,
-					  NppiSize oROI, NppiAxis flip);
-
-
-
- NppStatus nppiMirror_32f_C1R(const Npp32f * pSrc, int nSrcStep,
-						  Npp32f * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32f_C1IR(Npp32f * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
-
- NppStatus nppiMirror_32f_C3R(const Npp32f * pSrc, int nSrcStep,
-						  Npp32f * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32f_C3IR(Npp32f * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32f_C4R(const Npp32f * pSrc, int nSrcStep,
-						  Npp32f * pDst, int nDstStep,
-					NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32f_C4IR(Npp32f * pSrcDst, int nSrcDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32f_AC4R(const Npp32f * pSrc, int nSrcStep,
-						   Npp32f * pDst, int nDstStep,
-					 NppiSize oROI, NppiAxis flip);
-
-
- NppStatus nppiMirror_32f_AC4IR(Npp32f * pSrcDst, int nSrcDstStep,
-					  NppiSize oROI, NppiAxis flip);
-
-
-
- NppStatus nppiMirrorBatch_32f_C1R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiMirrorBatch_32f_C1IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiMirrorBatch_32f_C3R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiMirrorBatch_32f_C3IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiMirrorBatch_32f_C4R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiMirrorBatch_32f_C4IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiMirrorBatch_32f_AC4R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiMirrorBatch_32f_AC4IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize);
-
-
- NppStatus nppiGetAffineTransform(NppiRect oSrcROI, const double aQuad[4][2], double aCoeffs[2][3]);
-
-
-
- NppStatus nppiGetAffineQuad(NppiRect oSrcROI, double aQuad[4][2], const double aCoeffs[2][3]);
-
-
- NppStatus nppiGetAffineBound(NppiRect oSrcROI, double aBound[2][2], const double aCoeffs[2][3]);
-
-
- NppStatus nppiWarpAffine_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-					   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-					   const double aCoeffs[2][3], int eInterpolation);
-
-
-
- NppStatus nppiWarpAffine_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-					   const double aCoeffs[2][3], int eInterpolation);
-
-
-
- NppStatus nppiWarpAffine_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
-
- NppStatus nppiWarpAffine_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							 Npp8u * pDst[3], int nDstStep, NppiRect oDstROI,
-					   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							 Npp8u * pDst[4], int nDstStep, NppiRect oDstROI,
-					   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-						 const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp16u * pDst[3], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp16u * pDst[4], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
- NppStatus nppiWarpAffine_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-						 const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32s * pDst[3], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32s * pDst[4], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-						 const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32f * pDst[3], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp32f * pDst[4], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_64f_C1R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp64f * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_64f_C3R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp64f * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_64f_C4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp64f * pDst, int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_64f_AC4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							   Npp64f * pDst, int nDstStep, NppiRect oDstROI,
-						 const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_64f_P3R(const Npp64f * aSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp64f * aDst[3], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffine_64f_P4R(const Npp64f * aSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-							  Npp64f * aDst[4], int nDstStep, NppiRect oDstROI,
-						const double aCoeffs[2][3], int eInterpolation);
-
-
-
-
-
- NppStatus nppiWarpAffineBatchInit(NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpAffineBatch_32f_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							 int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpAffineBatch_32f_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							 int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpAffineBatch_32f_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							 int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpAffineBatch_32f_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							  int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpAffineBack_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-						   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-						   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								 Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-						   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								 Npp8u * pDst[3], int nDstStep, NppiRect oDstROI,
-						   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								 Npp8u * pDst[4], int nDstStep, NppiRect oDstROI,
-						   const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp16u * pDst[3], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp16u * pDst[4], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32s * pDst[3], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
- NppStatus nppiWarpAffineBack_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32s * pDst[4], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32f * pDst[3], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
- NppStatus nppiWarpAffineBack_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp32f * pDst[4], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[2][3], int eInterpolation);
-
-
-
- NppStatus nppiWarpAffineQuad_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								 Npp8u * pDst,                    int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-						   int eInterpolation);
-
-
-
- NppStatus nppiWarpAffineQuad_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								 Npp8u * pDst,                    int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-						   int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								 Npp8u * pDst,                    int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-						   int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp8u * pDst,                    int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								 Npp8u * pDst[3],                    int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-						   int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								 Npp8u * pDst[4],                    int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-						   int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp16u * pDst, int nDstStep, NppiRect oDstROI,                    const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								   Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							 int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								   Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							 int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								   Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							 int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
- NppStatus nppiWarpAffineQuad_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-								  Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2],
-							int eInterpolation);
-
-
-
- NppStatus nppiGetPerspectiveTransform(NppiRect oSrcROI, const double quad[4][2], double aCoeffs[3][3]);
-
-
-
- NppStatus nppiGetPerspectiveQuad(NppiRect oSrcROI, double quad[4][2], const double aCoeffs[3][3]);
-
-
- NppStatus nppiGetPerspectiveBound(NppiRect oSrcROI, double bound[2][2], const double aCoeffs[3][3]);
-
-
- NppStatus nppiWarpPerspective_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[3][3], int eInterpolation);
-
- NppStatus nppiWarpPerspective_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp8u * pDst[3], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[3][3], int eInterpolation);
-
- NppStatus nppiWarpPerspective_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								  Npp8u * pDst[4], int nDstStep, NppiRect oDstROI,
-							const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3],int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-							  const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp16u * pDst[3], int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp16u * pDst[4], int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
- NppStatus nppiWarpPerspective_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-							  const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32s * pDst[3], int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32s * pDst[4], int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-							  const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32f * pDst[3], int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspective_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-								   Npp32f * pDst[4], int nDstStep, NppiRect oDstROI,
-							 const double aCoeffs[3][3], int eInterpolation);
-
-
-
- NppStatus nppiWarpPerspectiveBatchInit(NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpPerspectiveBatch_32f_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							 int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpPerspectiveBatch_32f_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							 int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpPerspectiveBatch_32f_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							 int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpPerspectiveBatch_32f_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI,
-							  int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize);
-
-
- NppStatus nppiWarpPerspectiveBack_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-								const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-								const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									  Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-								const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp8u * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
- NppStatus nppiWarpPerspectiveBack_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									  Npp8u * pDst[3], int nDstStep, NppiRect oDstROI,
-								const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									  Npp8u * pDst[4], int nDstStep, NppiRect oDstROI,
-								const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-										Npp16u * pDst, int nDstStep, NppiRect oDstROI,
-								  const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp16u * pDst[3], int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp16u * pDst[4], int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-										Npp32s * pDst, int nDstStep, NppiRect oDstROI,
-								  const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32s * pDst[3], int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32s * pDst[4], int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-										Npp32f * pDst, int nDstStep, NppiRect oDstROI,
-								  const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32f * pDst[3], int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveBack_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,
-									   Npp32f * pDst[4], int nDstStep, NppiRect oDstROI,
-								 const double aCoeffs[3][3], int eInterpolation);
-
-
-  NppStatus nppiWarpPerspectiveQuad_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									  Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									  Npp8u * pDst, int nDstStep, NppiRect oDstROI,  const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									  Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									  Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									  Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-										Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-										Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-										Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
- NppStatus nppiWarpPerspectiveQuad_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
-
-
- NppStatus nppiWarpPerspectiveQuad_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],
-									   Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation);
+//GetResizeRect are functions found in the nppi library for cuda
+func GetResizeRect(oSrcROI npp.NppiRect, nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation int32) (npp.NppiRect, error) {
+	var dest C.NppiRect
+	//return errors.New("UnSupported Funcion for Go as of now")
+	err := npp.NppStatus(C.nppiGetResizeRect(
+		(C.NppiRect)((oSrcROI)),
+		&dest,
+		(C.double)(nXFactor),
+		(C.double)(nYFactor),
+		(C.double)(nXShift),
+		(C.double)(nYShift),
+		(C.int)(eInterpolation))).ToError()
+
+	return (npp.NppiRect)(dest), err
+}
+
+//ResizeSqrPixel8uC1R are functions found in the nppi library for cuda
+func ResizeSqrPixel8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel8uC3R are functions found in the nppi library for cuda
+func ResizeSqrPixel8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel8uC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI,double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel8uAC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel8uP3R are functions found in the nppi library for cuda
+func ResizeSqrPixel8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_8u_P3R(const Npp8u * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel8uP4R are functions found in the nppi library for cuda
+func ResizeSqrPixel8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_8u_P4R(const Npp8u * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16uC1R are functions found in the nppi library for cuda
+func ResizeSqrPixel16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16uC3R are functions found in the nppi library for cuda
+func ResizeSqrPixel16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16uC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16uAC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16uP3R are functions found in the nppi library for cuda
+func ResizeSqrPixel16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16u_P3R(const Npp16u * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16uP4R are functions found in the nppi library for cuda
+func ResizeSqrPixel16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16u_P4R(const Npp16u * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16sC1R are functions found in the nppi library for cuda
+func ResizeSqrPixel16sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16s_C1R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16sC3R are functions found in the nppi library for cuda
+func ResizeSqrPixel16sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16s_C3R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16sC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel16sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16s_C4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16sAC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel16sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16s_AC4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16sP3R are functions found in the nppi library for cuda
+func ResizeSqrPixel16sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16s_P3R(const Npp16s * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst[3], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel16sP4R are functions found in the nppi library for cuda
+func ResizeSqrPixel16sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_16s_P4R(const Npp16s * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16s * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel32fC1R are functions found in the nppi library for cuda
+func ResizeSqrPixel32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel32fC3R are functions found in the nppi library for cuda
+func ResizeSqrPixel32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel32fC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel32fAC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel32fP3R are functions found in the nppi library for cuda
+func ResizeSqrPixel32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_32f_P3R(const Npp32f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[3], int nDstStep, NppiRect oDstROI,double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel32fP4R are functions found in the nppi library for cuda
+func ResizeSqrPixel32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_32f_P4R(const Npp32f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel64fC1R are functions found in the nppi library for cuda
+func ResizeSqrPixel64fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_64f_C1R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel64fC3R are functions found in the nppi library for cuda
+func ResizeSqrPixel64fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_64f_C3R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel64fC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel64fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_64f_C4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel64fAC4R are functions found in the nppi library for cuda
+func ResizeSqrPixel64fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_64f_AC4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel64fP3R are functions found in the nppi library for cuda
+func ResizeSqrPixel64fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_64f_P3R(const Npp64f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst[3], int nDstStep, NppiRect oDstROI,double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeSqrPixel64fP4R are functions found in the nppi library for cuda
+func ResizeSqrPixel64fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_64f_P4R(const Npp64f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst[4], int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, double nXShift, double nYShift, int eInterpolation)).ToError()
+}
+
+//ResizeAdvancedGetBufferHostSize8uC1R are functions found in the nppi library for cuda
+func ResizeAdvancedGetBufferHostSize8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeAdvancedGetBufferHostSize_8u_C1R(NppiSize oSrcROI, NppiSize oDstROI, int * hpBufferSize , int eInterpolationMode)).ToError()
+}
+
+//ResizeSqrPixel8uC1RAdvanced are functions found in the nppi library for cuda
+func ResizeSqrPixel8uC1RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeSqrPixel_8u_C1R_Advanced(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nXFactor, double nYFactor, Npp8u * pBuffer, int eInterpolationMode)).ToError()
+}
+
+//GetResizeTiledSourceOffset are functions found in the nppi library for cuda
+func GetResizeTiledSourceOffset() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetResizeTiledSourceOffset(NppiRect oSrcRectROI, NppiRect oDstRectROI, NppiPoint * pNewSrcRectOffset)).ToError()
+}
+
+//Resize8uC1R are functions found in the nppi library for cuda
+func Resize8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_8u_C1R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize8uC3R are functions found in the nppi library for cuda
+func Resize8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_8u_C3R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize8uC4R are functions found in the nppi library for cuda
+func Resize8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_8u_C4R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize8uAC4R are functions found in the nppi library for cuda
+func Resize8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_8u_AC4R(const Npp8u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize8uP3R are functions found in the nppi library for cuda
+func Resize8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_8u_P3R(const Npp8u * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize8uP4R are functions found in the nppi library for cuda
+func Resize8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_8u_P4R(const Npp8u * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp8u * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16uC1R are functions found in the nppi library for cuda
+func Resize16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16u_C1R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16uC3R are functions found in the nppi library for cuda
+func Resize16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16u_C3R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16uC4R are functions found in the nppi library for cuda
+func Resize16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16u_C4R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16uAC4R are functions found in the nppi library for cuda
+func Resize16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16u_AC4R(const Npp16u * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16uP3R are functions found in the nppi library for cuda
+func Resize16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16u_P3R(const Npp16u * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16uP4R are functions found in the nppi library for cuda
+func Resize16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16u_P4R(const Npp16u * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16u * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16sC1R are functions found in the nppi library for cuda
+func Resize16sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16s_C1R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16sC3R are functions found in the nppi library for cuda
+func Resize16sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16s_C3R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16sC4R are functions found in the nppi library for cuda
+func Resize16sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16s_C4R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16sAC4R are functions found in the nppi library for cuda
+func Resize16sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16s_AC4R(const Npp16s * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16sP3R are functions found in the nppi library for cuda
+func Resize16sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16s_P3R(const Npp16s * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize16sP4R are functions found in the nppi library for cuda
+func Resize16sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_16s_P4R(const Npp16s * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp16s * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize32fC1R are functions found in the nppi library for cuda
+func Resize32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_32f_C1R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize32fC3R are functions found in the nppi library for cuda
+func Resize32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_32f_C3R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize32fC4R are functions found in the nppi library for cuda
+func Resize32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_32f_C4R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize32fAC4R are functions found in the nppi library for cuda
+func Resize32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_32f_AC4R(const Npp32f * pSrc, int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI Npp32f * pDst, int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize32fP3R are functions found in the nppi library for cuda
+func Resize32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_32f_P3R(const Npp32f * pSrc[3], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst[3], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//Resize32fP4R are functions found in the nppi library for cuda
+func Resize32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResize_32f_P4R(const Npp32f * pSrc[4], int nSrcStep, NppiSize oSrcSize, NppiRect oSrcRectROI, Npp32f * pDst[4], int nDstStep, NppiSize oDstSize, NppiRect oDstRectROI, int eInterpolation)).ToError()
+}
+
+//ResizeBatch8uC1R are functions found in the nppi library for cuda
+func ResizeBatch8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch8uC3R are functions found in the nppi library for cuda
+func ResizeBatch8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch8uC4R are functions found in the nppi library for cuda
+func ResizeBatch8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch8uAC4R are functions found in the nppi library for cuda
+func ResizeBatch8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch32fC1R are functions found in the nppi library for cuda
+func ResizeBatch32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch32fC3R are functions found in the nppi library for cuda
+func ResizeBatch32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch32fC4R are functions found in the nppi library for cuda
+func ResizeBatch32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch32fAC4R are functions found in the nppi library for cuda
+func ResizeBatch32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiSize oSmallestDstSize, NppiRect oDstRectROI, int eInterpolation, NppiResizeBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//ResizeBatch8uC1RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch8uC1RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_C1R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROIAdvanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//ResizeBatch8uC3RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch8uC3RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_C3R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//ResizeBatch8uC4RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch8uC4RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_C4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//ResizeBatch8uAC4RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch8uAC4RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_8u_AC4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//ResizeBatch32fC1RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch32fC1RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_C1R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//ResizeBatch32fC3RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch32fC3RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_C3R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//ResizeBatch32fC4RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch32fC4RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_C4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//ResizeBatch32fAC4RAdvanced are functions found in the nppi library for cuda
+func ResizeBatch32fAC4RAdvanced() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiResizeBatch_32f_AC4R_Advanced(int nMaxWidth, int nMaxHeight, NppiImageDescriptor * pBatchSrc, NppiImageDescriptor * pBatchDst, NppiResizeBatchROI_Advanced * pBatchROI, unsigned int nBatchSize, int eInterpolation)).ToError()
+}
+
+//Remap8uC1R are functions found in the nppi library for cuda
+func Remap8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_8u_C1R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap8uC3R are functions found in the nppi library for cuda
+func Remap8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_8u_C3R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap8uC4R are functions found in the nppi library for cuda
+func Remap8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_8u_C4R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap8uAC4R are functions found in the nppi library for cuda
+func Remap8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_8u_AC4R(const Npp8u  * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap8uP3R are functions found in the nppi library for cuda
+func Remap8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_8u_P3R(const Npp8u  * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap8uP4R are functions found in the nppi library for cuda
+func Remap8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_8u_P4R(const Npp8u  * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp8u  * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16uC1R are functions found in the nppi library for cuda
+func Remap16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16uC3R are functions found in the nppi library for cuda
+func Remap16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16uC4R are functions found in the nppi library for cuda
+func Remap16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16uAC4R are functions found in the nppi library for cuda
+func Remap16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16uP3R are functions found in the nppi library for cuda
+func Remap16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16u_P3R(const Npp16u * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16uP4R are functions found in the nppi library for cuda
+func Remap16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16u_P4R(const Npp16u * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16u * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16sC1R are functions found in the nppi library for cuda
+func Remap16sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16s_C1R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16sC3R are functions found in the nppi library for cuda
+func Remap16sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16s_C3R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16sC4R are functions found in the nppi library for cuda
+func Remap16sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16s_C4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16sAC4R are functions found in the nppi library for cuda
+func Remap16sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16s_AC4R(const Npp16s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16s * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16sP3R are functions found in the nppi library for cuda
+func Remap16sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16s_P3R(const Npp16s * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp16s * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap16sP4R are functions found in the nppi library for cuda
+func Remap16sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_16s_P4R(const Npp16s * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,Npp16s * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap32fC1R are functions found in the nppi library for cuda
+func Remap32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap32fC3R are functions found in the nppi library for cuda
+func Remap32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap32fC4R are functions found in the nppi library for cuda
+func Remap32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep,Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap32fAC4R are functions found in the nppi library for cuda
+func Remap32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp32f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap32fP3R are functions found in the nppi library for cuda
+func Remap32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_32f_P3R(const Npp32f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp32f * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap32fP4R are functions found in the nppi library for cuda
+func Remap32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_32f_P4R(const Npp32f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp32f * pXMap, int nXMapStep, const Npp32f * pYMap, int nYMapStep, Npp32f * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap64fC1R are functions found in the nppi library for cuda
+func Remap64fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_64f_C1R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep, Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap64fC3R are functions found in the nppi library for cuda
+func Remap64fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_64f_C3R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep, Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap64fC4R are functions found in the nppi library for cuda
+func Remap64fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_64f_C4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep, Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap64fAC4R are functions found in the nppi library for cuda
+func Remap64fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_64f_AC4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep, Npp64f * pDst, int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap64fP3R are functions found in the nppi library for cuda
+func Remap64fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_64f_P3R(const Npp64f * const pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep, Npp64f * pDst[3], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//Remap64fP4R are functions found in the nppi library for cuda
+func Remap64fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRemap_64f_P4R(const Npp64f * const pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const Npp64f * pXMap, int nXMapStep, const Npp64f * pYMap, int nYMapStep, Npp64f * pDst[4], int nDstStep, NppiSize oDstSizeROI, int eInterpolation)).ToError()
+}
+
+//GetRotateQuad are functions found in the nppi library for cuda
+func GetRotateQuad() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetRotateQuad(NppiRect oSrcROI, double aQuad[4][2], double nAngle, double nShiftX, double nShiftY)).ToError()
+}
+
+//GetRotateBound are functions found in the nppi library for cuda
+func GetRotateBound() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetRotateBound(NppiRect oSrcROI, double aBoundingBox[2][2], double nAngle, double nShiftX, double nShiftY)).ToError()
+}
+
+//Rotate8uC1R are functions found in the nppi library for cuda
+func Rotate8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI,double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate8uC3R are functions found in the nppi library for cuda
+func Rotate8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate8uC4R are functions found in the nppi library for cuda
+func Rotate8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate8uAC4R are functions found in the nppi library for cuda
+func Rotate8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate16uC1R are functions found in the nppi library for cuda
+func Rotate16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate16uC3R are functions found in the nppi library for cuda
+func Rotate16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate16uC4R are functions found in the nppi library for cuda
+func Rotate16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate16uAC4R are functions found in the nppi library for cuda
+func Rotate16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate32fC1R are functions found in the nppi library for cuda
+func Rotate32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate32fC3R are functions found in the nppi library for cuda
+func Rotate32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate32fC4R are functions found in the nppi library for cuda
+func Rotate32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Rotate32fAC4R are functions found in the nppi library for cuda
+func Rotate32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiRotate_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, double nAngle, double nShiftX, double nShiftY, int eInterpolation)).ToError()
+}
+
+//Mirror8uC1R are functions found in the nppi library for cuda
+func Mirror8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_C1R(const Npp8u * pSrc, int nSrcStep, Npp8u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror8uC1IR are functions found in the nppi library for cuda
+func Mirror8uC1IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_C1IR(Npp8u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror8uC3R are functions found in the nppi library for cuda
+func Mirror8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_C3R(const Npp8u * pSrc, int nSrcStep,Npp8u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror8uC3IR are functions found in the nppi library for cuda
+func Mirror8uC3IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_C3IR(Npp8u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror8uC4R are functions found in the nppi library for cuda
+func Mirror8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_C4R(const Npp8u * pSrc, int nSrcStep, Npp8u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror8uC4IR are functions found in the nppi library for cuda
+func Mirror8uC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_C4IR(Npp8u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror8uAC4R are functions found in the nppi library for cuda
+func Mirror8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_AC4R(const Npp8u * pSrc, int nSrcStep, Npp8u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror8uAC4IR are functions found in the nppi library for cuda
+func Mirror8uAC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_8u_AC4IR(Npp8u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uC1R are functions found in the nppi library for cuda
+func Mirror16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_C1R(const Npp16u * pSrc, int nSrcStep, Npp16u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uC1IR are functions found in the nppi library for cuda
+func Mirror16uC1IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_C1IR(Npp16u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uC3R are functions found in the nppi library for cuda
+func Mirror16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_C3R(const Npp16u * pSrc, int nSrcStep, Npp16u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uC3IR are functions found in the nppi library for cuda
+func Mirror16uC3IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_C3IR(Npp16u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uC4R are functions found in the nppi library for cuda
+func Mirror16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_C4R(const Npp16u * pSrc, int nSrcStep, Npp16u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uC4IR are functions found in the nppi library for cuda
+func Mirror16uC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_C4IR(Npp16u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uAC4R are functions found in the nppi library for cuda
+func Mirror16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_AC4R(const Npp16u * pSrc, int nSrcStep, Npp16u * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16uAC4IR are functions found in the nppi library for cuda
+func Mirror16uAC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16u_AC4IR(Npp16u * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sC1R are functions found in the nppi library for cuda
+func Mirror16sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_C1R(const Npp16s * pSrc, int nSrcStep,Npp16s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sC1IR are functions found in the nppi library for cuda
+func Mirror16sC1IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_C1IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sC3R are functions found in the nppi library for cuda
+func Mirror16sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_C3R(const Npp16s * pSrc, int nSrcStep,Npp16s * pDst, int nDstStep,NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sC3IR are functions found in the nppi library for cuda
+func Mirror16sC3IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_C3IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sC4R are functions found in the nppi library for cuda
+func Mirror16sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_C4R(const Npp16s * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sC4IR are functions found in the nppi library for cuda
+func Mirror16sC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_C4IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sAC4R are functions found in the nppi library for cuda
+func Mirror16sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_AC4R(const Npp16s * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror16sAC4IR are functions found in the nppi library for cuda
+func Mirror16sAC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_16s_AC4IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sC1R are functions found in the nppi library for cuda
+func Mirror32sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_C1R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sC1IR are functions found in the nppi library for cuda
+func Mirror32sC1IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_C1IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sC3R are functions found in the nppi library for cuda
+func Mirror32sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_C3R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sC3IR are functions found in the nppi library for cuda
+func Mirror32sC3IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_C3IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sC4R are functions found in the nppi library for cuda
+func Mirror32sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_C4R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sC4IR are functions found in the nppi library for cuda
+func Mirror32sC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_C4IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sAC4R are functions found in the nppi library for cuda
+func Mirror32sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_AC4R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32sAC4IR are functions found in the nppi library for cuda
+func Mirror32sAC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32s_AC4IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fC1R are functions found in the nppi library for cuda
+func Mirror32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_C1R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fC1IR are functions found in the nppi library for cuda
+func Mirror32fC1IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_C1IR(Npp32f * pSrcDst, int nSrcDstStep,NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fC3R are functions found in the nppi library for cuda
+func Mirror32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_C3R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fC3IR are functions found in the nppi library for cuda
+func Mirror32fC3IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_C3IR(Npp32f * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fC4R are functions found in the nppi library for cuda
+func Mirror32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_C4R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fC4IR are functions found in the nppi library for cuda
+func Mirror32fC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_C4IR(Npp32f * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fAC4R are functions found in the nppi library for cuda
+func Mirror32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_AC4R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//Mirror32fAC4IR are functions found in the nppi library for cuda
+func Mirror32fAC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirror_32f_AC4IR(Npp32f * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
+}
+
+//MirrorBatch32fC1R are functions found in the nppi library for cuda
+func MirrorBatch32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_C1R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//MirrorBatch32fC1IR are functions found in the nppi library for cuda
+func MirrorBatch32fC1IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_C1IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//MirrorBatch32fC3R are functions found in the nppi library for cuda
+func MirrorBatch32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_C3R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//MirrorBatch32fC3IR are functions found in the nppi library for cuda
+func MirrorBatch32fC3IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_C3IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//MirrorBatch32fC4R are functions found in the nppi library for cuda
+func MirrorBatch32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_C4R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//MirrorBatch32fC4IR are functions found in the nppi library for cuda
+func MirrorBatch32fC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_C4IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//MirrorBatch32fAC4R are functions found in the nppi library for cuda
+func MirrorBatch32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_AC4R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//MirrorBatch32fAC4IR are functions found in the nppi library for cuda
+func MirrorBatch32fAC4IR() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiMirrorBatch_32f_AC4IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+}
+
+//GetAffineTransform are functions found in the nppi library for cuda
+func GetAffineTransform() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetAffineTransform(NppiRect oSrcROI, const double aQuad[4][2], double aCoeffs[2][3])).ToError()
+}
+
+//GetAffineQuad are functions found in the nppi library for cuda
+func GetAffineQuad() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetAffineQuad(NppiRect oSrcROI, double aQuad[4][2], const double aCoeffs[2][3])).ToError()
+}
+
+//GetAffineBound are functions found in the nppi library for cuda
+func GetAffineBound() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetAffineBound(NppiRect oSrcROI, double aBound[2][2], const double aCoeffs[2][3])).ToError()
+}
+
+//WarpAffine8uC1R are functions found in the nppi library for cuda
+func WarpAffine8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine8uC3R are functions found in the nppi library for cuda
+func WarpAffine8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine8uC4R are functions found in the nppi library for cuda
+func WarpAffine8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine8uAC4R are functions found in the nppi library for cuda
+func WarpAffine8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine8uP3R are functions found in the nppi library for cuda
+func WarpAffine8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine8uP4R are functions found in the nppi library for cuda
+func WarpAffine8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine16uC1R are functions found in the nppi library for cuda
+func WarpAffine16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine16uC3R are functions found in the nppi library for cuda
+func WarpAffine16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine16uC4R are functions found in the nppi library for cuda
+func WarpAffine16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI,const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine16uAC4R are functions found in the nppi library for cuda
+func WarpAffine16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI,const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine16uP3R are functions found in the nppi library for cuda
+func WarpAffine16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine16uP4R are functions found in the nppi library for cuda
+func WarpAffine16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32sC1R are functions found in the nppi library for cuda
+func WarpAffine32sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32sC3R are functions found in the nppi library for cuda
+func WarpAffine32sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32sC4R are functions found in the nppi library for cuda
+func WarpAffine32sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32sAC4R are functions found in the nppi library for cuda
+func WarpAffine32sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32sP3R are functions found in the nppi library for cuda
+func WarpAffine32sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32sP4R are functions found in the nppi library for cuda
+func WarpAffine32sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32fC1R are functions found in the nppi library for cuda
+func WarpAffine32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32fC3R are functions found in the nppi library for cuda
+func WarpAffine32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32fC4R are functions found in the nppi library for cuda
+func WarpAffine32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32fAC4R are functions found in the nppi library for cuda
+func WarpAffine32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32fP3R are functions found in the nppi library for cuda
+func WarpAffine32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine32fP4R are functions found in the nppi library for cuda
+func WarpAffine32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine64fC1R are functions found in the nppi library for cuda
+func WarpAffine64fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_64f_C1R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine64fC3R are functions found in the nppi library for cuda
+func WarpAffine64fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_64f_C3R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine64fC4R are functions found in the nppi library for cuda
+func WarpAffine64fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_64f_C4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine64fAC4R are functions found in the nppi library for cuda
+func WarpAffine64fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_64f_AC4R(const Npp64f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine64fP3R are functions found in the nppi library for cuda
+func WarpAffine64fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_64f_P3R(const Npp64f * aSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * aDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffine64fP4R are functions found in the nppi library for cuda
+func WarpAffine64fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffine_64f_P4R(const Npp64f * aSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp64f * aDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBatchInit are functions found in the nppi library for cuda
+func WarpAffineBatchInit() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBatchInit(NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpAffineBatch32fC1R are functions found in the nppi library for cuda
+func WarpAffineBatch32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBatch_32f_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpAffineBatch32fC3R are functions found in the nppi library for cuda
+func WarpAffineBatch32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBatch_32f_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpAffineBatch32fC4R are functions found in the nppi library for cuda
+func WarpAffineBatch32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBatch_32f_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpAffineBatch32fAC4R are functions found in the nppi library for cuda
+func WarpAffineBatch32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBatch_32f_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpAffineBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpAffineBack8uC1R are functions found in the nppi library for cuda
+func WarpAffineBack8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack8uC3R are functions found in the nppi library for cuda
+func WarpAffineBack8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack8uC4R are functions found in the nppi library for cuda
+func WarpAffineBack8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack8uAC4R are functions found in the nppi library for cuda
+func WarpAffineBack8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI,const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack8uP3R are functions found in the nppi library for cuda
+func WarpAffineBack8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,Npp8u * pDst[3], int nDstStep, NppiRect oDstROI,const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack8uP4R are functions found in the nppi library for cuda
+func WarpAffineBack8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack16uC1R are functions found in the nppi library for cuda
+func WarpAffineBack16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI,const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack16uC3R are functions found in the nppi library for cuda
+func WarpAffineBack16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack16uC4R are functions found in the nppi library for cuda
+func WarpAffineBack16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack16uAC4R are functions found in the nppi library for cuda
+func WarpAffineBack16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack16uP3R are functions found in the nppi library for cuda
+func WarpAffineBack16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI,Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack16uP4R are functions found in the nppi library for cuda
+func WarpAffineBack16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32sC1R are functions found in the nppi library for cuda
+func WarpAffineBack32sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32sC3R are functions found in the nppi library for cuda
+func WarpAffineBack32sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32sC4R are functions found in the nppi library for cuda
+func WarpAffineBack32sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32sAC4R are functions found in the nppi library for cuda
+func WarpAffineBack32sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32sP3R are functions found in the nppi library for cuda
+func WarpAffineBack32sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32sP4R are functions found in the nppi library for cuda
+func WarpAffineBack32sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32fC1R are functions found in the nppi library for cuda
+func WarpAffineBack32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32fC3R are functions found in the nppi library for cuda
+func WarpAffineBack32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32fC4R are functions found in the nppi library for cuda
+func WarpAffineBack32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32fAC4R are functions found in the nppi library for cuda
+func WarpAffineBack32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32fP3R are functions found in the nppi library for cuda
+func WarpAffineBack32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineBack32fP4R are functions found in the nppi library for cuda
+func WarpAffineBack32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineBack_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad8uC1R are functions found in the nppi library for cuda
+func WarpAffineQuad8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad8uC3R are functions found in the nppi library for cuda
+func WarpAffineQuad8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad8uC4R are functions found in the nppi library for cuda
+func WarpAffineQuad8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad8uAC4R are functions found in the nppi library for cuda
+func WarpAffineQuad8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad8uP3R are functions found in the nppi library for cuda
+func WarpAffineQuad8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad8uP4R are functions found in the nppi library for cuda
+func WarpAffineQuad8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad16uC1R are functions found in the nppi library for cuda
+func WarpAffineQuad16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad16uC3R are functions found in the nppi library for cuda
+func WarpAffineQuad16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad16uC4R are functions found in the nppi library for cuda
+func WarpAffineQuad16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad16uAC4R are functions found in the nppi library for cuda
+func WarpAffineQuad16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad16uP3R are functions found in the nppi library for cuda
+func WarpAffineQuad16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad16uP4R are functions found in the nppi library for cuda
+func WarpAffineQuad16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2],Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32sC1R are functions found in the nppi library for cuda
+func WarpAffineQuad32sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32sC3R are functions found in the nppi library for cuda
+func WarpAffineQuad32sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32sC4R are functions found in the nppi library for cuda
+func WarpAffineQuad32sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32sAC4R are functions found in the nppi library for cuda
+func WarpAffineQuad32sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32sP3R are functions found in the nppi library for cuda
+func WarpAffineQuad32sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32sP4R are functions found in the nppi library for cuda
+func WarpAffineQuad32sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32fC1R are functions found in the nppi library for cuda
+func WarpAffineQuad32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32fC3R are functions found in the nppi library for cuda
+func WarpAffineQuad32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32fC4R are functions found in the nppi library for cuda
+func WarpAffineQuad32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32fAC4R are functions found in the nppi library for cuda
+func WarpAffineQuad32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32fP3R are functions found in the nppi library for cuda
+func WarpAffineQuad32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpAffineQuad32fP4R are functions found in the nppi library for cuda
+func WarpAffineQuad32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpAffineQuad_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//GetPerspectiveTransform are functions found in the nppi library for cuda
+func GetPerspectiveTransform() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetPerspectiveTransform(NppiRect oSrcROI, const double quad[4][2], double aCoeffs[3][3])).ToError()
+}
+
+//GetPerspectiveQuad are functions found in the nppi library for cuda
+func GetPerspectiveQuad() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetPerspectiveQuad(NppiRect oSrcROI, double quad[4][2], const double aCoeffs[3][3])).ToError()
+}
+
+//GetPerspectiveBound are functions found in the nppi library for cuda
+func GetPerspectiveBound() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiGetPerspectiveBound(NppiRect oSrcROI, double bound[2][2], const double aCoeffs[3][3])).ToError()
+}
+
+//WarpPerspective8uC1R are functions found in the nppi library for cuda
+func WarpPerspective8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective8uC3R are functions found in the nppi library for cuda
+func WarpPerspective8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective8uC4R are functions found in the nppi library for cuda
+func WarpPerspective8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective8uAC4R are functions found in the nppi library for cuda
+func WarpPerspective8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective8uP3R are functions found in the nppi library for cuda
+func WarpPerspective8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective8uP4R are functions found in the nppi library for cuda
+func WarpPerspective8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective16uC1R are functions found in the nppi library for cuda
+func WarpPerspective16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective16uC3R are functions found in the nppi library for cuda
+func WarpPerspective16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3],int eInterpolation)).ToError()
+}
+
+//WarpPerspective16uC4R are functions found in the nppi library for cuda
+func WarpPerspective16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI,  const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective16uAC4R are functions found in the nppi library for cuda
+func WarpPerspective16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective16uP3R are functions found in the nppi library for cuda
+func WarpPerspective16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective16uP4R are functions found in the nppi library for cuda
+func WarpPerspective16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32sC1R are functions found in the nppi library for cuda
+func WarpPerspective32sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32sC3R are functions found in the nppi library for cuda
+func WarpPerspective32sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI,  const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32sC4R are functions found in the nppi library for cuda
+func WarpPerspective32sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32sAC4R are functions found in the nppi library for cuda
+func WarpPerspective32sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32sP3R are functions found in the nppi library for cuda
+func WarpPerspective32sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32sP4R are functions found in the nppi library for cuda
+func WarpPerspective32sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32fC1R are functions found in the nppi library for cuda
+func WarpPerspective32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32fC3R are functions found in the nppi library for cuda
+func WarpPerspective32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32fC4R are functions found in the nppi library for cuda
+func WarpPerspective32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI,const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32fAC4R are functions found in the nppi library for cuda
+func WarpPerspective32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32fP3R are functions found in the nppi library for cuda
+func WarpPerspective32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspective32fP4R are functions found in the nppi library for cuda
+func WarpPerspective32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspective_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBatchInit are functions found in the nppi library for cuda
+func WarpPerspectiveBatchInit() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBatchInit(NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpPerspectiveBatch32fC1R are functions found in the nppi library for cuda
+func WarpPerspectiveBatch32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBatch_32f_C1R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpPerspectiveBatch32fC3R are functions found in the nppi library for cuda
+func WarpPerspectiveBatch32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBatch_32f_C3R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpPerspectiveBatch32fC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBatch32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBatch_32f_C4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpPerspectiveBatch32fAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBatch32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBatch_32f_AC4R(NppiSize oSmallestSrcSize, NppiRect oSrcRectROI, NppiRect oDstRectROI, int eInterpolation, NppiWarpPerspectiveBatchCXR * pBatchList, unsigned int nBatchSize)).ToError()
+}
+
+//WarpPerspectiveBack8uC1R are functions found in the nppi library for cuda
+func WarpPerspectiveBack8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack8uC3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack8uC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack8uAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack8uP3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack8uP4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack16uC1R are functions found in the nppi library for cuda
+func WarpPerspectiveBack16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack16uC3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack16uC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI,  const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack16uAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack16uP3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack16uP4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32sC1R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32sC3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32sC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32sAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32sP3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32sP4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32fC1R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32fC3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32fC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32fAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32fP3R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveBack32fP4R are functions found in the nppi library for cuda
+func WarpPerspectiveBack32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveBack_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aCoeffs[3][3], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad8uC1R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad8uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad8uC3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad8uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_8u_C3R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst, int nDstStep, NppiRect oDstROI,  const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad8uC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad8uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_8u_C4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad8uAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad8uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_8u_AC4R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad8uP3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad8uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_8u_P3R(const Npp8u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad8uP4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad8uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_8u_P4R(const Npp8u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp8u * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad16uC1R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad16uC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_16u_C1R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad16uC3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad16uC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_16u_C3R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad16uC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad16uC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_16u_C4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad16uAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad16uAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_16u_AC4R(const Npp16u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad16uP3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad16uP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_16u_P3R(const Npp16u * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad16uP4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad16uP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_16u_P4R(const Npp16u * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp16u * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32sC1R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32sC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32s_C1R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32sC3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32sC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32s_C3R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32sC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32sC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32s_C4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32sAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32sAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32s_AC4R(const Npp32s * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32sP3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32sP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32s_P3R(const Npp32s * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32sP4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32sP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32s_P4R(const Npp32s * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32s * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32fC1R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32fC1R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32f_C1R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32fC3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32fC3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32f_C3R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32fC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32fC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32f_C4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32fAC4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32fAC4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32f_AC4R(const Npp32f * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst, int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32fP3R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32fP3R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32f_P3R(const Npp32f * pSrc[3], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst[3], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
+
+//WarpPerspectiveQuad32fP4R are functions found in the nppi library for cuda
+func WarpPerspectiveQuad32fP4R() error {
+	return errors.New("UnSupported Funcion for Go as of now")
+	//return npp.NppStatus( C.nppiWarpPerspectiveQuad_32f_P4R(const Npp32f * pSrc[4], NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, const double aSrcQuad[4][2], Npp32f * pDst[4], int nDstStep, NppiRect oDstROI, const double aDstQuad[4][2], int eInterpolation)).ToError()
+}
 
 
 */
