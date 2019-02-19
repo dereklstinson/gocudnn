@@ -7,17 +7,17 @@ import "unsafe"
 type NppiInterpolationMode C.NppiInterpolationMode
 
 const (
-	NpiiInterUNDEFINED        = NppiInterpolationMode(C.NPPI_INTER_UNDEFINED)
-	NpiiInterNN               = NppiInterpolationMode(C.NPPI_INTER_NN)                 /**<  Nearest neighbor filtering. */
-	NpiiInterLINEAR           = NppiInterpolationMode(C.NPPI_INTER_LINEAR)             /**<  Linear interpolation. */
-	NpiiInterCUBIC            = NppiInterpolationMode(C.NPPI_INTER_CUBIC)              /**<  Cubic interpolation. */
-	NpiiInterBSPLINE          = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)    /**<  Two-parameter cubic filter (B=1, C=0) */
-	NpiiInterCATMULLROM       = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM) /**<  Two-parameter cubic filter (B=0, C=1/2) */
-	NpiiInterB05C03           = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)     /**<  Two-parameter cubic filter (B=1/2, C=3/10) */
-	NpiiInterSUPER            = NppiInterpolationMode(C.NPPI_INTER_SUPER)              /**<  Super sampling. */
-	NpiiInterLANCZOS          = NppiInterpolationMode(C.NPPI_INTER_LANCZOS)            /**<  Lanczos filtering. */
-	NpiiInterLANCZ0S3ADVANCED = NppiInterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)  /**<  Generic Lanczos filtering with order 3. */
-	NpiiInterSMOOTHEDGE       = NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)              /**<  Smooth edge filtering. */
+	NppiInterUNDEFINED        = NppiInterpolationMode(C.NPPI_INTER_UNDEFINED)
+	NppiInterNN               = NppiInterpolationMode(C.NPPI_INTER_NN)                 /**<  Nearest neighbor filtering. */
+	NppiInterLINEAR           = NppiInterpolationMode(C.NPPI_INTER_LINEAR)             /**<  Linear interpolation. */
+	NppiInterCUBIC            = NppiInterpolationMode(C.NPPI_INTER_CUBIC)              /**<  Cubic interpolation. */
+	NppiInterBSPLINE          = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)    /**<  Two-parameter cubic filter (B=1, C=0) */
+	NppiInterCATMULLROM       = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM) /**<  Two-parameter cubic filter (B=0, C=1/2) */
+	NppiInterB05C03           = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)     /**<  Two-parameter cubic filter (B=1/2, C=3/10) */
+	NppiInterSUPER            = NppiInterpolationMode(C.NPPI_INTER_SUPER)              /**<  Super sampling. */
+	NppiInterLANCZOS          = NppiInterpolationMode(C.NPPI_INTER_LANCZOS)            /**<  Lanczos filtering. */
+	NppiInterLANCZ0S3ADVANCED = NppiInterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)  /**<  Generic Lanczos filtering with order 3. */
+	NppiInterSMOOTHEDGE       = NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)              /**<  Smooth edge filtering. */
 )
 
 /**
