@@ -257,20 +257,216 @@ var (
 	nppbuild NppLibraryVersion /**<  Build number. This reflects the nightly build this release was made from. */
 )
 
-/** \defgroup npp_basic_types Basic NPP Data Types
- * @{
+/*
+ *
+ * Npp32f
+ *
  */
-//Npp8u
-type Npp8u C.Npp8u   /**<  8-bit unsigned chars */
-type Npp8s C.Npp8s   /**<  8-bit signed chars */
-type Npp16u C.Npp16u /**<  16-bit unsigned integers */
-type Npp16s C.Npp16s /**<  16-bit signed integers */
-type Npp32u C.Npp32u /**<  32-bit unsigned integers */
-type Npp32s C.Npp32s /**<  32-bit signed integers */
-type Npp64u C.Npp64u /**<  64-bit unsigned integers */
-type Npp64s C.Npp64s /**<  64-bit signed integers */
+
+//Npp32f is a float32.  A pointer of this type could be in cuda memory.
 type Npp32f C.Npp32f /**<  32-bit (IEEE) floating-point numbers */
+
+func (n *Npp32f) cptr() *C.Npp32f {
+	return (*C.Npp32f)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp32f) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp32f) c() C.Npp32f {
+	return C.Npp32f(n)
+}
+
+/*
+ *
+ * Npp64f
+ *
+ */
+
+//Npp64f is a float64. A pointer of this type could be in cuda memory.
 type Npp64f C.Npp64f /**<  64-bit floating-point numbers */
+
+func (n *Npp64f) cptr() *C.Npp64f {
+	return (*C.Npp64f)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp64f) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+func (n Npp64f) c() C.Npp64f {
+	return C.Npp64f(n)
+}
+
+/*
+ *
+ * Npp8u
+ *
+ */
+
+//Npp8u is an uint8. A pointer of this type could be in cuda memory.
+type Npp8u C.Npp8u /**<  8-bit unsigned chars */
+func (n *Npp8u) cptr() *C.Npp8u {
+	return (*C.Npp8u)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp8u) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp8u) c() C.Npp8u {
+	return C.Npp8u(n)
+}
+
+/*
+ *
+ * Npp8s
+ *
+ */
+
+//Npp8s is a int8.  A pointer of this type could be in cuda memory.
+type Npp8s C.Npp8s /**<  8-bit signed chars */
+
+func (n *Npp8s) cptr() *C.Npp8s {
+	return (*C.Npp8s)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp8s) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp8s) c() C.Npp8s {
+	return C.Npp8s(n)
+}
+
+/*
+ *
+ * Npp16u
+ *
+ */
+
+//Npp16u is a uint16.  A pointer of this type could be in cuda memory.
+type Npp16u C.Npp16u /**<  16-bit unsigned integers */
+
+func (n *Npp16u) cptr() *C.Npp16u {
+	return (*C.Npp16u)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp16u) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+func (n Npp16u) c() C.Npp16u {
+	return C.Npp16u(n)
+}
+
+/*
+ *
+ * Npp16s
+ *
+ */
+
+//Npp16s is a  int16.  A pointer of this type could be in cuda memory.
+type Npp16s C.Npp16s /**<  16-bit signed integers */
+
+func (n *Npp16s) cptr() *C.Npp16s {
+	return (*C.Npp16s)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp16s) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp16s) c() C.Npp16s {
+	return C.Npp16s(n)
+}
+
+/*
+ *
+ * Npp32u
+ *
+ */
+
+//Npp32u is a uint32.  A pointer of this type could be in cuda memory.
+type Npp32u C.Npp32u /**<  32-bit unsigned integers */
+
+func (n *Npp32u) cptr() *C.Npp32u {
+	return (*C.Npp32u)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp32u) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp32u) c() C.Npp32u {
+	return C.Npp32u(n)
+}
+
+/*
+ *
+ * Npp32s
+ *
+ */
+
+//Npp32s is a int32.  A pointer of this type could be in cuda memory.
+type Npp32s C.Npp32s /**<  32-bit signed integers */
+
+func (n *Npp32s) cptr() *C.Npp32s {
+	return (*C.Npp32s)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp32s) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp32s) c() C.Npp32s {
+	return C.Npp32s(n)
+}
+
+/*
+ *
+ * Npp64u
+ *
+ */
+
+//Npp64u is a uint64.  A pointer of this type could be in cuda memory.
+type Npp64u C.Npp64u /**<  64-bit unsigned integers */
+
+func (n *Npp64u) cptr() *C.Npp64u {
+	return (*C.Npp64u)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp64u) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp64u) c() C.Npp64u {
+	return C.Npp64u(n)
+}
+
+/*
+ *
+ * Npp64s
+ *
+ */
+
+//Npp64s is a int64.  A pointer of this type could be in cuda memory.
+type Npp64s C.Npp64s /**<  64-bit signed integers */
+
+func (n *Npp64s) cptr() *C.Npp64s {
+	return (*C.Npp64s)(n)
+}
+
+//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Npp64s) Unsafe() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+func (n Npp64s) c() C.Npp64s {
+	return C.Npp64s(n)
+}
 
 func convertNpp64utoCNpp64uarray(x []Npp64u) []C.Npp64u {
 	y := make([]C.Npp64u, len(x))
@@ -334,253 +530,148 @@ func convertCNpp8utoNpp8uarray(x []C.Npp8u) []Npp8u {
 /*Npp8uc  Complex Number
  * This struct represents an unsigned char complex number.
  */
-type Npp8uc struct {
-	Val *C.Npp8uc
-	cpu bool
+type Npp8uc C.Npp8uc
+
+//Set sets the real and imaginary vals
+func (n *Npp8uc) Set(real, imaginary Npp8u) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-//MakeNpp8ucFromUnsafe makes an Npp16uc from an unsafe Pointer
-func MakeNpp8ucFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp8uc {
-	return &Npp8uc{
-		Val: (*C.Npp8uc)(ptr),
-		cpu: cpu,
-	}
+//Get gets the real and imaginary vals
+func (n *Npp8uc) Get() (real, imaginary Npp8u) {
+	real = (Npp8u)(n.re)
+	imaginary = (Npp8u)(n.im)
+	return real, imaginary
 }
-
-//type Npp8uc C.Npp8uc
-
-/*
-func (c Npp8uc)Real()Npp8u{
-    return Npp8u(c.re)
-}
-func (c Npp8uc)Imaginary()Npp8u{
-    return Npp8u(c.im)
-}
-func CreateNpp8uc(real,imaginary Npp8u)Npp8uc{
-    return Npp8uc{
-        re:real,
-        im:imaginary,
-    }
-}
-*/
 
 /*Npp16uc - See below
  * Complex Number
  * This struct represents an unsigned short complex number.
  */
-type Npp16uc struct {
-	Val *C.Npp16uc
-	cpu bool
+type Npp16uc C.Npp16uc
+
+//Set sets the real and imaginary vals
+func (n *Npp16uc) Set(real, imaginary Npp16u) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-//MakeNpp16ucFromUnsafe makes an Npp16uc from an unsafe Pointer
-func MakeNpp16ucFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp16uc {
-	return &Npp16uc{
-		Val: (*C.Npp16uc)(ptr),
-		cpu: cpu,
-	}
+//Get gets the real and imaginary vals
+func (n *Npp16uc) Get() (real, imaginary Npp16u) {
+	real = (Npp16u)(n.re)
+	imaginary = (Npp16u)(n.im)
+	return real, imaginary
 }
 
-//type Npp16uc C.Npp16uc
-
-/*
-//  /Real returns real
-func (c Npp16uc)Real()uint16{
-    return uint16(c.re)
-}
-//Imaginary Returns Imaginary
-func (c Npp16uc)Imaginary()uint16{
-    return uint16(c.im)
-}
-
-func Npp16uc(real,imaginary uint16)Npp16uc{
-    return Npp16uc{
-        re:Npp16u(real),
-        im:Npp16u(imaginary),
-    }
-}
-*/
-
-/* Npp16sc - See below
+/*Npp16sc - See below
  * * Complex Number
  * This struct represents a short complex number.
  */
-type Npp16sc struct {
-	Val *C.Npp16sc
-	cpu bool
+type Npp16sc C.Npp16sc
+
+//Set sets the real and imaginary vals
+func (n *Npp16sc) Set(real, imaginary Npp16s) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-//MakeNpp16scFromUnsafe makes an Npp32sc from an unsafe Pointer
-func MakeNpp16scFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp16sc {
-	return &Npp16sc{
-		Val: (*C.Npp16sc)(ptr),
-		cpu: cpu,
-	}
+//Get gets the real and imaginary vals
+func (n *Npp16sc) Get() (real, imaginary Npp16s) {
+	real = (Npp16s)(n.re)
+	imaginary = (Npp16s)(n.im)
+	return real, imaginary
 }
 
-//type Npp16sc C.Npp16sc
-
-/*
-//  /Real returns real
-func (c Npp16sc)Real()Npp16s{
-    return Npp16s(c.re)
-}
-//Imaginary Returns Imaginary
-func (c Npp16sc)Imaginary()Npp16sc{
-    return Npp16s(c.im)
-}
-
-func Npp16sc(real,imaginary int16)Npp16sc{
-    return Npp16sc{
-        re:Npp16s(real),
-        im:Npp16s(imaginary),
-    }
-}
-*/
-/**
-Npp32uc - See below
+/*Npp32uc - See below
  * * Complex Number
  * This struct represents an unsigned int complex number.
-*/
-type Npp32uc struct {
-	Val *C.Npp32uc
-	cpu bool
+ */
+type Npp32uc C.Npp32uc
+
+//Set sets the real and imaginary vals
+func (n *Npp32uc) Set(real, imaginary Npp32u) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-//MakeNpp32ucFromUnsafe makes an Npp32sc from an unsafe Pointer
-func MakeNpp32ucFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp32uc {
-	return &Npp32uc{
-		Val: (*C.Npp32uc)(ptr),
-		cpu: cpu,
-	}
+//Get gets the real and imaginary vals
+func (n *Npp32uc) Get() (real, imaginary Npp32u) {
+	real = (Npp32u)(n.re)
+	imaginary = (Npp32u)(n.im)
+	return real, imaginary
 }
 
-//type Npp32uc C.Npp32uc
-
-/*
-//  /Real returns real
-func (c Npp32uc)Real()Npp32u{
-    return Npp32u(c.re)
-}
-//Imaginary Returns Imaginary
-func (c Npp32uc)Imaginary()Npp32u{
-    return Npp32u(c.im)
-}
-
-func Npp32uc(real,imaginary Npp32u)Npp32uc{
-    return Npp32uc{
-        re:real,
-        im:imaginary,
-    }
-}
-*/
-/**Npp32sc - Complex Number
+/*Npp32sc - Complex Number
  * This struct represents a signed int complex number.
  */
-type Npp32sc struct {
-	Val *C.Npp32sc
-	cpu bool
+type Npp32sc C.Npp32sc
+
+//Set sets the real and imaginary vals
+func (n *Npp32sc) Set(real, imaginary Npp32s) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-//MakeNpp32scFromUnsafe makes an Npp32sc from an unsafe Pointer
-func MakeNpp32scFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp32sc {
-	return &Npp32sc{
-		Val: (*C.Npp32sc)(ptr),
-		cpu: cpu,
-	}
+//Get gets the real and imaginary vals
+func (n *Npp32sc) Get() (real, imaginary Npp32s) {
+	real = (Npp32s)(n.re)
+	imaginary = (Npp32s)(n.im)
+	return real, imaginary
 }
-
-/*
-//  /Real returns real
-func (c Npp32sc)Real()Npp32s{
-    return Npp32s(c.re)
-}
-//Imaginary Returns Imaginary
-func (c Npp32sc)Imaginary()Npp32s{
-    return Npp32s(c.im)
-}
-
-func Npp32uc(real,imaginary Npp32s)Npp32sc{
-    return Npp32sc{
-        re:real,
-        im:imaginary,
-    }
-}
-
-*/
 
 /*
 Npp32fc This struct represents a single floating-point complex number.
 */
-type Npp32fc struct {
-	Val *C.Npp32fc
-	cpu bool
+type Npp32fc C.Npp32fc
+
+func (n *Npp32fc) c() C.Npp32fc {
+	return C.Npp32fc(*n)
 }
 
-//MakeNpp32fcFromUnsafe makes an Npp32fc from an unsafe Pointer
-func MakeNpp32fcFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp32fc {
-	return &Npp32fc{
-		Val: (*C.Npp32fc)(ptr),
-		cpu: cpu,
-	}
+//Set sets the real and imaginary vals
+func (n *Npp32fc) Set(real, imaginary Npp32f) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-/*
-//  /Real returns real
-func (c Npp32fc)Real()Npp32f{
-    return Npp32f(c.re)
+//Get gets the real and imaginary vals
+func (n *Npp32fc) Get() (real, imaginary Npp32f) {
+	real = (Npp32f)(n.re)
+	imaginary = (Npp32f)(n.im)
+	return real, imaginary
 }
-//Imaginary Returns Imaginary
-func (c Npp32fc)Imaginary()Npp32f{
-    return Npp32f(c.im)
-}
-
-func Npp32fc(real,imaginary Npp16u)Npp32fc{
-    return Npp32fc{
-        re:real,
-        im:imaginary,
-    }
-}
-*/
 
 // Npp64sc struct represents a long long complex number.
-type Npp64sc struct {
-	Val *C.Npp64sc
-	cpu bool
+type Npp64sc C.Npp64sc
+
+//Set sets the real and imaginary vals
+func (n *Npp64sc) Set(real, imaginary Npp64s) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-//MakeNpp64scFromUnsafe makes an Npp64sc from an unsafe pointer.
-func MakeNpp64scFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp64sc {
-	return &Npp64sc{
-		Val: (*C.Npp64sc)(ptr),
-		cpu: cpu,
-	}
+//Get gets the real and imaginary vals
+func (n *Npp64sc) Get() (real, imaginary Npp64s) {
+	real = (Npp64s)(n.re)
+	imaginary = (Npp64s)(n.im)
+	return real, imaginary
 }
-
-/**
- * Complex Number
- * This struct represents a long long complex number.
- */
-/*
-typedef struct NPP_ALIGN_16
-{
-    Npp64s  re;
-    Npp64s  im;
-} Npp64sc;
-*/
 
 //Npp64fc struct represents a double floating-point complex number.
-type Npp64fc struct {
-	Val *C.Npp64fc
-	cpu bool
+type Npp64fc C.Npp64fc
+
+//Set sets the real and imaginary vals
+func (n *Npp64fc) Set(real, imaginary Npp64f) {
+	n.re = real.c()
+	n.im = imaginary.c()
 }
 
-//MakeNpp64fcFromUnsafe makes an Npp64fc from an unsafe pointer.
-func MakeNpp64fcFromUnsafe(ptr unsafe.Pointer, cpu bool) *Npp64fc {
-	return &Npp64fc{
-		Val: (*C.Npp64fc)(ptr),
-		cpu: cpu,
-	}
+//Get gets the real and imaginary vals
+func (n *Npp64fc) Get() (real, imaginary Npp64f) {
+	real = (Npp64f)(n.re)
+	imaginary = (Npp64f)(n.im)
+	return real, imaginary
 }
 
 /*
@@ -617,6 +708,17 @@ typedef struct NPP_ALIGN_16
 //NppiPoint is a 2d point
 type NppiPoint C.NppiPoint
 
+//Set sets the nppiPoint
+func (n *NppiPoint) Set(x, y int32) {
+	n.x = (C.int)(x)
+	n.y = (C.int)(y)
+}
+
+//Get gets the NppiPoint's x and y
+func (n *NppiPoint) Get() (x, y int32) {
+	return (int32)(n.x), (int32)(n.y)
+}
+
 /*
 typedef struct
 {
@@ -626,6 +728,17 @@ typedef struct
 */
 //NppPointPolar is a 2D Polar Point
 type NppPointPolar C.NppPointPolar
+
+//Set sets the polar cordinates
+func (n *NppPointPolar) Set(rho, theta Npp32f) {
+	n.rho = (C.Npp32f)(rho)
+	n.theta = (C.Npp32f)(theta)
+}
+
+//Get gets the polar coordinates
+func (n *NppPointPolar) Get() (rho, theta Npp32f) {
+	return (Npp32f)(n.rho), (Npp32f)(n.theta)
+}
 
 /*
 
@@ -637,6 +750,13 @@ typedef struct {
 
 //NppiSize -2D Size represents the size of a a rectangular region in two space.
 type NppiSize C.NppiSize
+
+func (n NppiSize) c() C.NppiSize {
+	return (C.NppiSize)(n)
+}
+func (n *NppiSize) cptr() *C.NppiSize {
+	return (*C.NppiSize)(n)
+}
 
 /*
 typedef struct
@@ -661,6 +781,13 @@ func (n *NppiSize) WidthHeight() (w, h int32) {
  * upper-left corner.
  */
 type NppiRect C.NppiRect
+
+func (n NppiRect) c() C.NppiRect {
+	return (C.NppiRect)(n)
+}
+func (n *NppiRect) cptr() *C.NppiRect {
+	return (*C.NppiRect)(n)
+}
 
 /*
 typedef struct

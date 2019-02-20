@@ -181,10 +181,11 @@ Npp16sc
  */
 func Malloc16scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_16sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp16scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp16sc)(C.nppiMalloc_16sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+
+	//y := MakeNpp16scFromUnsafe(unsafe.Pointer(x), false)
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc16scC2 - 2 channel 16-bit signed complex image memory allocator.
@@ -194,10 +195,9 @@ func Malloc16scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, Paddin
  */
 func Malloc16scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_16sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp16scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp16sc)(C.nppiMalloc_16sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc16scC3 - 3 channel 16-bit signed complex image memory allocator.
@@ -207,10 +207,9 @@ func Malloc16scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, Paddin
  */
 func Malloc16scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_16sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp16scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp16sc)(C.nppiMalloc_16sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc16scC4 - 4 channel 16-bit signed complex image memory allocator.
@@ -220,10 +219,9 @@ func Malloc16scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, Paddin
  */
 func Malloc16scC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_16sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp16scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp16sc)(C.nppiMalloc_16sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*
@@ -285,10 +283,9 @@ Npp32sc
  */
 func Malloc32scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32sc)(C.nppiMalloc_32sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc32scC2 - 2 channel 32-bit integer complex image memory allocator.
@@ -298,10 +295,9 @@ func Malloc32scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, Paddin
  */
 func Malloc32scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32sc)(C.nppiMalloc_32sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc32scC3 - 3 channel 32-bit integer complex image memory allocator.
@@ -311,10 +307,9 @@ func Malloc32scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, Paddin
  */
 func Malloc32scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32sc)(C.nppiMalloc_32sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc32scC4 - 4 channel 32-bit integer complex image memory allocator.
@@ -324,10 +319,9 @@ func Malloc32scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, Paddin
  */
 func Malloc32scC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32scFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32sc)(C.nppiMalloc_32sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*
@@ -397,10 +391,9 @@ Npp32fc
  */
 func Malloc32fcC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32fc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32fcFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32fc)(C.nppiMalloc_32fc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc32fcC2 - 2 channel 32-bit float complex image memory allocator.
@@ -410,10 +403,9 @@ func Malloc32fcC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, Paddin
  */
 func Malloc32fcC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32fc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32fcFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32fc)(C.nppiMalloc_32fc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc32fcC3 - 3 channel 32-bit float complex image memory allocator.
@@ -423,10 +415,9 @@ func Malloc32fcC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, Paddin
  */
 func Malloc32fcC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32fc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32fcFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32fc)(C.nppiMalloc_32fc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 /*Malloc32fcC4 - 4 channel 32-bit float complex image memory allocator.
@@ -436,10 +427,9 @@ func Malloc32fcC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, Paddin
  */
 func Malloc32fcC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (C.nppiMalloc_32fc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	y := MakeNpp32fcFromUnsafe(unsafe.Pointer(x), false)
-	runtime.SetFinalizer(y, nppiallocfree)
-	return y, int32(pStepBytes)
+	x := (*Npp32fc)(C.nppiMalloc_32fc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(x, nppiallocfree)
+	return x, int32(pStepBytes)
 }
 
 func nppiallocfree(x interface{}) error {
@@ -460,16 +450,13 @@ func nppiallocfree(x interface{}) error {
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
 	case *Npp32fc:
-		C.nppiFree(unsafe.Pointer(y.Val))
-		y = nil
+		C.nppiFree(unsafe.Pointer(y))
 		return nil
 	case *Npp16sc:
-		C.nppiFree(unsafe.Pointer(y.Val))
-		y = nil
+		C.nppiFree(unsafe.Pointer(y))
 		return nil
 	case *Npp32sc:
-		C.nppiFree(unsafe.Pointer(y.Val))
-		y = nil
+		C.nppiFree(unsafe.Pointer(y))
 		return nil
 
 	}
