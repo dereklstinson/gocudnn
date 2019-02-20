@@ -802,6 +802,10 @@ typedef struct
 //NppiAxis enums NpiiAxis
 type NppiAxis C.NppiAxis
 
+func (n NppiAxis) c() C.NppiAxis {
+	return (C.NppiAxis)(n)
+}
+
 const (
 	NppHorizontalAxis = NppiAxis(C.NPP_HORIZONTAL_AXIS)
 	NppVerticalAxis   = NppiAxis(C.NPP_VERTICAL_AXIS)
