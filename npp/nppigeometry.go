@@ -1683,11 +1683,11 @@ func (a *ABound) cptr() *C.double {
 	return (*C.double)(unsafe.Pointer(&a[0]))
 }
 */
-//WarpAffine8uC1R are functions found in the nppi library for cuda
-func WarpAffine8uC1R(pSrc *Npp8u, oSrcSize NppiSize, nSrcStep int32, oSrcROI NppiRect) error {
 
-	return errors.New("UnSupported Funcion for Go as of now")
-	//return NppStatus( C.nppiWarpAffine_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
+//WarpAffine8uC1R are functions found in the nppi library for cuda
+func WarpAffine8uC1R(pSrc *Npp8u, oSrcSize NppiSize, nSrcStep int32, oSrcROI NppiRect, pDst *Npp8u, nDstStep int32, oDstROI NppiRect, aCoeffs [2][3]float64, eInterpolation int32) error {
+	acoefs := fromfloat64toacoeffs(aCoeffs)
+	return NppStatus(C.nppiWarpAffine_8u_C1R(pSrc.cptr(), oSrcSize.c(), (C.int)(nSrcStep), oSrcROI.c(), pDst.cptr(), (C.int)(nDstStep), oDstROI.c(), &acoefs[0], (C.int)(eInterpolation))).ToError()
 }
 
 //WarpAffine8uC3R are functions found in the nppi library for cuda
