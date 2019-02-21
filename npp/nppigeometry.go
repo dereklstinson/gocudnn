@@ -1398,217 +1398,294 @@ func Mirror16uAC4IR(pSrc *Npp16u, nSrcDstStep int32, oROI NppiSize, flip NppiAxi
 }
 
 //Mirror16sC1R are functions found in the nppi library for cuda
-func Mirror16sC1R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sC1R(pSrc *Npp16s, nSrcStep int32, pDst *Npp16s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_C1R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_C1R(const Npp16s * pSrc, int nSrcStep,Npp16s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror16sC1IR are functions found in the nppi library for cuda
-func Mirror16sC1IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sC1IR(pSrc *Npp16s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_C1IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_C1IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror16sC3R are functions found in the nppi library for cuda
-func Mirror16sC3R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sC3R(pSrc *Npp16s, nSrcStep int32, pDst *Npp16s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_C3R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_C3R(const Npp16s * pSrc, int nSrcStep,Npp16s * pDst, int nDstStep,NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror16sC3IR are functions found in the nppi library for cuda
-func Mirror16sC3IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sC3IR(pSrc *Npp16s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_C3IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_C3IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror16sC4R are functions found in the nppi library for cuda
-func Mirror16sC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sC4R(pSrc *Npp16s, nSrcStep int32, pDst *Npp16s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_C4R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_C4R(const Npp16s * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror16sC4IR are functions found in the nppi library for cuda
-func Mirror16sC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sC4IR(pSrc *Npp16s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_C4IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_C4IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror16sAC4R are functions found in the nppi library for cuda
-func Mirror16sAC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sAC4R(pSrc *Npp16s, nSrcStep int32, pDst *Npp16s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_AC4R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_AC4R(const Npp16s * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror16sAC4IR are functions found in the nppi library for cuda
-func Mirror16sAC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror16sAC4IR(pSrc *Npp16s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_16s_AC4IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_16s_AC4IR(Npp16s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sC1R are functions found in the nppi library for cuda
-func Mirror32sC1R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sC1R(pSrc *Npp32s, nSrcStep int32, pDst *Npp32s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_C1R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_C1R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sC1IR are functions found in the nppi library for cuda
-func Mirror32sC1IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sC1IR(pSrc *Npp32s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_C1IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_C1IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sC3R are functions found in the nppi library for cuda
-func Mirror32sC3R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sC3R(pSrc *Npp32s, nSrcStep int32, pDst *Npp32s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_C3R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_C3R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sC3IR are functions found in the nppi library for cuda
-func Mirror32sC3IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sC3IR(pSrc *Npp32s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_C3IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_C3IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sC4R are functions found in the nppi library for cuda
-func Mirror32sC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sC4R(pSrc *Npp32s, nSrcStep int32, pDst *Npp32s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_C4R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_C4R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sC4IR are functions found in the nppi library for cuda
-func Mirror32sC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sC4IR(pSrc *Npp32s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_C4IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_C4IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sAC4R are functions found in the nppi library for cuda
-func Mirror32sAC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sAC4R(pSrc *Npp32s, nSrcStep int32, pDst *Npp32s, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_AC4R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_AC4R(const Npp32s * pSrc, int nSrcStep, Npp32s * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32sAC4IR are functions found in the nppi library for cuda
-func Mirror32sAC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32sAC4IR(pSrc *Npp32s, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32s_AC4IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32s_AC4IR(Npp32s * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fC1R are functions found in the nppi library for cuda
-func Mirror32fC1R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fC1R(pSrc *Npp32f, nSrcStep int32, pDst *Npp32f, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_C1R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_C1R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fC1IR are functions found in the nppi library for cuda
-func Mirror32fC1IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fC1IR(pSrc *Npp32f, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_C1IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_C1IR(Npp32f * pSrcDst, int nSrcDstStep,NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fC3R are functions found in the nppi library for cuda
-func Mirror32fC3R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fC3R(pSrc *Npp32f, nSrcStep int32, pDst *Npp32f, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_C3R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_C3R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fC3IR are functions found in the nppi library for cuda
-func Mirror32fC3IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fC3IR(pSrc *Npp32f, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_C3IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_C3IR(Npp32f * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fC4R are functions found in the nppi library for cuda
-func Mirror32fC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fC4R(pSrc *Npp32f, nSrcStep int32, pDst *Npp32f, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_C4R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_C4R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fC4IR are functions found in the nppi library for cuda
-func Mirror32fC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fC4IR(pSrc *Npp32f, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_C4IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_C4IR(Npp32f * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fAC4R are functions found in the nppi library for cuda
-func Mirror32fAC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fAC4R(pSrc *Npp32f, nSrcStep int32, pDst *Npp32f, nDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_AC4R(pSrc.cptr(), (C.int)(nSrcStep), pDst.cptr(), (C.int)(nDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_AC4R(const Npp32f * pSrc, int nSrcStep, Npp32f * pDst, int nDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
 //Mirror32fAC4IR are functions found in the nppi library for cuda
-func Mirror32fAC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func Mirror32fAC4IR(pSrc *Npp32f, nSrcDstStep int32, oROI NppiSize, flip NppiAxis) error {
+	return NppStatus(C.nppiMirror_32f_AC4IR(pSrc.cptr(), (C.int)(nSrcDstStep), oROI.c(), flip.c())).ToError()
 	//return NppStatus( C.nppiMirror_32f_AC4IR(Npp32f * pSrcDst, int nSrcDstStep, NppiSize oROI, NppiAxis flip)).ToError()
 }
 
+//NppiMirrorBatchCXR is a  used with mirror batch funcs
+type NppiMirrorBatchCXR C.NppiMirrorBatchCXR
+
+//MakeNppiMirrorBatchCXR makes and returns an NppiMirrorBatchCXR
+func MakeNppiMirrorBatchCXR(pSrc unsafe.Pointer, nSrcStep int32, pDst unsafe.Pointer, nDstStep int32) *NppiMirrorBatchCXR {
+	return &NppiMirrorBatchCXR{
+		pSrc:     pSrc,
+		nSrcStep: (C.int)(nSrcStep),
+		pDst:     pDst,
+		nDstStep: (C.int)(nDstStep),
+	}
+}
+
+//Get gets the values stored int the NppiMirrorBatchCXR struct
+func (n *NppiMirrorBatchCXR) Get() (pSrc unsafe.Pointer, nSrcStep int32, pDst unsafe.Pointer, nDstStep int32) {
+	return n.pSrc, (int32)(n.nSrcStep), n.pDst, (int32)(n.nDstStep)
+}
+
+//Set sets the values of an NppiMirrorBatchCXR
+func (n *NppiMirrorBatchCXR) Set(pSrc unsafe.Pointer, nSrcStep int32, pDst unsafe.Pointer, nDstStep int32) {
+	n.pSrc = pSrc
+	n.nSrcStep = (C.int)(nSrcStep)
+	n.pDst = pDst
+	n.nDstStep = (C.int)(nDstStep)
+}
+func (n *NppiMirrorBatchCXR) cptr() *C.NppiMirrorBatchCXR {
+	return (*C.NppiMirrorBatchCXR)(n)
+}
+func (n NppiMirrorBatchCXR) c() C.NppiMirrorBatchCXR {
+	return (C.NppiMirrorBatchCXR)(n)
+}
+
+/*
+typedef struct
+ {
+	 const void * pSrc;  // device memory pointer, ignored for in place versions
+	 int nSrcStep;
+	 void * pDst;        // device memory pointer
+	 int nDstStep;
+ } NppiMirrorBatchCXR;
+*/
+
 //MirrorBatch32fC1R are functions found in the nppi library for cuda
-func MirrorBatch32fC1R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
-	//return NppStatus( C.nppiMirrorBatch_32f_C1R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
+func MirrorBatch32fC1R(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_C1R(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 }
 
 //MirrorBatch32fC1IR are functions found in the nppi library for cuda
-func MirrorBatch32fC1IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func MirrorBatch32fC1IR(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_C1IR(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 	//return NppStatus( C.nppiMirrorBatch_32f_C1IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
 }
 
 //MirrorBatch32fC3R are functions found in the nppi library for cuda
-func MirrorBatch32fC3R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func MirrorBatch32fC3R(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_C3R(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 	//return NppStatus( C.nppiMirrorBatch_32f_C3R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
 }
 
 //MirrorBatch32fC3IR are functions found in the nppi library for cuda
-func MirrorBatch32fC3IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func MirrorBatch32fC3IR(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_C3IR(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 	//return NppStatus( C.nppiMirrorBatch_32f_C3IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
 }
 
 //MirrorBatch32fC4R are functions found in the nppi library for cuda
-func MirrorBatch32fC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func MirrorBatch32fC4R(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_C4R(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 	//return NppStatus( C.nppiMirrorBatch_32f_C4R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
 }
 
 //MirrorBatch32fC4IR are functions found in the nppi library for cuda
-func MirrorBatch32fC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func MirrorBatch32fC4IR(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_C4IR(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 	//return NppStatus( C.nppiMirrorBatch_32f_C4IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
 }
 
 //MirrorBatch32fAC4R are functions found in the nppi library for cuda
-func MirrorBatch32fAC4R() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func MirrorBatch32fAC4R(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_AC4R(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 	//return NppStatus( C.nppiMirrorBatch_32f_AC4R(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
 }
 
 //MirrorBatch32fAC4IR are functions found in the nppi library for cuda
-func MirrorBatch32fAC4IR() error {
-	return errors.New("UnSupported Funcion for Go as of now")
+func MirrorBatch32fAC4IR(oSizeROI NppiSize, flip NppiAxis, pBatchList *NppiMirrorBatchCXR, nBatchSize int32) error {
+	return NppStatus(C.nppiMirrorBatch_32f_AC4IR(oSizeROI.c(), flip.c(), pBatchList.cptr(), (C.int)(nBatchSize))).ToError()
 	//return NppStatus( C.nppiMirrorBatch_32f_AC4IR(NppiSize oSizeROI, NppiAxis flip, NppiMirrorBatchCXR * pBatchList, int nBatchSize)).ToError()
 }
 
+func fromacoeffstofloat64(aCoeffs [2][3]C.double) (x [2][3]float64) {
+	//var x [2][3]float64
+	for i := range aCoeffs {
+		for j := range aCoeffs[i] {
+			x[i][j] = (float64)(aCoeffs[i][j])
+		}
+	}
+	return x
+}
+func fromfloat64toacoeffs(x [2][3]float64) (aCoeffs [2][3]C.double) {
+	//var aCoeffs [2][3]C.double
+	for i := range aCoeffs {
+		for j := range aCoeffs[i] {
+			aCoeffs[i][j] = (C.double)(x[i][j])
+		}
+	}
+	return aCoeffs
+}
+
 //GetAffineTransform are functions found in the nppi library for cuda
-func GetAffineTransform() error {
-	return errors.New("UnSupported Funcion for Go as of now")
-	//return NppStatus( C.nppiGetAffineTransform(NppiRect oSrcROI, const double aQuad[4][2], double aCoeffs[2][3])).ToError()
+func GetAffineTransform(oSrcROI NppiRect, aQuad [4][2]float64) (aCoeffs [2][3]float64, err error) {
+	var acoeffs [2][3]C.double
+	aquad := fromfloat64toaquad(aQuad)
+	err = NppStatus(C.nppiGetAffineTransform(oSrcROI.c(), &aquad[0], &acoeffs[0])).ToError()
+	aCoeffs = fromacoeffstofloat64(acoeffs)
+	return aCoeffs, err
 }
 
 //GetAffineQuad are functions found in the nppi library for cuda
-func GetAffineQuad() error {
-	return errors.New("UnSupported Funcion for Go as of now")
-	//return NppStatus( C.nppiGetAffineQuad(NppiRect oSrcROI, double aQuad[4][2], const double aCoeffs[2][3])).ToError()
+func GetAffineQuad(oSrcROI NppiRect, aCoeffs [2][3]float64) (aQuad [4][2]float64, err error) {
+	var aquad [4][2]C.double
+	acoef := fromfloat64toacoeffs(aCoeffs)
+	err = NppStatus(C.nppiGetAffineQuad(oSrcROI.c(), &aquad[0], &acoef[0])).ToError()
+	aQuad = fromaquadtofloat64(aquad)
+	return aQuad, err
 }
 
 //GetAffineBound are functions found in the nppi library for cuda
-func GetAffineBound() error {
-	return errors.New("UnSupported Funcion for Go as of now")
-	//return NppStatus( C.nppiGetAffineBound(NppiRect oSrcROI, double aBound[2][2], const double aCoeffs[2][3])).ToError()
+func GetAffineBound(oSrcROI NppiRect, aCoeffs [2][3]float64) (aBound [2][2]float64, err error) {
+	var abnd [2][2]C.double
+	acoef := fromfloat64toacoeffs(aCoeffs)
+	err = NppStatus(C.nppiGetAffineBound(oSrcROI.c(), &abnd[0], &acoef[0])).ToError()
+	aBound = fromaboundtofloat64(abnd)
+	return aBound, err
 }
 
+/*
+type ABound [2][2]C.double
+
+func (a *ABound) cptr() *C.double {
+	return (*C.double)(unsafe.Pointer(&a[0]))
+}
+*/
 //WarpAffine8uC1R are functions found in the nppi library for cuda
-func WarpAffine8uC1R() error {
+func WarpAffine8uC1R(pSrc *Npp8u, oSrcSize NppiSize, nSrcStep int32, oSrcROI NppiRect) error {
+
 	return errors.New("UnSupported Funcion for Go as of now")
 	//return NppStatus( C.nppiWarpAffine_8u_C1R(const Npp8u * pSrc, NppiSize oSrcSize, int nSrcStep, NppiRect oSrcROI, Npp8u * pDst, int nDstStep, NppiRect oDstROI, const double aCoeffs[2][3], int eInterpolation)).ToError()
 }
