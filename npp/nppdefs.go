@@ -20,6 +20,69 @@ const (
 	NppiInterSMOOTHEDGE       = NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)              /**<  Smooth edge filtering. */
 )
 
+//UNDEFINED returns NppiInterpolationMode(C.NPPI_INTER_UNDEFINED)
+func (n NppiInterpolationMode) UNDEFINED() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_UNDEFINED)
+}
+
+//NN returns NppiInterpolationMode(C.NPPI_INTER_NN)
+func (n NppiInterpolationMode) NN() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_NN)
+}
+
+//LINEAR returns NppiInterpolationMode(C.NPPI_INTER_LINEAR)
+func (n NppiInterpolationMode) LINEAR() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_LINEAR)
+}
+
+//CUBIC returns NppiInterpolationMode(C.NPPI_INTER_CUBIC)
+func (n NppiInterpolationMode) CUBIC() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_CUBIC)
+}
+
+//BSPLINE returns NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
+func (n NppiInterpolationMode) BSPLINE() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
+}
+
+//CATMULLROM returns NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
+func (n NppiInterpolationMode) CATMULLROM() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
+}
+
+//B05C03 returns NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
+func (n NppiInterpolationMode) B05C03() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
+}
+
+//SUPER returns NppiInterpolationMode(C.NPPI_INTER_SUPER)
+func (n NppiInterpolationMode) SUPER() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_SUPER)
+}
+
+//LANCZOS returns NppiInterpolationMode(C.NPPI_INTER_LANCZOS)
+func (n NppiInterpolationMode) LANCZOS() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_LANCZOS)
+}
+
+//LANCZ0S3ADVANCED returns NppiInterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
+func (n NppiInterpolationMode) LANCZ0S3ADVANCED() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
+}
+
+//SMOOTHEDGE returns NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)
+func (n NppiInterpolationMode) SMOOTHEDGE() NppiInterpolationMode {
+	return NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)
+}
+
+func (n NppiInterpolationMode) c() C.NppiInterpolationMode {
+	return (C.NppiInterpolationMode)(n)
+}
+
+func (n NppiInterpolationMode) cint() C.int {
+	return (C.int)(n)
+}
+
 /**
  * Bayer Grid Position Registration.
  */
