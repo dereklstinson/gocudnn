@@ -4,626 +4,458 @@ package npp
 import "C"
 import "unsafe"
 
-type NppiInterpolationMode C.NppiInterpolationMode
+//InterpolationMode is a wrapper for interpolation flags
+type InterpolationMode C.NppiInterpolationMode
 
-const (
-	NppiInterUNDEFINED        = NppiInterpolationMode(C.NPPI_INTER_UNDEFINED)
-	NppiInterNN               = NppiInterpolationMode(C.NPPI_INTER_NN)                 /**<  Nearest neighbor filtering. */
-	NppiInterLINEAR           = NppiInterpolationMode(C.NPPI_INTER_LINEAR)             /**<  Linear interpolation. */
-	NppiInterCUBIC            = NppiInterpolationMode(C.NPPI_INTER_CUBIC)              /**<  Cubic interpolation. */
-	NppiInterBSPLINE          = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)    /**<  Two-parameter cubic filter (B=1, C=0) */
-	NppiInterCATMULLROM       = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM) /**<  Two-parameter cubic filter (B=0, C=1/2) */
-	NppiInterB05C03           = NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)     /**<  Two-parameter cubic filter (B=1/2, C=3/10) */
-	NppiInterSUPER            = NppiInterpolationMode(C.NPPI_INTER_SUPER)              /**<  Super sampling. */
-	NppiInterLANCZOS          = NppiInterpolationMode(C.NPPI_INTER_LANCZOS)            /**<  Lanczos filtering. */
-	NppiInterLANCZ0S3ADVANCED = NppiInterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)  /**<  Generic Lanczos filtering with order 3. */
-	NppiInterSMOOTHEDGE       = NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)              /**<  Smooth edge filtering. */
-)
-
-//UNDEFINED returns NppiInterpolationMode(C.NPPI_INTER_UNDEFINED)
-func (n NppiInterpolationMode) UNDEFINED() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_UNDEFINED)
-}
-
-//NN returns NppiInterpolationMode(C.NPPI_INTER_NN)
-func (n NppiInterpolationMode) NN() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_NN)
-}
-
-//LINEAR returns NppiInterpolationMode(C.NPPI_INTER_LINEAR)
-func (n NppiInterpolationMode) LINEAR() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_LINEAR)
-}
-
-//CUBIC returns NppiInterpolationMode(C.NPPI_INTER_CUBIC)
-func (n NppiInterpolationMode) CUBIC() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_CUBIC)
-}
-
-//BSPLINE returns NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
-func (n NppiInterpolationMode) BSPLINE() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
-}
-
-//CATMULLROM returns NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
-func (n NppiInterpolationMode) CATMULLROM() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
-}
-
-//B05C03 returns NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
-func (n NppiInterpolationMode) B05C03() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
-}
-
-//SUPER returns NppiInterpolationMode(C.NPPI_INTER_SUPER)
-func (n NppiInterpolationMode) SUPER() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_SUPER)
-}
-
-//LANCZOS returns NppiInterpolationMode(C.NPPI_INTER_LANCZOS)
-func (n NppiInterpolationMode) LANCZOS() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_LANCZOS)
-}
-
-//LANCZ0S3ADVANCED returns NppiInterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
-func (n NppiInterpolationMode) LANCZ0S3ADVANCED() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
-}
-
-//SMOOTHEDGE returns NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)
-func (n NppiInterpolationMode) SMOOTHEDGE() NppiInterpolationMode {
-	return NppiInterpolationMode(C.NPPI_SMOOTH_EDGE)
-}
-
-func (n NppiInterpolationMode) c() C.NppiInterpolationMode {
+func (n InterpolationMode) c() C.NppiInterpolationMode {
 	return (C.NppiInterpolationMode)(n)
 }
 
-func (n NppiInterpolationMode) cint() C.int {
+func (n InterpolationMode) cint() C.int {
 	return (C.int)(n)
 }
 
-/**
+//UNDEFINED returns InterpolationMode(C.NPPI_INTER_UNDEFINED)
+func (n InterpolationMode) UNDEFINED() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_UNDEFINED)
+}
+
+//NN returns InterpolationMode(C.NPPI_INTER_NN)
+/**<  Nearest neighbor filtering. */
+func (n InterpolationMode) NN() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_NN)
+}
+
+//LINEAR returns InterpolationMode(C.NPPI_INTER_LINEAR)
+/**<  Linear interpolation. */
+func (n InterpolationMode) LINEAR() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_LINEAR)
+}
+
+//CUBIC returns InterpolationMode(C.NPPI_INTER_CUBIC)
+/**<  Cubic interpolation. */
+func (n InterpolationMode) CUBIC() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_CUBIC)
+}
+
+//BSPLINE returns InterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
+/**<  Two-parameter cubic filter (B=1, C=0) */
+func (n InterpolationMode) BSPLINE() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
+}
+
+//CATMULLROM returns InterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
+/**<  Two-parameter cubic filter (B=0, C=1/2) */
+func (n InterpolationMode) CATMULLROM() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
+}
+
+//B05C03 returns InterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
+/**<  Two-parameter cubic filter (B=1/2, C=3/10) */
+func (n InterpolationMode) B05C03() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
+}
+
+//SUPER returns InterpolationMode(C.NPPI_INTER_SUPER)
+/**<  Super sampling. */
+func (n InterpolationMode) SUPER() InterpolationMode { return InterpolationMode(C.NPPI_INTER_SUPER) }
+
+//LANCZOS returns InterpolationMode(C.NPPI_INTER_LANCZOS)
+/**<  Lanczos filtering. */
+func (n InterpolationMode) LANCZOS() InterpolationMode { return InterpolationMode(C.NPPI_INTER_LANCZOS) }
+
+//LANCZ0S3ADVANCED returns InterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
+/**<  Generic Lanczos filtering with order 3. */
+func (n InterpolationMode) LANCZ0S3ADVANCED() InterpolationMode {
+	return InterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
+}
+
+//SMOOTHEDGE returns InterpolationMode(C.NPPI_SMOOTH_EDGE)
+/**<  Smooth edge filtering. */
+func (n InterpolationMode) SMOOTHEDGE() InterpolationMode {
+	return InterpolationMode(C.NPPI_SMOOTH_EDGE)
+}
+
+/*NpiiBayerGridePosition is used for
  * Bayer Grid Position Registration.
  */
-type NpiiBayerGridePosition C.NppiBayerGridPosition
 
-const (
-	NppiBayerBGGR = NpiiBayerGridePosition(C.NPPI_BAYER_BGGR) /**<  Default registration position. */
-	NppiBayerRGGB = NpiiBayerGridePosition(C.NPPI_BAYER_RGGB)
-	NppiBayerGBRG = NpiiBayerGridePosition(C.NPPI_BAYER_GBRG)
-	NppiBayerGRBG = NpiiBayerGridePosition(C.NPPI_BAYER_GRBG)
-)
+//BayerGridPosition is used as flags. Contains methods for different flags
+type BayerGridPosition C.NppiBayerGridPosition
 
-/**
- * Fixed filter-kernel sizes.
- */
-type NppiMaskSize C.NppiMaskSize
+func (b BayerGridPosition) c() C.NppiBayerGridPosition { return C.NppiBayerGridPosition(b) }
 
-const (
-	NppMaskSize1x3   = NppiMaskSize(C.NPP_MASK_SIZE_1_X_3)
-	NppMaskSize1x5   = NppiMaskSize(C.NPP_MASK_SIZE_1_X_5)
-	NppMaskSize3x1   = NppiMaskSize(C.NPP_MASK_SIZE_3_X_1) // leaving space for more 1 X N type enum values
-	NppMaskSize5x1   = NppiMaskSize(C.NPP_MASK_SIZE_5_X_1)
-	NppMaskSize3x3   = NppiMaskSize(C.NPP_MASK_SIZE_3_X_3) // leaving space for more N X 1 type enum values
-	NppMaskSize5x5   = NppiMaskSize(C.NPP_MASK_SIZE_5_X_5)
-	NppMaskSize7x7   = NppiMaskSize(C.NPP_MASK_SIZE_7_X_7)
-	NppMaskSize9x9   = NppiMaskSize(C.NPP_MASK_SIZE_9_X_9)
-	NppMaskSize11x11 = NppiMaskSize(C.NPP_MASK_SIZE_11_X_11)
-	NppMaskSize13x13 = NppiMaskSize(C.NPP_MASK_SIZE_13_X_13)
-	NppMaskSize15x15 = NppiMaskSize(C.NPP_MASK_SIZE_15_X_15)
-)
+//BGGR returns BayerGridPosition(C.NPPI_BAYER_BGGR)
+func (b BayerGridPosition) BGGR() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_BGGR) }
+
+//RGGB returns BayerGridPosition(NPPI_BAYER_RGGB)
+func (b BayerGridPosition) RGGB() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_RGGB) }
+
+//GRBG 	returns BayerGridPosition(C.NPPI_BAYER_GRBG)
+func (b BayerGridPosition) GRBG() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_GRBG) }
+
+//GBRG 	returns BayerGridPosition(NPPI_BAYER_GBRG)
+func (b BayerGridPosition) GBRG() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_GBRG) }
+
+//MaskSize has methods that are flags that are Fixed filter-kernel sizes.
+type MaskSize C.NppiMaskSize
+
+func (m MaskSize) c() C.NppiMaskSize { return C.NppiMaskSize(m) }
+
+//Size1x3 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size1x3() MaskSize { return MaskSize(C.NPP_MASK_SIZE_1_X_3) }
+
+//Size1x5 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size1x5() MaskSize { return MaskSize(C.NPP_MASK_SIZE_1_X_5) }
+
+//Size3x1 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size3x1() MaskSize { return MaskSize(C.NPP_MASK_SIZE_3_X_1) }
+
+//Size5x1 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size5x1() MaskSize { return MaskSize(C.NPP_MASK_SIZE_5_X_1) }
+
+//Size3x3 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size3x3() MaskSize { return MaskSize(C.NPP_MASK_SIZE_3_X_3) }
+
+//Size5x5 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size5x5() MaskSize { return MaskSize(C.NPP_MASK_SIZE_5_X_5) }
+
+//Size7x7 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size7x7() MaskSize { return MaskSize(C.NPP_MASK_SIZE_7_X_7) }
+
+//Size9x9 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size9x9() MaskSize { return MaskSize(C.NPP_MASK_SIZE_9_X_9) }
+
+//Size11x11 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size11x11() MaskSize { return MaskSize(C.NPP_MASK_SIZE_11_X_11) }
+
+//Size13x13 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size13x13() MaskSize { return MaskSize(C.NPP_MASK_SIZE_13_X_13) }
+
+//Size15x15 returns the NPP flag wrapped in MaskSize
+func (m MaskSize) Size15x15() MaskSize { return MaskSize(C.NPP_MASK_SIZE_15_X_15) }
 
 /**
  * Differential Filter types
  */
 
-type NppiDifferentialKernel C.NppiDifferentialKernel
+//DifferentialKernel wraps a C.NppiDifferentialKernel
+type DifferentialKernel C.NppiDifferentialKernel
 
-const (
-	NppFilterSOBEL  = NppiDifferentialKernel(C.NPP_FILTER_SOBEL)
-	NppFilterSCHARR = NppiDifferentialKernel(C.NPP_FILTER_SCHARR)
-)
+func (d DifferentialKernel) c() C.NppiDifferentialKernel { return C.NppiDifferentialKernel(d) }
 
-/**
- * Error Status Codes
- *
- * Almost all NPP function return error-status information using
- * these return codes.
- * Negative return codes indicate errors, positive return codes indicate
- * warnings, a return code of 0 indicates success.
- */
-type NppStatus C.NppStatus
+//SOBEL returns  DifferentialKernel(C.NPP_FILTER_SOBEL) flag
+func (d DifferentialKernel) SOBEL() DifferentialKernel { return DifferentialKernel(C.NPP_FILTER_SOBEL) }
 
-func (n NppStatus) error() error {
-	switch n {
-	case NppStatus(C.NPP_NO_ERROR):
-		return nil
-	}
-	return n
+//SCHARR returns DifferentialKernel(C.NPP_FILTER_SCHARR) flag
+func (d DifferentialKernel) SCHARR() DifferentialKernel {
+	return DifferentialKernel(C.NPP_FILTER_SCHARR)
 }
-
-func (n NppStatus) ToError() error {
-	return n.error()
-}
-func (n NppStatus) Error() string {
-	switch n {
-	case NppStatus(C.NPP_NOT_SUPPORTED_MODE_ERROR):
-		return "NPP_NOT_SUPPORTED_MODE_ERROR"
-	case NppStatus(C.NPP_INVALID_HOST_POINTER_ERROR):
-		return "NPP_INVALID_HOST_POINTER_ERROR"
-	case NppStatus(C.NPP_INVALID_DEVICE_POINTER_ERROR):
-		return "NPP_INVALID_DEVICE_POINTER_ERROR"
-	case NppStatus(C.NPP_LUT_PALETTE_BITSIZE_ERROR):
-		return "NPP_LUT_PALETTE_BITSIZE_ERROR"
-	case NppStatus(C.NPP_ZC_MODE_NOT_SUPPORTED_ERROR):
-		return "NPP_ZC_MODE_NOT_SUPPORTED_ERROR" /**<  ZeroCrossing mode not supported  */
-	case NppStatus(C.NPP_NOT_SUFFICIENT_COMPUTE_CAPABILITY):
-		return "NPP_NOT_SUFFICIENT_COMPUTE_CAPABILITY"
-	case NppStatus(C.NPP_TEXTURE_BIND_ERROR):
-		return "NPP_TEXTURE_BIND_ERROR"
-	case NppStatus(C.NPP_WRONG_INTERSECTION_ROI_ERROR):
-		return "NPP_WRONG_INTERSECTION_ROI_ERROR"
-	case NppStatus(C.NPP_HAAR_CLASSIFIER_PIXEL_MATCH_ERROR):
-		return "NPP_HAAR_CLASSIFIER_PIXEL_MATCH_ERROR"
-	case NppStatus(C.NPP_MEMFREE_ERROR):
-		return "NPP_MEMFREE_ERROR"
-	case NppStatus(C.NPP_MEMSET_ERROR):
-		return "NPP_MEMSET_ERROR"
-	case NppStatus(C.NPP_MEMCPY_ERROR):
-		return "NPP_MEMCPY_ERROR"
-	case NppStatus(C.NPP_ALIGNMENT_ERROR):
-		return "NPP_ALIGNMENT_ERROR"
-	case NppStatus(C.NPP_CUDA_KERNEL_EXECUTION_ERROR):
-		return "NPP_CUDA_KERNEL_EXECUTION_ERROR"
-	case NppStatus(C.NPP_ROUND_MODE_NOT_SUPPORTED_ERROR):
-		return "NPP_ROUND_MODE_NOT_SUPPORTED_ERROR" /**< Unsupported round mode*/
-	case NppStatus(C.NPP_QUALITY_INDEX_ERROR):
-		return "NPP_QUALITY_INDEX_ERROR" /**< Image pixels are constant for quality index */
-	case NppStatus(C.NPP_RESIZE_NO_OPERATION_ERROR):
-		return "NPP_RESIZE_NO_OPERATION_ERROR" /**< One of the output image dimensions is less than 1 pixel */
-	case NppStatus(C.NPP_OVERFLOW_ERROR):
-		return "NPP_OVERFLOW_ERROR" /**< Number overflows the upper or lower limit of the data type */
-	case NppStatus(C.NPP_NOT_EVEN_STEP_ERROR):
-		return "NPP_NOT_EVEN_STEP_ERROR" /**< Step value is not pixel multiple */
-	case NppStatus(C.NPP_HISTOGRAM_NUMBER_OF_LEVELS_ERROR):
-		return "NPP_HISTOGRAM_NUMBER_OF_LEVELS_ERROR" /**< Number of levels for histogram is less than 2 */
-	case NppStatus(C.NPP_LUT_NUMBER_OF_LEVELS_ERROR):
-		return "NPP_LUT_NUMBER_OF_LEVELS_ERROR" /**< Number of levels for LUT is less than 2 */
-	case NppStatus(C.NPP_CORRUPTED_DATA_ERROR):
-		return "NPP_CORRUPTED_DATA_ERROR" /**< Processed data is corrupted */
-	case NppStatus(C.NPP_CHANNEL_ORDER_ERROR):
-		return "NPP_CHANNEL_ORDER_ERROR" /**< Wrong order of the destination channels */
-	case NppStatus(C.NPP_ZERO_MASK_VALUE_ERROR):
-		return "NPP_ZERO_MASK_VALUE_ERROR" /**< All values of the mask are zero */
-	case NppStatus(C.NPP_QUADRANGLE_ERROR):
-		return "NPP_QUADRANGLE_ERROR" /**< The quadrangle is nonconvex or degenerates into triangle, line or point */
-	case NppStatus(C.NPP_RECTANGLE_ERROR):
-		return "NPP_RECTANGLE_ERROR" /**< Size of the rectangle region is less than or equal to 1 */
-	case NppStatus(C.NPP_COEFFICIENT_ERROR):
-		return "NPP_COEFFICIENT_ERROR" /**< Unallowable values of the transformation coefficients   */
-	case NppStatus(C.NPP_NUMBER_OF_CHANNELS_ERROR):
-		return "NPP_NUMBER_OF_CHANNELS_ERROR" /**< Bad or unsupported number of channels */
-	case NppStatus(C.NPP_COI_ERROR):
-		return "NPP_COI_ERROR" /**< Channel of interest is not 1, 2, or 3 */
-	case NppStatus(C.NPP_DIVISOR_ERROR):
-		return "NPP_DIVISOR_ERROR" /**< Divisor is equal to zero */
-	case NppStatus(C.NPP_CHANNEL_ERROR):
-		return "NPP_CHANNEL_ERROR" /**< Illegal channel index */
-	case NppStatus(C.NPP_STRIDE_ERROR):
-		return "NPP_STRIDE_ERROR" /**< Stride is less than the row length */
-	case NppStatus(C.NPP_ANCHOR_ERROR):
-		return "NPP_ANCHOR_ERROR" /**< Anchor point is outside mask */
-	case NppStatus(C.NPP_MASK_SIZE_ERROR):
-		return "NPP_MASK_SIZE_ERROR" /**< Lower bound is larger than upper bound */
-	case NppStatus(C.NPP_RESIZE_FACTOR_ERROR):
-		return "NPP_RESIZE_FACTOR_ERROR"
-	case NppStatus(C.NPP_INTERPOLATION_ERROR):
-		return "NPP_INTERPOLATION_ERROR"
-	case NppStatus(C.NPP_MIRROR_FLIP_ERROR):
-		return "NPP_MIRROR_FLIP_ERROR"
-	case NppStatus(C.NPP_MOMENT_00_ZERO_ERROR):
-		return "NPP_MOMENT_00_ZERO_ERROR"
-	case NppStatus(C.NPP_THRESHOLD_NEGATIVE_LEVEL_ERROR):
-		return "NPP_THRESHOLD_NEGATIVE_LEVEL_ERROR"
-	case NppStatus(C.NPP_THRESHOLD_ERROR):
-		return "NPP_THRESHOLD_ERROR"
-	case NppStatus(C.NPP_CONTEXT_MATCH_ERROR):
-		return "NPP_CONTEXT_MATCH_ERROR"
-	case NppStatus(C.NPP_FFT_FLAG_ERROR):
-		return "NPP_FFT_FLAG_ERROR"
-	case NppStatus(C.NPP_FFT_ORDER_ERROR):
-		return "NPP_FFT_ORDER_ERROR"
-	case NppStatus(C.NPP_STEP_ERROR):
-		return "NPP_STEP_ERROR" /**<  Step is less or equal zero */
-	case NppStatus(C.NPP_SCALE_RANGE_ERROR):
-		return "NPP_SCALE_RANGE_ERROR"
-	case NppStatus(C.NPP_DATA_TYPE_ERROR):
-		return "NPP_DATA_TYPE_ERROR"
-	case NppStatus(C.NPP_OUT_OFF_RANGE_ERROR):
-		return "NPP_OUT_OFF_RANGE_ERROR"
-	case NppStatus(C.NPP_DIVIDE_BY_ZERO_ERROR):
-		return "NPP_DIVIDE_BY_ZERO_ERROR"
-	case NppStatus(C.NPP_MEMORY_ALLOCATION_ERR):
-		return "NPP_MEMORY_ALLOCATION_ERR"
-	case NppStatus(C.NPP_NULL_POINTER_ERROR):
-		return "NPP_NULL_POINTER_ERROR"
-	case NppStatus(C.NPP_RANGE_ERROR):
-		return "NPP_RANGE_ERROR"
-	case NppStatus(C.NPP_SIZE_ERROR):
-		return "NPP_SIZE_ERROR"
-	case NppStatus(C.NPP_BAD_ARGUMENT_ERROR):
-		return "NPP_BAD_ARGUMENT_ERROR"
-	case NppStatus(C.NPP_NO_MEMORY_ERROR):
-		return "NPP_NO_MEMORY_ERROR"
-	case NppStatus(C.NPP_NOT_IMPLEMENTED_ERROR):
-		return "NPP_NOT_IMPLEMENTED_ERROR"
-	case NppStatus(C.NPP_ERROR):
-		return "NPP_ERROR"
-	case NppStatus(C.NPP_ERROR_RESERVED):
-		return "NPP_ERROR_RESERVED"
-	case NppStatus(C.NPP_NO_ERROR):
-		return "NPP_NO_ERROR" /**<  Error free operation */
-	case NppStatus(C.NPP_NO_OPERATION_WARNING):
-		return "NPP_NO_OPERATION_WARNING" /**<  Indicates that no operation was performed */
-	case NppStatus(C.NPP_DIVIDE_BY_ZERO_WARNING):
-		return "NPP_DIVIDE_BY_ZERO_WARNING" /**<  Divisor is zero however does not terminate the execution */
-	case NppStatus(C.NPP_AFFINE_QUAD_INCORRECT_WARNING):
-		return "NPP_AFFINE_QUAD_INCORRECT_WARNING" /**<  Indicates that the quadrangle passed to one of affine warping functions doesn't have necessary properties. First 3 vertices are used, the fourth vertex discarded. */
-	case NppStatus(C.NPP_WRONG_INTERSECTION_ROI_WARNING):
-		return "NPP_WRONG_INTERSECTION_ROI_WARNING" /**<  The given ROI has no interestion with either the source or destination ROI. Thus no operation was performed. */
-	case NppStatus(C.NPP_WRONG_INTERSECTION_QUAD_WARNING):
-		return "NPP_WRONG_INTERSECTION_QUAD_WARNING" /**<  The given quadrangle has no intersection with either the source or destination ROI. Thus no operation was performed. */
-	case NppStatus(C.NPP_DOUBLE_SIZE_WARNING):
-		return "NPP_DOUBLE_SIZE_WARNING" /**<  Image size isn't multiple of two. Indicates that in case of 422/411/420 sampling the ROI width/height was modified for proper processing. */
-	case NppStatus(C.NPP_MISALIGNED_DST_ROI_WARNING):
-		return "NPP_MISALIGNED_DST_ROI_WARNING" /**<  Speed reduction due to uncoalesced memory accesses warning. */
-	}
-	return "UNSUPPORTED STATUS FLAG ON GO SIDE OF BINDING"
-}
-
-/* negative return-codes indicate errors */
-
-type NppGpuComputeCapability C.NppGpuComputeCapability
-
-const (
-	NppCudaUnknownVersion = NppGpuComputeCapability(C.NPP_CUDA_UNKNOWN_VERSION) /**<  Indicates that the compute-capability query failed */
-	NppCudaNotCapable     = NppGpuComputeCapability(C.NPP_CUDA_NOT_CAPABLE)     /**<  Indicates that no CUDA capable device was found */
-	NppCuda0100           = NppGpuComputeCapability(C.NPP_CUDA_1_0)             /**<  Indicates that CUDA 1.0 capable device is machine's default device */
-	NppCuda0101           = NppGpuComputeCapability(C.NPP_CUDA_1_1)             /**<  Indicates that CUDA 1.1 capable device is machine's default device */
-	NppCuda0102           = NppGpuComputeCapability(C.NPP_CUDA_1_2)             /**<  Indicates that CUDA 1.2 capable device is machine's default device */
-	NppCuda0103           = NppGpuComputeCapability(C.NPP_CUDA_1_3)             /**<  Indicates that CUDA 1.3 capable device is machine's default device */
-	NppCuda0200           = NppGpuComputeCapability(C.NPP_CUDA_2_0)             /**<  Indicates that CUDA 2.0 capable device is machine's default device */
-	NppCuda0201           = NppGpuComputeCapability(C.NPP_CUDA_2_1)             /**<  Indicates that CUDA 2.1 capable device is machine's default device */
-	NppCuda0300           = NppGpuComputeCapability(C.NPP_CUDA_3_0)             /**<  Indicates that CUDA 3.0 capable device is machine's default device */
-	NppCuda0302           = NppGpuComputeCapability(C.NPP_CUDA_3_2)             /**<  Indicates that CUDA 3.2 capable device is machine's default device */
-	NppCuda0305           = NppGpuComputeCapability(C.NPP_CUDA_3_5)             /**<  Indicates that CUDA 3.5 capable device is machine's default device */
-	NppCuda0307           = NppGpuComputeCapability(C.NPP_CUDA_3_7)             /**<  Indicates that CUDA 3.7 capable device is machine's default device */
-	NppCuda0500           = NppGpuComputeCapability(C.NPP_CUDA_5_0)             /**<  Indicates that CUDA 5.0 capable device is machine's default device */
-	NppCuda0502           = NppGpuComputeCapability(C.NPP_CUDA_5_2)             /**<  Indicates that CUDA 5.2 capable device is machine's default device */
-	NppCuda0503           = NppGpuComputeCapability(C.NPP_CUDA_5_3)             /**<  Indicates that CUDA 5.3 capable device is machine's default device */
-	NppCuda0600           = NppGpuComputeCapability(C.NPP_CUDA_6_0)             /**<  Indicates that CUDA 6.0 capable device is machine's default device */
-	NppCuda0601           = NppGpuComputeCapability(C.NPP_CUDA_6_1)             /**<  Indicates that CUDA 6.1 capable device is machine's default device */
-	NppCuda0602           = NppGpuComputeCapability(C.NPP_CUDA_6_2)             /**<  Indicates that CUDA 6.2 capable device is machine's default device */
-	NppCuda0603           = NppGpuComputeCapability(C.NPP_CUDA_6_3)             /**<  Indicates that CUDA 6.3 capable device is machine's default device */
-	NppCuda0700           = NppGpuComputeCapability(C.NPP_CUDA_7_0)             /**<  Indicates that CUDA 7.0 capable device is machine's default device */
-	NppCuda0702           = NppGpuComputeCapability(C.NPP_CUDA_7_2)             /**<  Indicates that CUDA 7.2 capable device is machine's default device */
-	NppCuda0703           = NppGpuComputeCapability(C.NPP_CUDA_7_3)             /**<  Indicates that CUDA 7.3 capable device is machine's default device */
-	NppCuda0705           = NppGpuComputeCapability(C.NPP_CUDA_7_5)             /**<  Indicates that CUDA 7.5 or better is machine's default device */
-)
-
-type NppLibraryVersion C.NppLibraryVersion
-
-var (
-	nppmajor NppLibraryVersion /**<  Major version number */
-	nppminor NppLibraryVersion /**<  Minor version number */
-	nppbuild NppLibraryVersion /**<  Build number. This reflects the nightly build this release was made from. */
-)
 
 /*
  *
- * Npp32f
+ * Float32
  *
  */
 
-//Npp32f is a float32.  A pointer of this type could be in cuda memory.
-type Npp32f C.Npp32f /**<  32-bit (IEEE) floating-point numbers */
+//Float32 is a float32 used by npp.  A pointer of this type could be in cuda memory.
+type Float32 C.Npp32f /**<  32-bit (IEEE) floating-point numbers */
 
-func (n *Npp32f) cptr() *C.Npp32f {
+func (n *Float32) cptr() *C.Npp32f {
 	return (*C.Npp32f)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp32f) Unsafe() unsafe.Pointer {
+func (n *Float32) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp32f) c() C.Npp32f {
+func (n Float32) c() C.Npp32f {
 	return C.Npp32f(n)
 }
 
 /*
  *
- * Npp64f
+ * Float64
  *
  */
 
-//Npp64f is a float64. A pointer of this type could be in cuda memory.
-type Npp64f C.Npp64f /**<  64-bit floating-point numbers */
+//Float64 is a float64. A pointer of this type could be in cuda memory.
+type Float64 C.Npp64f /**<  64-bit floating-point numbers */
 
-func (n *Npp64f) cptr() *C.Npp64f {
+func (n *Float64) cptr() *C.Npp64f {
 	return (*C.Npp64f)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp64f) Unsafe() unsafe.Pointer {
+func (n *Float64) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
-func (n Npp64f) c() C.Npp64f {
+func (n Float64) c() C.Npp64f {
 	return C.Npp64f(n)
 }
 
 /*
  *
- * Npp8u
+ * Uint8
  *
  */
 
-//Npp8u is an uint8. A pointer of this type could be in cuda memory.
-type Npp8u C.Npp8u /**<  8-bit unsigned chars */
-func (n *Npp8u) cptr() *C.Npp8u {
+//Uint8 is an uint8 for npp. A pointer of this type could be in cuda memory.
+type Uint8 C.Npp8u /**<  8-bit unsigned chars */
+func (n *Uint8) cptr() *C.Npp8u {
 	return (*C.Npp8u)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp8u) Unsafe() unsafe.Pointer {
+func (n *Uint8) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp8u) c() C.Npp8u {
+func (n Uint8) c() C.Npp8u {
 	return C.Npp8u(n)
 }
 
 /*
  *
- * Npp8s
+ * Int8
  *
  */
 
-//Npp8s is a int8.  A pointer of this type could be in cuda memory.
-type Npp8s C.Npp8s /**<  8-bit signed chars */
+//Int8 is a int8 for Npp.  A pointer of this type could be in cuda memory.
+type Int8 C.Npp8s /**<  8-bit signed chars */
 
-func (n *Npp8s) cptr() *C.Npp8s {
+func (n *Int8) cptr() *C.Npp8s {
 	return (*C.Npp8s)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp8s) Unsafe() unsafe.Pointer {
+func (n *Int8) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp8s) c() C.Npp8s {
+func (n Int8) c() C.Npp8s {
 	return C.Npp8s(n)
 }
 
 /*
  *
- * Npp16u
+ * Uint16
  *
  */
 
-//Npp16u is a uint16.  A pointer of this type could be in cuda memory.
-type Npp16u C.Npp16u /**<  16-bit unsigned integers */
+//Uint16 is a uint16.  A pointer of this type could be in cuda memory.
+type Uint16 C.Npp16u /**<  16-bit unsigned integers */
 
-func (n *Npp16u) cptr() *C.Npp16u {
+func (n *Uint16) cptr() *C.Npp16u {
 	return (*C.Npp16u)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp16u) Unsafe() unsafe.Pointer {
+func (n *Uint16) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
-func (n Npp16u) c() C.Npp16u {
+func (n Uint16) c() C.Npp16u {
 	return C.Npp16u(n)
 }
 
 /*
  *
- * Npp16s
+ * Int16
  *
  */
 
-//Npp16s is a  int16.  A pointer of this type could be in cuda memory.
-type Npp16s C.Npp16s /**<  16-bit signed integers */
+//Int16 is a  int16.  A pointer of this type could be in cuda memory.
+type Int16 C.Npp16s /**<  16-bit signed integers */
 
-func (n *Npp16s) cptr() *C.Npp16s {
+func (n *Int16) cptr() *C.Npp16s {
 	return (*C.Npp16s)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp16s) Unsafe() unsafe.Pointer {
+func (n *Int16) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp16s) c() C.Npp16s {
+func (n Int16) c() C.Npp16s {
 	return C.Npp16s(n)
 }
 
 /*
  *
- * Npp32u
+ * Uint32
  *
  */
 
-//Npp32u is a uint32.  A pointer of this type could be in cuda memory.
-type Npp32u C.Npp32u /**<  32-bit unsigned integers */
+//Uint32 is a uint32.  A pointer of this type could be in cuda memory.
+type Uint32 C.Npp32u /**<  32-bit unsigned integers */
 
-func (n *Npp32u) cptr() *C.Npp32u {
+func (n *Uint32) cptr() *C.Npp32u {
 	return (*C.Npp32u)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp32u) Unsafe() unsafe.Pointer {
+func (n *Uint32) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp32u) c() C.Npp32u {
+func (n Uint32) c() C.Npp32u {
 	return C.Npp32u(n)
 }
 
 /*
  *
- * Npp32s
+ * Int32
  *
  */
 
-//Npp32s is a int32.  A pointer of this type could be in cuda memory.
-type Npp32s C.Npp32s /**<  32-bit signed integers */
+//Int32 is a int32.  A pointer of this type could be in cuda memory.
+type Int32 C.Npp32s /**<  32-bit signed integers */
 
-func (n *Npp32s) cptr() *C.Npp32s {
+func (n *Int32) cptr() *C.Npp32s {
 	return (*C.Npp32s)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp32s) Unsafe() unsafe.Pointer {
+func (n *Int32) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp32s) c() C.Npp32s {
+func (n Int32) c() C.Npp32s {
 	return C.Npp32s(n)
 }
 
 /*
  *
- * Npp64u
+ * Uint64
  *
  */
 
-//Npp64u is a uint64.  A pointer of this type could be in cuda memory.
-type Npp64u C.Npp64u /**<  64-bit unsigned integers */
+//Uint64 is a uint64.  A pointer of this type could be in cuda memory.
+type Uint64 C.Npp64u /**<  64-bit unsigned integers */
 
-func (n *Npp64u) cptr() *C.Npp64u {
+func (n *Uint64) cptr() *C.Npp64u {
 	return (*C.Npp64u)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp64u) Unsafe() unsafe.Pointer {
+func (n *Uint64) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp64u) c() C.Npp64u {
+func (n Uint64) c() C.Npp64u {
 	return C.Npp64u(n)
 }
 
 /*
  *
- * Npp64s
+ * Int64
  *
  */
 
-//Npp64s is a int64.  A pointer of this type could be in cuda memory.
-type Npp64s C.Npp64s /**<  64-bit signed integers */
+//Int64 is a int64.  A pointer of this type could be in cuda memory.
+type Int64 C.Npp64s /**<  64-bit signed integers */
 
-func (n *Npp64s) cptr() *C.Npp64s {
+func (n *Int64) cptr() *C.Npp64s {
 	return (*C.Npp64s)(n)
 }
 
 //Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Npp64s) Unsafe() unsafe.Pointer {
+func (n *Int64) Unsafe() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
-func (n Npp64s) c() C.Npp64s {
+func (n Int64) c() C.Npp64s {
 	return C.Npp64s(n)
 }
 
-func convertNpp64utoCNpp64uarray(x []Npp64u) []C.Npp64u {
+func convertUint64toCNpp64uarray(x []Uint64) []C.Npp64u {
 	y := make([]C.Npp64u, len(x))
 	for i := range x {
 		y[i] = C.Npp64u(x[i])
 	}
 	return y
 }
-func convertCNpp64utoNpp64uarray(x []C.Npp64u) []Npp64u {
-	y := make([]Npp64u, len(x))
+func convertCNpp64utoUint64array(x []C.Npp64u) []Uint64 {
+	y := make([]Uint64, len(x))
 	for i := range x {
-		y[i] = Npp64u(x[i])
+		y[i] = Uint64(x[i])
 	}
 	return y
 }
-func convertNpp32utoCNpp32uarray(x []Npp32u) []C.Npp32u {
+func convertUint32toCNpp32uarray(x []Uint32) []C.Npp32u {
 	y := make([]C.Npp32u, len(x))
 	for i := range x {
 		y[i] = C.Npp32u(x[i])
 	}
 	return y
 }
-func convertCNpp32utoNpp32uarray(x []C.Npp32u) []Npp32u {
-	y := make([]Npp32u, len(x))
+func convertCNpp32utoUint32array(x []C.Npp32u) []Uint32 {
+	y := make([]Uint32, len(x))
 	for i := range x {
-		y[i] = Npp32u(x[i])
+		y[i] = Uint32(x[i])
 	}
 	return y
 }
 
-func convertNpp16utoCNpp16uarray(x []Npp16u) []C.Npp16u {
+func convertNpp16utoCNpp16uarray(x []Uint16) []C.Npp16u {
 	y := make([]C.Npp16u, len(x))
 	for i := range x {
 		y[i] = C.Npp16u(x[i])
 	}
 	return y
 }
-func convertCNpp16utoNpp16uarray(x []C.Npp16u) []Npp16u {
-	y := make([]Npp16u, len(x))
+func convertCNpp16utoNpp16uarray(x []C.Npp16u) []Uint16 {
+	y := make([]Uint16, len(x))
 	for i := range x {
-		y[i] = Npp16u(x[i])
+		y[i] = Uint16(x[i])
 	}
 	return y
 }
 
-func convertNpp8utoCNpp8uarray(x []Npp8u) []C.Npp8u {
+func convertNpp8utoCNpp8uarray(x []Uint8) []C.Npp8u {
 	y := make([]C.Npp8u, len(x))
 	for i := range x {
 		y[i] = C.Npp8u(x[i])
 	}
 	return y
 }
-func convertCNpp8utoNpp8uarray(x []C.Npp8u) []Npp8u {
-	y := make([]Npp8u, len(x))
+func convertCNpp8utoNpp8uarray(x []C.Npp8u) []Uint8 {
+	y := make([]Uint8, len(x))
 	for i := range x {
-		y[i] = Npp8u(x[i])
+		y[i] = Uint8(x[i])
 	}
 	return y
 }
 
-/*Npp8uc  Complex Number
+/*Uint8Complex  Complex Number
  * This struct represents an unsigned char complex number.
  */
-type Npp8uc C.Npp8uc
+type Uint8Complex C.Npp8uc
 
 //Set sets the real and imaginary vals
-func (n *Npp8uc) Set(real, imaginary Npp8u) {
+func (n *Uint8Complex) Set(real, imaginary Uint8) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp8uc) Get() (real, imaginary Npp8u) {
-	real = (Npp8u)(n.re)
-	imaginary = (Npp8u)(n.im)
+func (n *Uint8Complex) Get() (real, imaginary Uint8) {
+	real = (Uint8)(n.re)
+	imaginary = (Uint8)(n.im)
 	return real, imaginary
 }
 
-/*Npp16uc - See below
+/*Uint16Complex - See below
  * Complex Number
  * This struct represents an unsigned short complex number.
  */
-type Npp16uc C.Npp16uc
+type Uint16Complex C.Npp16uc
 
 //Set sets the real and imaginary vals
-func (n *Npp16uc) Set(real, imaginary Npp16u) {
+func (n *Uint16Complex) Set(real, imaginary Uint16) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp16uc) Get() (real, imaginary Npp16u) {
-	real = (Npp16u)(n.re)
-	imaginary = (Npp16u)(n.im)
+func (n *Uint16Complex) Get() (real, imaginary Uint16) {
+	real = (Uint16)(n.re)
+	imaginary = (Uint16)(n.im)
 	return real, imaginary
 }
 
@@ -631,109 +463,109 @@ func (n *Npp16uc) Get() (real, imaginary Npp16u) {
  * * Complex Number
  * This struct represents a short complex number.
  */
-type Npp16sc C.Npp16sc
+type Int16Complex C.Npp16sc
 
 //Set sets the real and imaginary vals
-func (n *Npp16sc) Set(real, imaginary Npp16s) {
+func (n *Int16Complex) Set(real, imaginary Int16) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp16sc) Get() (real, imaginary Npp16s) {
-	real = (Npp16s)(n.re)
-	imaginary = (Npp16s)(n.im)
+func (n *Int16Complex) Get() (real, imaginary Int16) {
+	real = (Int16)(n.re)
+	imaginary = (Int16)(n.im)
 	return real, imaginary
 }
 
-/*Npp32uc - See below
+/*Uint32Complex - See below
  * * Complex Number
  * This struct represents an unsigned int complex number.
  */
-type Npp32uc C.Npp32uc
+type Uint32Complex C.Npp32uc
 
 //Set sets the real and imaginary vals
-func (n *Npp32uc) Set(real, imaginary Npp32u) {
+func (n *Uint32Complex) Set(real, imaginary Uint32) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp32uc) Get() (real, imaginary Npp32u) {
-	real = (Npp32u)(n.re)
-	imaginary = (Npp32u)(n.im)
+func (n *Uint32Complex) Get() (real, imaginary Uint32) {
+	real = (Uint32)(n.re)
+	imaginary = (Uint32)(n.im)
 	return real, imaginary
 }
 
-/*Npp32sc - Complex Number
+/*Int32Complex - Complex Number
  * This struct represents a signed int complex number.
  */
-type Npp32sc C.Npp32sc
+type Int32Complex C.Npp32sc
 
 //Set sets the real and imaginary vals
-func (n *Npp32sc) Set(real, imaginary Npp32s) {
+func (n *Int32Complex) Set(real, imaginary Int32) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp32sc) Get() (real, imaginary Npp32s) {
-	real = (Npp32s)(n.re)
-	imaginary = (Npp32s)(n.im)
+func (n *Int32Complex) Get() (real, imaginary Int32) {
+	real = (Int32)(n.re)
+	imaginary = (Int32)(n.im)
 	return real, imaginary
 }
 
 /*
 Npp32fc This struct represents a single floating-point complex number.
 */
-type Npp32fc C.Npp32fc
+type Float32Complex C.Npp32fc
 
-func (n *Npp32fc) c() C.Npp32fc {
+func (n *Float32Complex) c() C.Npp32fc {
 	return C.Npp32fc(*n)
 }
 
 //Set sets the real and imaginary vals
-func (n *Npp32fc) Set(real, imaginary Npp32f) {
+func (n *Float32Complex) Set(real, imaginary Float32) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp32fc) Get() (real, imaginary Npp32f) {
-	real = (Npp32f)(n.re)
-	imaginary = (Npp32f)(n.im)
+func (n *Float32Complex) Get() (real, imaginary Float32) {
+	real = (Float32)(n.re)
+	imaginary = (Float32)(n.im)
 	return real, imaginary
 }
 
-// Npp64sc struct represents a long long complex number.
-type Npp64sc C.Npp64sc
+// Int64Complex struct represents a long long complex number.
+type Int64Complex C.Npp64sc
 
 //Set sets the real and imaginary vals
-func (n *Npp64sc) Set(real, imaginary Npp64s) {
+func (n *Int64Complex) Set(real, imaginary Int64) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp64sc) Get() (real, imaginary Npp64s) {
-	real = (Npp64s)(n.re)
-	imaginary = (Npp64s)(n.im)
+func (n *Int64Complex) Get() (real, imaginary Int64) {
+	real = (Int64)(n.re)
+	imaginary = (Int64)(n.im)
 	return real, imaginary
 }
 
-//Npp64fc struct represents a double floating-point complex number.
-type Npp64fc C.Npp64fc
+//Float64Complex struct represents a double floating-point complex number.
+type Float64Complex C.Npp64fc
 
 //Set sets the real and imaginary vals
-func (n *Npp64fc) Set(real, imaginary Npp64f) {
+func (n *Float64Complex) Set(real, imaginary Float64) {
 	n.re = real.c()
 	n.im = imaginary.c()
 }
 
 //Get gets the real and imaginary vals
-func (n *Npp64fc) Get() (real, imaginary Npp64f) {
-	real = (Npp64f)(n.re)
-	imaginary = (Npp64f)(n.im)
+func (n *Float64Complex) Get() (real, imaginary Float64) {
+	real = (Float64)(n.re)
+	imaginary = (Float64)(n.im)
 	return real, imaginary
 }
 
@@ -768,17 +600,17 @@ typedef struct NPP_ALIGN_16
 //#define NPP_MINABS_64F  ( 2.2250738585072014e-308 )  /**<  Smallest positive 64-bit floating point value */
 //#define NPP_MAXABS_64F  ( 1.7976931348623158e+308 )  /**<  Largest  positive 64-bit floating point value */
 
-//NppiPoint is a 2d point
-type NppiPoint C.NppiPoint
+//Point is a 2d point
+type Point C.NppiPoint
 
-//Set sets the nppiPoint
-func (n *NppiPoint) Set(x, y int32) {
+//Set sets the Point
+func (n *Point) Set(x, y int32) {
 	n.x = (C.int)(x)
 	n.y = (C.int)(y)
 }
 
-//Get gets the NppiPoint's x and y
-func (n *NppiPoint) Get() (x, y int32) {
+//Get gets the Point's x and y
+func (n *Point) Get() (x, y int32) {
 	return (int32)(n.x), (int32)(n.y)
 }
 
@@ -789,18 +621,19 @@ typedef struct
     int y;
 } NppiPoint;
 */
-//NppPointPolar is a 2D Polar Point
-type NppPointPolar C.NppPointPolar
+
+//PolarPoint is a 2D Polar Point
+type PolarPoint C.NppPointPolar
 
 //Set sets the polar cordinates
-func (n *NppPointPolar) Set(rho, theta Npp32f) {
+func (n *PolarPoint) Set(rho, theta Float32) {
 	n.rho = (C.Npp32f)(rho)
 	n.theta = (C.Npp32f)(theta)
 }
 
 //Get gets the polar coordinates
-func (n *NppPointPolar) Get() (rho, theta Npp32f) {
-	return (Npp32f)(n.rho), (Npp32f)(n.theta)
+func (n *PolarPoint) Get() (rho, theta Float32) {
+	return (Float32)(n.rho), (Float32)(n.theta)
 }
 
 /*
@@ -811,13 +644,13 @@ typedef struct {
 } NppPointPolar;
 */
 
-//NppiSize -2D Size represents the size of a a rectangular region in two space.
-type NppiSize C.NppiSize
+//Size -2D Size represents the size of a a rectangular region in two space.
+type Size C.NppiSize
 
-func (n NppiSize) c() C.NppiSize {
+func (n Size) c() C.NppiSize {
 	return (C.NppiSize)(n)
 }
-func (n *NppiSize) cptr() *C.NppiSize {
+func (n *Size) cptr() *C.NppiSize {
 	return (*C.NppiSize)(n)
 }
 
@@ -830,26 +663,43 @@ typedef struct
 */
 
 //WidthHeight returns the width and Height
-func (n *NppiSize) WidthHeight() (w, h int32) {
+func (n *Size) WidthHeight() (w, h int32) {
 	w = int32(n.width)
 	h = int32(n.height)
 	return w, h
 }
 
-/* NppiRect
+/* Rect
  * 2D Rectangle
  * This struct contains position and size information of a rectangle in
  * two space.
  * The rectangle's position is usually signified by the coordinate of its
  * upper-left corner.
  */
-type NppiRect C.NppiRect
+type Rect C.NppiRect
 
-func (n NppiRect) c() C.NppiRect {
+func (n Rect) c() C.NppiRect {
 	return (C.NppiRect)(n)
 }
-func (n *NppiRect) cptr() *C.NppiRect {
+func (n *Rect) cptr() *C.NppiRect {
 	return (*C.NppiRect)(n)
+}
+
+//Set sets the NppiRect's values
+func (n *Rect) Set(x, y, w, h int32) {
+	n.x = (C.int)(x)
+	n.y = (C.int)(y)
+	n.width = (C.int)(w)
+	n.height = (C.int)(h)
+}
+
+//Get gets the NppiRect's values
+func (n *Rect) Get() (x, y, w, h int32) {
+	x = (int32)(n.x)
+	y = (int32)(n.y)
+	w = (int32)(n.width)
+	h = (int32)(n.height)
+	return x, y, w, h
 }
 
 /*
@@ -862,28 +712,53 @@ typedef struct
 } NppiRect;
 */
 
-//NppiAxis enums NpiiAxis
-type NppiAxis C.NppiAxis
+//Axis enums NpiiAxis
+type Axis C.NppiAxis
 
-func (n NppiAxis) c() C.NppiAxis {
+//Horizontal chooses the Horizontal Axis
+func (n Axis) Horizontal() Axis {
+	return Axis(C.NPP_HORIZONTAL_AXIS)
+}
+
+//Vertical chooses the verticle Axis
+func (n Axis) Vertical() Axis {
+	return Axis(C.NPP_VERTICAL_AXIS)
+}
+
+//Both chooses both
+func (n Axis) Both() Axis {
+	return Axis(C.NPP_BOTH_AXIS)
+}
+func (n Axis) c() C.NppiAxis {
 	return (C.NppiAxis)(n)
 }
 
-const (
-	NppHorizontalAxis = NppiAxis(C.NPP_HORIZONTAL_AXIS)
-	NppVerticalAxis   = NppiAxis(C.NPP_VERTICAL_AXIS)
-	NppBothAxis       = NppiAxis(C.NPP_BOTH_AXIS)
-)
+type CmpOp C.NppCmpOp
 
-type NppCmpOp C.NppCmpOp
+//Less is <
+func (n CmpOp) Less() CmpOp {
+	return CmpOp(C.NPP_CMP_LESS)
+}
 
-const (
-	NppCmpLess      = NppCmpOp(C.NPP_CMP_LESS)
-	NppCmpLessEq    = NppCmpOp(C.NPP_CMP_LESS_EQ)
-	NppCmpEq        = NppCmpOp(C.NPP_CMP_EQ)
-	NppCmpGreaterEq = NppCmpOp(C.NPP_CMP_GREATER_EQ)
-	NppCmpGreater   = NppCmpOp(C.NPP_CMP_GREATER)
-)
+//LessEq is <=
+func (n CmpOp) LessEq() CmpOp {
+	return CmpOp(C.NPP_CMP_LESS_EQ)
+}
+
+//Eq is =
+func (n CmpOp) Eq() CmpOp {
+	return CmpOp(C.NPP_CMP_EQ)
+}
+
+//GreaterEq is >=
+func (n CmpOp) GreaterEq() CmpOp {
+	return CmpOp(C.NPP_CMP_GREATER_EQ)
+}
+
+//Greater is >
+func (n CmpOp) Greater() CmpOp {
+	return CmpOp(C.NPP_CMP_GREATER)
+}
 
 /**
 NppRoundMode go wrapper for roundimg modes description from original header

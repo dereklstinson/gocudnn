@@ -13,7 +13,7 @@ import (
 
 /*
 
-Npp8u
+Uint8
 
 
 */
@@ -23,9 +23,9 @@ Npp8u
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc8uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingStepBytes int32) {
+func Malloc8uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp8u)(C.nppiMalloc_8u_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint8)(C.nppiMalloc_8u_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -35,9 +35,9 @@ func Malloc8uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingSte
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc8uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingStepBytes int32) {
+func Malloc8uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp8u)(C.nppiMalloc_8u_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint8)(C.nppiMalloc_8u_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -47,9 +47,9 @@ func Malloc8uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingSte
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc8uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingStepBytes int32) {
+func Malloc8uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp8u)(C.nppiMalloc_8u_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint8)(C.nppiMalloc_8u_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -59,9 +59,9 @@ func Malloc8uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingSte
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc8uC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingStepBytes int32) {
+func Malloc8uC4(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp8u)(C.nppiMalloc_8u_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint8)(C.nppiMalloc_8u_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -69,7 +69,7 @@ func Malloc8uC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp8u, PaddingSte
 /*
 
 
-Npp16u
+Uint16
 
 
 */
@@ -79,9 +79,9 @@ Npp16u
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16u, PaddingStepBytes int32) {
+func Malloc16uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Uint16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16u)(C.nppiMalloc_16u_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint16)(C.nppiMalloc_16u_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -91,9 +91,9 @@ func Malloc16uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16u, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16u, PaddingStepBytes int32) {
+func Malloc16uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Uint16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16u)(C.nppiMalloc_16u_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint16)(C.nppiMalloc_16u_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -103,9 +103,9 @@ func Malloc16uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16u, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16u, PaddingStepBytes int32) {
+func Malloc16uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Uint16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16u)(C.nppiMalloc_16u_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint16)(C.nppiMalloc_16u_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -115,9 +115,9 @@ func Malloc16uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16u, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16uC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16u, PaddingStepBytes int32) {
+func Malloc16uC4(nWidthPixels int32, nHeightPixels int32) (ptr *Uint16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16u)(C.nppiMalloc_16u_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Uint16)(C.nppiMalloc_16u_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -135,9 +135,9 @@ Npp16s
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16s, PaddingStepBytes int32) {
+func Malloc16sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16s)(C.nppiMalloc_16s_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int16)(C.nppiMalloc_16s_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -147,9 +147,9 @@ func Malloc16sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16s, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16sC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16s, PaddingStepBytes int32) {
+func Malloc16sC2(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16s)(C.nppiMalloc_16s_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int16)(C.nppiMalloc_16s_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -159,9 +159,9 @@ func Malloc16sC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16s, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16sC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16s, PaddingStepBytes int32) {
+func Malloc16sC4(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16s)(C.nppiMalloc_16s_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int16)(C.nppiMalloc_16s_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -169,7 +169,7 @@ func Malloc16sC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16s, PaddingS
 /*
 
 
-Npp16sc
+Int16c
 
 
 */
@@ -179,9 +179,9 @@ Npp16sc
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
+func Malloc16scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Int16Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16sc)(C.nppiMalloc_16sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int16Complex)(C.nppiMalloc_16sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 
 	//y := MakeNpp16scFromUnsafe(unsafe.Pointer(x), false)
 	runtime.SetFinalizer(x, nppiallocfree)
@@ -193,9 +193,9 @@ func Malloc16scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
+func Malloc16scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Int16Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16sc)(C.nppiMalloc_16sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int16Complex)(C.nppiMalloc_16sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -205,9 +205,9 @@ func Malloc16scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
+func Malloc16scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Int16Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16sc)(C.nppiMalloc_16sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int16Complex)(C.nppiMalloc_16sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -217,9 +217,9 @@ func Malloc16scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc16scC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, PaddingStepBytes int32) {
+func Malloc16scC4(nWidthPixels int32, nHeightPixels int32) (ptr *Int16Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp16sc)(C.nppiMalloc_16sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int16Complex)(C.nppiMalloc_16sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -227,7 +227,7 @@ func Malloc16scC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp16sc, Paddin
 /*
 
 
-Npp32s
+Int32
 
 
 */
@@ -237,9 +237,9 @@ Npp32s
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32s, PaddingStepBytes int32) {
+func Malloc32sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Int32, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32s)(C.nppiMalloc_32s_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int32)(C.nppiMalloc_32s_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -249,9 +249,9 @@ func Malloc32sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32s, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32sC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32s, PaddingStepBytes int32) {
+func Malloc32sC3(nWidthPixels int32, nHeightPixels int32) (ptr *Int32, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32s)(C.nppiMalloc_32s_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int32)(C.nppiMalloc_32s_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -261,9 +261,9 @@ func Malloc32sC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32s, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32sC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32s, PaddingStepBytes int32) {
+func Malloc32sC4(nWidthPixels int32, nHeightPixels int32) (ptr *Int32, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32s)(C.nppiMalloc_32s_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int32)(C.nppiMalloc_32s_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -271,7 +271,7 @@ func Malloc32sC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32s, PaddingS
 /*
 
 
-Npp32sc
+Int32Complex
 
 
 */
@@ -281,9 +281,9 @@ Npp32sc
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
+func Malloc32scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Int32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32sc)(C.nppiMalloc_32sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int32Complex)(C.nppiMalloc_32sc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -293,9 +293,9 @@ func Malloc32scC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
+func Malloc32scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Int32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32sc)(C.nppiMalloc_32sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int32Complex)(C.nppiMalloc_32sc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -305,9 +305,9 @@ func Malloc32scC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
+func Malloc32scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Int32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32sc)(C.nppiMalloc_32sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int32Complex)(C.nppiMalloc_32sc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
@@ -317,16 +317,16 @@ func Malloc32scC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32scC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32sc, PaddingStepBytes int32) {
+func Malloc32scC4(nWidthPixels int32, nHeightPixels int32) (ptr *Int32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32sc)(C.nppiMalloc_32sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	x := (*Int32Complex)(C.nppiMalloc_32sc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
 	runtime.SetFinalizer(x, nppiallocfree)
 	return x, int32(pStepBytes)
 }
 
 /*
 
-Npp32f
+Float32
 
 */
 
@@ -335,11 +335,11 @@ Npp32f
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32f, PaddingStepBytes int32) {
+func Malloc32fC1(nWidthPixels int32, nHeightPixels int32) (ptr *Float32, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32f)(C.nppiMalloc_32f_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32)(C.nppiMalloc_32f_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc32fC2 - 2 channel 32-bit floating point image memory allocator.
@@ -347,11 +347,11 @@ func Malloc32fC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32f, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32f, PaddingStepBytes int32) {
+func Malloc32fC2(nWidthPixels int32, nHeightPixels int32) (ptr *Float32, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32f)(C.nppiMalloc_32f_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32)(C.nppiMalloc_32f_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc32fC3 - 3 channel 32-bit floating point image memory allocator.
@@ -359,11 +359,11 @@ func Malloc32fC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32f, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32f, PaddingStepBytes int32) {
+func Malloc32fC3(nWidthPixels int32, nHeightPixels int32) (ptr *Float32, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32f)(C.nppiMalloc_32f_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32)(C.nppiMalloc_32f_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc32fC4 - 4 channel 32-bit floating point image memory allocator.
@@ -371,16 +371,16 @@ func Malloc32fC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32f, PaddingS
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32f, PaddingStepBytes int32) {
+func Malloc32fC4(nWidthPixels int32, nHeightPixels int32) (ptr *Float32, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32f)(C.nppiMalloc_32f_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32)(C.nppiMalloc_32f_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*
 
-Npp32fc
+Float32Complex
 
 */
 
@@ -389,11 +389,11 @@ Npp32fc
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fcC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
+func Malloc32fcC1(nWidthPixels int32, nHeightPixels int32) (ptr *Float32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32fc)(C.nppiMalloc_32fc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32Complex)(C.nppiMalloc_32fc_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc32fcC2 - 2 channel 32-bit float complex image memory allocator.
@@ -401,11 +401,11 @@ func Malloc32fcC1(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fcC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
+func Malloc32fcC2(nWidthPixels int32, nHeightPixels int32) (ptr *Float32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32fc)(C.nppiMalloc_32fc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32Complex)(C.nppiMalloc_32fc_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc32fcC3 - 3 channel 32-bit float complex image memory allocator.
@@ -413,11 +413,11 @@ func Malloc32fcC2(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fcC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
+func Malloc32fcC3(nWidthPixels int32, nHeightPixels int32) (ptr *Float32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32fc)(C.nppiMalloc_32fc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32Complex)(C.nppiMalloc_32fc_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc32fcC4 - 4 channel 32-bit float complex image memory allocator.
@@ -425,37 +425,34 @@ func Malloc32fcC3(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, Paddin
  * \param nHeightPixels Image height.
  * returns ptr to newly allocated memory and PaddingStepBytes for line step byte padding
  */
-func Malloc32fcC4(nWidthPixels int32, nHeightPixels int32) (ptr *Npp32fc, PaddingStepBytes int32) {
+func Malloc32fcC4(nWidthPixels int32, nHeightPixels int32) (ptr *Float32Complex, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Npp32fc)(C.nppiMalloc_32fc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = (*Float32Complex)(C.nppiMalloc_32fc_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 func nppiallocfree(x interface{}) error {
 	switch y := x.(type) {
-	case *Npp8u:
+	case *Uint8:
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
-	case *Npp16u:
+	case *Int16:
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
-	case *Npp16s:
+	case *Int32:
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
-	case *Npp32s:
+	case *Float32:
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
-	case *Npp32f:
+	case *Float32Complex:
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
-	case *Npp32fc:
+	case *Int16Complex:
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
-	case *Npp16sc:
-		C.nppiFree(unsafe.Pointer(y))
-		return nil
-	case *Npp32sc:
+	case *Int32Complex:
 		C.nppiFree(unsafe.Pointer(y))
 		return nil
 

@@ -149,9 +149,9 @@ typedef struct {
  * \return Error code:
  *      ::NPP_NULL_POINTER_ERROR is returned if hpQuantRawTable is 0.
  */
-func QuantFwdRawTableInitJPEG8u(hpQuantRawTable []Npp8u, nQualityFactor int32) ([]Npp8u, error) {
+func QuantFwdRawTableInitJPEG8u(hpQuantRawTable []Uint8, nQualityFactor int32) ([]Uint8, error) {
 	//x := convertNpp8utoCNpp8uarray(hpQuantRawTable)
-	err := NppStatus(C.nppiQuantFwdRawTableInit_JPEG_8u((*C.uchar)(&hpQuantRawTable[0]), (C.int)(nQualityFactor))).ToError()
+	err := status(C.nppiQuantFwdRawTableInit_JPEG_8u((*C.uchar)(&hpQuantRawTable[0]), (C.int)(nQualityFactor))).ToError()
 	//	y := convertCNpp8utoNpp8uarray(x)
 	return hpQuantRawTable, err
 }
@@ -173,36 +173,40 @@ func QuantFwdRawTableInitJPEG8u(hpQuantRawTable []Npp8u, nQualityFactor int32) (
  * \return Error code:
  *      ::NPP_NULL_POINTER_ERROR pQuantRawTable is 0.
  */
-func nppinppisizetoCNppiSize(oSizeROI NppiSize) C.NppiSize {
+/*
+func sizetoCNppiSize(oSizeROI NppiSize) C.NppiSize {
 	w, h := oSizeROI.WidthHeight()
 	var x C.NppiSize
 	x.width = C.int(w)
 	x.height = C.int(h)
 	return x
 }
-func QuantFwdTableInitJPEG8u16u(hpQuantRawTable []Npp8u) ([]Npp16u, error) {
-	y := make([]Npp16u, len(hpQuantRawTable))
-	err := NppStatus(C.nppiQuantFwdTableInit_JPEG_8u16u((*C.Npp8u)(&hpQuantRawTable[0]), (*C.ushort)((&y[0])))).ToError()
+*/
+
+//QuantFwdTableInitJPEG8u16u initializes a table for uint8 to uint16
+func QuantFwdTableInitJPEG8u16u(hpQuantRawTable []Uint8) ([]Uint16, error) {
+	y := make([]Uint16, len(hpQuantRawTable))
+	err := status(C.nppiQuantFwdTableInit_JPEG_8u16u((*C.Npp8u)(&hpQuantRawTable[0]), (*C.ushort)((&y[0])))).ToError()
 	return y, err
 }
 
-func DCTQuantFwd8x8LSJPEG8u16sC1R(pSrc *Npp8u, nSrcStep int32, pDst *Npp16s, nDstStep int32, pQuantFwdTable *Npp16u, oSizeROI NppiSize) error {
+func DCTQuantFwd8x8LSJPEG8u16sC1R(pSrc *Uint8, nSrcStep int32, pDst *Int16, nDstStep int32, pQuantFwdTable *Uint16, oSizeROI Size) error {
 	w, h := oSizeROI.WidthHeight()
 	var x C.NppiSize
 	x.width = C.int(w)
 	x.height = C.int(h)
 
-	return NppStatus(C.nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R((*C.Npp8u)(pSrc), (C.int)(nSrcStep), (*C.Npp16s)(pDst), (C.int)(nDstStep), (*C.Npp16u)(pQuantFwdTable), x)).ToError()
+	return status(C.nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R((*C.Npp8u)(pSrc), (C.int)(nSrcStep), (*C.Npp16s)(pDst), (C.int)(nDstStep), (*C.Npp16u)(pQuantFwdTable), x)).ToError()
 }
 
-func DCTQuantInv8x8LS_JPEG_16s8u_C1R(pSrc *Npp16s, nSrcStep int32, pDst *Npp8u, nDstStep int32, pQuantInvTable *Npp16u, oSizeROI NppiSize) error {
-	x := nppinppisizetoCNppiSize(oSizeROI)
-	return NppStatus(C.nppiDCTQuantInv8x8LS_JPEG_16s8u_C1R((*C.Npp16s)(pSrc), (C.int)(nSrcStep), (*C.Npp8u)(pDst), (C.int)(nDstStep), (*C.Npp16u)(pQuantInvTable), x)).ToError()
+func DCTQuantInv8x8LS_JPEG_16s8u_C1R(pSrc *Int16, nSrcStep int32, pDst *Uint8, nDstStep int32, pQuantInvTable *Uint16, oSizeROI Size) error {
+
+	return status(C.nppiDCTQuantInv8x8LS_JPEG_16s8u_C1R((*C.Npp16s)(pSrc), (C.int)(nSrcStep), (*C.Npp8u)(pDst), (C.int)(nDstStep), (*C.Npp16u)(pQuantInvTable), oSizeROI.c())).ToError()
 }
 
 func DCTInitAlloc() (*DCTState, error) {
 	var x *C.NppiDCTState
-	err := NppStatus(C.nppiDCTInitAlloc(&x)).ToError()
+	err := status(C.nppiDCTInitAlloc(&x)).ToError()
 	y := &DCTState{
 		state: x,
 	}
@@ -210,85 +214,85 @@ func DCTInitAlloc() (*DCTState, error) {
 	return y, err
 }
 func freeNPPIDCTstate(x *DCTState) error {
-	return NppStatus(C.nppiDCTFree(x.state)).ToError()
+	return status(C.nppiDCTFree(x.state)).ToError()
 }
 
 /*
 
 func NPPIDCTQuantFwd8x8LS_JPEG_8u16s_C1R_NEW( Npp8u  * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep,  Npp8u * pQuantizationTable, NppiSize oSizeROI, NppiDCTState* pState) error{
-    return NppStatus(C.nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R_NEW()).ToError()
+    return status(C.nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R_NEW()).ToError()
 }
 func NPPIDCTQuantInv8x8LS_JPEG_16s8u_C1R_NEW( Npp16s * pSrc, int nSrcStep,Npp8u  * pDst, int nDstStep, Npp8u * pQuantizationTable, NppiSize oSizeROI,NppiDCTState* pState) error{
-    return NppStatus(C.nppiDCTQuantInv8x8LS_JPEG_16s8u_C1R_NEW()).ToError()
+    return status(C.nppiDCTQuantInv8x8LS_JPEG_16s8u_C1R_NEW()).ToError()
 }
 func NPPIDCTQuant16Fwd8x8LS_JPEG_8u16s_C1R_NEW( Npp8u  * pSrc, int nSrcStep,Npp16s * pDst, int nDstStep, Npp16u * pQuantizationTable, NppiSize oSizeROI,NppiDCTState* pState) error{
-    return NppStatus(C.nppiDCTQuant16Fwd8x8LS_JPEG_8u16s_C1R_NEW()).ToError()
+    return status(C.nppiDCTQuant16Fwd8x8LS_JPEG_8u16s_C1R_NEW()).ToError()
 }
 func NPPIDCTQuant16Inv8x8LS_JPEG_16s8u_C1R_NEW( Npp16s * pSrc, int nSrcStep,Npp8u  * pDst, int nDstStep, Npp16u * pQuantizationTable, NppiSize oSizeROI,NppiDCTState* pState) error{
-    return NppStatus(C.nppiDCTQuant16Inv8x8LS_JPEG_16s8u_C1R_NEW()).ToError()
+    return status(C.nppiDCTQuant16Inv8x8LS_JPEG_16s8u_C1R_NEW()).ToError()
 }
 func NPPIDecodeHuffmanSpecGetBufSize_JPEG(int* pSize) error{
-    return NppStatus(C.nppiDecodeHuffmanSpecGetBufSize_JPEG()).ToError()
+    return status(C.nppiDecodeHuffmanSpecGetBufSize_JPEG()).ToError()
 }
 func NPPIDecodeHuffmanSpecInitHost_JPEG( Npp8u* pRawHuffmanTable, NppiHuffmanTableType eTableType, NppiDecodeHuffmanSpec  *pHuffmanSpec) error{
-    return NppStatus(C.nppiDecodeHuffmanSpecInitHost_JPEG()).ToError()
+    return status(C.nppiDecodeHuffmanSpecInitHost_JPEG()).ToError()
 }
 func NPPIDecodeHuffmanSpecInitAllocHost_JPEG( Npp8u* pRawHuffmanTable, NppiHuffmanTableType eTableType, NppiDecodeHuffmanSpec  **ppHuffmanSpec) error{
-    return NppStatus(C.nppiDecodeHuffmanSpecInitAllocHost_JPEG()).ToError()
+    return status(C.nppiDecodeHuffmanSpecInitAllocHost_JPEG()).ToError()
 }
 func NPPIDecodeHuffmanSpecFreeHost_JPEG(NppiDecodeHuffmanSpec  *pHuffmanSpec) error{
-    return NppStatus(C.nppiDecodeHuffmanSpecFreeHost_JPEG()).ToError()
+    return status(C.nppiDecodeHuffmanSpecFreeHost_JPEG()).ToError()
 }
 func NPPIDecodeHuffmanScanHost_JPEG_8u16s_P1R( Npp8u  * pSrc, Npp32s nLength,Npp32s restartInterval, Npp32s Ss, Npp32s Se, Npp32s Ah, Npp32s Al,Npp16s * pDst, Npp32s nDstStep,NppiDecodeHuffmanSpec  * pHuffmanTableDC, NppiDecodeHuffmanSpec  * pHuffmanTableAC,NppiSize oSizeROI); error{
-    return NppStatus(C.nppiDecodeHuffmanScanHost_JPEG_8u16s_P1R()).ToError()
+    return status(C.nppiDecodeHuffmanScanHost_JPEG_8u16s_P1R()).ToError()
 }
 func NPPIDecodeHuffmanScanHost_JPEG_8u16s_P3R( Npp8u * pSrc, Npp32s nLength,Npp32s nRestartInterval, Npp32s nSs, Npp32s nSe, Npp32s nAh, Npp32s nAl,Npp16s * apDst[3], Npp32s aDstStep[3],NppiDecodeHuffmanSpec * apHuffmanDCTable[3], NppiDecodeHuffmanSpec * apHuffmanACTable[3], NppiSize aSizeROI[3]) error{
-    return NppStatus(C.nppiDecodeHuffmanScanHost_JPEG_8u16s_P3R()).ToError()
+    return status(C.nppiDecodeHuffmanScanHost_JPEG_8u16s_P3R()).ToError()
 }
 func NPPIEncodeHuffmanSpecGetBufSize_JPEG(int* pSize) error{
-    return NppStatus(C.nppiEncodeHuffmanSpecGetBufSize_JPEG()).ToError()
+    return status(C.nppiEncodeHuffmanSpecGetBufSize_JPEG()).ToError()
 }
 func NPPIEncodeHuffmanSpecInit_JPEG( Npp8u* pRawHuffmanTable, NppiHuffmanTableType eTableType, NppiEncodeHuffmanSpec  *pHuffmanSpec) error{
-    return NppStatus(C.nppiEncodeHuffmanSpecInit_JPEG()).ToError()
+    return status(C.nppiEncodeHuffmanSpecInit_JPEG()).ToError()
 }
 func NPPIEncodeHuffmanSpecInitAlloc_JPEG( Npp8u* pRawHuffmanTable, NppiHuffmanTableType eTableType, NppiEncodeHuffmanSpec  **ppHuffmanSpec) error{
-    return NppStatus(C.nppiEncodeHuffmanSpecInitAlloc_JPEG()).ToError()
+    return status(C.nppiEncodeHuffmanSpecInitAlloc_JPEG()).ToError()
 }
 func NPPIEncodeHuffmanSpecFree_JPEG(NppiEncodeHuffmanSpec  *pHuffmanSpec) error{
-    return NppStatus(C.nppiEncodeHuffmanSpecFree_JPEG()).ToError()
+    return status(C.nppiEncodeHuffmanSpecFree_JPEG()).ToError()
 }
 func NPPIEncodeHuffmanScan_JPEG_8u16s_P1R( Npp16s * pSrc, Npp32s nSrcStep,Npp32s nRestartInterval, Npp32s nSs, Npp32s nSe, Npp32s nAh, Npp32s nAl,Npp8u  * pDst, Npp32s* nLength,NppiEncodeHuffmanSpec  * pHuffmanTableDC, NppiEncodeHuffmanSpec  * pHuffmanTableAC, NppiSize oSizeROI,Npp8u* pTempStorage); error{
-    return NppStatus(C.nppiEncodeHuffmanScan_JPEG_8u16s_P1R()).ToError()
+    return status(C.nppiEncodeHuffmanScan_JPEG_8u16s_P1R()).ToError()
 }
 func NPPIEncodeHuffmanScan_JPEG_8u16s_P3R(Npp16s * apSrc[3], Npp32s aSrcStep[3],Npp32s nRestartInterval, Npp32s nSs, Npp32s nSe, Npp32s nAh, Npp32s nAl,Npp8u  * pDst, Npp32s* nLength,NppiEncodeHuffmanSpec * apHuffmanDCTable[3], NppiEncodeHuffmanSpec * apHuffmanACTable[3], NppiSize aSizeROI[3],Npp8u* pTempStorage) error{
-    return NppStatus(C.nppiEncodeHuffmanScan_JPEG_8u16s_P3R()).ToError()
+    return status(C.nppiEncodeHuffmanScan_JPEG_8u16s_P3R()).ToError()
 }
 func NPPIEncodeOptimizeHuffmanScan_JPEG_8u16s_P1R( Npp16s * pSrc, Npp32s nSrcStep, Npp32s nRestartInterval, Npp32s nSs, Npp32s nSe, Npp32s nAh, Npp32s nAl, Npp8u * pDst, Npp32s * pLength, Npp8u * hpCodesDC, Npp8u * hpTableDC,Npp8u * hpCodesAC, Npp8u * hpTableAC, NppiEncodeHuffmanSpec * pHuffmanDCTable, NppiEncodeHuffmanSpec * pHuffmanACTable,NppiSize oSizeROI, Npp8u * pTempStorage) error{
-    return NppStatus(C.nppiEncodeOptimizeHuffmanScan_JPEG_8u16s_P1R()).ToError()
+    return status(C.nppiEncodeOptimizeHuffmanScan_JPEG_8u16s_P1R()).ToError()
 }
 func NPPIEncodeOptimizeHuffmanScan_JPEG_8u16s_P3R(Npp16s * apSrc[3], Npp32s aSrcStep[3], Npp32s nRestartInterval, Npp32s nSs, Npp32s nSe, Npp32s nAh, Npp32s nAl, Npp8u * pDst, Npp32s * pLength, Npp8u * hpCodesDC[3], Npp8u * hpTableDC[3], Npp8u * hpCodesAC[3], Npp8u * hpTableAC[3], NppiEncodeHuffmanSpec * apHuffmanDCTable[3], NppiEncodeHuffmanSpec * apHuffmanACTable[3],  NppiSize oSizeROI[3], Npp8u * pTempStorage) error{
-    return NppStatus(C.nppiEncodeOptimizeHuffmanScan_JPEG_8u16s_P3R()).ToError()
+    return status(C.nppiEncodeOptimizeHuffmanScan_JPEG_8u16s_P3R()).ToError()
 }
 func NPPIEncodeHuffmanGetSize(NppiSize oSize, int nChannels, size_t * pBufSize) error{
-    return NppStatus(C.nppiEncodeHuffmanGetSize()).ToError()
+    return status(C.nppiEncodeHuffmanGetSize()).ToError()
 }
 func NPPIEncodeOptimizeHuffmanGetSize(NppiSize oSize, int nChannels, int * pBufSize) error{
-    return NppStatus(C.nppiEncodeOptimizeHuffmanGetSize()).ToError()
+    return status(C.nppiEncodeOptimizeHuffmanGetSize()).ToError()
 }
 func NPPIJpegDecodeJobMemorySize( NppiJpegDecodeJob * pJob, size_t * aSize) error{
-    return NppStatus(C.nppiJpegDecodeJobMemorySize()).ToError()
+    return status(C.nppiJpegDecodeJobMemorySize()).ToError()
 }
 func NPPIJpegDecodeJob( NppiJpegDecodeJob * pJob,  NppiJpegDecodeJobMemory * pMemory) error{
-    return NppStatus(C.nppiJpegDecodeJob()).ToError()
+    return status(C.nppiJpegDecodeJob()).ToError()
 }
 func NPPIJpegDecodeJobCreateMemzero(NppiJpegDecodeJob * pJob) error{
-    return NppStatus(C.nppiJpegDecodeJobCreateMemzero()).ToError()
+    return status(C.nppiJpegDecodeJobCreateMemzero()).ToError()
 }
 func NPPIJpegDecodeJobCreateFinalize(NppiJpegDecodeJob * pJob) error{
-    return NppStatus(C.nppiJpegDecodeJobCreateFinalize()).ToError()
+    return status(C.nppiJpegDecodeJobCreateFinalize()).ToError()
 }
 func NPPIDCTInv4x4_WebP_16s_C1R( Npp16s * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep, NppiSize oSizeROI) error{
-    return NppStatus(C.nppiDCTInv4x4_WebP_16s_C1R()).ToError()
+    return status(C.nppiDCTInv4x4_WebP_16s_C1R()).ToError()
 }
 
 
