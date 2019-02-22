@@ -160,40 +160,60 @@ func (n status) Error() string {
 	return "UNSUPPORTED STATUS FLAG ON GO SIDE OF BINDING"
 }
 
-/* negative return-codes indicate errors */
+//GpuComputeCapability is the cuda compute capability
+type GpuComputeCapability C.NppGpuComputeCapability
 
-type NppGpuComputeCapability C.NppGpuComputeCapability
+func (g GpuComputeCapability) String() string {
+	switch g {
+	case GpuComputeCapability(C.NPP_CUDA_UNKNOWN_VERSION):
+		return "NPP_CUDA_UNKNOWN_VERSION"
+	case GpuComputeCapability(C.NPP_CUDA_NOT_CAPABLE):
+		return "NPP_CUDA_NOT_CAPABLE"
+	case GpuComputeCapability(C.NPP_CUDA_1_0):
+		return "NPP_CUDA_1_0"
+	case GpuComputeCapability(C.NPP_CUDA_1_1):
+		return "NPP_CUDA_1_1"
+	case GpuComputeCapability(C.NPP_CUDA_1_2):
+		return "NPP_CUDA_1_2"
+	case GpuComputeCapability(C.NPP_CUDA_1_3):
+		return "NPP_CUDA_1_3"
+	case GpuComputeCapability(C.NPP_CUDA_2_0):
+		return "NPP_CUDA_2_0"
+	case GpuComputeCapability(C.NPP_CUDA_2_1):
+		return "NPP_CUDA_2_1"
+	case GpuComputeCapability(C.NPP_CUDA_3_0):
+		return "NPP_CUDA_3_0"
+	case GpuComputeCapability(C.NPP_CUDA_3_2):
+		return "NPP_CUDA_3_2"
+	case GpuComputeCapability(C.NPP_CUDA_3_5):
+		return "NPP_CUDA_3_5"
+	case GpuComputeCapability(C.NPP_CUDA_3_7):
+		return "NPP_CUDA_3_7"
+	case GpuComputeCapability(C.NPP_CUDA_5_0):
+		return "NPP_CUDA_5_0"
+	case GpuComputeCapability(C.NPP_CUDA_5_2):
+		return "NPP_CUDA_5_2"
+	case GpuComputeCapability(C.NPP_CUDA_5_3):
+		return "NPP_CUDA_5_3"
+	case GpuComputeCapability(C.NPP_CUDA_6_0):
+		return "NPP_CUDA_6_0"
+	case GpuComputeCapability(C.NPP_CUDA_6_1):
+		return "NPP_CUDA_6_1"
+	case GpuComputeCapability(C.NPP_CUDA_6_2):
+		return "NPP_CUDA_6_2"
+	case GpuComputeCapability(C.NPP_CUDA_6_3):
+		return "NPP_CUDA_6_3"
+	case GpuComputeCapability(C.NPP_CUDA_7_0):
+		return "NPP_CUDA_7_0"
+	case GpuComputeCapability(C.NPP_CUDA_7_2):
+		return "NPP_CUDA_7_2"
+	case GpuComputeCapability(C.NPP_CUDA_7_3):
+		return "NPP_CUDA_7_3"
+	case GpuComputeCapability(C.NPP_CUDA_7_5):
+		return "NPP_CUDA_7_5"
+	}
+	return "SUPER COMPUTE CAPABILITY OR NONE IDK"
+}
 
-const (
-	NppCudaUnknownVersion = NppGpuComputeCapability(C.NPP_CUDA_UNKNOWN_VERSION) /**<  Indicates that the compute-capability query failed */
-	NppCudaNotCapable     = NppGpuComputeCapability(C.NPP_CUDA_NOT_CAPABLE)     /**<  Indicates that no CUDA capable device was found */
-	NppCuda0100           = NppGpuComputeCapability(C.NPP_CUDA_1_0)             /**<  Indicates that CUDA 1.0 capable device is machine's default device */
-	NppCuda0101           = NppGpuComputeCapability(C.NPP_CUDA_1_1)             /**<  Indicates that CUDA 1.1 capable device is machine's default device */
-	NppCuda0102           = NppGpuComputeCapability(C.NPP_CUDA_1_2)             /**<  Indicates that CUDA 1.2 capable device is machine's default device */
-	NppCuda0103           = NppGpuComputeCapability(C.NPP_CUDA_1_3)             /**<  Indicates that CUDA 1.3 capable device is machine's default device */
-	NppCuda0200           = NppGpuComputeCapability(C.NPP_CUDA_2_0)             /**<  Indicates that CUDA 2.0 capable device is machine's default device */
-	NppCuda0201           = NppGpuComputeCapability(C.NPP_CUDA_2_1)             /**<  Indicates that CUDA 2.1 capable device is machine's default device */
-	NppCuda0300           = NppGpuComputeCapability(C.NPP_CUDA_3_0)             /**<  Indicates that CUDA 3.0 capable device is machine's default device */
-	NppCuda0302           = NppGpuComputeCapability(C.NPP_CUDA_3_2)             /**<  Indicates that CUDA 3.2 capable device is machine's default device */
-	NppCuda0305           = NppGpuComputeCapability(C.NPP_CUDA_3_5)             /**<  Indicates that CUDA 3.5 capable device is machine's default device */
-	NppCuda0307           = NppGpuComputeCapability(C.NPP_CUDA_3_7)             /**<  Indicates that CUDA 3.7 capable device is machine's default device */
-	NppCuda0500           = NppGpuComputeCapability(C.NPP_CUDA_5_0)             /**<  Indicates that CUDA 5.0 capable device is machine's default device */
-	NppCuda0502           = NppGpuComputeCapability(C.NPP_CUDA_5_2)             /**<  Indicates that CUDA 5.2 capable device is machine's default device */
-	NppCuda0503           = NppGpuComputeCapability(C.NPP_CUDA_5_3)             /**<  Indicates that CUDA 5.3 capable device is machine's default device */
-	NppCuda0600           = NppGpuComputeCapability(C.NPP_CUDA_6_0)             /**<  Indicates that CUDA 6.0 capable device is machine's default device */
-	NppCuda0601           = NppGpuComputeCapability(C.NPP_CUDA_6_1)             /**<  Indicates that CUDA 6.1 capable device is machine's default device */
-	NppCuda0602           = NppGpuComputeCapability(C.NPP_CUDA_6_2)             /**<  Indicates that CUDA 6.2 capable device is machine's default device */
-	NppCuda0603           = NppGpuComputeCapability(C.NPP_CUDA_6_3)             /**<  Indicates that CUDA 6.3 capable device is machine's default device */
-	NppCuda0700           = NppGpuComputeCapability(C.NPP_CUDA_7_0)             /**<  Indicates that CUDA 7.0 capable device is machine's default device */
-	NppCuda0702           = NppGpuComputeCapability(C.NPP_CUDA_7_2)             /**<  Indicates that CUDA 7.2 capable device is machine's default device */
-	NppCuda0703           = NppGpuComputeCapability(C.NPP_CUDA_7_3)             /**<  Indicates that CUDA 7.3 capable device is machine's default device */
-	NppCuda0705           = NppGpuComputeCapability(C.NPP_CUDA_7_5)             /**<  Indicates that CUDA 7.5 or better is machine's default device */
-)
-
-type NppLibraryVersion C.NppLibraryVersion
-
-var (
-	nppmajor NppLibraryVersion /**<  Major version number */
-	nppminor NppLibraryVersion /**<  Minor version number */
-	nppbuild NppLibraryVersion /**<  Build number. This reflects the nightly build this release was made from. */
-)
+//LibraryVersion is the version of the npp library
+type LibraryVersion C.NppLibraryVersion

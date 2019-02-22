@@ -191,7 +191,7 @@ func QuantFwdTableInitJPEG8u16u(hpQuantRawTable []Uint8) ([]Uint16, error) {
 }
 
 func DCTQuantFwd8x8LSJPEG8u16sC1R(pSrc *Uint8, nSrcStep int32, pDst *Int16, nDstStep int32, pQuantFwdTable *Uint16, oSizeROI Size) error {
-	w, h := oSizeROI.WidthHeight()
+	w, h := oSizeROI.Get()
 	var x C.NppiSize
 	x.width = C.int(w)
 	x.height = C.int(h)

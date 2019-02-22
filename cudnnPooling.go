@@ -149,14 +149,6 @@ func (pool Pooling) CreatePoolingNdDescriptor(
 func (p *PoolingD) GetPoolingForwardOutputDim(
 	input *TensorD,
 ) ([]int32, error) {
-	/*
-		if input.dims != p.dims {
-			inp := strconv.Itoa(int(input.dims))
-			pop := strconv.Itoa(int(p.dims))
-			return nil, errors.New("input dims != pooling dims" + " input dims: " + inp + " pooling dims: " + pop)
-		}
-	*/
-
 	if p.dims > 2 {
 		outputdims := make([]C.int, p.dims)
 		err := Status(C.cudnnGetPoolingNdForwardOutputDim(
@@ -237,20 +229,7 @@ func (p *PoolingD) PoolingBackward(
 	if setkeepalive {
 		keepsalivebuffer(p, handle, xD, x, yD, y, dyD, dy, dxD, dx)
 	}
-	return Status(C.cudnnPoolingBackward(
-		handle.x,
-		p.descriptor,
-		alpha.CPtr(),
-		yD.descriptor,
-		y.Ptr(),
-		dyD.descriptor,
-		dy.Ptr(),
-		xD.descriptor,
-		x.Ptr(),
-		beta.CPtr(),
-		dxD.descriptor,
-		dx.Ptr(),
-	)).error("PoolingBackward")
+	return Status(C.cudnnPoolingBackward(handle.x, p.descriptor, alpha.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), beta.CPtr(), dxD.descriptor, dx.Ptr())).error("PoolingBackward")
 }
 
 /*

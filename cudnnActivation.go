@@ -16,7 +16,6 @@ type Activation struct {
 //ActivationD is an opaque struct that holds the description of an activation operation.
 type ActivationD struct {
 	descriptor C.cudnnActivationDescriptor_t
-	coef       C.double //This is used for ceiling for clipped relu, and alpha for elu
 }
 
 //NewActivationDescriptor creates and sets and returns an activation descriptor in ActivationD and the error
@@ -34,7 +33,6 @@ func (new Activation) NewActivationDescriptor(mode ActivationMode, nan Propagati
 	}
 	descriptor = &ActivationD{
 		descriptor: desc,
-		coef:       C.double(coef),
 	}
 	if setfinalizer {
 		runtime.SetFinalizer(descriptor, destroyactivationdescriptor)

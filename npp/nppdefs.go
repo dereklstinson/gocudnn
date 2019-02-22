@@ -4,6 +4,30 @@ package npp
 import "C"
 import "unsafe"
 
+//Flags is a special struct that contains all the flag types npp uses.
+//Even though these types are flags themselves.
+//They can return flags with different values within the same type through methods
+type Flags struct {
+	InterpolationMode  InterpolationMode
+	BayerGridPosition  BayerGridPosition
+	MaskSize           MaskSize
+	DifferentialKernel DifferentialKernel
+	Axis               Axis
+	CmpOp              CmpOp
+	RoundMode          RoundMode
+	BorderType         BorderType
+	HintAlgorithm      HintAlgorithm
+	AlphaOp            AlphaOp
+	ZCType             ZCType
+	HuffmanTableType   HuffmanTableType
+	Norm               Norm
+}
+
+//GetFlags returns a Flags struct.  This struct has all the flag types within it.
+func GetFlags() Flags {
+	return Flags{}
+}
+
 //InterpolationMode is a wrapper for interpolation flags
 type InterpolationMode C.NppiInterpolationMode
 
@@ -75,10 +99,6 @@ func (n InterpolationMode) LANCZ0S3ADVANCED() InterpolationMode {
 func (n InterpolationMode) SMOOTHEDGE() InterpolationMode {
 	return InterpolationMode(C.NPPI_SMOOTH_EDGE)
 }
-
-/*NpiiBayerGridePosition is used for
- * Bayer Grid Position Registration.
- */
 
 //BayerGridPosition is used as flags. Contains methods for different flags
 type BayerGridPosition C.NppiBayerGridPosition
@@ -392,14 +412,14 @@ func convertCNpp32utoUint32array(x []C.Npp32u) []Uint32 {
 	return y
 }
 
-func convertNpp16utoCNpp16uarray(x []Uint16) []C.Npp16u {
+func convertUint16toCNpp16uarray(x []Uint16) []C.Npp16u {
 	y := make([]C.Npp16u, len(x))
 	for i := range x {
 		y[i] = C.Npp16u(x[i])
 	}
 	return y
 }
-func convertCNpp16utoNpp16uarray(x []C.Npp16u) []Uint16 {
+func convertCNpp16utoUint16array(x []C.Npp16u) []Uint16 {
 	y := make([]Uint16, len(x))
 	for i := range x {
 		y[i] = Uint16(x[i])
@@ -459,7 +479,7 @@ func (n *Uint16Complex) Get() (real, imaginary Uint16) {
 	return real, imaginary
 }
 
-/*Npp16sc - See below
+/*Int16Complex - See below
  * * Complex Number
  * This struct represents a short complex number.
  */
@@ -515,9 +535,7 @@ func (n *Int32Complex) Get() (real, imaginary Int32) {
 	return real, imaginary
 }
 
-/*
-Npp32fc This struct represents a single floating-point complex number.
-*/
+//Float32Complex This struct represents a single floating-point complex number.
 type Float32Complex C.Npp32fc
 
 func (n *Float32Complex) c() C.Npp32fc {
@@ -662,20 +680,22 @@ typedef struct
 } NppiSize;
 */
 
-//WidthHeight returns the width and Height
-func (n *Size) WidthHeight() (w, h int32) {
+//Set sets the width and Height
+func (n *Size) Set(w, h int32) {
+	n.width = C.int(w)
+	n.height = C.int(h)
+
+}
+
+//Get returns the width and Height
+func (n *Size) Get() (w, h int32) {
 	w = int32(n.width)
 	h = int32(n.height)
 	return w, h
 }
 
-/* Rect
- * 2D Rectangle
- * This struct contains position and size information of a rectangle in
- * two space.
- * The rectangle's position is usually signified by the coordinate of its
- * upper-left corner.
- */
+//Rect - 2D Rectangle This struct contains position and size information of a rectangle in two space.
+// The rectangle's position is usually signified by the coordinate of its upper-left corner.
 type Rect C.NppiRect
 
 func (n Rect) c() C.NppiRect {
@@ -733,6 +753,7 @@ func (n Axis) c() C.NppiAxis {
 	return (C.NppiAxis)(n)
 }
 
+//CmpOp is a flag type used for comparisons
 type CmpOp C.NppCmpOp
 
 //Less is <
@@ -774,87 +795,166 @@ NppRoundMode go wrapper for roundimg modes description from original header
  * to be future proof as the legacy names will be deprecated in subsequent NPP releases.
  *
 */
-type NppRoundMode C.NppRoundMode
 
-const (
-	/* NppRndNear -From Original Header
-	 * Round according to financial rule.
-	 * All fractional numbers are rounded to their nearest integer. The ambiguous
-	 * cases (i.e. \<integer\>.5) are rounded away from zero.
-	 * E.g.
-	 * - roundFinancial(0.4)  = 0
-	 * - roundFinancial(0.5)  = 1
-	 * - roundFinancial(-1.5) = -2
-	 */
-	NppRndNear             = NppRoundMode(C.NPP_RND_NEAR)
-	NppRoundNearTiesToEven = NppRoundMode(C.NPP_ROUND_NEAREST_TIES_TO_EVEN) //equals NppRndNear
-	/* NppRndFinancial - From Original Header
-	 * Round towards zero (truncation).
-	 * All fractional numbers of the form \<integer\>.\<decimals\> are truncated to
-	 * \<integer\>.
-	 * - roundZero(1.5) = 1
-	 * - roundZero(1.9) = 1
-	 * - roundZero(-2.5) = -2
-	 */
+//RoundMode methods return the rounding mode flags
+type RoundMode C.NppRoundMode
 
-	NppRndFinancial                 = NppRoundMode(C.NPP_RND_FINANCIAL)
-	NppRoundNearestTiesAwayFromZero = NppRoundMode(C.NPP_ROUND_NEAREST_TIES_AWAY_FROM_ZERO) //equals NppRndFinancial
+//RndNear will round to the nearest number
+func (r RoundMode) RndNear() RoundMode {
+	return RoundMode(C.NPP_RND_NEAR)
+}
 
-	NppRndZero         = NppRoundMode(C.NPP_RND_ZERO)
-	NppRoundTowardZero = NppRoundMode(C.NPP_ROUND_TOWARD_ZERO) //equals NppRndZero
-	/*
-	 * Other rounding modes supported by IEEE-754 (2008) floating-point standard:
-	 *
-	 * - NPP_ROUND_TOWARD_INFINITY // ceiling
-	 * - NPP_ROUND_TOWARD_NEGATIVE_INFINITY // floor
-	 *
-	 */
-)
+/*RndFinancial -From Original Header
+ * Round according to financial rule.
+ * All fractional numbers are rounded to their nearest integer. The ambiguous
+ * cases (i.e. \<integer\>.5) are rounded away from zero.
+ * E.g.
+ * - roundFinancial(0.4)  = 0
+ * - roundFinancial(0.5)  = 1
+ * - roundFinancial(-1.5) = -2
+ */
+func (r RoundMode) RndFinancial() RoundMode {
+	return RoundMode(C.NPP_RND_FINANCIAL)
+}
 
-type NppiBorderType C.NppiBorderType
+/*RndZero - From Original Header
+ * Round towards zero (truncation).
+ * All fractional numbers of the form \<integer\>.\<decimals\> are truncated to
+ * \<integer\>.
+ * - roundZero(1.5) = 1
+ * - roundZero(1.9) = 1
+ * - roundZero(-2.5) = -2
+ */
+func (r RoundMode) RndZero() RoundMode {
+	return RoundMode(C.NPP_RND_ZERO)
+}
 
-const (
-	NppBorderUndefined = NppiBorderType(C.NPP_BORDER_UNDEFINED)
-	NppBorderNone      = NppiBorderType(C.NPP_BORDER_NONE)
-	NppBorderConstant  = NppiBorderType(C.NPP_BORDER_CONSTANT)
-	NppBorderReplicate = NppiBorderType(C.NPP_BORDER_REPLICATE)
-	NppBorderWrap      = NppiBorderType(C.NPP_BORDER_WRAP)
-	NppBorderMirror    = NppiBorderType(C.NPP_BORDER_MIRROR)
-)
+/*
+ * Other rounding modes supported by IEEE-754 (2008) floating-point standard:
+ *
+ * - NPP_ROUND_TOWARD_INFINITY // ceiling
+ * - NPP_ROUND_TOWARD_NEGATIVE_INFINITY // floor
+ *
+ */
 
-type NppHintAlgorithm C.NppHintAlgorithm
+//BorderType is a flag type used to set the type of boarder.  Flags are passed through methods
+type BorderType C.NppiBorderType
 
-const (
-	NppAlgoHintNone     = NppHintAlgorithm(C.NPP_ALG_HINT_NONE)
-	NppAlgoHintFast     = NppHintAlgorithm(C.NPP_ALG_HINT_FAST)
-	NppAlgoHintAccurate = NppHintAlgorithm(C.NPP_ALG_HINT_ACCURATE)
-)
+//Undefined returns BorderType(C.NPP_BORDER_UNDEFINED)
+func (b BorderType) Undefined() BorderType {
+	return BorderType(C.NPP_BORDER_UNDEFINED)
+}
+
+//None returns BorderType(C.NPP_BORDER_NONE)
+func (b BorderType) None() BorderType {
+	return BorderType(C.NPP_BORDER_NONE)
+}
+
+//Constant returns BorderType(C.NPP_BORDER_CONSTANT)
+func (b BorderType) Constant() BorderType {
+	return BorderType(C.NPP_BORDER_CONSTANT)
+}
+
+//Replicate returns  BorderType(C.NPP_BORDER_REPLICATE)
+func (b BorderType) Replicate() BorderType {
+	return BorderType(C.NPP_BORDER_REPLICATE)
+}
+
+//Wrap returns BorderType(C.NPP_BORDER_WRAP)
+func (b BorderType) Wrap() BorderType {
+	return BorderType(C.NPP_BORDER_WRAP)
+}
+
+//Mirror returns BorderType(C.NPP_BORDER_MIRROR)
+func (b BorderType) Mirror() BorderType {
+	return BorderType(C.NPP_BORDER_MIRROR)
+}
+
+//HintAlgorithm are flags
+type HintAlgorithm C.NppHintAlgorithm
+
+//None returns HintAlgorithm(C.NPP_ALG_HINT_NONE)
+func (h HintAlgorithm) None() HintAlgorithm { return HintAlgorithm(C.NPP_ALG_HINT_NONE) }
+
+//Fast returns HintAlgorithm(C.NPP_ALG_HINT_FAST)
+func (h HintAlgorithm) Fast() HintAlgorithm { return HintAlgorithm(C.NPP_ALG_HINT_FAST) }
+
+//Accurate returns HintAlgorithm(C.NPP_ALG_HINT_ACCURATE)
+func (h HintAlgorithm) Accurate() HintAlgorithm { return HintAlgorithm(C.NPP_ALG_HINT_ACCURATE) }
 
 /*
  * Alpha composition controls.
  */
-type NppiAlphaOp C.NppiAlphaOp
 
-const (
-	NppiOpAlphaOver       = NppiAlphaOp(C.NPPI_OP_ALPHA_OVER)
-	NppiOpAlphaIn         = NppiAlphaOp(C.NPPI_OP_ALPHA_IN)
-	NppiOpAlphaOut        = NppiAlphaOp(C.NPPI_OP_ALPHA_OUT)
-	NppiOpAlphaAtop       = NppiAlphaOp(C.NPPI_OP_ALPHA_ATOP)
-	NppiOpAlphaXOR        = NppiAlphaOp(C.NPPI_OP_ALPHA_XOR)
-	NppiOpAlphaPlus       = NppiAlphaOp(C.NPPI_OP_ALPHA_PLUS)
-	NppiOpAlphaOverPremul = NppiAlphaOp(C.NPPI_OP_ALPHA_OVER_PREMUL)
-	NppiOpAlphaInPremul   = NppiAlphaOp(C.NPPI_OP_ALPHA_IN_PREMUL)
-	NppiOpAlphaOutPremul  = NppiAlphaOp(C.NPPI_OP_ALPHA_OUT_PREMUL)
-	NppiOpAlphaAtopPremul = NppiAlphaOp(C.NPPI_OP_ALPHA_ATOP_PREMUL)
-	NppiOpAlphaXORPremul  = NppiAlphaOp(C.NPPI_OP_ALPHA_XOR_PREMUL)
-	NppiOpAlphaPlusPremul = NppiAlphaOp(C.NPPI_OP_ALPHA_PLUS_PREMUL)
-	NppiOpAlphaPremul     = NppiAlphaOp(C.NPPI_OP_ALPHA_PREMUL)
-)
+//AlphaOp contains methods used to pass flags for composition controlls
+type AlphaOp C.NppiAlphaOp
 
-/**
- * The NppiHOGConfig structure defines the configuration parameters for the HOG descriptor:
- */
-type NppiHOGConfig C.NppiHOGConfig
+//AlphaOver returns AlphaOp(C.NPPI_OP_ALPHA_OVER)}
+func (a AlphaOp) AlphaOver() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OVER) }
+
+//AlphaIn returns AlphaOp(C.NPPI_OP_ALPHA_IN)}
+func (a AlphaOp) AlphaIn() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_IN) }
+
+//AlphaOut returns AlphaOp(C.NPPI_OP_ALPHA_OUT)}
+func (a AlphaOp) AlphaOut() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OUT) }
+
+//AlphaAtop returns AlphaOp(C.NPPI_OP_ALPHA_ATOP)}
+func (a AlphaOp) AlphaAtop() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_ATOP) }
+
+//AlphaXOR returns AlphaOp(C.NPPI_OP_ALPHA_XOR)}
+func (a AlphaOp) AlphaXOR() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_XOR) }
+
+//AlphaPlus returns AlphaOp(C.NPPI_OP_ALPHA_PLUS)}
+func (a AlphaOp) AlphaPlus() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_PLUS) }
+
+//AlphaOverPremul returns AlphaOp(C.NPPI_OP_ALPHA_OVER_PREMUL)}
+func (a AlphaOp) AlphaOverPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OVER_PREMUL) }
+
+//AlphaInPremul returns AlphaOp(C.NPPI_OP_ALPHA_IN_PREMUL)}
+func (a AlphaOp) AlphaInPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_IN_PREMUL) }
+
+//AlphaOutPremul returns AlphaOp(C.NPPI_OP_ALPHA_OUT_PREMUL)}
+func (a AlphaOp) AlphaOutPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OUT_PREMUL) }
+
+//AlphaAtopPremul returns AlphaOp(C.NPPI_OP_ALPHA_ATOP_PREMUL)}
+func (a AlphaOp) AlphaAtopPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_ATOP_PREMUL) }
+
+//AlphaXORPremul returns AlphaOp(C.NPPI_OP_ALPHA_XOR_PREMUL)}
+func (a AlphaOp) AlphaXORPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_XOR_PREMUL) }
+
+//AlphaPlusPremul returns AlphaOp(C.NPPI_OP_ALPHA_PLUS_PREMUL)}
+func (a AlphaOp) AlphaPlusPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_PLUS_PREMUL) }
+
+//AlphaPremul returns AlphaOp(C.NPPI_OP_ALPHA_PREMUL)}
+func (a AlphaOp) AlphaPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_PREMUL) }
+
+//HOGConfig type defines the configuration parameters for the HOG descriptor
+type HOGConfig C.NppiHOGConfig
+
+func (h HOGConfig) c() C.NppiHOGConfig {
+	return C.NppiHOGConfig(h)
+}
+
+func (h *HOGConfig) cptr() *C.NppiHOGConfig {
+	return (*C.NppiHOGConfig)(h)
+}
+
+//Set sets the HOGConfig inner types
+func (h *HOGConfig) Set(cellSize, histogramBlockSize, nHistogramBins int32, detectionWindowSize Size) {
+	h.cellSize = (C.int)(cellSize)
+	h.histogramBlockSize = (C.int)(histogramBlockSize)
+	h.histogramBlockSize = (C.int)(nHistogramBins)
+	h.detectionWindowSize = detectionWindowSize.c()
+}
+
+//Get gets the inner type values
+func (h *HOGConfig) Get() (cellSize, histogramBlockSize, nHistogramBins int32, detectionWindowSize Size) {
+	cellSize = (int32)(h.cellSize)
+	histogramBlockSize = (int32)(h.histogramBlockSize)
+	nHistogramBins = (int32)(h.nHistogramBins)
+	detectionWindowSize = (Size)(h.detectionWindowSize)
+	return cellSize, histogramBlockSize, nHistogramBins, detectionWindowSize
+}
 
 /*
 typedef struct
@@ -872,8 +972,39 @@ typedef struct
 //#define NPP_HOG_MAX_CELLS_PER_DESCRIPTOR              (256) /**< max number of cells in a descriptor window.   */
 //#define NPP_HOG_MAX_OVERLAPPING_BLOCKS_PER_DESCRIPTOR (256) /**< max number of overlapping blocks in a descriptor window.   */
 //#define NPP_HOG_MAX_DESCRIPTOR_LOCATIONS_PER_CALL     (128) /**< max number of descriptor window locations per function call.   */
-type NppiHaarClassifier32f C.NppiHaarClassifier_32f
 
+//HaarClassifier32f is a structure used in Haar Classification
+type HaarClassifier32f C.NppiHaarClassifier_32f
+
+func (h HaarClassifier32f) c() C.NppiHaarClassifier_32f {
+	return C.NppiHaarClassifier_32f(h)
+}
+
+func (h *HaarClassifier32f) cptr() *C.NppiHaarClassifier_32f {
+	return (*C.NppiHaarClassifier_32f)(h)
+}
+
+//Set sets the HOGConfig inner types
+func (h *HaarClassifier32f) Set(classifiers []*Int32, classifierStep int, classifierSize Size, counterDevice *Int32) {
+	h.numClassifiers = (C.int)(len(classifiers))
+	h.classifiers = classifiers[0].cptr()
+	h.classifierStep = (C.size_t)(classifierStep)
+	h.classifierSize = classifierSize.c()
+	h.counterDevice = counterDevice.cptr()
+}
+
+/*
+//Get gets the inner type values
+func (h *HaarClassifier32f) Get()(classifiers []*Int32, classifierStep int, classifierSize Size, counterDevice *Int32) {
+
+numofclassifiers :=	(C.int)h.numClassifiers
+classifiers=make([]Int32,	numofclassifiers)
+h.classifiers
+	classifiers[0].cptr() = h.classifiers =
+	h.classifierStep = (C.size_t)(classifierStep)
+	h.classifierSize = classifierSize.c()
+	h.counterDevice = counterDevice.cptr()
+*/
 /*
 typedef struct
 {
@@ -884,7 +1015,30 @@ typedef struct
     Npp32s * counterDevice;
 } NppiHaarClassifier_32f;
 */
-type NppiHaarBuffer C.NppiHaarBuffer
+
+//HaarBuffer is a buffer for algorithms that require a HaarBuffer
+type HaarBuffer C.NppiHaarBuffer
+
+func (h HaarBuffer) c() C.NppiHaarBuffer {
+	return C.NppiHaarBuffer(h)
+}
+
+func (h *HaarBuffer) cptr() *C.NppiHaarBuffer {
+	return (*C.NppiHaarBuffer)(h)
+}
+
+//Get gets the HaarBuffer inner values
+func (h HaarBuffer) Get() (BufferSize int32, Buffer *Int32) {
+	BufferSize = (int32)(h.haarBufferSize)
+	Buffer = (*Int32)(h.haarBuffer)
+	return BufferSize, Buffer
+}
+
+//Set sets the HaarBuffer inner values
+func (h *HaarBuffer) Set(buffsize int32, buffer *Int32) {
+	h.haarBufferSize = (C.int)(buffsize)
+	h.haarBuffer = buffer.cptr()
+}
 
 /*
 typedef struct
@@ -894,25 +1048,36 @@ typedef struct
 
 } NppiHaarBuffer;
 */
-type NppsZCType C.NppsZCType
 
-const (
-	NppZCR   = NppsZCType(C.nppZCR)   /**<  sign change */
-	NppZCXor = NppsZCType(C.nppZCXor) /**<  sign change XOR */
-	NppZCC   = NppsZCType(C.nppZCC)   /**<  sign change count_0 */
-)
+//ZCType is a type that holds flags through methods
+type ZCType C.NppsZCType
 
-type NppiHuffmanTableType C.NppiHuffmanTableType
+//ZCR sign change
+func (z ZCType) ZCR() ZCType { return ZCType(C.nppZCR) }
 
-const (
-	NppiDCTable = NppiHuffmanTableType(C.nppiDCTable) /**<  DC Table */
-	NppiACTable = NppiHuffmanTableType(C.nppiACTable) /**<  AC Table */
-)
+//ZCXor sign change XOR
+func (z ZCType) ZCXor() ZCType { return ZCType(C.nppZCXor) }
 
-type NppiNorm C.NppiNorm
+//ZCC sign change count_0
+func (z ZCType) ZCC() ZCType { return ZCType(C.nppZCC) }
 
-const (
-	NpiiNormInf = NppiNorm(C.nppiNormInf) /**<  maximum */
-	NpiiNormL1  = NppiNorm(C.nppiNormL1)  /**<  sum */
-	NpiiNormL2  = NppiNorm(C.nppiNormL2)  /**<  square root of sum of squares */
-)
+//HuffmanTableType is a type used for HuffmanTableType flags flags are passed by methods
+type HuffmanTableType C.NppiHuffmanTableType
+
+//DCTable - DC Table flag
+func (h HuffmanTableType) DCTable() HuffmanTableType { return HuffmanTableType(C.nppiDCTable) }
+
+//ACTable - AC Table flag
+func (h HuffmanTableType) ACTable() HuffmanTableType { return HuffmanTableType(C.nppiACTable) }
+
+//Norm is used for norm flags where needed Norm will return flags through methods
+type Norm C.NppiNorm
+
+//Inf maximum
+func (n Norm) Inf() Norm { return Norm(C.nppiNormInf) }
+
+//L1 sum
+func (n Norm) L1() Norm { return Norm(C.nppiNormL1) }
+
+//L2 square root of sum of squares
+func (n Norm) L2() Norm { return Norm(C.nppiNormL2) }
