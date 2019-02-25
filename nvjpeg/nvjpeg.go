@@ -189,8 +189,21 @@ func (b Backendflag) GPU() Backend {
 
 // Image is an Output descriptor.
 // Data that is written to planes depends on output forman
-type Image struct {
-	img C.nvjpegImage_t
+type Image C.nvjpegImage_t
+
+//Get gets the underlying values of image
+func (im *Image) Get() (channel [C.NVJPEG_MAX_COMPONENT]*byte, pitch [C.NVJPEG_MAX_COMPONENT]uint32) {
+	for i := 0; i < int(C.NVJPEG_MAX_COMPONENT); i++ {
+		channel[i] = (*byte)(im.channel[i])
+		pitch[i] = (uint32)(im.pitch[i])
+	}
+	return channel, pitch
+}
+func (im *Image) cptr() *C.nvjpegImage_t {
+	return (*C.nvjpegImage_t)(im)
+}
+func (im *Image) c() C.nvjpegImage_t {
+	return (C.nvjpegImage_t)(*im)
 }
 
 /*
@@ -210,8 +223,13 @@ typedef int (*tDevFree)(void*);
 //DevAllocator - Memory allocator using mentioned prototypes, provided to nvjpegCreate
 // This allocator will be used for all device memory allocations inside library
 // In any way library is doing smart allocations (reallocates memory only if needed)
-type DevAllocator struct {
-	allocator C.nvjpegDevAllocator_t
+type DevAllocator C.nvjpegDevAllocator_t
+
+func (d *DevAllocator) cptr() *C.nvjpegDevAllocator_t {
+	return (*C.nvjpegDevAllocator_t)(d)
+}
+func (d DevAllocator) c() C.nvjpegDevAllocator_t {
+	return (C.nvjpegDevAllocator_t)(d)
 }
 
 /*
@@ -238,7 +256,7 @@ type JpegState struct {
 // OUT        handle        : Codec instance, use for other calls
 func Create(b Backend, allocator *DevAllocator) (*Handle, error) {
 	h := new(Handle)
-	err := status(C.nvjpegCreate(b.c(), &allocator.allocator, &h.h)).error()
+	err := status(C.nvjpegCreate(b.c(), allocator.cptr(), &h.h)).error()
 	if err != nil {
 		return nil, err
 	}
@@ -327,7 +345,7 @@ func GetImageInfo(handle *Handle, data *byte, length uint) (nComponents int32, s
 func Decode(h *Handle, j *JpegState, data []byte, frmt OutputFormat, dest *Image, stream *gocudnn.Stream) error {
 	d := (*C.uchar)(&data[0])
 	length := len(data)
-	return status(C.nvjpegDecode(h.h, j.j, d, C.size_t(length), frmt.c(), &dest.img, C.cudaStream_t(stream.Ptr()))).error()
+	return status(C.nvjpegDecode(h.h, j.j, d, C.size_t(length), frmt.c(), dest.cptr(), C.cudaStream_t(stream.Ptr()))).error()
 }
 
 //Decode in Phases
@@ -357,7 +375,7 @@ func DecodePhaseTwo(h *Handle, j *JpegState, stream *gocudnn.Stream) error {
 // Actual amount of work done in each separate step depends on the selected backend. But in any way all
 // of those functions must be called in this specific order. If one of the steps returns error - decode should be done from the beginning.
 func DecodePhaseThree(h *Handle, j *JpegState, dest *Image, stream *gocudnn.Stream) error {
-	return status(C.nvjpegDecodePhaseThree(h.h, j.j, &dest.img, C.cudaStream_t(stream.Ptr()))).error()
+	return status(C.nvjpegDecodePhaseThree(h.h, j.j, dest.cptr(), C.cudaStream_t(stream.Ptr()))).error()
 }
 
 //////////////////////////////////////////////
@@ -393,16 +411,16 @@ func DecodeBatchedInitialize(h *Handle, j *JpegState, batchsize, maxCPUthreads i
 func DecodeBatched(h *Handle, j *JpegState, data [][]byte, dest []*Image, stream *gocudnn.Stream) error {
 	x := make([]*C.uchar, len(data))
 	y := make([]C.size_t, len(data))
-	z := make([]C.nvjpegImage_t, len(dest))
+	z := make([]*C.nvjpegImage_t, len(dest))
 	var length int
 	for i := range data {
 		length = len(data[i])
 		x[i] = (*C.uchar)(&data[i][0])
 		y[i] = C.size_t(length)
-		z[i] = dest[i].img
+		z[i] = dest[i].cptr()
 	}
 
-	return status(C.nvjpegDecodeBatched(h.h, j.j, &x[0], &y[0], &z[0], C.cudaStream_t(stream.Ptr()))).error()
+	return status(C.nvjpegDecodeBatched(h.h, j.j, &x[0], &y[0], z[0], C.cudaStream_t(stream.Ptr()))).error()
 }
 
 //Phased Decoding Batches.
@@ -432,26 +450,13 @@ func DecodeBatchedPhaseTwo(h *Handle, j *JpegState, stream *gocudnn.Stream) erro
 
 //DecodeBatchedPhaseThree - nvjpegDecodePlanarBatchedGPU
 func DecodeBatchedPhaseThree(h *Handle, j *JpegState, dest []*Image, stream *gocudnn.Stream) error {
-	z := make([]C.nvjpegImage_t, len(dest))
+	z := make([]*C.nvjpegImage_t, len(dest))
 	for i := range z {
 
-		z[i] = dest[i].img
+		z[i] = dest[i].cptr()
 	}
-	return status(C.nvjpegDecodeBatchedPhaseThree(h.h, j.j, &z[0], C.cudaStream_t(stream.Ptr()))).error()
+	return status(C.nvjpegDecodeBatchedPhaseThree(h.h, j.j, z[0], C.cudaStream_t(stream.Ptr()))).error()
 }
-
-/*
-nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatchedPhaseTwo(
-          nvjpegHandle_t handle,
-          nvjpegJpegState_t jpeg_handle,
-          cudaStream_t stream);
-
-nvjpegStatus_t NVJPEGAPI nvjpegDecodeBatchedPhaseThree(
-          nvjpegHandle_t handle,
-          nvjpegJpegState_t jpeg_handle,
-          nvjpegImage_t *destinations,
-          cudaStream_t stream);
-*/
 
 //LibraryPropertyType are flags for finding the library major, minor,patch
 type LibraryPropertyType C.libraryPropertyType
