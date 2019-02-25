@@ -61,6 +61,8 @@ func GetGpuDeviceProperties() (pMaxThreadsPerSM, pMaxThreadsPerBlock, pNumberOfS
 func SetStream(hStream gocu.Streamer) error {
 	return status(C.nppSetStream((C.cudaStream_t)(hStream.Ptr()))).error()
 }
+
+//GetStream returns the current gocu.Streamer
 func GetStream() gocu.Streamer {
 	return gocudnn.Cuda{}.WrapStreamFromOtherPackage((unsafe.Pointer)(C.nppGetStream()))
 }

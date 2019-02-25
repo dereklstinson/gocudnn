@@ -192,6 +192,9 @@ func (n *Float32) Unsafe() unsafe.Pointer {
 func (n Float32) c() C.Npp32f {
 	return C.Npp32f(n)
 }
+func (n Float32) isnpp() bool {
+	return true
+}
 
 /*
  *

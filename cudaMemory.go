@@ -22,10 +22,8 @@ import (
 type Memer interface {
 	Ptr() unsafe.Pointer
 	ByteSize() SizeT
-	Free() error
 	Stored() Location
 	FillSlice(interface{}) error
-	keepsalive()
 }
 
 //Malloced is a non garbage collection memory that is stored on the device.  When done with it be sure to destroy it.
@@ -49,14 +47,6 @@ func OffSet(point unsafe.Pointer, unitsize int, offset int) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(point) + uintptr(unitsize*offset))
 }
 */
-func (mem *Malloced) keepsalive() {
-	runtime.KeepAlive(mem)
-}
-
-//KeepAlive keeps the mem alive
-func (mem *Malloced) KeepAlive() {
-	runtime.KeepAlive(mem)
-}
 
 //Atribs are a memories attributes on the device side
 type Atribs struct {
@@ -87,9 +77,7 @@ func (mem *Malloced) Atributes() (Atribs, error) {
 	if x.isManaged > C.int(0) {
 		managed = true
 	}
-	if setkeepalive {
-		mem.keepsalive()
-	}
+
 	return Atribs{
 		Type:    MemType(x.memoryType),
 		Device:  int32(x.device),
@@ -102,9 +90,7 @@ func (mem *Malloced) Atributes() (Atribs, error) {
 //Set sets the value for each byte in device memory
 func (mem *Malloced) Set(value int32) error {
 	err := C.cudaMemset(mem.ptr, C.int(value), mem.size.c())
-	if setkeepalive {
-		mem.keepsalive()
-	}
+
 	return newErrorRuntime("cudaMemset", err)
 }
 
@@ -119,9 +105,7 @@ func (mem *Malloced) FillSlice(input interface{}) error {
 	if err != nil {
 		return err
 	}
-	if setkeepalive {
-		mem.keepsalive()
-	}
+
 	if mem.onmanaged == true {
 
 		return CudaMemCopy(ptr, mem, bsize, kind.Default())
@@ -299,18 +283,14 @@ func toint8array(input interface{}) []int8 {
 //CudaMemCopy copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
 func CudaMemCopy(dest Memer, src Memer, count SizeT, kind MemcpyKind) error {
 	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), count.c(), kind.c())
-	if setkeepalive {
-		keepsalivebuffer(dest, src)
-	}
+
 	return newErrorRuntime("cudaMemcpy", err)
 }
 
 //CudaMemCopyUnsafe takes unsafe Pointers and does the cuda mem copy
 func CudaMemCopyUnsafe(dest unsafe.Pointer, src unsafe.Pointer, count SizeT, kind MemcpyKind) error {
 	err := C.cudaMemcpy(dest, src, count.c(), kind.c())
-	if setkeepalive {
-		keepsalivebuffer(dest, src)
-	}
+
 	return newErrorRuntime("cudaMemcpy", err)
 }
 
@@ -319,9 +299,7 @@ func UnifiedMemCopy(dest Memer, src Memer) error {
 	if dest.ByteSize() != src.ByteSize() {
 		return errors.New("Dest and Src not same size")
 	}
-	if setkeepalive {
-		keepsalivebuffer(dest, src)
-	}
+
 	return CudaMemCopy(dest, src, dest.ByteSize(), MemcpyKind(C.cudaMemcpyDefault))
 }
 
