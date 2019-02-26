@@ -6,6 +6,8 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //OpTensor is a struct that is used in making op tensors it holds the Funcs and Flgs for optensors
@@ -68,13 +70,13 @@ func (t *OPTensorD) OpTensor(
 	handle *Handle,
 	alpha1 CScalar,
 	aDesc *TensorD,
-	A *Malloced,
+	A gocu.Mem,
 	alpha2 CScalar,
 	bDesc *TensorD,
-	B *Malloced,
+	B gocu.Mem,
 	beta CScalar,
 	cDesc *TensorD,
-	cmem *Malloced) error {
+	cmem gocu.Mem) error {
 
 	x := C.cudnnOpTensor(
 		handle.x,

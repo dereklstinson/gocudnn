@@ -1,8 +1,18 @@
 # GoCudnn [![Coverage Status](https://coveralls.io/repos/github/dereklstinson/GoCudnn/badge.svg?branch=master)](https://coveralls.io/github/dereklstinson/GoCudnn?branch=master)
 <p><img alt="Gopher" title="GoCu" src="GoCu.png" /></p>
+
+
+
 Go Bindings for cuDNN 7.4 (I added the functions up to 7.1, I need to added the newer 7.4 functions) using Cuda 10.0 \(Just some Cuda 10.0\) 
 
-# Now In Alpha Stage
+This is currently broken as of 2/26/2019 I will try to get it working in a few days. As this is also my save file for home and school.  I'm sorry. I really don't know how to do version control with git. 
+
+
+# Now Back in Pre-Alpha Stage
+I am making the code more like an actual binding.  I am in the process of makeing subpackages for everything I just threw into the gocudnn package.  Like cuda_runtime_api.h, cuda.h, curand.h.  I am adding some nppi.h to the mix as a subpackage.
+I am making subpackage bindings to what I think will supliment cudnn.I also want to add cudnn 7.5. Since it has attention funcs.
+
+
 To be honest I haven't tested all the functions.  If there is a bug. Please let me know. Even better make a pull request. I will only be testing the functions that are being used for my thesis.
 I don't plan on changing any of the function names.  I don't plan on deleting any functions.  I do plan on adding functions if needed.  Like maybe some cuda_runtime_api module stuff so that more than 2 types
 of trainers can be used.  I might add the jpeg image stuff, when that gets out of the beta phase.  
@@ -22,12 +32,12 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	mode SoftMaxMode,  // a flag
 	alpha CScalar,  // Set to -1.0
 	yD *TensorD,    // Network Ouput/Answer
-	y Memer,        //   ''
+	y gocu.Mem,        //   ''
 	dyD *TensorD,  // Desired Answer / Label
-	dy Memer,     //   '' 
+	dy gocu.Mem,     //   '' 
 	beta CScalar,  // Set to 0
 	dxD *TensorD,  // Gradient for previous layer
-	dx Memer,      //  ''
+	dx gocu.Mem,      //  ''
 )
 ```
 

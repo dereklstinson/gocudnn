@@ -18,18 +18,18 @@ type Filter struct {
 //FilterD is the struct holding discriptor information for cudnnFilterDescriptor_t
 type FilterD struct {
 	descriptor C.cudnnFilterDescriptor_t
-	tensorD    *TensorD
-	dims       C.int
-	flags      descflag
+	//	tensorD    *TensorD
+	dims  C.int
+	flags descflag
 }
 
+/*
 //TensorD returns the tensor descripter of FilterD.  //Kind of a hack
 func (f *FilterD) TensorD() *TensorD {
-	if setkeepalive {
-		f.keepsalive()
-	}
+
 	return f.tensorD
 }
+*/
 func (f *FilterD) keepsalive() {
 	runtime.KeepAlive(f)
 }
@@ -68,12 +68,12 @@ func (f Filter) NewFilter4dDescriptor(data DataType, format TensorFormat, shape 
 		return nil, err
 	}
 	descriptor = &FilterD{
-		descriptor: desc,
-		tensorD: &TensorD{
-			descriptor: tensordescriptor,
-			dims:       C.int(4),
-			flag:       t4d,
-		},
+		descriptor: desc, /*
+			tensorD: &TensorD{
+				descriptor: tensordescriptor,
+				dims:       C.int(4),
+				flag:       t4d,
+			},*/
 		dims:  C.int(4),
 		flags: t4d}
 	if setfinalizer {
@@ -108,12 +108,12 @@ func (f Filter) NewFilterNdDescriptor(data DataType, format TensorFormat, shape 
 		return nil, err
 	}
 	descriptor = &FilterD{
-		descriptor: desc,
-		tensorD: &TensorD{
-			descriptor: tensordescriptor,
-			dims:       dims,
-			flag:       tnd,
-		},
+		descriptor: desc, /*
+			tensorD: &TensorD{
+				descriptor: tensordescriptor,
+				dims:       dims,
+				flag:       tnd,
+			},*/
 		dims:  dims,
 		flags: tnd}
 	if setfinalizer {
@@ -148,27 +148,30 @@ func (f *FilterD) DestroyDescriptor() error {
 }
 
 func destroyfilterdescriptor(f *FilterD) error {
-	var flagger1 bool
+	//	var flagger1 bool
 	var flagger2 bool
 
-	err1 := f.tensorD.DestroyDescriptor()
-	if err1 != nil {
+	//	err1 := f.tensorD.DestroyDescriptor()
+	/*if err1 != nil {
 		flagger1 = true
 	}
+	*/
 
 	err2 := Status(C.cudnnDestroyFilterDescriptor(f.descriptor)).error("DestroyDescriptor-filt")
 	if err2 != nil {
 		flagger2 = true
 	}
-	if flagger1 == flagger2 {
-		if flagger1 == false {
-			return nil
+	/*
+		if flagger1 == flagger2 {
+			if flagger1 == false {
+				return nil
+			}
+			return errors.New(err1.Error() + " , " + err2.Error())
 		}
-		return errors.New(err1.Error() + " , " + err2.Error())
-	}
-	if flagger1 == true {
-		return err1
-	}
+		if flagger1 == true {
+			return err1
+		}
+	*/
 	if flagger2 == true {
 		return err2
 	}

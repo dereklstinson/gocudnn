@@ -10,6 +10,9 @@ import "C"
 import (
 	"runtime"
 	"unsafe"
+
+	"github.com/dereklstinson/GoCudnn/cudart"
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //Handle is a struct containing a cudnnHandle_t which is basically a Pointer to a CUContext
@@ -46,16 +49,6 @@ func (handle *Handle) keepsalive() {
 	runtime.KeepAlive(handle)
 }
 
-/*
-//Create creates the handle
-func (handle *Handle) create() error {
-
-	y := C.cudnnCreate(&handle.x)
-
-	return Status(y).error("(*Handle).Create")
-}
-*/
-
 //Destroy destroys the handle
 func (handle *Handle) Destroy() error {
 	return destroycudnnhandle(handle)
@@ -64,13 +57,10 @@ func destroycudnnhandle(handle *Handle) error {
 	return Status(C.cudnnDestroy(handle.x)).error("(*Handle).Destroy")
 }
 
-//typedefed CUstream_st *CUstream
-//typedefed CUstream_st *cudastream_t
-
 //SetStream passes a stream to sent in the cuda handle
-func (handle *Handle) SetStream(s *Stream) error {
+func (handle *Handle) SetStream(s gocu.Streamer) error {
 
-	y := C.cudnnSetStream(handle.x, s.stream)
+	y := C.cudnnSetStream(handle.x, C.cudaStream_t(s.Ptr()))
 	if setkeepalive {
 		keepsalivebuffer(handle, s)
 	}
@@ -78,21 +68,14 @@ func (handle *Handle) SetStream(s *Stream) error {
 }
 
 //GetStream will return a stream that the handle is using
-func (handle *Handle) GetStream() (*Stream, error) {
+func (handle *Handle) GetStream() (gocu.Streamer, error) {
 
 	var s C.cudaStream_t
 	//var some *C.cudaStream_t
 	//x := C.cudnnHandle_t(handle.Pointer())
 
-	y := C.cudnnGetStream(handle.x, &s)
+	err := Status(C.cudnnGetStream(handle.x, &s)).error("*Handle).GetStream")
 	//	s.stream = *some
 
-	newstream := &Stream{
-		stream: s,
-	}
-	if setkeepalive {
-		keepsalivebuffer(handle, newstream)
-	}
-
-	return newstream, Status(y).error("(*Handle).GetStream")
+	return cudart.ExternalWrapper(unsafe.Pointer(s)), err
 }

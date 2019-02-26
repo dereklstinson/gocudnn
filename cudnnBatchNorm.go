@@ -7,6 +7,8 @@ import "C"
 import (
 	"errors"
 	"runtime"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //BatchNorm Holds Batch Normalization Flags and functions, and is used to call Batchnorm desctriptor
@@ -134,9 +136,9 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 	alpha CScalar, /* alpha[0] = result blend factor */
 	beta CScalar, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 	/* Shared desc for the next 6 tensors in the argument list.
 	   Data type to be set as follows:
 	   type = (typeOf(x) == double) ? double : float
@@ -147,8 +149,8 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 		(normalization is performed across N) */
 	bnScaleBiasMeanVar *TensorD,
 	/* 'Gamma' and 'Beta' respectively in Ioffe and Szegedy's paper's notation */
-	bnscale *Malloced,
-	bnBias *Malloced,
+	bnscale gocu.Mem,
+	bnBias gocu.Mem,
 	/* MUST use factor=1 in the very first call of a complete training cycle.
 	        Use a factor=1/(1+n) at N-th call to the function to get
 	        Cumulative Moving Average (CMA) behavior
@@ -160,20 +162,18 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 
 	/* Used in Training phase only.
 	   runningMean = newMean*factor + runningMean*(1-factor) */
-	resultrunningmean *Malloced,
+	resultrunningmean gocu.Mem,
 	/* Output in training mode, input in inference. Is the moving average
 	   of  variance[x] (factor is applied in the same way as for runningMean) */
-	resultRunningVariance *Malloced,
+	resultRunningVariance gocu.Mem,
 
 	epsilon float64, /* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
 
-	resultSaveMean *Malloced, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
-	resultSaveInvVariance *Malloced, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveMean gocu.Mem, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveInvVariance gocu.Mem, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
 
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, xD, x, yD, y, bnScaleBiasMeanVar, bnscale, bnBias, resultrunningmean, resultRunningVariance, resultSaveMean, resultSaveInvVariance)
-	}
+
 	return Status(C.cudnnBatchNormalizationForwardTraining(
 		handle.x,
 		mode.c(),
@@ -263,20 +263,18 @@ func (bnf batchNormFuncs) BatchNormalizationForwardInference(
 	alpha CScalar, /* alpha[0] = result blend factor */
 	beta CScalar, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
-	x *Malloced, /* NxCxHxW */
+	x gocu.Mem, /* NxCxHxW */
 	yD *TensorD,
-	y *Malloced, /* NxCxHxW */
+	y gocu.Mem, /* NxCxHxW */
 	bnScaleBiasMeanVarDesc *TensorD,
-	bnscale *Malloced,
-	bnBias *Malloced,
-	estimatedMean *Malloced, //same descriptor as bias and scale
-	estimatedVariance *Malloced, //same descriptor as bias and scale
+	bnscale gocu.Mem,
+	bnBias gocu.Mem,
+	estimatedMean gocu.Mem, //same descriptor as bias and scale
+	estimatedVariance gocu.Mem, //same descriptor as bias and scale
 	epsilon float64,
 
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, mode, xD, x, yD, y, bnScaleBiasMeanVarDesc, bnscale, bnBias, estimatedMean, estimatedVariance)
-	}
+
 	return Status(C.cudnnBatchNormalizationForwardInference(
 		handle.x,
 		mode.c(),
@@ -307,26 +305,24 @@ func (bnf batchNormFuncs) BatchNormalizationBackward(
 	alphaParamDiff CScalar,
 	betaParamDiff CScalar,
 	xD *TensorD, /* same desc for x, dx, dy */
-	x *Malloced,
+	x gocu.Mem,
 	dyD *TensorD,
-	dy *Malloced,
+	dy gocu.Mem,
 	dxD *TensorD,
-	dx *Malloced,
+	dx gocu.Mem,
 	/* Shared tensor desc for the 4 tensors below */
 	dBnScaleBiasDesc *TensorD,
-	bnScale *Malloced, /* bnBias doesn't affect backpropagation */
+	bnScale gocu.Mem, /* bnBias doesn't affect backpropagation */
 	/* scale and bias diff are not backpropagated below this layer */
-	dBnScaleResult *Malloced,
-	dBnBiasResult *Malloced,
+	dBnScaleResult gocu.Mem,
+	dBnBiasResult gocu.Mem,
 	/* Same epsilon as forward pass */
 	epsilon float64,
 	/* Optionally cached intermediate results from forward pass */
-	savedMean *Malloced,
-	savedInvVariance *Malloced,
+	savedMean gocu.Mem,
+	savedInvVariance gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, mode, xD, x, dyD, dy, dxD, dx, dBnScaleBiasDesc, bnScale, dBnScaleResult, dBnBiasResult, savedMean, savedInvVariance)
-	}
+
 	return Status(C.cudnnBatchNormalizationBackward(
 		handle.x,
 		mode.c(),
@@ -418,13 +414,13 @@ func (bnd *BatchD) BatchNormalizationForwardTrainingV2(
 	alpha CScalar, /* alpha[0] = result blend factor */
 	beta CScalar, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 
 	/* 'Gamma' and 'Beta' respectively in Ioffe and Szegedy's paper's notation */
-	bnscale *Malloced,
-	bnBias *Malloced,
+	bnscale gocu.Mem,
+	bnBias gocu.Mem,
 	/* MUST use factor=1 in the very first call of a complete training cycle.
 	        Use a factor=1/(1+n) at N-th call to the function to get
 	        Cumulative Moving Average (CMA) behavior
@@ -436,21 +432,19 @@ func (bnd *BatchD) BatchNormalizationForwardTrainingV2(
 
 	/* Used in Training phase only.
 	   runningMean = newMean*factor + runningMean*(1-factor) */
-	resultrunningmean *Malloced,
+	resultrunningmean gocu.Mem,
 	/* Output in training mode, input in inference. Is the moving average
 	   of  variance[x] (factor is applied in the same way as for runningMean) */
-	resultRunningVariance *Malloced,
+	resultRunningVariance gocu.Mem,
 	/* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
 	epsilon float64,
 	/* Optionally save intermediate results from the forward pass here
 	- can be reused to speed up backward pass. NULL if unused */
-	resultSaveMean *Malloced,
-	resultSaveInvVariance *Malloced,
+	resultSaveMean gocu.Mem,
+	resultSaveInvVariance gocu.Mem,
 
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, xD, x, yD, y, bnd.d, bnscale, bnBias, resultrunningmean, resultRunningVariance, resultSaveMean, resultSaveInvVariance)
-	}
+
 	return Status(C.cudnnBatchNormalizationForwardTraining(
 		handle.x,
 		mode.c(),
@@ -479,20 +473,18 @@ func (bnd *BatchD) BatchNormalizationForwardInferenceV2(
 	alpha CScalar, /* alpha[0] = result blend factor */
 	beta CScalar, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
-	x *Malloced, /* NxCxHxW */
+	x gocu.Mem, /* NxCxHxW */
 	yD *TensorD,
-	y *Malloced, /* NxCxHxW */
+	y gocu.Mem, /* NxCxHxW */
 
-	bnscale *Malloced,
-	bnBias *Malloced,
-	estimatedMean *Malloced, //same descriptor as bias and scale
-	estimatedVariance *Malloced, //same descriptor as bias and scale
+	bnscale gocu.Mem,
+	bnBias gocu.Mem,
+	estimatedMean gocu.Mem, //same descriptor as bias and scale
+	estimatedVariance gocu.Mem, //same descriptor as bias and scale
 	epsilon float64,
 
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, mode, xD, x, yD, y, bnd.d, bnscale, bnBias, estimatedMean, estimatedVariance)
-	}
+
 	return Status(C.cudnnBatchNormalizationForwardInference(
 		handle.x,
 		mode.c(),
@@ -523,26 +515,24 @@ func (bnd *BatchD) BatchNormalizationBackwardV2(
 	alphaParamDiff CScalar,
 	betaParamDiff CScalar,
 	xD *TensorD, /* same desc for x, dx, dy */
-	x *Malloced,
+	x gocu.Mem,
 	dyD *TensorD,
-	dy *Malloced,
+	dy gocu.Mem,
 	dxD *TensorD,
-	dx *Malloced,
+	dx gocu.Mem,
 	/* Shared tensor desc for the 4 tensors below */
 
-	bnScale *Malloced, /* bnBias doesn't affect backpropagation */
+	bnScale gocu.Mem, /* bnBias doesn't affect backpropagation */
 	/* scale and bias diff are not backpropagated below this layer */
-	dBnScaleResult *Malloced,
-	dBnBiasResult *Malloced,
+	dBnScaleResult gocu.Mem,
+	dBnBiasResult gocu.Mem,
 	/* Same epsilon as forward pass */
 	epsilon float64,
 	/* Optionally cached intermediate results from forward pass */
-	savedMean *Malloced,
-	savedInvVariance *Malloced,
+	savedMean gocu.Mem,
+	savedInvVariance gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, mode, xD, x, dyD, dy, dxD, dx, bnd.d, bnScale, dBnScaleResult, dBnBiasResult, savedMean, savedInvVariance)
-	}
+
 	return Status(C.cudnnBatchNormalizationBackward(
 		handle.x,
 		mode.c(),

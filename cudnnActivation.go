@@ -6,6 +6,8 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //Activation is a helper func that is used is activation type processes
@@ -68,10 +70,10 @@ func (a *ActivationD) Forward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	yD *TensorD,
-	y *Malloced) error {
+	y gocu.Mem) error {
 	if setkeepalive {
 		keepsalivebuffer(a, handle, xD, x, yD, y)
 	}
@@ -83,14 +85,14 @@ func (a *ActivationD) Backward(
 	handle *Handle,
 	alpha CScalar,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 	dyD *TensorD,
-	dy *Malloced,
+	dy gocu.Mem,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	dxD *TensorD,
-	dx *Malloced) error {
+	dx gocu.Mem) error {
 	if setkeepalive {
 		keepsalivebuffer(a, handle, xD, x, yD, y, dyD, dy, dxD, dx)
 	}

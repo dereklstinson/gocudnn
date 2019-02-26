@@ -5,6 +5,7 @@ package gocudnn
 #include <cudnn.h>
 */
 import "C"
+import "github.com/dereklstinson/GoCudnn/gocu"
 
 //SoftMax holds the soft max flags and soft max funcs
 type SoftMax struct {
@@ -25,11 +26,11 @@ func (soft SoftMaxFuncs) SoftMaxForward(
 	mode SoftMaxMode,
 	alpha CScalar,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	yD *TensorD,
-	y *Malloced) error {
-	keepsalivebuffer(handle, xD, x, yD, y)
+	y gocu.Mem) error {
+
 	return Status(C.cudnnSoftmaxForward(
 		handle.x,
 		algo.c(),
@@ -50,14 +51,14 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	mode SoftMaxMode,
 	alpha CScalar,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 	dyD *TensorD,
-	dy *Malloced,
+	dy gocu.Mem,
 	beta CScalar,
 	dxD *TensorD,
-	dx *Malloced,
+	dx gocu.Mem,
 ) error {
-	keepsalivebuffer(handle, dxD, dx, yD, y, dyD, dy)
+
 	return Status(C.cudnnSoftmaxBackward(
 		handle.x,
 		algo.c(),

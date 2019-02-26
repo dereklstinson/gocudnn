@@ -10,6 +10,7 @@ typedef enum cudaMemoryType cudaMemoryType;
 */
 import "C"
 
+/*
 import (
 	"fmt"
 	"strconv"
@@ -352,3 +353,4 @@ func MakeGoPointer(input interface{}) (*GoPointer, error) {
 		return nil, errors.New("MakeGoPointer: Unsupported Type -- Type: " + thetype.Error())
 	}
 }
+*/

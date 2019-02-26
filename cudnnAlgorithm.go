@@ -7,6 +7,8 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //Algorithm is an empty struct that is used to call algorithm type functions
@@ -97,11 +99,11 @@ func (a Algorithm) CreateAlgorithmPerformance(numberToCreate int32) ([]Algorithm
 }
 
 //SetAlgorithmPerformance sets the algo performance
-func (a *AlgorithmPerformance) SetAlgorithmPerformance(aD *AlgorithmD, s Status, time float32, memory SizeT) error {
+func (a *AlgorithmPerformance) SetAlgorithmPerformance(aD *AlgorithmD, s Status, time float32, memory uint) error {
 	if setkeepalive {
 		keepsalivebuffer(a, aD)
 	}
-	return Status(C.cudnnSetAlgorithmPerformance(a.descriptor, aD.descriptor, s.c(), C.float(time), memory.c())).error("SetAlgorithmPerformance")
+	return Status(C.cudnnSetAlgorithmPerformance(a.descriptor, aD.descriptor, s.c(), C.float(time), C.size_t(memory))).error("SetAlgorithmPerformance")
 }
 
 func (a *AlgorithmPerformance) keepsalive() {
@@ -110,7 +112,7 @@ func (a *AlgorithmPerformance) keepsalive() {
 
 //GetAlgorithmPerformance gets algorithm performance. it returns AlgorithmD, Status, float32(time), SizeT(memorysize in bytes)
 //I didn't include the setalgorithmperformance func, but it might need to be made.
-func (a *AlgorithmPerformance) GetAlgorithmPerformance() (AlgorithmD, Status, float32, SizeT, error) {
+func (a *AlgorithmPerformance) GetAlgorithmPerformance() (AlgorithmD, Status, float32, uint, error) {
 	var algoD AlgorithmD
 	var status C.cudnnStatus_t
 	var time C.float
@@ -123,7 +125,7 @@ func (a *AlgorithmPerformance) GetAlgorithmPerformance() (AlgorithmD, Status, fl
 		&time,
 		&mem,
 	)).error("GetAlgorithmPerformance")
-	return algoD, Status(status), float32(time), SizeT(mem), err
+	return algoD, Status(status), float32(time), uint(mem), err
 }
 
 //DestroyPerformance destroys the perfmance
@@ -153,17 +155,17 @@ type AlgoFuncs struct {
 }
 
 //GetAlgorithmSpaceSize gets the size in bytes of the algorithm
-func (a *AlgorithmD) GetAlgorithmSpaceSize(handle *Handle) (SizeT, error) {
+func (a *AlgorithmD) GetAlgorithmSpaceSize(handle *Handle) (uint, error) {
 	var sizet C.size_t
 	err := Status(C.cudnnGetAlgorithmSpaceSize(handle.x, a.descriptor, &sizet)).error("GetAlgorithmSpaceSize")
 	if setkeepalive {
 		keepsalivebuffer(handle, a)
 	}
-	return SizeT(sizet), err
+	return uint(sizet), err
 }
 
 //SaveAlgorithm saves the algorithm to host
-func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace *Malloced) error {
+func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbytes uint) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, a, algoSpace)
 	}
@@ -171,19 +173,19 @@ func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace *Malloced) error {
 		handle.x,
 		a.descriptor,
 		algoSpace.Ptr(),
-		algoSpace.ByteSize().c(),
+		C.size_t(sizeinbytes),
 	)).error("SaveAlgorithm")
 }
 
 //RestoreAlgorithm from host
-func (a *AlgorithmD) RestoreAlgorithm(handle *Handle, algoSpace *Malloced) error {
+func (a *AlgorithmD) RestoreAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbytes uint) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, a, algoSpace)
 	}
 	return Status(C.cudnnRestoreAlgorithm(
 		handle.x,
 		algoSpace.Ptr(),
-		algoSpace.ByteSize().c(),
+		C.size_t(sizeinbytes),
 		a.descriptor,
 	)).error("RestoreAlgorithm")
 }

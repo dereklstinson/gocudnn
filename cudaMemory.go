@@ -11,19 +11,21 @@ typedef enum cudaMemoryType cudaMemoryType;
 import "C"
 
 import (
-	"runtime"
-	"unsafe"
-
-	"github.com/dereklstinson/half"
 	"github.com/pkg/errors"
 )
 
+/*
 //Memer is an interface for memory
 type Memer interface {
 	Ptr() unsafe.Pointer
-	ByteSize() SizeT
+	ByteSize() uint
 	Stored() Location
 	FillSlice(interface{}) error
+}
+*/
+/*
+func (mem *Malloced) DPtr() *unsafe.Pointer {
+	return &mem.ptr
 }
 
 //Malloced is a non garbage collection memory that is stored on the device.  When done with it be sure to destroy it.
@@ -41,12 +43,7 @@ func (mem *Malloced) Offset(offset uint, numofbyteintype uint) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(mem.ptr) + uintptr(offset*numofbyteintype))
 }
 
-/*
-//OffSet will return the offset address from the pointer passed
-func OffSet(point unsafe.Pointer, unitsize int, offset int) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(point) + uintptr(unitsize*offset))
-}
-*/
+
 
 //Atribs are a memories attributes on the device side
 type Atribs struct {
@@ -63,35 +60,6 @@ func cfloattofloat32(input []C.float) []float32 {
 		slice[i] = float32(input[i])
 	}
 	return slice
-}
-
-//Atributes returns the atributes
-func (mem *Malloced) Atributes() (Atribs, error) {
-	var x C.cudaPointerAttributes
-	cuerr := C.cudaPointerGetAttributes(&x, mem.Ptr())
-	err := newErrorRuntime("Attributes", cuerr)
-	if err != nil {
-		return Atribs{}, err
-	}
-	var managed bool
-	if x.isManaged > C.int(0) {
-		managed = true
-	}
-
-	return Atribs{
-		Type:    MemType(x.memoryType),
-		Device:  int32(x.device),
-		DPtr:    unsafe.Pointer(x.devicePointer),
-		HPtr:    unsafe.Pointer(x.hostPointer),
-		Managed: managed,
-	}, nil
-}
-
-//Set sets the value for each byte in device memory
-func (mem *Malloced) Set(value int32) error {
-	err := C.cudaMemset(mem.ptr, C.int(value), mem.size.c())
-
-	return newErrorRuntime("cudaMemset", err)
 }
 
 //FillSlice will fill a slice array that is passed to cuda
@@ -169,6 +137,8 @@ func (mem *Malloced) Free() error {
 	mem = nil
 	return newErrorRuntime("Free", err)
 }
+
+
 func freecudamallocedmemory(mem *Malloced) error {
 	return mem.Free()
 }
@@ -400,9 +370,6 @@ func MallocManaged(size SizeT, management ManagedMem) (cudamem *Malloced, err er
 	}
 	return cudamem, err
 }
-func prependerror(info string, err error) error {
-	return errors.New(info + ": " + err.Error())
-}
 
 //FindSizeT finds the SizeT of the array
 func FindSizeT(input interface{}) (SizeT, error) {
@@ -447,14 +414,14 @@ func FindSizeT(input interface{}) (SizeT, error) {
 		return SizeT(0), errors.New("FindSizeT: Unsupported Type")
 	}
 }
-
+*/
 /*
 
 Flags
 
 
 */
-
+/*
 //Memory holds Memory flags will do more later
 type Memory struct {
 	Flgs MemcpyKindFlag
@@ -491,7 +458,6 @@ func (m MemcpyKindFlag) DeviceToDevice() MemcpyKind {
 func (m MemcpyKindFlag) Default() MemcpyKind {
 	return MemcpyKind(C.cudaMemcpyDefault)
 }
-func (m MemcpyKind) c() C.enum_cudaMemcpyKind { return C.enum_cudaMemcpyKind(m) }
 
 //MemCpyDeterminer is a helper function and has not been fully tested
 func MemCpyDeterminer(src, dest Memer) (MemcpyKind, error) {
@@ -604,4 +570,8 @@ func (l LocationFlag) CudaHost() Location {
 //Unified would mean cuda virtual unified memory
 func (l LocationFlag) Unified() Location {
 	return Location(4)
+}
+*/
+func prependerror(info string, err error) error {
+	return errors.New(info + ": " + err.Error())
 }

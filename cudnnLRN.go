@@ -8,6 +8,8 @@ import (
 	"errors"
 	"runtime"
 	"strconv"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //LRN is a struct that is used in making lrn layers. It holds the Funcs, and Flags
@@ -119,10 +121,10 @@ func (l *LRND) LRNCrossChannelForward(
 	mode LRNmode,
 	alpha CScalar,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, l, xD, x, yD, y)
@@ -146,14 +148,14 @@ func (l *LRND) LRNCrossChannelBackward(
 	mode LRNmode,
 	alpha CScalar,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 	dyD *TensorD,
-	dy *Malloced,
+	dy gocu.Mem,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	dxD *TensorD,
-	dx *Malloced,
+	dx gocu.Mem,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, l, xD, x, yD, y, dyD, dy, dxD, dx)
@@ -181,13 +183,13 @@ func (l *LRND) DivisiveNormalizationForward(
 	mode DivNormMode,
 	alpha CScalar,
 	xD TensorD, /* same desc for means, temp, temp2 */
-	x *Malloced,
-	means *Malloced, /* if NULL, means are assumed to be zero */
-	temp *Malloced,
-	temp2 *Malloced,
+	x gocu.Mem,
+	means gocu.Mem, /* if NULL, means are assumed to be zero */
+	temp gocu.Mem,
+	temp2 gocu.Mem,
 	beta CScalar,
 	yD TensorD,
-	y *Malloced,
+	y gocu.Mem,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, l, xD, x, means, temp, temp2, yD, y)
@@ -214,15 +216,15 @@ func (l *LRND) DivisiveNormalizationBackward(
 	mode DivNormMode,
 	alpha CScalar,
 	xD *TensorD, /* same desc for x, means, dy, temp, temp2 */
-	x *Malloced,
-	means *Malloced, /* if NULL, means are assumed to be zero */
-	dy *Malloced,
-	temp *Malloced,
-	temp2 *Malloced,
+	x gocu.Mem,
+	means gocu.Mem, /* if NULL, means are assumed to be zero */
+	dy gocu.Mem,
+	temp gocu.Mem,
+	temp2 gocu.Mem,
 	beta CScalar,
 	dXdMeansDesc *TensorD, /* same desc for dx, dMeans */
-	dx *Malloced, /* output x differential */
-	dMeans *Malloced, /* output means differential, can be NULL */
+	dx gocu.Mem, /* output x differential */
+	dMeans gocu.Mem, /* output means differential, can be NULL */
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, l, xD, x, means, dy, temp, temp2, dXdMeansDesc, dx, dMeans)

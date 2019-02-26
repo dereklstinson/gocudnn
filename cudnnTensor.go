@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/half"
 )
 
@@ -263,14 +264,14 @@ n, c, h, w := int32(1), int32(3), int32(4), int32(2)
 */
 
 //GetSizeInBytes returns the SizeT in bytes and Status
-func (t *TensorD) GetSizeInBytes() (SizeT, error) {
+func (t *TensorD) GetSizeInBytes() (uint, error) {
 
 	var sizebytes C.size_t
 	x := C.cudnnGetTensorSizeInBytes(t.descriptor, &sizebytes)
 	if setkeepalive == true {
 		t.keepsalive()
 	}
-	return SizeT(sizebytes), Status(x).error("GetTensorNdDescriptor")
+	return uint(sizebytes), Status(x).error("GetTensorNdDescriptor")
 }
 
 //IsDestroyed checks if the tensor is destroyed.  It will return a true if it is destroyed. If it is then this can be used again.
@@ -307,7 +308,7 @@ cudnnStatus_t cudnnTransformTensor(
 y = Transfomr((alpha *x),(beta * y))
 This will change the layout of a tensor stride wise
 */
-func (t Tensor) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x *Malloced, beta CScalar, ty *TensorD, y *Malloced) error {
+func (t Tensor) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x gocu.Mem, beta CScalar, ty *TensorD, y gocu.Mem) error {
 
 	var s Status
 
@@ -327,7 +328,7 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A *Malloced, beta CScalar, cD *TensorD, c *Malloced) error {
+func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A gocu.Mem, beta CScalar, cD *TensorD, c gocu.Mem) error {
 
 	s := Status(C.cudnnAddTensor(h.x, alpha.CPtr(), aD.descriptor, A.Ptr(), beta.CPtr(), cD.descriptor, c.Ptr()))
 	if setkeepalive == true {
@@ -338,13 +339,13 @@ func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A *Malloced, be
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y *Malloced, alpha CScalar) error {
+func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha CScalar) error {
 	keepsalivebuffer(h, yD, y)
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), alpha.CPtr())).error("ScaleTensor")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func (t Tensor) SetTensor(h *Handle, yD *TensorD, y *Malloced, v CScalar) error {
+func (t Tensor) SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v CScalar) error {
 
 	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), v.CPtr())
 	if setkeepalive == true {

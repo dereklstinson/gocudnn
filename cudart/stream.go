@@ -1,11 +1,10 @@
-package gocudnn
+package cudart
 
 /*
 
 #include <cuda_runtime_api.h>
 const cudaStream_t gocunullstream = NULL;
 */
-/*
 import "C"
 import (
 	"errors"
@@ -35,15 +34,15 @@ func (s *Stream) c() C.cudaStream_t {
 	return s.stream
 }
 
-//WrapStreamFromOtherPackage will wrap a string from another package into this
-func (cu Cuda) WrapStreamFromOtherPackage(ptr unsafe.Pointer) *Stream {
+//ExternalWrapper is used for other packages that might return a C.cudaStream_t
+func ExternalWrapper(x unsafe.Pointer) *Stream {
 	return &Stream{
-		stream: (C.cudaStream_t)(ptr),
+		stream: C.cudaStream_t(x),
 	}
 }
 
 //CreateBlockingStream creats an asyncronus stream stream for the user
-func (cu Cuda) CreateBlockingStream() (*Stream, error) {
+func CreateBlockingStream() (*Stream, error) {
 	s := new(Stream)
 	err := s.create(false, false, 0)
 
@@ -53,7 +52,7 @@ func (cu Cuda) CreateBlockingStream() (*Stream, error) {
 }
 
 //CreateNonBlockingStream creates a blocking stream
-func (cu Cuda) CreateNonBlockingStream() (*Stream, error) {
+func CreateNonBlockingStream() (*Stream, error) {
 	s := new(Stream)
 	err := s.create(true, false, 0)
 
@@ -64,7 +63,7 @@ func (cu Cuda) CreateNonBlockingStream() (*Stream, error) {
 }
 
 //CreateNonBlockingPriorityStream creates a non blocking Priority Stream
-func (cu Cuda) CreateNonBlockingPriorityStream(priority int32) (*Stream, error) {
+func CreateNonBlockingPriorityStream(priority int32) (*Stream, error) {
 	s := new(Stream)
 	err := s.create(true, true, priority)
 
@@ -75,7 +74,7 @@ func (cu Cuda) CreateNonBlockingPriorityStream(priority int32) (*Stream, error) 
 }
 
 //CreateBlockingPriorityStream creates a blocking stream
-func (cu Cuda) CreateBlockingPriorityStream(priority int32) (*Stream, error) {
+func CreateBlockingPriorityStream(priority int32) (*Stream, error) {
 	s := new(Stream)
 	err := s.create(true, true, priority)
 
@@ -120,4 +119,3 @@ func destroystream(s *Stream) error {
 	s = nil
 	return err
 }
-*/

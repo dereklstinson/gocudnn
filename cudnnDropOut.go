@@ -7,6 +7,8 @@ import "C"
 import (
 	"runtime"
 	"unsafe"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //DropOut is the struct that is used to call dropout functions
@@ -30,8 +32,8 @@ func (d *DropOutD) keepsalive() {
 //NewDropoutDescriptor creates a dropout descriptor
 func (d DropOut) NewDropoutDescriptor(handle *Handle,
 	dropout float32, //probability that the input value is set to zero
-	states *Malloced,
-	bytes SizeT,
+	states gocu.Mem,
+	bytes uint,
 	seed uint64,
 ) (descriptor *DropOutD, err error) {
 	var desc C.cudnnDropoutDescriptor_t
@@ -71,8 +73,8 @@ func destroydropoutdescriptor(d *DropOutD) error {
 func (d *DropOutD) RestoreDropoutDescriptor(
 	handle *Handle,
 	dropout float32, //probability that the input value is set to zero
-	states *Malloced,
-	bytes SizeT,
+	states gocu.Mem,
+	bytes uint,
 	seed uint64,
 ) error {
 	if setkeepalive {
@@ -91,9 +93,9 @@ func (d *DropOutD) RestoreDropoutDescriptor(
 //GetDropoutDescriptor gets the descriptor to a previously saved-off state
 func (d *DropOutD) GetDropoutDescriptor(
 	handle *Handle,
-	states *Malloced,
+	states gocu.Mem,
 
-) (float32, *Malloced, uint64, error) {
+) (float32, gocu.Mem, uint64, error) {
 	var seed C.ulonglong
 	var dropout C.float
 	var x unsafe.Pointer
@@ -112,33 +114,34 @@ func (d *DropOutD) GetDropoutDescriptor(
 }
 
 //DropoutGetStateSize returns the  state size in bytes
-func (d DropOutFuncs) DropoutGetStateSize(handle *Handle) (SizeT, error) {
+func (d DropOutFuncs) DropoutGetStateSize(handle *Handle) (uint, error) {
 	var size C.size_t
 	err := Status(C.cudnnDropoutGetStatesSize(handle.x, &size)).error("DropoutGetStateSize")
 	if setkeepalive {
 		keepsalivebuffer(handle)
 	}
-	return SizeT(size), err
+	return uint(size), err
 }
 
 //DropoutGetReserveSpaceSize returns the size of reserve space in bytes
-func (d DropOutFuncs) DropoutGetReserveSpaceSize(t *TensorD) (SizeT, error) {
+func (d DropOutFuncs) DropoutGetReserveSpaceSize(t *TensorD) (uint, error) {
 	var size C.size_t
 	err := Status(C.cudnnDropoutGetReserveSpaceSize(t.descriptor, &size)).error("DropoutGetReserveSpaceSize")
 	if setkeepalive {
 		keepsalivebuffer(t)
 	}
-	return SizeT(size), err
+	return uint(size), err
 }
 
 //DropoutForward performs the dropoutForward
 func (d *DropOutD) DropoutForward(
 	handle *Handle,
 	xD *TensorD, //input
-	x *Malloced, //input
+	x gocu.Mem, //input
 	yD *TensorD, //input
-	y *Malloced, //input/output
-	reserveSpace *Malloced, //input/output
+	y gocu.Mem, //input/output
+	reserveSpace gocu.Mem, //input/output
+	reservesize uint,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, d, xD, x, yD, y, reserveSpace)
@@ -151,7 +154,7 @@ func (d *DropOutD) DropoutForward(
 		yD.descriptor,
 		y.Ptr(),
 		reserveSpace.Ptr(),
-		reserveSpace.ByteSize().c(),
+		C.size_t(reservesize),
 	)).error("DropoutForward")
 }
 
@@ -159,10 +162,11 @@ func (d *DropOutD) DropoutForward(
 func (d *DropOutD) DropoutBackward(
 	handle *Handle,
 	dyD *TensorD, //input
-	dy *Malloced, //input
+	dy gocu.Mem, //input
 	dxD *TensorD, //input
-	dx *Malloced, //input/output
-	reserveSpace *Malloced, //input/output
+	dx gocu.Mem, //input/output
+	reserveSpace gocu.Mem, //input/output
+	reservesize uint,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, d, dxD, dx, dyD, dy, reserveSpace)
@@ -175,6 +179,6 @@ func (d *DropOutD) DropoutBackward(
 		dxD.descriptor,
 		dx.Ptr(),
 		reserveSpace.Ptr(),
-		reserveSpace.ByteSize().c(),
+		C.size_t(reservesize),
 	)).error("DropoutBackward")
 }

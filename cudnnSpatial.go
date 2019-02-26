@@ -6,6 +6,8 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //Spatial hods the funcs and flags of Spatial Stuff
@@ -21,8 +23,8 @@ type SpatialFuncs struct {
 //SpatialTfGridGeneratorForward This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
 func (st *SpatialTransformerD) SpatialTfGridGeneratorForward(
 	handle *Handle,
-	theta *Malloced, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
-	grid *Malloced, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
+	theta gocu.Mem, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
+	grid gocu.Mem, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
 	h, w is specified in stDesc . In the 4th dimension, the first coordinate is x, and the
 	second coordinate is y*/
 
@@ -41,8 +43,8 @@ func (st *SpatialTransformerD) SpatialTfGridGeneratorForward(
 //SpatialTfGridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
 func (st *SpatialTransformerD) SpatialTfGridGeneratorBackward(
 	handle *Handle,
-	grid *Malloced,
-	theta *Malloced,
+	grid gocu.Mem,
+	theta gocu.Mem,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(st, handle, grid, theta)
@@ -61,11 +63,11 @@ func (st *SpatialTransformerD) SpatialTfSamplerForward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
-	x *Malloced,
-	grid *Malloced,
+	x gocu.Mem,
+	grid gocu.Mem,
 	beta CScalar,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(handle, st, xD, x, grid, yD, y)
@@ -89,16 +91,16 @@ func (st *SpatialTransformerD) SpatialTfSamplerBackward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	dxD *TensorD,
-	dx *Malloced,
+	dx gocu.Mem,
 	alphaDgrid CScalar,
 	dyD *TensorD,
-	dy *Malloced,
-	grid *Malloced,
+	dy gocu.Mem,
+	grid gocu.Mem,
 	betaDgrid CScalar,
-	dGrid *Malloced,
+	dGrid gocu.Mem,
 
 ) error {
 	if setkeepalive {

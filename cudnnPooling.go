@@ -8,6 +8,8 @@ import "C"
 import (
 	"errors"
 	"runtime"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //Pooling is used to hold flags and funcs for pooling operations
@@ -192,10 +194,10 @@ func (p *PoolingD) PoolingForward(
 	handle *Handle,
 	alpha CScalar,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(p, handle, xD, x, yD, y)
@@ -217,14 +219,14 @@ func (p *PoolingD) PoolingBackward(
 	handle *Handle,
 	alpha CScalar,
 	yD *TensorD,
-	y *Malloced,
+	y gocu.Mem,
 	dyD *TensorD,
-	dy *Malloced,
+	dy gocu.Mem,
 	xD *TensorD,
-	x *Malloced,
+	x gocu.Mem,
 	beta CScalar,
 	dxD *TensorD,
-	dx *Malloced,
+	dx gocu.Mem,
 ) error {
 	if setkeepalive {
 		keepsalivebuffer(p, handle, xD, x, yD, y, dyD, dy, dxD, dx)

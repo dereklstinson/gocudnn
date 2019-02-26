@@ -6,6 +6,8 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //Reduce holds Reduce flags and funcs also used to access create reduce tensor function
@@ -103,26 +105,26 @@ func destroyreducetensordescriptor(reduce *ReduceTensorD) error {
 /*IndiciesSize Helper function to return the minimum size in bytes of the index space to be passed to the reduction given the input and output tensors */
 func (reduce *ReduceTensorD) IndiciesSize(
 	handle *Handle,
-	aDesc, cDesc *TensorD) (SizeT, error) {
+	aDesc, cDesc *TensorD) (uint, error) {
 	var sizeinbytes C.size_t
 	x := C.cudnnGetReductionIndicesSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
 	if setkeepalive == true {
 		keepsalivebuffer(reduce, handle, aDesc, cDesc)
 	}
-	return SizeT(sizeinbytes), Status(x).error("GetReductionIndicesSize")
+	return uint(sizeinbytes), Status(x).error("GetReductionIndicesSize")
 
 }
 
 //GetWorkSpaceSize  Helper function to return the minimum size of the workspace to be passed to the reduction given the input and output tensors
 func (reduce *ReduceTensorD) GetWorkSpaceSize(
 	handle *Handle,
-	aDesc, cDesc *TensorD) (SizeT, error) {
+	aDesc, cDesc *TensorD) (uint, error) {
 	var sizeinbytes C.size_t
 	x := C.cudnnGetReductionWorkspaceSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
 	if setkeepalive == true {
 		keepsalivebuffer(reduce, handle, aDesc, cDesc)
 	}
-	return SizeT(sizeinbytes), Status(x).error("GetReductionWorkspaceSize")
+	return uint(sizeinbytes), Status(x).error("GetReductionWorkspaceSize")
 
 }
 
@@ -131,38 +133,38 @@ func (reduce *ReduceTensorD) GetWorkSpaceSize(
 /* The indices space is ignored for reduce ops other than min or max. */
 func (reduce *ReduceTensorD) ReduceTensorOp(
 	handle *Handle,
-	indices *Malloced,
-	workspace *Malloced,
+	indices gocu.Mem,
+	indiciessize uint,
+	wspace gocu.Mem,
+	wspacesize uint,
 	alpha CScalar,
 	aDesc *TensorD,
-	A *Malloced,
+	A gocu.Mem,
 	beta CScalar,
 	cDesc *TensorD,
-	Ce *Malloced) error {
+	Ce gocu.Mem) error {
 	var x C.cudnnStatus_t
-	if indices == nil && workspace != nil {
+	if indices == nil && wspace != nil {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, nil,
-			C.size_t(0), workspace.Ptr(), C.size_t(workspace.ByteSize()),
+			C.size_t(0), wspace.Ptr(), C.size_t(wspacesize),
 			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
-	} else if indices != nil && workspace == nil {
+	} else if indices != nil && wspace == nil {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, indices.Ptr(),
-			indices.ByteSize().c(), nil, C.size_t(0),
+			C.size_t(indiciessize), nil, C.size_t(0),
 			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
 
-	} else if indices == nil && workspace == nil {
+	} else if indices == nil && wspace == nil {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, nil,
 			C.size_t(0), nil, C.size_t(0),
 			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	} else {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, indices.Ptr(),
-			indices.ByteSize().c(), workspace.Ptr(), workspace.ByteSize().c(),
+			C.size_t(indiciessize), wspace.Ptr(), C.size_t(wspacesize),
 			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	}
-	if setkeepalive == true {
-		keepsalivebuffer(reduce, handle, aDesc, cDesc, A, Ce, workspace)
-	}
+
 	return Status(x).error("ReduceTensor")
 }
 

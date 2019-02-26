@@ -39,7 +39,7 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 		directory = defaultmakedirectory
 	}
 
-	device.Major()
+
 
 	majstr := strconv.Itoa(device.Major())
 
