@@ -42,11 +42,11 @@ CU_CTX_FLAGS_MASK = 0x1f -> uint32(31)
 */
 
 //CtxCreate creates a context with the flags on the device passed if -1 is passed in flags then it sets the default CU_CTX_SCHED_BLOCKING_SYNC = 0x04
-func CtxCreate(flags int32, device *Device) (context *Context, err error) {
+func CtxCreate(flags int32, device Device) (context *Context, err error) {
 
 	var ctx C.CUcontext
 	if flags == -1 {
-		x := C.cuCtxCreate(&ctx, C.uint(4), device.id)
+		x := C.cuCtxCreate(&ctx, C.uint(4), device.c())
 
 		err = newErrorDriver("cuCtxCreate", x)
 		if err != nil {
@@ -60,7 +60,7 @@ func CtxCreate(flags int32, device *Device) (context *Context, err error) {
 		}
 		return context, nil
 	}
-	x := C.cuCtxCreate(&ctx, C.uint(flags), device.id)
+	x := C.cuCtxCreate(&ctx, C.uint(flags), device.c())
 
 	err = newErrorDriver("cuCtxCreate", x)
 	context = &Context{

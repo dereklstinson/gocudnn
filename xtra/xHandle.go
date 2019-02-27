@@ -19,17 +19,10 @@ func (xtra *Xtra) KernelLocation(kernalfilelocation string) {
 	xtra.kernellocation = kernalfilelocation
 }
 
-/*
-//Handler to use this it must return nil on the ones it is not. error will be saying that is not it. Helpful when making new packages
-type Handler interface {
-	SetStream(s *Stream) error
-}
-*/
-
-//XHandle is a handle for xtra functions. Right now all functions that use XHandle are strictly float32.
+//Handle is a handle for xtra functions. Right now all functions that use Handle are strictly float32.
 // Because I use gtx 1080ti(s) and there is basically no motivation to expand the capability.  Maybe if someone wants to get me
 //A RTX2080ti I will do something about that. heh heh heh
-type XHandle struct {
+type Handle struct {
 	mod                          *cuda.Module
 	ptx                          string
 	s                            gocu.Streamer
@@ -39,25 +32,29 @@ type XHandle struct {
 	maxthreadspermultiproccessor int32
 	maxblockdimsxyz              []int32
 	maxgriddimsxyz               []int32
+	unified                      bool
 }
 
 //SetStream sets a stream to be used by the handler
-func (x *XHandle) SetStream(s gocu.Streamer) error {
+func (x *Handle) SetStream(s gocu.Streamer) error {
 	x.s = s
 	return nil
 }
 
-//MakeXHandleV2 takes the kernel directory already made and in kernels and returns a XHandle
-func (xtra Xtra) MakeXHandleV2(dev *cuda.Device) (*XHandle, error) {
+/*
+
+//MakeHandleV2 takes the kernel directory already made and in kernels and returns a Handle
+func (xtra Xtra) MakeHandleV2(dev *cuda.Device) (*Handle, error) {
 	directory := "__default__"
 	if xtra.notdefaultkernallocation == true {
 		directory = xtra.kernellocation
 	}
-	return xtra.MakeXHandle(directory, dev)
+	return xtra.MakeHandle(directory, dev)
 }
+*/
 
-//MakeXHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn. You use MakeXHandleV2 if you want to use the default location
-func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *cudart.Device) (*XHandle, error) {
+//MakeHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn. You use MakeHandleV2 if you want to use the default location
+func MakeHandle(trainingfloatdir string, dev *cudart.Device, unified bool) (*Handle, error) {
 
 	x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
 	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
@@ -93,13 +90,14 @@ func (xtra Xtra) MakeXHandle(trainingfloatdir string, dev *cudart.Device) (*XHan
 		return nil, err
 	}
 	//	kern,err:=cu.MakeKernel()
-	return &XHandle{
+	return &Handle{
 		mod:                          mod,
 		maxblockthreads:              mtpb,
 		maxthreadspermultiproccessor: mmpt,
 		muliproccessorcount:          nummp,
 		maxblockdimsxyz:              blockxyz,
 		maxgriddimsxyz:               gridxyz,
+		unified:                      unified,
 	}, nil
 }
 
@@ -111,7 +109,7 @@ type Config struct {
 }
 
 //LaunchConfig returns a config struct that is used to configure some kernel launches
-func (x *XHandle) LaunchConfig(elements int32) Config {
+func (x *Handle) LaunchConfig(elements int32) Config {
 	ptc := min((x.muliproccessorcount * x.maxthreadspermultiproccessor), elements)
 	threadperblock := min(1024, x.maxblockthreads)
 	innerbcount := kernels.DivUp(ptc, threadperblock)
@@ -136,7 +134,7 @@ type Config2d struct {
 }
 
 //LaunchConfig2d returns configs for the kernel launch
-func (x *XHandle) LaunchConfig2d(xdim, ydim int32) Config2d {
+func (x *Handle) LaunchConfig2d(xdim, ydim int32) Config2d {
 	if xdim < 1 || ydim < 1 {
 		return Config2d{}
 	}
@@ -171,12 +169,11 @@ type Config3d struct {
 }
 
 //LaunchConfig3d returns configs for the kernel launch
-func (x *XHandle) LaunchConfig3d(xdim, ydim, zdim int32) Config3d {
+func (x *Handle) LaunchConfig3d(xdim, ydim, zdim int32) Config3d {
 	if xdim < 1 || ydim < 1 {
 		return Config3d{}
 	}
 	kthreadsperblock := int32(256)
-
 	gputhreads := (x.muliproccessorcount * x.maxthreadspermultiproccessor)
 	blockx := min3(xdim, kthreadsperblock, x.maxblockdimsxyz[0])
 	blocky := min3(ydim, max(kthreadsperblock/blockx, 1), x.maxblockdimsxyz[1])
@@ -197,7 +194,6 @@ func (x *XHandle) LaunchConfig3d(xdim, ydim, zdim int32) Config3d {
 	conf.ThreadPerBlockx = uint32(blockx)
 	conf.ThreadPerBlocky = uint32(blocky)
 	conf.ThreadPerBlockz = uint32(blockz)
-
 	conf.BlockCountx = gridx
 	conf.BlockCounty = gridy
 	conf.BlockCountz = gridz
@@ -223,13 +219,13 @@ func min(a, b int32) int32 {
 }
 
 /*
-func (t *XHandle) GetCudnnHandle() (*Handle, error) {
+func (t *Handle) GetCudnnHandle() (*Handle, error) {
 	return nil, errors.New("Not a CudnnHandle")
 }
-func (t *XHandle) GetCudaContext() (*Context, error) {
+func (t *Handle) GetCudaContext() (*Context, error) {
 	return nil, errors.New("Not a CudaContext")
 }
-func (t *XHandle) GetXHandle() (*XHandle, error) {
+func (t *Handle) GetHandle() (*Handle, error) {
 	return t, nil
 }
 */

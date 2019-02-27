@@ -9,8 +9,8 @@ import "C"
 //Device is a struct that holds a device info.
 type Device C.int
 
-func (d *Device) c() C.int {
-	return (C.int)(*d)
+func (d Device) c() C.int {
+	return (C.int)(d)
 }
 func (d *Device) cptr() *C.int {
 	return (*C.int)(d)
@@ -31,9 +31,9 @@ func (d Device) DeviceSync() error {
 
 //GetDevice gets the currently set device being used
 func GetDevice() (Device, error) {
-	var d Device
-	err := newErrorRuntime("cudaDeviceSynchronize: ", C.cudaGetDevice(d.cptr()))
-	return d, err
+	var d C.int
+	err := newErrorRuntime("cudaDeviceSynchronize: ", C.cudaGetDevice(&d))
+	return (Device)(d), err
 }
 
 //MemGetInfo returns the free and total memory for device called
@@ -61,7 +61,7 @@ func (d Device) CanAccessPeer(peer Device) (bool, error) {
 
 //DisablePeerAccess check cudaDeviceDisablePeerAccess
 //Device calling method will be set
-func (d *Device) DisablePeerAccess(peer Device) error {
+func (d Device) DisablePeerAccess(peer Device) error {
 	err := d.Set()
 	if err != nil {
 		return err
@@ -171,7 +171,7 @@ func (d Device) MaxGridDimXYZ() ([]int32, error) {
 
 //MaxThreadsPerBlock returns the max number of threads per block and the rutime error
 //will set deivce
-func (d *Device) MaxThreadsPerBlock() (int32, error) {
+func (d Device) MaxThreadsPerBlock() (int32, error) {
 	return d.getattribute(C.cudaDevAttrMaxThreadsPerBlock)
 }
 
@@ -186,4 +186,16 @@ func (d Device) MultiProcessorCount() (int32, error) {
 func (d Device) MaxThreadsPerMultiProcessor() (int32, error) {
 
 	return d.getattribute(C.cudaDevAttrMaxThreadsPerMultiProcessor)
+}
+
+//Major returns the major compute capability of device
+func (d Device) Major() (int, error) {
+	x, err := d.getattribute(C.cudaDevAttrComputeCapabilityMajor)
+	return (int)(x), err
+}
+
+//Minor returns the minor comnute capability of device
+func (d Device) Minor() (int, error) {
+	x, err := d.getattribute(C.cudaDevAttrComputeCapabilityMinor)
+	return (int)(x), err
 }

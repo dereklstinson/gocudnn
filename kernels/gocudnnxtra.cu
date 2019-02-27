@@ -744,7 +744,8 @@ extern "C" __global__ void backwardleakyfloat(const int length,
 
 extern "C" __global__ void MSELoss(const int length, float *errors, const float *target, const float *networkout, float *loss)
 {
-
+    loss[0]=0;
+    __syncthreads();
     CUDA_GRID_LOOP_X(i, length)
     {
         const float y = networkout[i] - target[i];
@@ -752,7 +753,20 @@ extern "C" __global__ void MSELoss(const int length, float *errors, const float 
         atomicAdd(loss, (y * y) / 2);
     }
 }
+extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythreads, float *errors, const float *target, const float *networkout, float *loss)
+{
 
+    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    {
+        const int offset=ythreads*xIdx;
+            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            {  
+             const float y = networkout[offset+yIdx] - target[offset+yIdx];
+             errors[offset+yIdx] = y;
+             atomicAdd(&loss[xIdx], (y * y) / 2);
+            }
+    }
+}
 extern "C" __global__ void ConcatForwardNCHW( const int XThreads,
                                               const int Batches,
                                               const int Channels1,

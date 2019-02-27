@@ -10,22 +10,36 @@ import (
 )
 
 //Device is a struct that holds a device info.
-type Device struct {
-	id    C.CUdevice
-	idinC C.int
-	major int
-	minor int
-	//	thread int32
+type Device C.CUdevice
+
+func (d Device) c() C.CUdevice {
+	return (C.CUdevice)(d)
+}
+
+//Major returns the compute capability major part of cuda device
+func (d Device) Major() (int, error) {
+	return d.getattribute(C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR)
+}
+
+//Minor returns the compute capability minor part
+func (d Device) Minor() (int, error) {
+	return d.getattribute(C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR)
+}
+
+func (d Device) getattribute(atribute C.CUdevice_attribute) (int, error) {
+	var val C.int
+	err := newErrorDriver("cuDeviceGetAttribute - major", C.cuDeviceGetAttribute(&val, atribute, d.c()))
+	return (int)(val), err
 }
 
 //GetDeviceList returns a list of *Devices that are not set yet.
-func GetDeviceList() ([]*Device, error) {
+func GetDeviceList() ([]Device, error) {
 
 	y, err := devicecount()
 	if err != nil {
 		return nil, err
 	}
-	var x []*Device
+	x := make([]Device, y)
 	zero := C.int(0)
 	for i := zero; i < y; i++ {
 		var id C.CUdevice
@@ -33,18 +47,8 @@ func GetDeviceList() ([]*Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		var major C.int
-		var minor C.int
-		err = newErrorDriver("cuDeviceGetAttribute - major", C.cuDeviceGetAttribute(&major, C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, id))
-		if err != nil {
-			return nil, err
-		}
-		err = newErrorDriver("cuDeviceGetAttribute - minor", C.cuDeviceGetAttribute(&minor, C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, id))
-		if err != nil {
-			return nil, err
-		}
+		x[i] = Device(id)
 
-		x = append(x, &Device{id: id, major: int(major), minor: int(minor), idinC: C.int(id)})
 	}
 	return x, nil
 }

@@ -14,8 +14,8 @@ import (
 
 //Device just has to return those two things in order to compute the kernels
 type Device interface {
-	Major() int
-	Minor() int
+	Major() (int, error)
+	Minor() (int, error)
 }
 
 const nvcccmd = "nvcc "
@@ -38,16 +38,18 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 	if directory == "__default__" {
 		directory = defaultmakedirectory
 	}
-
-
-
-	majstr := strconv.Itoa(device.Major())
-
-	minstr := strconv.Itoa(device.Minor())
+	major, err := device.Major()
+	if err != nil {
+		panic(err)
+	}
+	minor, err := device.Minor()
+	if err != nil {
+		panic(err)
+	}
+	majstr := strconv.Itoa(major)
+	minstr := strconv.Itoa(minor)
 	computecapability := majstr + minstr + " "
-
 	newname := dotCUname
-
 	if strings.Contains(dotCUname, ".cu") {
 		newname = strings.TrimSuffix(dotCUname, ".cu")
 
@@ -62,7 +64,7 @@ func MakeMakeFile(directory string, dotCUname string, device Device) string {
 	some.lines[1] = "\t" + nvcccmd + nvccarg + computecapability + nvccarg1 + computecapability + nvccarg2 + dotCUname + "\n"
 
 	data := []byte(some.lines[0] + some.lines[1])
-	err := os.MkdirAll(directory, 0644)
+	err = os.MkdirAll(directory, 0644)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println(directory)

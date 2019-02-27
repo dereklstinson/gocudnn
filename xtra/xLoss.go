@@ -5,21 +5,21 @@ import (
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
+	"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
 
 //XLossD is the loss descriptor for the loss function
 type XLossD struct {
-	mode     XLossMode
-	lossfunc *cuda.Kernel
-	loss     gocu.Mem
-	cpuloss  []float32
-	cpuptr   gocu.Mem
-	flg      XLossModeFlag
-	dflg     gocudnn.DataTypeFlag
-
-	managed bool
+	mode        XLossMode
+	lossfunc    *cuda.Kernel
+	loss        *gocu.GoMem
+	cpuloss     []float32
+	cpuptr      gocu.Mem
+	flg         XLossModeFlag
+	dflg        gocudnn.DataTypeFlag
+	memcopykind cudart.MemcpyKind
 }
 
 //XLossModeFlag passes XLossMode flags through methods
@@ -35,54 +35,70 @@ func (x XLossModeFlag) MSE() XLossMode {
 type XLossMode int
 
 //NewLossDescriptor creates a loss destriptor to calculate loss
-func (xtra Xtra) NewLossDescriptor(h *XHandle, mode XLossMode, unified bool) (*XLossD, error) {
-	var cu Cuda
+func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 	var ktf kernels.XtraKerns
 	var flg XLossModeFlag
-
+	var memflg cudart.MemcpyKind
 	switch mode {
 	case flg.MSE():
-		mse, err := cu.MakeKernel(ktf.MSELoss(), h.mod)
+		mse, err := cuda.MakeKernel(ktf.MSELoss(), h.mod)
 		if err != nil {
 			return nil, err
 		}
-		if unified == true {
-			lossptr, err := UnifiedMangedGlobal(SizeT(4))
-			lossptr.Set(0)
+		if h.unified == true {
+			x := new(float32)
+			gpu, err := gocu.MakeGoMem(x)
+			if err != nil {
+				return nil, err
+			}
+			err = cudart.ManagedGlobal(gpu, 4)
+			if err != nil {
+				return nil, err
+			}
+			cudart.Memset(gpu, 0, 4)
 			if err != nil {
 				return nil, err
 			}
 			cpuloss := make([]float32, 1)
-			cpuptr, err := MakeGoPointer(cpuloss)
+			cpuptr, err := gocu.MakeGoMem(cpuloss)
 			if err != nil {
 				return nil, err
 			}
 			return &XLossD{
-				mode:     mode,
-				lossfunc: mse,
-				loss:     lossptr,
-				cpuloss:  cpuloss,
-				cpuptr:   cpuptr,
-				managed:  true,
+				mode:        mode,
+				lossfunc:    mse,
+				loss:        gpu,
+				cpuloss:     cpuloss,
+				cpuptr:      cpuptr,
+				memcopykind: memflg.Default(),
 			}, nil
 		}
-		lossptr, err := Malloc(SizeT(4))
-		lossptr.Set(0)
+		x := new(float32)
+		gpu, err := gocu.MakeGoMem(x)
 		if err != nil {
 			return nil, err
 		}
+		err = cudart.Malloc(gpu, (4))
+		if err != nil {
+			return nil, err
+		}
+		cudart.Memset(gpu, 0, 4)
+		if err != nil {
+			return nil, err
+		}
+
 		cpuloss := make([]float32, 1)
-		cpuptr, err := MakeGoPointer(cpuloss)
+		cpuptr, err := gocu.MakeGoMem(cpuloss)
 		if err != nil {
 			return nil, err
 		}
 		return &XLossD{
-			mode:     mode,
-			lossfunc: mse,
-			loss:     lossptr,
-			cpuloss:  cpuloss,
-			cpuptr:   cpuptr,
-			managed:  false,
+			mode:        mode,
+			lossfunc:    mse,
+			loss:        gpu,
+			cpuloss:     cpuloss,
+			cpuptr:      cpuptr,
+			memcopykind: memflg.DeviceToHost(),
 		}, nil
 
 	}
@@ -91,7 +107,7 @@ func (xtra Xtra) NewLossDescriptor(h *XHandle, mode XLossMode, unified bool) (*X
 
 //CalculateErrorAndLoss calculates the error going back and the loss going forward dxD yD dyD need to have the same dims and size
 //and right now they can only be datatype float
-func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
+func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 	dxD *gocudnn.TensorD, //output -errors going back
 	dx gocu.Mem, // output -errors going back
 	yD *gocudnn.TensorD, //input - target values
@@ -130,22 +146,20 @@ func (l *XLossD) CalculateErrorAndLoss(h *XHandle,
 	}
 	switch l.mode {
 	case l.flg.MSE():
-		err = l.loss.Set(0)
+		err = cudart.Memset(l.loss, 0, 4)
 		if err != nil {
 			return 0, err
 		}
+		h.s.Sync()
 		config := h.LaunchConfig(int32(length))
 		err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.loss)
 		if err != nil {
 			return -1, err
 		}
 		h.s.Sync()
-		if l.managed == true {
-			err = UnifiedMemCopy(l.cpuptr, l.loss)
 
-		} else {
-			err = CudaMemCopy(l.cpuptr, l.loss, 4, l.memflg.DeviceToHost())
-		}
+		err = cudart.MemCpy(l.cpuptr, l.loss, 4, l.memcopykind)
+
 		h.s.Sync()
 		return l.cpuloss[0] / batch, err
 

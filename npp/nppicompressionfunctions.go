@@ -199,7 +199,7 @@ func DCTQuantFwd8x8LSJPEG8u16sC1R(pSrc *Uint8, nSrcStep int32, pDst *Int16, nDst
 	return status(C.nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R((*C.Npp8u)(pSrc), (C.int)(nSrcStep), (*C.Npp16s)(pDst), (C.int)(nDstStep), (*C.Npp16u)(pQuantFwdTable), x)).ToError()
 }
 
-func DCTQuantInv8x8LS_JPEG_16s8u_C1R(pSrc *Int16, nSrcStep int32, pDst *Uint8, nDstStep int32, pQuantInvTable *Uint16, oSizeROI Size) error {
+func DCTQuantInv8x8LSJPEG16s8uC1R(pSrc *Int16, nSrcStep int32, pDst *Uint8, nDstStep int32, pQuantInvTable *Uint16, oSizeROI Size) error {
 
 	return status(C.nppiDCTQuantInv8x8LS_JPEG_16s8u_C1R((*C.Npp16s)(pSrc), (C.int)(nSrcStep), (*C.Npp8u)(pDst), (C.int)(nDstStep), (*C.Npp16u)(pQuantInvTable), oSizeROI.c())).ToError()
 }

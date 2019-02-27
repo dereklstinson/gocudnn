@@ -18,7 +18,7 @@ type XTransposeD struct {
 
 /*
 //CreateTransposeDesc creates a struct that holds the kernel for Transpos operation.  Might get rid of it
-func CreateTransposeDesc(handle *XHandle) (*XTransposeD, error) {
+func CreateTransposeDesc(handle *Handle) (*XTransposeD, error) {
 
 	kern, err := cuda.MakeKernel("Transpose", handle.mod)
 	return &XTransposeD{kern: kern}, err
@@ -60,7 +60,7 @@ func (t *XTransposeD) GetChannelTransposeOutputProperties(src *gocudnn.TensorD) 
 
 
 //Transpose will transpose the values of src to dest . only works on non sliding Tensors
-func (t *XTransposeD) Transpose(handle *XHandle, perm []int32, srcdesc *gocudnn.TensorD, src gocu.Mem, destdesc *gocudnn.TensorD, dest gocu.Mem) error {
+func (t *XTransposeD) Transpose(handle *Handle, perm []int32, srcdesc *gocudnn.TensorD, src gocu.Mem, destdesc *gocudnn.TensorD, dest gocu.Mem) error {
 
 	xfrmt, err := srcdesc.GetFormat()
 	if err != nil {
@@ -184,7 +184,7 @@ type XResizeD struct {
 }
 
 //CreateResizeDesc creates a descriptor that holds the reshpaes
-func (xt Xtra) CreateResizeDesc(handle *XHandle, aligncorners bool) (*XResizeD, error) {
+func (xt Xtra) CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 	nearestfwdnhwc, err := cuda.MakeKernel("nearestneighborNHWC", handle.mod)
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (xt Xtra) CreateResizeDesc(handle *XHandle, aligncorners bool) (*XResizeD, 
 }
 
 //ResizeForward does the reshape operation
-func (s *XResizeD) ResizeForward(handle *XHandle, xdesc *gocudnn.TensorD, x gocu.Mem, ydesc *gocudnn.TensorD, y gocu.Mem) error {
+func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x gocu.Mem, ydesc *gocudnn.TensorD, y gocu.Mem) error {
 
 	_, dimsx, _, err := xdesc.GetDescrptor()
 	if err != nil {
@@ -268,7 +268,7 @@ func (s *XResizeD) ResizeForward(handle *XHandle, xdesc *gocudnn.TensorD, x gocu
 }
 
 //ResizeBackward does a reshape backwards but it will add the errors on the backprop.
-func (s *XResizeD) ResizeBackward(handle *XHandle, dxdesc *gocudnn.TensorD, dx gocu.Mem, dydesc *gocudnn.TensorD, dy gocu.Mem) error {
+func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx gocu.Mem, dydesc *gocudnn.TensorD, dy gocu.Mem) error {
 	_, dimsx, _, err := dxdesc.GetDescrptor()
 	if err != nil {
 		return err
@@ -337,7 +337,7 @@ type XShapetoBatchD struct {
 }
 
 //CreateShapetoBatchDesc creates a shape to batch desc
-func (xt Xtra) CreateShapetoBatchDesc(handle *XHandle) (*XShapetoBatchD, error) {
+func (xt Xtra) CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 	nhwc, err := cuda.MakeKernel("ShapetoBatch4DNHWC", handle.mod)
 	if err != nil {
 		return nil, err
@@ -351,7 +351,7 @@ func (xt Xtra) CreateShapetoBatchDesc(handle *XHandle) (*XShapetoBatchD, error) 
 //if S2B is false the y values will be placed into the x tensor. The C channel is the only thing that needs to be the same between tensor x and y.
 //Any values that don't fit will get the zero value
 //To get the y tensor please use FindShapetoBatchoutputTensor.
-func (s *XShapetoBatchD) ShapeToBatch4d(handle *XHandle, xDesc *gocudnn.TensorD, x gocu.Mem, yDesc *gocudnn.TensorD, y gocu.Mem, hstride int32, wstride int32, S2B bool) error {
+func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, x gocu.Mem, yDesc *gocudnn.TensorD, y gocu.Mem, hstride int32, wstride int32, S2B bool) error {
 
 	dtype, xdims, _, err := xDesc.GetDescrptor()
 	var dflag gocudnn.DataTypeFlag
@@ -503,6 +503,7 @@ func copytogpuunified(x *GoPointer) (gocu.Mem, error) {
 	return y, nil
 }
 */
+
 //GetBatchtoShapeOutputProperties will place the batches into the shape.  It will only work if xdims[0]/(h*w) doesn't have a remainder.
 func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *gocudnn.TensorD, h, w, hstride, wstride int32) (gocudnn.TensorFormat, gocudnn.DataType, []int32, error) {
 	dtype, dims, _, err := descX.GetDescrptor()
@@ -549,11 +550,11 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *gocudnn.TensorD,
 	if err != nil {
 		return 255, 255, nil, err
 	}
-	var dflag DataTypeFlag
+	var dflag gocudnn.DataTypeFlag
 	if dtype != dflag.Float() {
 		return 255, 255, nil, errors.New("Only Supported Format is float32")
 	}
-	var frmt TensorFormatFlag
+	var frmt gocudnn.TensorFormatFlag
 	xfrmt, err := descX.GetFormat()
 
 	switch xfrmt {
@@ -606,11 +607,11 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *gocudnn.Tens
 	if err != nil {
 		return 255, 255, nil, nil, err
 	}
-	var dflag DataTypeFlag
+	var dflag gocudnn.DataTypeFlag
 	if dtype != dflag.Float() {
 		return 255, 255, nil, nil, errors.New("Only Supported Format is float32")
 	}
-	var frmt TensorFormatFlag
+	var frmt gocudnn.TensorFormatFlag
 	xfrmt, err := descX.GetFormat()
 
 	switch xfrmt {
@@ -666,14 +667,4 @@ func divideandroundup(den, num int32) uint32 {
 
 	return uint32(((den - 1) / num) + 1)
 
-}
-
-func stridecalc(dims []int32) []int32 {
-	strides := make([]int32, len(dims))
-	stride := int32(1)
-	for i := len(dims) - 1; i >= 0; i-- {
-		strides[i] = stride
-		stride *= dims[i]
-	}
-	return strides
 }

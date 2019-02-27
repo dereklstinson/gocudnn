@@ -6,7 +6,7 @@ import (
 	"errors"
 	"unsafe"
 
-	gocudnn "github.com/dereklstinson/GoCudnn"
+	"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
@@ -64,7 +64,7 @@ func SetStream(hStream gocu.Streamer) error {
 
 //GetStream returns the current gocu.Streamer
 func GetStream() gocu.Streamer {
-	return gocudnn.Cuda{}.WrapStreamFromOtherPackage((unsafe.Pointer)(C.nppGetStream()))
+	return cudart.ExternalWrapper((unsafe.Pointer)(C.nppGetStream()))
 }
 
 /*

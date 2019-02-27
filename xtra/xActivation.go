@@ -17,8 +17,8 @@ type XActivationMode uint
 type XActivationModeFlag struct {
 }
 
-func (x XActivationMode) tostringfwd(dtype *gocudnn.DataType) string {
-	dtf := DataTypeFlag{}
+func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
+	dtf := gocudnn.DataTypeFlag{}
 	var xaflg XActivationModeFlag
 	if dtype != dtf.Float() {
 		return "error XActivationMode - DataTypeNotSupported"
@@ -37,8 +37,8 @@ func (x XActivationMode) tostringfwd(dtype *gocudnn.DataType) string {
 
 }
 
-func (x XActivationMode) tostringbwd(dtype *gocudnn.DataType) string {
-	dtf := DataTypeFlag{}
+func (x XActivationMode) tostringbwd(dtype gocudnn.DataType) string {
+	dtf := gocudnn.DataTypeFlag{}
 	var xaflg XActivationModeFlag
 	if dtype != dtf.Float() {
 		return "error XActivationMode - DataTypeNotSupported"
@@ -88,8 +88,8 @@ type XActivationD struct {
 //NewXActivationDescriptor - Creates a descriptor for the xtra functions made for gocudnn.
 //Note: Only trainable activations will be trained.  tmode will be ignored for unsupported activations
 //Note: Only functions requiring coef will get it.  coef will be ignored for unsupported activations
-func NewXActivationDescriptor(h *XHandle, amode XActivationMode, dtype *gocudnn.DataType, nanprop *gocudnn.PropagationNAN, coef float64) (*XActivationD, error) {
-	var nanflg PropagationNANFlag
+func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.DataType, nanprop gocudnn.PropagationNAN, coef float64) (*XActivationD, error) {
+	var nanflg gocudnn.PropagationNANFlag
 	var nan int32
 	if nanflg.NotPropagateNan() == nanprop {
 		nan = 0
@@ -99,11 +99,11 @@ func NewXActivationDescriptor(h *XHandle, amode XActivationMode, dtype *gocudnn.
 	ctr := int32(1)
 	switch amode {
 	case XActivationModeFlag{}.Threshhold():
-		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
+		fwdmode, err := cuda.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
 		}
-		bwdmode, err := Cuda{}.MakeKernel(amode.tostringbwd(dtype), h.mod)
+		bwdmode, err := cuda.MakeKernel(amode.tostringbwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
 		}
@@ -117,11 +117,11 @@ func NewXActivationDescriptor(h *XHandle, amode XActivationMode, dtype *gocudnn.
 		return act, nil
 	case XActivationModeFlag{}.Prelu():
 
-		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
+		fwdmode, err := cuda.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
 		}
-		bwdmode, err := Cuda{}.MakeKernel(amode.tostringbwd(dtype), h.mod)
+		bwdmode, err := cuda.MakeKernel(amode.tostringbwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
 		}
@@ -137,11 +137,11 @@ func NewXActivationDescriptor(h *XHandle, amode XActivationMode, dtype *gocudnn.
 
 		return act, nil
 	case XActivationModeFlag{}.Leaky():
-		fwdmode, err := Cuda{}.MakeKernel(amode.tostringfwd(dtype), h.mod)
+		fwdmode, err := cuda.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
 		}
-		bwdmode, err := Cuda{}.MakeKernel(amode.tostringbwd(dtype), h.mod)
+		bwdmode, err := cuda.MakeKernel(amode.tostringbwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
 		}
@@ -161,12 +161,12 @@ func NewXActivationDescriptor(h *XHandle, amode XActivationMode, dtype *gocudnn.
 //Prelu uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
 //Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) ForwardProp(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem, yD *gocudnn.TensorD, y gocu.Mem, coefs, thresh, coefs1 gocu.Mem) error {
+func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, yD *gocudnn.TensorD, y gocu.Mem, coefs, thresh, coefs1 gocu.Mem) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	var df DataTypeFlag
+	var df gocudnn.DataTypeFlag
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
@@ -177,7 +177,7 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem,
 		if err != nil {
 			return err
 		}
-		length := FindLength(sib, dtype)
+		length := gocudnn.FindLength(sib, dtype)
 		config := h.LaunchConfig(int32(length))
 
 		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef), xA.propnan) //, xA.propnan)
@@ -217,7 +217,7 @@ func (xA *XActivationD) ForwardProp(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem,
 //Prelu uses coefs and dcoefs. dx[i]=coefs[i]* dx[i] where x[i]<0   dcoefs=dy[i]*x[i]
 //Threshhold uses coefs and coefs1 thresh, dcoefs,dthresh,and dcoefs1 for dx[i]=dy[i]*coefs[i] where x[i]<thresh[i] else dx[i]=coefs1[i]*dy[i]. and dcoefs[i]+=x[i]*dy[i] same for dcoefs1
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) BackProp(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem) error {
+func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem) error {
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
@@ -230,12 +230,12 @@ func (xA *XActivationD) BackProp(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem, dx
 	return errors.New("Unsupported XActivationMode")
 }
 
-func (xA *XActivationD) preluback(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs gocu.Mem) error {
+func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs gocu.Mem) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	var df DataTypeFlag
+	var df gocudnn.DataTypeFlag
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
@@ -253,12 +253,12 @@ func (xA *XActivationD) preluback(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem, d
 	return nil
 
 }
-func (xA *XActivationD) backpropropleaky(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem) error {
+func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem) error {
 	dtype, _, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	var df DataTypeFlag
+	var df gocudnn.DataTypeFlag
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
@@ -266,19 +266,19 @@ func (xA *XActivationD) backpropropleaky(h *XHandle, xD *gocudnn.TensorD, x gocu
 	if err != nil {
 		return err
 	}
-	length := FindLength(sib, dtype)
+	length := gocudnn.FindLength(sib, dtype)
 
 	config := h.LaunchConfig(int32(length))
 	//	fmt.Println("alpha beta coef length", alpha, beta, float32(xA.coef))
 	//	fmt.Println("Config:", config)
 	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef), xA.propnan) //, xA.propnan)
 }
-func (xA *XActivationD) threshback(h *XHandle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem) error {
+func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem) error {
 	dtype, dims, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	var df DataTypeFlag
+	var df gocudnn.DataTypeFlag
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}

@@ -29,7 +29,7 @@ func comparedimsswap(a, b []int32) error {
 
 //UpperLower swaps two different tensor batches. Either the upper half of both tensors or the lower half of both tensors
 //inverse is a holder variable. It doesn't do anything right now
-func (s *Swapper) UpperLower(h *XHandle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdesc *gocudnn.TensorD, B gocu.Mem, Aupper, Bupper, inverse bool) error {
+func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdesc *gocudnn.TensorD, B gocu.Mem, Aupper, Bupper, inverse bool) error {
 
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *Swapper) UpperLower(h *XHandle, Adesc *gocudnn.TensorD, A gocu.Mem, Bde
 	if inverse {
 		isinverse = 255
 	}
-	var dflg DataTypeFlag
+	var dflg gocudnn.DataTypeFlag
 	if Adesc.DataType() == dflg.Float() {
 		return s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
 	}
@@ -65,7 +65,7 @@ func (s *Swapper) UpperLower(h *XHandle, Adesc *gocudnn.TensorD, A gocu.Mem, Bde
 }
 
 //EveryOther swaps the two tensors by every other batch.  Even does the evens if not even then it does the ood.
-func (s *Swapper) EveryOther(h *XHandle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdesc *gocudnn.TensorD, B gocu.Mem, start, stride int32) error {
+func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdesc *gocudnn.TensorD, B gocu.Mem, start, stride int32) error {
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (s *Swapper) EveryOther(h *XHandle, Adesc *gocudnn.TensorD, A gocu.Mem, Bde
 	batchvol := findvol(dims[1:])
 	//cfg := h.LaunchConfig2d(batches, batchvol)
 	cfg := h.LaunchConfig(batchvol)
-	var dflg DataTypeFlag
+	var dflg gocudnn.DataTypeFlag
 	if Adesc.DataType() == dflg.Float() {
 		return s.swapeveryother.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
 	}
@@ -86,14 +86,14 @@ func (s *Swapper) EveryOther(h *XHandle, Adesc *gocudnn.TensorD, A gocu.Mem, Bde
 }
 
 //NewBatchSwapper makes a Swapper
-func NewBatchSwapper(h *XHandle) (*Swapper, error) {
-	var cu Cuda
-	swapeveryother, err := cu.MakeKernel(kernels.XtraKerns{}.SwapEveryOther(), h.mod)
+func NewBatchSwapper(h *Handle) (*Swapper, error) {
+
+	swapeveryother, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapEveryOther(), h.mod)
 	if err != nil {
 		return nil, err
 	}
 
-	swapupperlower, err := cu.MakeKernel(kernels.XtraKerns{}.SwapUpperLower(), h.mod)
+	swapupperlower, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapUpperLower(), h.mod)
 	if err != nil {
 		return nil, err
 	}

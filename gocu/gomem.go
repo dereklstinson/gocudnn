@@ -26,7 +26,7 @@ func (g *GoMem) DPtr() *unsafe.Pointer {
 }
 
 //OffSet returns a new GoMem
-func (g *GoMem) OffSet(byunits uint) *GoMem {
+func (g *GoMem) OffSet(byunits uint) Mem {
 
 	offset := unsafe.Pointer(uintptr(g.ptr) + uintptr(byunits*g.unitbytes))
 

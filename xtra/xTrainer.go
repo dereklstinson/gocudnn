@@ -3,7 +3,6 @@ package xtra
 import "C"
 import (
 	"errors"
-	"strconv"
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
@@ -33,6 +32,7 @@ type TrainerD struct {
 	counter uint32
 	kmode   *cuda.Kernel
 	kreg    *cuda.Kernel
+	dtflg   gocudnn.DataTypeFlag
 }
 
 //RegParams holds the regulator paramaters
@@ -144,9 +144,8 @@ func (t TrainingMode) tostring() string {
 }
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
-func NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataType) (*TrainerD, error) {
+func NewTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) (*TrainerD, error) {
 	var ktf kernels.XtraKerns
-	var cu Cuda
 
 	regname := ktf.L1L2()
 
@@ -163,7 +162,7 @@ func NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataType) (*Train
 		return nil, errors.New("TrainingMode Not Supported")
 	}
 
-	var tflag Tensor
+	var tflag gocudnn.Tensor
 	dt := tflag.Flgs.Data
 	switch data {
 
@@ -172,11 +171,11 @@ func NewTrainingDescriptor(h *XHandle, mode TrainingMode, data DataType) (*Train
 	default:
 		return nil, errors.New("NewTrainingDescriptor: unsupported Datatype") //if not true then return error
 	}
-	kmode, err := cu.MakeKernel(mname, h.mod)
+	kmode, err := cuda.MakeKernel(mname, h.mod)
 	if err != nil {
 		return nil, err
 	}
-	kreg, err := cu.MakeKernel(regname, h.mod)
+	kreg, err := cuda.MakeKernel(regname, h.mod)
 	if err != nil {
 		return nil, err
 	}
@@ -201,63 +200,36 @@ func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream gocu.Strea
 }
 
 //L1L2Regularization does the l1l2 regularization
-func (d *TrainerD) L1L2Regularization(h *XHandle, dw, w, l1, l2 gocu.Mem, params RegParams) error {
+func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l1, l2 gocu.Mem, params RegParams) error {
 	var size int32
 	switch d.data {
-	case DataTypeFlag{}.Float():
-		size = int32(w.ByteSize() / SizeT(4))
+	case d.dtflg.Float():
+		sizeinbytes, err := desc.GetSizeInBytes()
+		if err != nil {
+			return err
+		}
+		size = int32(sizeinbytes / 4)
 	default:
 		return errors.New("Unsupported Type")
 
 	}
 	config := h.LaunchConfig(size)
 	return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
-	/*
 
-
-		if params.decay1 == 0 && params.decay2 == 0 {
-			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, nil, params.batch, params.decay1, params.decay2)
-		} else if params.decay1 == 0 {
-			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, nil, l2, params.batch, params.decay1, params.decay2)
-		} else if params.decay2 == 0 {
-			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, nil, params.batch, params.decay1, params.decay2)
-		} else {
-			return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
-		}
-
-		//return errors.New("Shouldn't have Reached here")
-	*/
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(h *XHandle, dw, w, gsum, xsum gocu.Mem, params TrainingParams) error {
+func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xsum gocu.Mem, params TrainingParams) error {
 	var size int32
 	var err error
-	if xsum != nil {
-		if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != xsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
-			sp := " "
-			wbs := strconv.Itoa(int(w.ByteSize()))
-			dwbs := strconv.Itoa(int(dw.ByteSize()))
-			gsbs := strconv.Itoa(int(gsum.ByteSize()))
-			xsbs := strconv.Itoa(int(xsum.ByteSize()))
-			return errors.New("Sizes don't match" + sp + wbs + sp + dwbs + sp + gsbs + sp + xsbs)
-		}
 
-	} else {
-		if w.ByteSize() != gsum.ByteSize() || w.ByteSize() != dw.ByteSize() {
-			sp := " "
-			wbs := strconv.Itoa(int(w.ByteSize()))
-			dwbs := strconv.Itoa(int(dw.ByteSize()))
-			gsbs := strconv.Itoa(int(gsum.ByteSize()))
-			return errors.New("Sizes don't match" + sp + wbs + sp + dwbs + sp + gsbs + sp)
-		}
-
-	}
-
-	var dflg DataTypeFlag
 	switch d.data {
-	case dflg.Float():
-		size = int32(w.ByteSize() / SizeT(4))
+	case d.dtflg.Float():
+		sizeinbytes, err := desc.GetSizeInBytes()
+		if err != nil {
+			return err
+		}
+		size = int32(sizeinbytes / (4))
 	default:
 		return errors.New("Unsupported Type")
 	}
