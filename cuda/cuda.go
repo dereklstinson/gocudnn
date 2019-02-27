@@ -1,12 +1,9 @@
 package cuda
 
-//#include <cuda_runtime_api.h>
 //#include <cuda.h>
 import "C"
 import (
 	"runtime"
-	//There is an init here than I want to make sure that is used
-	_ "github.com/dereklstinson/GoCudnn/gocu"
 )
 
 //Device is a struct that holds a device info.
