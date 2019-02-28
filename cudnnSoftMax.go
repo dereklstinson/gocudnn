@@ -29,7 +29,10 @@ func (soft SoftMaxFuncs) SoftMaxForward(
 	beta CScalar,
 	yD *TensorD,
 	y *Malloced) error {
-	keepsalivebuffer(handle, xD, x, yD, y)
+	if setkeepalive {
+		keepsalivebuffer(handle, xD, x, yD, y)
+	}
+
 	return Status(C.cudnnSoftmaxForward(
 		handle.x,
 		algo.c(),
@@ -57,7 +60,10 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	dxD *TensorD,
 	dx *Malloced,
 ) error {
-	keepsalivebuffer(handle, dxD, dx, yD, y, dyD, dy)
+	if setkeepalive {
+		keepsalivebuffer(handle, dxD, dx, yD, y, dyD, dy)
+	}
+
 	return Status(C.cudnnSoftmaxBackward(
 		handle.x,
 		algo.c(),

@@ -339,7 +339,10 @@ func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A *Malloced, be
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
 func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y *Malloced, alpha CScalar) error {
-	keepsalivebuffer(h, yD, y)
+	if setkeepalive {
+		keepsalivebuffer(h, yD, y)
+	}
+
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), alpha.CPtr())).error("ScaleTensor")
 }
 
