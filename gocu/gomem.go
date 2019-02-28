@@ -11,8 +11,9 @@ import (
 //GoMem allows go memory to interact with cuda using the Mem interface
 type GoMem struct {
 	ptr       unsafe.Pointer
-	unitnum   uint
+	unitlen   uint
 	unitbytes uint
+	typeflag  int
 }
 
 //Ptr is an unsafe.Pointer of some cuda memory
@@ -26,20 +27,21 @@ func (g *GoMem) DPtr() *unsafe.Pointer {
 }
 
 //OffSet returns a new GoMem
-func (g *GoMem) OffSet(byunits uint) Mem {
+func (g *GoMem) OffSet(byunits uint) *GoMem {
 
 	offset := unsafe.Pointer(uintptr(g.ptr) + uintptr(byunits*g.unitbytes))
 
 	return &GoMem{
 		ptr:       offset,
-		unitnum:   g.unitnum - byunits,
+		unitlen:   g.unitlen - byunits,
 		unitbytes: g.unitbytes,
 	}
 }
 
 //TotalBytes returns the total bytes this has
 func (g *GoMem) TotalBytes() uint {
-	return g.unitnum * g.unitbytes
+	return g.unitlen * g.unitbytes
+
 }
 
 //MakeGoMem returns a GoMem considering the input type.
@@ -50,82 +52,85 @@ func MakeGoMem(input interface{}) (*GoMem, error) {
 	switch val := input.(type) {
 	case []int:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
+		ptr.typeflag = 1
 		return ptr, nil
 	case []int8:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
+		ptr.typeflag = 2
 		return ptr, nil
 	case []byte:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
+
 		return ptr, nil
 	case []float64:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
 		return ptr, nil
 	case []uint32:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
 		return ptr, nil
 	case []float32:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
 		return ptr, nil
 	case []int32:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
 		return ptr, nil
 	case []half.Float16:
 		ptr.ptr = unsafe.Pointer(&val[0])
-		ptr.unitnum = (uint)(len(val))
+		ptr.unitlen = (uint)(len(val))
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val[0]))
 		return ptr, nil
 	case *int:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	case *int8:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	case *byte:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	case *float64:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	case *float32:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	case *half.Float16:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	case *int32:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	case *uint32:
 		ptr.ptr = unsafe.Pointer(val)
-		ptr.unitnum = 1
+		ptr.unitlen = 1
 		ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 		return ptr, nil
 	default:
@@ -137,18 +142,18 @@ func MakeGoMem(input interface{}) (*GoMem, error) {
 /*
 case *CInt:
 	ptr.ptr = unsafe.Pointer(val)
-	ptr.unitnum = 1
+	ptr.unitlen = 1
 	ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 	return ptr, nil
 case *CDouble:
 	ptr.ptr = unsafe.Pointer(val)
-	ptr.unitnum = 1
+	ptr.unitlen = 1
 	ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 	return ptr, nil
 case *CFloat:
 
 	ptr.ptr = unsafe.Pointer(val)
-	ptr.unitnum = 1
+	ptr.unitlen = 1
 	ptr.unitbytes = (uint)(unsafe.Sizeof(val))
 	return ptr, nil
 case *CUInt:

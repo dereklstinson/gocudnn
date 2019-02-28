@@ -17,7 +17,6 @@ type Streamer interface {
 type Mem interface {
 	DPtr() *unsafe.Pointer
 	Ptr() unsafe.Pointer
-	OffSet(units uint) Mem
 }
 
 func init() {
@@ -27,4 +26,10 @@ func init() {
 		panic(err)
 	}
 
+}
+
+//Filler fills a slice passed as an empty interface from the mem passed.
+//The interface{} needs to be some sort of pointer type.  Either
+type Filler interface {
+	Fill(interface{}, Mem) error
 }

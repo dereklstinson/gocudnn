@@ -13,17 +13,17 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//ManagedHost uses the Unified memory mangement system and starts it off in the host
+//MallocManagedHost uses the Unified memory mangement system and starts it off in the host
 //It will also set a finalizer on the memory for GC
-func ManagedHost(mem gocu.Mem, size uint) error {
+func MallocManagedHost(mem gocu.Mem, size uint) error {
 	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.uint(2)))
 	runtime.SetFinalizer(mem, hostfreemem)
 	return err
 }
 
-//ManagedGlobal uses the Unified memory mangement system and starts it off in the Device
+//MallocManagedGlobal uses the Unified memory mangement system and starts it off in the Device
 //It will also set a finalizer on the memory for GC
-func ManagedGlobal(mem gocu.Mem, size uint) error {
+func MallocManagedGlobal(mem gocu.Mem, size uint) error {
 	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.uint(1)))
 	runtime.SetFinalizer(mem, devicefreemem)
 	return err

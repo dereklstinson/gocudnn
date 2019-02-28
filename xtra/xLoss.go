@@ -51,7 +51,7 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 			if err != nil {
 				return nil, err
 			}
-			err = cudart.ManagedGlobal(gpu, 4)
+			err = cudart.MallocManagedGlobal(gpu, 4)
 			if err != nil {
 				return nil, err
 			}
