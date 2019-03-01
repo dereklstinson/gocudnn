@@ -5,7 +5,7 @@ package cuda
 
 
 // Needed to check for NULL from Cgo.
-const char * nullMessage = NULL;
+const char * nullMessagea = NULL;
 
 const char * go_cuda_cu_err(CUresult res) {
 	switch (res) {
@@ -112,7 +112,7 @@ func newErrorDriver(context string, e C.CUresult) error {
 // If e is cudaSuccess, nil is returned.
 
 func newErrorCStr(context string, cstr *C.char) error {
-	if cstr == C.nullMessage {
+	if cstr == C.nullMessagea {
 		return nil
 	}
 	name := C.GoString(cstr)

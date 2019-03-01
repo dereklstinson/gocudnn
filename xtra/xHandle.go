@@ -42,6 +42,11 @@ func (x *Handle) SetStream(s gocu.Streamer) error {
 	return nil
 }
 
+//SetDevice sets the device handle is holding
+func (x *Handle) SetDevice() error {
+	return x.device.Set()
+}
+
 /*
 
 //MakeHandleV2 takes the kernel directory already made and in kernels and returns a Handle

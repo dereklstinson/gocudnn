@@ -3,6 +3,8 @@ package xtra
 import (
 	"errors"
 
+	"github.com/dereklstinson/GoCuNets/devices/gpu/nvidia"
+
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/cudart"
@@ -14,7 +16,7 @@ import (
 type XLossD struct {
 	mode        XLossMode
 	lossfunc    *cuda.Kernel
-	loss        *gocu.GoMem
+	loss        *nvidia.Malloced
 	cpuloss     []float32
 	cpuptr      gocu.Mem
 	flg         XLossModeFlag
@@ -45,40 +47,8 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 		if err != nil {
 			return nil, err
 		}
-		if h.unified == true {
-			x := new(float32)
-			gpu, err := gocu.MakeGoMem(x)
-			if err != nil {
-				return nil, err
-			}
-			err = cudart.MallocManagedGlobal(gpu, 4)
-			if err != nil {
-				return nil, err
-			}
-			cudart.Memset(gpu, 0, 4)
-			if err != nil {
-				return nil, err
-			}
-			cpuloss := make([]float32, 1)
-			cpuptr, err := gocu.MakeGoMem(cpuloss)
-			if err != nil {
-				return nil, err
-			}
-			return &XLossD{
-				mode:        mode,
-				lossfunc:    mse,
-				loss:        gpu,
-				cpuloss:     cpuloss,
-				cpuptr:      cpuptr,
-				memcopykind: memflg.Default(),
-			}, nil
-		}
-		x := new(float32)
-		gpu, err := gocu.MakeGoMem(x)
-		if err != nil {
-			return nil, err
-		}
-		err = cudart.Malloc(gpu, (4))
+
+		gpu, err := nvidia.MallocGlobal(h, 4)
 		if err != nil {
 			return nil, err
 		}

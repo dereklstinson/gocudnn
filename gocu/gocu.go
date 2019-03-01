@@ -20,10 +20,9 @@ type Mem interface {
 }
 
 func init() {
-	err := newErrorDriver("intit", C.cuInit(0))
-
-	if err != nil {
-		panic(err)
+	x := C.cuInit(0)
+	if x != C.CUDA_SUCCESS {
+		panic(x)
 	}
 
 }

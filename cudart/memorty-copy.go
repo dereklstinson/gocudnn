@@ -4,7 +4,11 @@ package cudart
 #include <cuda_runtime_api.h>
 */
 import "C"
-import "github.com/dereklstinson/GoCudnn/gocu"
+import (
+	"unsafe"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
+)
 
 //MemcpyKind are enum flags for mem copy can be passed using methdos
 type MemcpyKind C.enum_cudaMemcpyKind
@@ -41,6 +45,13 @@ func MemCpy(dest gocu.Mem, src gocu.Mem, sizet uint, kind MemcpyKind) error {
 	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), C.size_t(sizet), kind.c())
 
 	return newErrorRuntime("cudaMemcpy", err)
+}
+
+//MemcpyUnsafe will do a memcopy using unsafe pointers. It's a little lower level than the regular MemCpy
+func MemcpyUnsafe(dest, src unsafe.Pointer, sizet uint, kind MemcpyKind) error {
+	err := C.cudaMemcpy(dest, src, C.size_t(sizet), kind.c())
+
+	return newErrorRuntime("cudaMemcpy-MemcpyUnsafe", err)
 }
 
 //MemcpyAsync Copies data between host and device.

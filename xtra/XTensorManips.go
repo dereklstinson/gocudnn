@@ -184,7 +184,7 @@ type XResizeD struct {
 }
 
 //CreateResizeDesc creates a descriptor that holds the reshpaes
-func (xt Xtra) CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
+func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 	nearestfwdnhwc, err := cuda.MakeKernel("nearestneighborNHWC", handle.mod)
 	if err != nil {
 		return nil, err
@@ -337,7 +337,7 @@ type XShapetoBatchD struct {
 }
 
 //CreateShapetoBatchDesc creates a shape to batch desc
-func (xt Xtra) CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
+func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 	nhwc, err := cuda.MakeKernel("ShapetoBatch4DNHWC", handle.mod)
 	if err != nil {
 		return nil, err

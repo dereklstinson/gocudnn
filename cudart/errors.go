@@ -3,7 +3,7 @@ package cudart
 /*
 #include <cuda_runtime_api.h>
 // Needed to check for NULL from Cgo.
-const char * nullMessage = NULL;
+const char * nullMessagex = NULL;
 */
 import "C"
 
@@ -14,7 +14,7 @@ func newErrorRuntime(context string, e C.cudaError_t) error {
 	return newErrorCStr(context, C.cudaGetErrorString(e))
 }
 func newErrorCStr(context string, cstr *C.char) error {
-	if cstr == C.nullMessage {
+	if cstr == C.nullMessagex {
 		return nil
 	}
 	name := C.GoString(cstr)
