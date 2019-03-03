@@ -1,9 +1,8 @@
 package xtra
 
 import (
+	"C"
 	"errors"
-
-	"github.com/dereklstinson/GoCuNets/devices/gpu/nvidia"
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
@@ -48,7 +47,9 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 			return nil, err
 		}
 
-		gpu, err := nvidia.MallocGlobal(h, 4)
+		gpu := new(gocu.DevicePtr)
+		err = cudart.MallocManagedGlobal(gpu, 4)
+		//	gpu, err := nvidia.MallocGlobal(h, 4)
 		if err != nil {
 			return nil, err
 		}
