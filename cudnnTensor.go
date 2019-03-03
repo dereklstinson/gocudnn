@@ -324,17 +324,17 @@ func (t Tensor) AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, bet
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
+//
 func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha float64) error {
-
 	a := cscalarbydatatype(yD.dtype, alpha)
-
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), a.CPtr())).error("ScaleTensor")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
+//v is type casted to the correct type within function
 func (t Tensor) SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
 
-	vc := cscalarbydatatype(yD.dtype, v)
+	vc := cscalarbydatatypeforsettensor(yD.dtype, v)
 	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), vc.CPtr())
 
 	return Status(x).error("SetTensor")

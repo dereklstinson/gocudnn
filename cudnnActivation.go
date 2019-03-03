@@ -75,9 +75,9 @@ func (a *ActivationD) Forward(
 	yD *TensorD,
 	y gocu.Mem) error {
 
-	al := cscalarbydatatype(yD.dtype, alpha)
+	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	return Status(C.cudnnActivationForward(handle.x, a.descriptor, al.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
+	return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
 }
 
 //Backward does the activation backward method
@@ -96,9 +96,9 @@ func (a *ActivationD) Backward(
 	if setkeepalive {
 		keepsalivebuffer(a, handle, xD, x, yD, y, dyD, dy, dxD, dx)
 	}
-	al := cscalarbydatatype(yD.dtype, alpha)
+	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, al.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
+	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
 }
 
 //ActivationModeFlag is used to "safely" pass flags by the use of methods.

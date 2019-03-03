@@ -951,9 +951,14 @@ func (c *ConvolutionD) Forward(
 			c.descriptor, algo.c(), nil, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
 	}
 
-	return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
+	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
 		c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
+	if err != nil {
+		fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nDesc: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
 
+		panic(err)
+	}
+	return err
 }
 
 //BiasActivationForward passes a lot of stuff so be carefull

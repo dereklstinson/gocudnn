@@ -10,6 +10,8 @@ import "C"
 import (
 	"errors"
 
+	"github.com/dereklstinson/half"
+
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
@@ -37,6 +39,31 @@ func cscalarbydatatype(dtype DataType, num float64) gocu.CScalar {
 	case x.Half():
 		y := float32(num)
 		return gocu.CFloat(y)
+	default:
+		return nil
+	}
+
+}
+
+//CScalarByDataType takes the DataType flag and puts num into a CScalar interface. The value of num will be bound by what is passed for DataType.
+//If a DataType isn't supported by the function it will return nil.
+func cscalarbydatatypeforsettensor(dtype DataType, num float64) gocu.CScalar {
+	var x DataTypeFlag //CUDNN_DATATYPE_FLOAT
+	switch dtype {
+	case x.Double():
+		return gocu.CDouble(num)
+	case x.Float():
+		return gocu.CFloat(num)
+	case x.Int32():
+		return gocu.CInt(num)
+	case x.Int8():
+		return gocu.CInt8(num)
+	case x.UInt8():
+		return gocu.CUInt8(num)
+	case x.Half():
+		y := float32(num)
+		return gocu.CHalf(half.NewFloat16(y))
+
 	default:
 		return nil
 	}

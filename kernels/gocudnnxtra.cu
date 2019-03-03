@@ -63,7 +63,7 @@ const int BVol = xThreads;
                     t2[(i*BVol)+xIdx]=swapper;
                 }
 
-            
+            __syncthreads();
         }
         
            
@@ -744,8 +744,7 @@ extern "C" __global__ void backwardleakyfloat(const int length,
 
 extern "C" __global__ void MSELoss(const int length, float *errors, const float *target, const float *networkout, float *loss)
 {
-    loss[0]=0;
-    __syncthreads();
+  
     CUDA_GRID_LOOP_X(i, length)
     {
         const float y = networkout[i] - target[i];

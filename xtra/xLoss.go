@@ -118,19 +118,27 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 	case l.flg.MSE():
 		err = cudart.Memset(l.loss, 0, 4)
 		if err != nil {
-			return 0, err
+			return -1, err
 		}
-		h.s.Sync()
+		err = h.s.Sync()
+		if err != nil {
+			return -1, err
+		}
 		config := h.LaunchConfig(int32(length))
 		err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.loss)
 		if err != nil {
 			return -1, err
 		}
-		h.s.Sync()
-
+		err = h.s.Sync()
+		if err != nil {
+			return -1, err
+		}
 		err = cudart.MemCpy(l.cpuptr, l.loss, 4, l.memcopykind)
 
 		h.s.Sync()
+		if err != nil {
+			return -1, err
+		}
 		return l.cpuloss[0] / batch, err
 
 	}
