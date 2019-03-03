@@ -5,17 +5,19 @@
 
 Go Bindings for cuDNN 7.4 (I added the functions up to 7.1, I need to added the newer 7.4 functions) using Cuda 10.0 \(Just some Cuda 10.0\) 
 
-This is currently broken as of 2/26/2019 I will try to get it working in a few days. As this is also my save file for home and school.  I'm sorry. I really don't know how to do version control with git. 
+
+This is finally working. I am going to start versioning this.  I was thinking something along the lines of v0.1.7.4 to keep up with the cudnn versioning.  When I finish adding the 7.4 functions. I will branch this one off.
+Then I will add the 7.5 functions.
 
 
-# Now Back in Pre-Alpha Stage
-I am making the code more like an actual binding.  I am in the process of makeing subpackages for everything I just threw into the gocudnn package.  Like cuda_runtime_api.h, cuda.h, curand.h.  I am adding some nppi.h to the mix as a subpackage.
-I am making subpackage bindings to what I think will supliment cudnn.I also want to add cudnn 7.5. Since it has attention funcs.
 
+# Back into alpha
+I am making the code more like an actual binding. I have seperated the different libraries into their own packages.  
+I would have liked to not use cuda.h, but it is needed to run the kernels.  Its that or you would have to make a shared library every time you make a new kernel.  
+I am adding some nppi.h to the mix as a subpackage.
+I've added nvjpeg, but that was before the 10.1 update.  So, I will upgrade to 10.1 (cuda) and 7.5 (cudnn) and start a new branch.
+Any subpackage library bindings I include will most likely only be made to suppliment cudnn.
 
-To be honest I haven't tested all the functions.  If there is a bug. Please let me know. Even better make a pull request. I will only be testing the functions that are being used for my thesis.
-I don't plan on changing any of the function names.  I don't plan on deleting any functions.  I do plan on adding functions if needed.  Like maybe some cuda_runtime_api module stuff so that more than 2 types
-of trainers can be used.  I might add the jpeg image stuff, when that gets out of the beta phase.  
 
 
 Note on how cudnn uses softmax, because to be honest it isn't entirely clear in the documentation how it works.  
@@ -117,25 +119,15 @@ filtpref.SpecifyWorkspaceLimit()
 
 I think this makes it more intellisense friendly, and a little safer than putting the methods directly on ConvBwdFilterPref.
 
-Also, I might end up putting the flags into seperate kind of like how I seperated the handle and desc parts of the funcs. Just so it is easier to find. I might change the order too. Instead of leading with desc I might end with it. I don't know which would be easier to read.
+
 
 ## Note on Handles.
 
-I am really stuck on how much I should enforce host thread use on this. So I am not going to enforce anything. That will be up to you. I have a pre-prototype example in the file HostThread.go, but I haven't used it at all yet.
-
-Here is a little info on contexts/handles \(correct me if I am wrong on this too\).  
-1. Cuda and cudnn like to have one context/host assigned to one host thread.  
-2. When creating a goroutine you will have to use the runtime.LockOSThread\(\) function, and create a Handle on that. Then you should build everthing within that locked thread. 
-3. You will not be able to build any memory for that context unless it is built on the thread that is hosting that context. 
-4. Multiple Host threads can be used by using streams. I am assuming that can sort of be implimented using goroutines that get locked on a stream, but I haven't played around with it yet.  
-5. You cannot share memory from one context to another unless you do some sort of memcopy. 
-6. It is best practice to have one context per GPU. As of right now gocudnn doesn't support multiple gpus. It will in the future.
-
-
+This is not thread safe.  You have to lock the host thread in any go routine that you use.  If you get this running on a mac. Then your functions will need to be sent to the main thread.  
 
 ## CUBLAS and CUDA additions
 
-There will be no cublas.  I added nvjpeg, and I want to add NPP features, but NPP is absolutly huge.  I will probably added some fp32 and fp16 features of npp, but we will have to see.  If DALI ever gets a C api then I will add that too, but I don't see that happening in the near future.
+There will be no cublas.  I added nvjpeg, and some npp  If DALI ever gets a C api then I will add that too, but I don't see that happening in the near future.
 
 
 ## Other Notes
