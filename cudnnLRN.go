@@ -119,24 +119,23 @@ func destroylrndescriptor(l *LRND) error {
 func (l *LRND) LRNCrossChannelForward(
 	handle *Handle,
 	mode LRNmode,
-	alpha CScalar,
+	alpha float64,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	yD *TensorD,
 	y gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, l, xD, x, yD, y)
-	}
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnLRNCrossChannelForward(
 		handle.x,
 		l.descriptor,
 		mode.c(),
-		alpha.CPtr(),
+		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
 	)).error("LRNCrossChannelForward")
@@ -146,32 +145,31 @@ func (l *LRND) LRNCrossChannelForward(
 func (l *LRND) LRNCrossChannelBackward(
 	handle *Handle,
 	mode LRNmode,
-	alpha CScalar,
+	alpha float64,
 	yD *TensorD,
 	y gocu.Mem,
 	dyD *TensorD,
 	dy gocu.Mem,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	dxD *TensorD,
 	dx gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, l, xD, x, yD, y, dyD, dy, dxD, dx)
-	}
+	a := cscalarbydatatype(dyD.dtype, alpha)
+	b := cscalarbydatatype(dyD.dtype, beta)
 	return Status(C.cudnnLRNCrossChannelBackward(
 		handle.x,
 		l.descriptor,
 		mode.c(),
-		alpha.CPtr(),
+		a.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
 		dyD.descriptor,
 		dy.Ptr(),
 		xD.descriptor,
 		x.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		dxD.descriptor,
 		dx.Ptr(),
 	)).error("LRNCrossChannelForward")
@@ -181,30 +179,29 @@ func (l *LRND) LRNCrossChannelBackward(
 func (l *LRND) DivisiveNormalizationForward(
 	handle *Handle,
 	mode DivNormMode,
-	alpha CScalar,
+	alpha float64,
 	xD TensorD, /* same desc for means, temp, temp2 */
 	x gocu.Mem,
 	means gocu.Mem, /* if NULL, means are assumed to be zero */
 	temp gocu.Mem,
 	temp2 gocu.Mem,
-	beta CScalar,
+	beta float64,
 	yD TensorD,
 	y gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, l, xD, x, means, temp, temp2, yD, y)
-	}
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnDivisiveNormalizationForward(
 		handle.x,
 		l.descriptor,
 		mode.c(),
-		alpha.CPtr(),
+		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		means.Ptr(),
 		temp.Ptr(),
 		temp2.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
 	)).error("DivisiveNormalizationForward")
@@ -214,33 +211,32 @@ func (l *LRND) DivisiveNormalizationForward(
 func (l *LRND) DivisiveNormalizationBackward(
 	handle *Handle,
 	mode DivNormMode,
-	alpha CScalar,
+	alpha float64,
 	xD *TensorD, /* same desc for x, means, dy, temp, temp2 */
 	x gocu.Mem,
 	means gocu.Mem, /* if NULL, means are assumed to be zero */
 	dy gocu.Mem,
 	temp gocu.Mem,
 	temp2 gocu.Mem,
-	beta CScalar,
+	beta float64,
 	dXdMeansDesc *TensorD, /* same desc for dx, dMeans */
 	dx gocu.Mem, /* output x differential */
 	dMeans gocu.Mem, /* output means differential, can be NULL */
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, l, xD, x, means, dy, temp, temp2, dXdMeansDesc, dx, dMeans)
-	}
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(xD.dtype, beta)
 	return Status(C.cudnnDivisiveNormalizationBackward(
 		handle.x,
 		l.descriptor,
 		mode.c(),
-		alpha.CPtr(),
+		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		means.Ptr(),
 		dy.Ptr(),
 		temp.Ptr(),
 		temp2.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		dXdMeansDesc.descriptor,
 		dx.Ptr(),
 		dMeans.Ptr(),

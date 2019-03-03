@@ -68,31 +68,31 @@ func (t *OPTensorD) DestroyDescriptor() error {
 //OpTensor performs an operation on some tensors   C= operation( (alpha1 * A) , (alpha2 *B) ) + (beta *C)
 func (t *OPTensorD) OpTensor(
 	handle *Handle,
-	alpha1 CScalar,
-	aDesc *TensorD,
+	alpha1 float64,
+	aD *TensorD,
 	A gocu.Mem,
-	alpha2 CScalar,
-	bDesc *TensorD,
+	alpha2 float64,
+	bD *TensorD,
 	B gocu.Mem,
-	beta CScalar,
-	cDesc *TensorD,
+	beta float64,
+	cD *TensorD,
 	cmem gocu.Mem) error {
-
+	a1 := cscalarbydatatype(aD.dtype, alpha1)
+	a2 := cscalarbydatatype(bD.dtype, alpha2)
+	b := cscalarbydatatype(cD.dtype, beta)
 	x := C.cudnnOpTensor(
 		handle.x,
 		t.descriptor,
-		alpha1.CPtr(),
-		aDesc.descriptor,
+		a1.CPtr(),
+		aD.descriptor,
 		A.Ptr(),
-		alpha2.CPtr(),
-		bDesc.descriptor,
+		a2.CPtr(),
+		bD.descriptor,
 		B.Ptr(),
-		beta.CPtr(),
-		cDesc.descriptor,
+		b.CPtr(),
+		cD.descriptor,
 		cmem.Ptr())
-	if setkeepalive {
-		keepsalivebuffer(handle, t, aDesc, A, bDesc, B, cDesc, cmem)
-	}
+
 	return Status(x).error("OpTensor")
 }
 

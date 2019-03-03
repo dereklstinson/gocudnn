@@ -68,35 +68,37 @@ func destroyactivationdescriptor(a *ActivationD) error {
 //Forward does the forward activation function yrtn is returned and changed.
 func (a *ActivationD) Forward(
 	handle *Handle,
-	alpha CScalar,
+	alpha float64,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	yD *TensorD,
 	y gocu.Mem) error {
-	if setkeepalive {
-		keepsalivebuffer(a, handle, xD, x, yD, y)
-	}
-	return Status(C.cudnnActivationForward(handle.x, a.descriptor, alpha.CPtr(), xD.descriptor, x.Ptr(), beta.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
+
+	al := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnActivationForward(handle.x, a.descriptor, al.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
 }
 
 //Backward does the activation backward method
 func (a *ActivationD) Backward(
 	handle *Handle,
-	alpha CScalar,
+	alpha float64,
 	yD *TensorD,
 	y gocu.Mem,
 	dyD *TensorD,
 	dy gocu.Mem,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	dxD *TensorD,
 	dx gocu.Mem) error {
 	if setkeepalive {
 		keepsalivebuffer(a, handle, xD, x, yD, y, dyD, dy, dxD, dx)
 	}
-	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, alpha.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), beta.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
+	al := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, al.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
 }
 
 //ActivationModeFlag is used to "safely" pass flags by the use of methods.

@@ -24,21 +24,22 @@ func (soft SoftMaxFuncs) SoftMaxForward(
 	handle *Handle,
 	algo SoftMaxAlgorithm,
 	mode SoftMaxMode,
-	alpha CScalar,
+	alpha float64,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	yD *TensorD,
 	y gocu.Mem) error {
-
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnSoftmaxForward(
 		handle.x,
 		algo.c(),
 		mode.c(),
-		alpha.CPtr(),
+		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
 	)).error("SoftMaxForward")
@@ -49,26 +50,27 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	handle *Handle,
 	algo SoftMaxAlgorithm,
 	mode SoftMaxMode,
-	alpha CScalar,
+	alpha float64,
 	yD *TensorD,
 	y gocu.Mem,
 	dyD *TensorD,
 	dy gocu.Mem,
-	beta CScalar,
+	beta float64,
 	dxD *TensorD,
 	dx gocu.Mem,
 ) error {
-
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(dxD.dtype, beta)
 	return Status(C.cudnnSoftmaxBackward(
 		handle.x,
 		algo.c(),
 		mode.c(),
-		alpha.CPtr(),
+		a.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
 		dyD.descriptor,
 		dy.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		dxD.descriptor,
 		dx.Ptr(),
 	)).error("SoftMaxBackward")

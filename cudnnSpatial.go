@@ -61,26 +61,25 @@ func (st *SpatialTransformerD) SpatialTfGridGeneratorBackward(
 //SpatialTfSamplerForward performs the spatialtfsampleforward
 func (st *SpatialTransformerD) SpatialTfSamplerForward(
 	handle *Handle,
-	alpha CScalar,
+	alpha float64,
 	xD *TensorD,
 	x gocu.Mem,
 	grid gocu.Mem,
-	beta CScalar,
+	beta float64,
 	yD *TensorD,
 	y gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, st, xD, x, grid, yD, y)
-	}
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 
 	return Status(C.cudnnSpatialTfSamplerForward(
 		handle.x,
 		st.descriptor,
-		alpha.CPtr(),
+		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		grid.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
 	)).error("SpatialTfSamplerForward")
@@ -89,38 +88,38 @@ func (st *SpatialTransformerD) SpatialTfSamplerForward(
 //SpatialTfSamplerBackward does the spatial Tranform Sample Backward
 func (st *SpatialTransformerD) SpatialTfSamplerBackward(
 	handle *Handle,
-	alpha CScalar,
+	alpha float64,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	dxD *TensorD,
 	dx gocu.Mem,
-	alphaDgrid CScalar,
+	alphaDgrid float64,
 	dyD *TensorD,
 	dy gocu.Mem,
 	grid gocu.Mem,
-	betaDgrid CScalar,
+	betaDgrid float64,
 	dGrid gocu.Mem,
 
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, st, xD, x, dxD, dx, dyD, dy, grid, dGrid)
-	}
-
+	a := cscalarbydatatype(dyD.dtype, alpha)
+	b := cscalarbydatatype(dxD.dtype, beta)
+	ad := cscalarbydatatype(xD.dtype, alphaDgrid)
+	bd := cscalarbydatatype(dxD.dtype, betaDgrid)
 	return Status(C.cudnnSpatialTfSamplerBackward(
 		handle.x,
 		st.descriptor,
-		alpha.CPtr(),
+		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		dxD.descriptor,
 		dx.Ptr(),
-		alphaDgrid.CPtr(),
+		ad.CPtr(),
 		dyD.descriptor,
 		dy.Ptr(),
 		grid.Ptr(),
-		betaDgrid.CPtr(),
+		bd.CPtr(),
 		dGrid.Ptr(),
 	)).error("SpatialTfSamplerBackward")
 }

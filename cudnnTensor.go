@@ -12,7 +12,6 @@ import (
 	"strconv"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
-	"github.com/dereklstinson/half"
 )
 
 //Tensor is used for calling Tensor Funcs and also holds the flags
@@ -173,9 +172,7 @@ func (t *TensorD) GetFormat() (TensorFormat, error) {
 	if t.flag == tndex || t.flag == t4d {
 		return t.frmt, nil
 	}
-	if setkeepalive == true {
-		t.keepsalive()
-	}
+
 	return 255, errors.New("Tensor Uses slide method")
 
 }
@@ -188,17 +185,13 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 	var data C.cudnnDataType_t
 	if t.flag == t4d || t.flag == t4dex {
 		x := C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])
-		if setkeepalive == true {
-			t.keepsalive()
-		}
+
 		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 
 	} else if t.flag == tnd || t.flag == tndex {
 		var holder C.int
 		x := C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])
-		if setkeepalive == true {
-			t.keepsalive()
-		}
+
 		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 	} else {
 		var holder C.int
@@ -208,9 +201,7 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 			}
 			return DataType(data), cintToint32(shape), cintToint32(stride), nil
 		}
-		if setkeepalive == true {
-			t.keepsalive()
-		}
+
 		return DataType(data), cintToint32(shape), cintToint32(stride), nil
 	}
 }
@@ -268,9 +259,7 @@ func (t *TensorD) GetSizeInBytes() (uint, error) {
 
 	var sizebytes C.size_t
 	x := C.cudnnGetTensorSizeInBytes(t.descriptor, &sizebytes)
-	if setkeepalive == true {
-		t.keepsalive()
-	}
+
 	return uint(sizebytes), Status(x).error("GetTensorNdDescriptor")
 }
 
@@ -308,14 +297,12 @@ cudnnStatus_t cudnnTransformTensor(
 y = Transfomr((alpha *x),(beta * y))
 This will change the layout of a tensor stride wise
 */
-func (t Tensor) TransformTensor(h *Handle, alpha CScalar, tx *TensorD, x gocu.Mem, beta CScalar, ty *TensorD, y gocu.Mem) error {
+func (t Tensor) TransformTensor(h *Handle, alpha float64, tx *TensorD, x gocu.Mem, beta float64, ty *TensorD, y gocu.Mem) error {
 
 	var s Status
-
-	s = Status(C.cudnnTransformTensor(h.x, alpha.CPtr(), tx.descriptor, x.Ptr(), beta.CPtr(), ty.descriptor, y.Ptr()))
-	if setkeepalive == true {
-		keepsalivebuffer(h, tx, x, ty, y)
-	}
+	a := cscalarbydatatype(ty.dtype, alpha)
+	b := cscalarbydatatype(ty.dtype, beta)
+	s = Status(C.cudnnTransformTensor(h.x, a.CPtr(), tx.descriptor, x.Ptr(), b.CPtr(), ty.descriptor, y.Ptr()))
 
 	return s.error("TransformTensor")
 }
@@ -328,29 +315,28 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (t Tensor) AddTensor(h *Handle, alpha CScalar, aD *TensorD, A gocu.Mem, beta CScalar, cD *TensorD, c gocu.Mem) error {
-
-	s := Status(C.cudnnAddTensor(h.x, alpha.CPtr(), aD.descriptor, A.Ptr(), beta.CPtr(), cD.descriptor, c.Ptr()))
-	if setkeepalive == true {
-		keepsalivebuffer(h, aD, A, cD, c)
-	}
+func (t Tensor) AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, beta float64, cD *TensorD, c gocu.Mem) error {
+	a := cscalarbydatatype(aD.dtype, alpha)
+	b := cscalarbydatatype(aD.dtype, beta)
+	s := Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A.Ptr(), b.CPtr(), cD.descriptor, c.Ptr()))
 
 	return s.error("AddTensor")
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha CScalar) error {
-	keepsalivebuffer(h, yD, y)
-	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), alpha.CPtr())).error("ScaleTensor")
+func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha float64) error {
+
+	a := cscalarbydatatype(yD.dtype, alpha)
+
+	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), a.CPtr())).error("ScaleTensor")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func (t Tensor) SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v CScalar) error {
+func (t Tensor) SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
 
-	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), v.CPtr())
-	if setkeepalive == true {
-		keepsalivebuffer(h, yD, y)
-	}
+	vc := cscalarbydatatype(yD.dtype, v)
+	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), vc.CPtr())
+
 	return Status(x).error("SetTensor")
 }
 
@@ -378,8 +364,9 @@ type DataTypeFlag struct {
 //DataType is used for flags for the tensor layer structs
 type DataType C.cudnnDataType_t
 
+/*
 //FindScalar finds a CScalar value for the datatype being used by the tensors
-func FindScalar(datatype DataType, x float64) CScalar {
+func FindScalar(datatype DataType, x float64) gocu.CScalar {
 	switch datatype {
 	case DataType(C.CUDNN_DATA_FLOAT):
 		return CFloat(x)
@@ -395,6 +382,7 @@ func FindScalar(datatype DataType, x float64) CScalar {
 		return CInt(x)
 	}
 }
+*/
 
 // Float return DataType(C.CUDNN_DATA_FLOAT)
 func (d DataTypeFlag) Float() DataType {

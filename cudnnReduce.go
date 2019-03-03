@@ -137,31 +137,33 @@ func (reduce *ReduceTensorD) ReduceTensorOp(
 	indiciessize uint,
 	wspace gocu.Mem,
 	wspacesize uint,
-	alpha CScalar,
+	alpha float64,
 	aDesc *TensorD,
 	A gocu.Mem,
-	beta CScalar,
+	beta float64,
 	cDesc *TensorD,
 	Ce gocu.Mem) error {
+	a := cscalarbydatatype(aDesc.dtype, alpha)
+	b := cscalarbydatatype(cDesc.dtype, beta)
 	var x C.cudnnStatus_t
 	if indices == nil && wspace != nil {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, nil,
 			C.size_t(0), wspace.Ptr(), C.size_t(wspacesize),
-			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
+			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 	} else if indices != nil && wspace == nil {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, indices.Ptr(),
 			C.size_t(indiciessize), nil, C.size_t(0),
-			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
+			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	} else if indices == nil && wspace == nil {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, nil,
 			C.size_t(0), nil, C.size_t(0),
-			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
+			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	} else {
 		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, indices.Ptr(),
 			C.size_t(indiciessize), wspace.Ptr(), C.size_t(wspacesize),
-			alpha.CPtr(), aDesc.descriptor, A.Ptr(), beta.CPtr(), cDesc.descriptor, Ce.Ptr())
+			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	}
 

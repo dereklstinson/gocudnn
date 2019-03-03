@@ -133,8 +133,8 @@ CUDNN_STATUS_BAD_PARAM
 func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 	handle *Handle,
 	mode BatchNormMode,
-	alpha CScalar, /* alpha[0] = result blend factor */
-	beta CScalar, /* beta[0] = dest layer blend factor */
+	alpha float64, /* alpha[0] = result blend factor */
+	beta float64, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
 	x gocu.Mem,
 	yD *TensorD,
@@ -173,12 +173,13 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 	resultSaveInvVariance gocu.Mem, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
 
 ) error {
-
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnBatchNormalizationForwardTraining(
 		handle.x,
 		mode.c(),
-		alpha.CPtr(),
-		beta.CPtr(),
+		a.CPtr(),
+		b.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		yD.descriptor,
@@ -260,8 +261,8 @@ CUDNN_STATUS_BAD_PARAM
 func (bnf batchNormFuncs) BatchNormalizationForwardInference(
 	handle *Handle,
 	mode BatchNormMode,
-	alpha CScalar, /* alpha[0] = result blend factor */
-	beta CScalar, /* beta[0] = dest layer blend factor */
+	alpha float64, /* alpha[0] = result blend factor */
+	beta float64, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
 	x gocu.Mem, /* NxCxHxW */
 	yD *TensorD,
@@ -274,12 +275,13 @@ func (bnf batchNormFuncs) BatchNormalizationForwardInference(
 	epsilon float64,
 
 ) error {
-
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnBatchNormalizationForwardInference(
 		handle.x,
 		mode.c(),
-		alpha.CPtr(),
-		beta.CPtr(),
+		a.CPtr(),
+		b.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		yD.descriptor,
@@ -300,10 +302,10 @@ func (bnf batchNormFuncs) BatchNormalizationForwardInference(
 func (bnf batchNormFuncs) BatchNormalizationBackward(
 	handle *Handle,
 	mode BatchNormMode,
-	alphaDataDiff CScalar,
-	betaDataDiff CScalar,
-	alphaParamDiff CScalar,
-	betaParamDiff CScalar,
+	alphaDataDiff float64,
+	betaDataDiff float64,
+	alphaParamDiff float64,
+	betaParamDiff float64,
 	xD *TensorD, /* same desc for x, dx, dy */
 	x gocu.Mem,
 	dyD *TensorD,
@@ -322,14 +324,17 @@ func (bnf batchNormFuncs) BatchNormalizationBackward(
 	savedMean gocu.Mem,
 	savedInvVariance gocu.Mem,
 ) error {
-
+	a := cscalarbydatatype(xD.dtype, alphaDataDiff)
+	b := cscalarbydatatype(xD.dtype, betaDataDiff)
+	ap := cscalarbydatatype(xD.dtype, alphaParamDiff)
+	bp := cscalarbydatatype(xD.dtype, betaParamDiff)
 	return Status(C.cudnnBatchNormalizationBackward(
 		handle.x,
 		mode.c(),
-		alphaDataDiff.CPtr(),
-		betaDataDiff.CPtr(),
-		alphaParamDiff.CPtr(),
-		betaParamDiff.CPtr(),
+		a.CPtr(),
+		b.CPtr(),
+		ap.CPtr(),
+		bp.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		dyD.descriptor,
@@ -411,8 +416,8 @@ func (b BatchNorm) DeriveBNTensorDescriptorV2(xDesc *TensorD, mode BatchNormMode
 func (bnd *BatchD) BatchNormalizationForwardTrainingV2(
 	handle *Handle,
 	mode BatchNormMode,
-	alpha CScalar, /* alpha[0] = result blend factor */
-	beta CScalar, /* beta[0] = dest layer blend factor */
+	alpha float64, /* alpha[0] = result blend factor */
+	beta float64, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
 	x gocu.Mem,
 	yD *TensorD,
@@ -444,12 +449,13 @@ func (bnd *BatchD) BatchNormalizationForwardTrainingV2(
 	resultSaveInvVariance gocu.Mem,
 
 ) error {
-
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnBatchNormalizationForwardTraining(
 		handle.x,
 		mode.c(),
-		alpha.CPtr(),
-		beta.CPtr(),
+		a.CPtr(),
+		b.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		yD.descriptor,
@@ -470,8 +476,8 @@ func (bnd *BatchD) BatchNormalizationForwardTrainingV2(
 func (bnd *BatchD) BatchNormalizationForwardInferenceV2(
 	handle *Handle,
 	mode BatchNormMode,
-	alpha CScalar, /* alpha[0] = result blend factor */
-	beta CScalar, /* beta[0] = dest layer blend factor */
+	alpha float64, /* alpha[0] = result blend factor */
+	beta float64, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
 	x gocu.Mem, /* NxCxHxW */
 	yD *TensorD,
@@ -484,12 +490,13 @@ func (bnd *BatchD) BatchNormalizationForwardInferenceV2(
 	epsilon float64,
 
 ) error {
-
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnBatchNormalizationForwardInference(
 		handle.x,
 		mode.c(),
-		alpha.CPtr(),
-		beta.CPtr(),
+		a.CPtr(),
+		b.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		yD.descriptor,
@@ -510,10 +517,10 @@ func (bnd *BatchD) BatchNormalizationForwardInferenceV2(
 func (bnd *BatchD) BatchNormalizationBackwardV2(
 	handle *Handle,
 	mode BatchNormMode,
-	alphaDataDiff CScalar,
-	betaDataDiff CScalar,
-	alphaParamDiff CScalar,
-	betaParamDiff CScalar,
+	alphaDataDiff float64,
+	betaDataDiff float64,
+	alphaParamDiff float64,
+	betaParamDiff float64,
 	xD *TensorD, /* same desc for x, dx, dy */
 	x gocu.Mem,
 	dyD *TensorD,
@@ -532,14 +539,17 @@ func (bnd *BatchD) BatchNormalizationBackwardV2(
 	savedMean gocu.Mem,
 	savedInvVariance gocu.Mem,
 ) error {
-
+	a := cscalarbydatatype(xD.dtype, alphaDataDiff)
+	b := cscalarbydatatype(xD.dtype, betaDataDiff)
+	ap := cscalarbydatatype(xD.dtype, alphaParamDiff)
+	bp := cscalarbydatatype(xD.dtype, betaParamDiff)
 	return Status(C.cudnnBatchNormalizationBackward(
 		handle.x,
 		mode.c(),
-		alphaDataDiff.CPtr(),
-		betaDataDiff.CPtr(),
-		alphaParamDiff.CPtr(),
-		betaParamDiff.CPtr(),
+		a.CPtr(),
+		b.CPtr(),
+		ap.CPtr(),
+		bp.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
 		dyD.descriptor,

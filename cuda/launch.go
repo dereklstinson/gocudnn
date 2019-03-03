@@ -15,7 +15,7 @@ const CUjit_option * nullJitOptions = NULL;
 import "C"
 import (
 	"errors"
-	"reflect"
+	"fmt"
 	"runtime"
 	"sync"
 	"unsafe"
@@ -262,18 +262,22 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 		case uint:
 			val := C.uint(x)
 			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
-		default:
-			val := reflect.ValueOf(x)
-			sizeof := reflect.TypeOf(x).Size()
-			y := unsafe.Pointer(val.Pointer())
-			/*
-				if !isconvertable(x) {
-					return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
-				}
-			*/
-			//sizeof := unsafe.Sizeof(x)
-			C.memcpy(k.args[i], y, (C.size_t)(sizeof))
 
+		default:
+			scalar := gocu.CScalarConversion(x)
+			if scalar == nil {
+				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
+			}
+
+			/*
+				val := reflect.ValueOf(x)
+
+				sizeof := reflect.TypeOf(x).Size()
+				y := unsafe.Pointer(val.Pointer())
+
+				C.memcpy(k.args[i], y, (C.size_t)(sizeof))
+			*/
+			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.Bytes()))
 		}
 
 	}
@@ -317,22 +321,23 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 			val := C.uint(x)
 			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
 		default:
-			val := reflect.ValueOf(x)
-			sizeof := reflect.TypeOf(x).Size()
-			y := unsafe.Pointer(val.Pointer())
 			/*
-				if !isconvertable(x) {
-					return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
+					val := reflect.ValueOf(x)
+					sizeof := reflect.TypeOf(x).Size()
+					y := unsafe.Pointer(val.Pointer())
+
+					C.memcpy(k.args[i], y, (C.size_t)(sizeof))
+
 				}
-
-				sizeof := unsafe.Sizeof(x)
 			*/
-			C.memcpy(k.args[i], y, (C.size_t)(sizeof))
+			scalar := gocu.CScalarConversion(x)
+			if scalar == nil {
+				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
+			}
 
+			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.Bytes()))
 		}
-
 	}
-
 	return nil
 }
 

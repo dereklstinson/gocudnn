@@ -16,7 +16,7 @@ import (
 type XLossD struct {
 	mode        XLossMode
 	lossfunc    *cuda.Kernel
-	loss        *nvidia.Malloced
+	loss        gocu.Mem
 	cpuloss     []float32
 	cpuptr      gocu.Mem
 	flg         XLossModeFlag

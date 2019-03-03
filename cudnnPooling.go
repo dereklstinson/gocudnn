@@ -192,23 +192,23 @@ func destroypoolingdescriptor(p *PoolingD) error {
 //PoolingForward does the poolingForward operation
 func (p *PoolingD) PoolingForward(
 	handle *Handle,
-	alpha CScalar,
+	alpha float64,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	yD *TensorD,
 	y gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(p, handle, xD, x, yD, y)
-	}
+
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnPoolingForward(
 		handle.x,
 		p.descriptor,
-		alpha.CPtr(),
+		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
-		beta.CPtr(),
+		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
 	)).error("PoolingForward")
@@ -217,21 +217,20 @@ func (p *PoolingD) PoolingForward(
 //PoolingBackward does the backward pooling operation
 func (p *PoolingD) PoolingBackward(
 	handle *Handle,
-	alpha CScalar,
+	alpha float64,
 	yD *TensorD,
 	y gocu.Mem,
 	dyD *TensorD,
 	dy gocu.Mem,
 	xD *TensorD,
 	x gocu.Mem,
-	beta CScalar,
+	beta float64,
 	dxD *TensorD,
 	dx gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(p, handle, xD, x, yD, y, dyD, dy, dxD, dx)
-	}
-	return Status(C.cudnnPoolingBackward(handle.x, p.descriptor, alpha.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), beta.CPtr(), dxD.descriptor, dx.Ptr())).error("PoolingBackward")
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnPoolingBackward(handle.x, p.descriptor, a.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("PoolingBackward")
 }
 
 /*
