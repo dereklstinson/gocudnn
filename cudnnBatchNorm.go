@@ -57,6 +57,27 @@ func (b BatchNorm) DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) 
 	return descriptor, nil
 }
 
+//GetForwardTrainingExWorkspaceSize gets the forward training ex workspacesize
+func (b BatchNorm) GetForwardTrainingExWorkspaceSize(h *Handle,
+	mode BatchNormMode,
+	op BatchNormOps,
+	xD, zD, yD, bnScaleBiasMeanVarDesc *TensorD,
+	actD *ActivationD) (uint, error) {
+
+	var sib C.size_t
+	err := Status(C.cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(
+		h.x,
+		mode.c(),
+		op.c(),
+		xD.descriptor,
+		zD.descriptor,
+		yD.descriptor,
+		bnScaleBiasMeanVarDesc.descriptor,
+		actD.descriptor,
+		&sib)).error("GetForwardTrainingExWorkspaceSize")
+	return uint(sib), err
+}
+
 type batchNormFuncs struct {
 }
 
@@ -159,16 +180,13 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 	        ((n+1)*CMA[n]-CMA[n])/(n+1) + x[n+1]/(n+1) =
 			CMA[n]*(1-1/(n+1)) + x[n+1]*1/(n+1) */
 	expAveFactor float64,
-
 	/* Used in Training phase only.
 	   runningMean = newMean*factor + runningMean*(1-factor) */
 	resultrunningmean gocu.Mem,
 	/* Output in training mode, input in inference. Is the moving average
 	   of  variance[x] (factor is applied in the same way as for runningMean) */
 	resultRunningVariance gocu.Mem,
-
 	epsilon float64, /* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
-
 	resultSaveMean gocu.Mem, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
 	resultSaveInvVariance gocu.Mem, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
 
@@ -528,7 +546,6 @@ func (bnd *BatchD) BatchNormalizationBackwardV2(
 	dxD *TensorD,
 	dx gocu.Mem,
 	/* Shared tensor desc for the 4 tensors below */
-
 	bnScale gocu.Mem, /* bnBias doesn't affect backpropagation */
 	/* scale and bias diff are not backpropagated below this layer */
 	dBnScaleResult gocu.Mem,
@@ -583,6 +600,32 @@ FLAGS
 
 
 */
+
+//BatchNormOps are flags for BatchNormOps when needed
+type BatchNormOps C.cudnnBatchNormOps_t
+
+func (bnm BatchNormOps) c() C.cudnnBatchNormOps_t {
+	return C.cudnnBatchNormOps_t(bnm)
+}
+
+//BatchNormOpsFlag is a null struct that is used to pass BatchNormOps through methods
+type BatchNormOpsFlag struct {
+}
+
+//Normal return  BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN) /* do batch normalization only */
+func (bnm BatchNormOpsFlag) Normal() BatchNormOps {
+	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN)
+}
+
+//Activation returns BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION) /* do batchNorm, then activation */
+func (bnm BatchNormOpsFlag) Activation() BatchNormOps {
+	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION)
+}
+
+//AddActivation returns BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION) /* do batchNorm, then elemWiseAdd, then activation */
+func (bnm BatchNormOpsFlag) AddActivation() BatchNormOps {
+	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION)
+}
 
 //BatchNormModeFlag used to pass BatchNormMode Flags user safe like using methods
 type BatchNormModeFlag struct {

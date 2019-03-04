@@ -14,6 +14,30 @@ type CScalar interface {
 	SizeT() uint
 }
 
+//CScalartoFloat64 changes a CScalar to a float64 value so it could be read or debugging.
+func CScalartoFloat64(x CScalar) float64 {
+	switch y := x.(type) {
+	case CDouble:
+		return float64(y)
+	case CFloat:
+		return float64(y)
+	case CInt:
+		return float64(y)
+	case CUInt:
+		return float64(y)
+	case CHalf:
+		h := (half.Float16)(y)
+		return float64(h)
+	case CInt8:
+		return float64(y)
+	case CUInt8:
+		return float64(y)
+
+	}
+	panic("Unsupported val for CScalartoFloat64")
+
+}
+
 //CScalarConversion takes a go type and converts it to a CScalar interface. golang type int and int32 will both be converted to a CInt type.
 //If a go type is not supported then it will return a nil.
 //Current support is float64,float32,int, int32, int8,uint32, uint, uint8 ( I think byte should work because when I put it in the switch with uint8 it says duplicate type).
