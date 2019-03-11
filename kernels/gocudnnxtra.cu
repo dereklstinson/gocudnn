@@ -712,18 +712,21 @@ extern "C" __global__ void forwardleakyfloatalphabeta(const int length,
                                              const float alpha,
                                               const float beta)
 {
-    const float alphaco = alpha*coef;
+
     CUDA_GRID_LOOP_X(i, length)
     {
-          float previous = beta*y[i];
+        const float previous = y[i];
         if (x[i] > 0.0)
         {
-            y[i] = previous + (alpha *x[i]) ;
+            const float current = x[i];
+            y[i] = (beta*previous) + (alpha *current) ;
         }
         else
         {
-            y[i] = previous + (x[i] * alphaco);
+              const float current = x[i]*coef;
+           y[i] = (beta*previous) + (alpha *current) ;
         }
+          __syncthreads();
     }
 }
 extern "C" __global__ void backwardleakyfloatalphabeta(const int length,
@@ -731,23 +734,24 @@ extern "C" __global__ void backwardleakyfloatalphabeta(const int length,
                                               float *dx,
                                               const float *dy,
                                               const float coef,
-                                                const float alpha,
+                                              const float alpha,
                                               const float beta)
 {
-  const float alphaco = alpha*coef;
+
     CUDA_GRID_LOOP_X(i, length)
     {
-         float previous = beta*dx[i];
+        const float previous = dx[i];
         if (x[i] > 0.0)
         {
-
-            dx[i] =previous + (dy[i]*alpha);
+            const float current= dy[i];
+            dx[i] =(beta *previous) + (current * alpha);
         }
         else
         {
-
-            dx[i] = previous +(dy[i] * alphaco);
+            const float current= dy[i]*coef;
+            dx[i] = (beta *previous) + (current * alpha);
         }
+        __syncthreads();
     }
 }
 
@@ -757,17 +761,20 @@ extern "C" __global__ void forwardleakyfloatalpha(const int length,
                                              const float coef,
                                              const float alpha)
 {
-    const float alphaco = alpha*coef;
+
     CUDA_GRID_LOOP_X(i, length)
     {
+        
         if (x[i] > 0.0)
         {
             y[i] = alpha *x[i];
         }
         else
         {
-            y[i] = x[i] * alphaco;
+            const float current=x[i]*coef;
+            y[i] =current * alpha;
         }
+         __syncthreads();
     }
 }
 extern "C" __global__ void backwardleakyfloatalpha(const int length,
@@ -777,20 +784,20 @@ extern "C" __global__ void backwardleakyfloatalpha(const int length,
                                               const float coef,
                                               const float alpha)
 {
-  const float alphaco = alpha*coef;
+ 
     CUDA_GRID_LOOP_X(i, length)
     {
 
         if (x[i] > 0.0)
         {
-
             dx[i] = dy[i]*alpha;
         }
         else
         {
-
-            dx[i] = dy[i] * alphaco;
+            const float current=dy[i]*coef;
+            dx[i] = current *alpha;
         }
+         __syncthreads();
     }
 }
 
