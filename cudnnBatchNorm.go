@@ -57,10 +57,56 @@ func (b BatchNorm) DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) 
 	return descriptor, nil
 }
 
+//GetForwardTrainingExWorkspaceSize gets the forward training ex workspacesize
+func (b BatchNorm) GetForwardTrainingExWorkspaceSize(h *Handle,
+	mode BatchNormMode,
+	op BatchNormOps,
+	xD, zD, yD, bnScaleBiasMeanVarDesc *TensorD,
+	actD *ActivationD) (uint, error) {
+
+	var sib C.size_t
+	err := Status(C.cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize(
+		h.x,
+		mode.c(),
+		op.c(),
+		xD.descriptor,
+		zD.descriptor,
+		yD.descriptor,
+		bnScaleBiasMeanVarDesc.descriptor,
+		actD.descriptor,
+		&sib)).error("GetForwardTrainingExWorkspaceSize")
+	return uint(sib), err
+}
+
+//GetBackwardExWorkspaceSize gets the workspace size in bytes for the backward operation
+func (b BatchNorm) GetBackwardExWorkspaceSize(
+	h *Handle,
+	mode BatchNormMode,
+	op BatchNormOps,
+	xD, yD, dyD, dzD, dxD, dbnScaleBiasMeanVarDesc *TensorD,
+	actD *ActivationD,
+) (uint, error) {
+	var sib C.size_t
+	err := Status(C.cudnnGetBatchNormalizationBackwardExWorkspaceSize(h.x, mode.c(), op.c(), xD.descriptor, yD.descriptor, dyD.descriptor, dzD.descriptor, dxD.descriptor, dbnScaleBiasMeanVarDesc.descriptor, actD.descriptor, &sib)).error("BatchNormWSsizeex")
+	return uint(sib), err
+}
+
+//GetTrainingExReserveSpaceSize gets the reserve space size for ex operation
+func (b BatchNorm) GetTrainingExReserveSpaceSize(h *Handle,
+	mode BatchNormMode,
+	ops BatchNormOps,
+	actD *ActivationD,
+	xD *TensorD,
+) (uint, error) {
+	var sib C.size_t
+	err := Status(C.cudnnGetBatchNormalizationTrainingExReserveSpaceSize(h.x, mode.c(), ops.c(), actD.descriptor, xD.descriptor, &sib)).error("GetTrainingExReserveSpaceSize")
+	return uint(sib), err
+}
+
 type batchNormFuncs struct {
 }
 
-//BatchNormalizationForwardTraining needs to be relooked at
+//ForwardTraining from the documentation
 /*
 This function performs the forward BatchNormalization layer computation for training phase.
 Note: Only 4D and 5D tensors are supported.
@@ -130,7 +176,7 @@ CUDNN_STATUS_BAD_PARAM
 
 */
 /* Computes y = BN(x). Also accumulates moving averages of mean and inverse variances */
-func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
+func (bnf batchNormFuncs) ForwardTraining(
 	handle *Handle,
 	mode BatchNormMode,
 	alpha float64, /* alpha[0] = result blend factor */
@@ -149,8 +195,8 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 		(normalization is performed across N) */
 	bnScaleBiasMeanVar *TensorD,
 	/* 'Gamma' and 'Beta' respectively in Ioffe and Szegedy's paper's notation */
-	bnscale gocu.Mem,
-	bnBias gocu.Mem,
+	scale gocu.Mem,
+	bias gocu.Mem,
 	/* MUST use factor=1 in the very first call of a complete training cycle.
 	        Use a factor=1/(1+n) at N-th call to the function to get
 	        Cumulative Moving Average (CMA) behavior
@@ -159,22 +205,37 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 	        ((n+1)*CMA[n]-CMA[n])/(n+1) + x[n+1]/(n+1) =
 			CMA[n]*(1-1/(n+1)) + x[n+1]*1/(n+1) */
 	expAveFactor float64,
-
 	/* Used in Training phase only.
 	   runningMean = newMean*factor + runningMean*(1-factor) */
-	resultrunningmean gocu.Mem,
+	resultrunningmean gocu.Mem, //output
 	/* Output in training mode, input in inference. Is the moving average
 	   of  variance[x] (factor is applied in the same way as for runningMean) */
-	resultRunningVariance gocu.Mem,
-
+	resultRunningVariance gocu.Mem, //output
 	epsilon float64, /* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
-
-	resultSaveMean gocu.Mem, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
-	resultSaveInvVariance gocu.Mem, /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveMean gocu.Mem, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveInvVariance gocu.Mem, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
 
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if resultSaveInvVariance == nil || resultSaveMean == nil {
+		return Status(C.cudnnBatchNormalizationForwardTraining(
+			handle.x,
+			mode.c(),
+			a.CPtr(),
+			b.CPtr(),
+			xD.descriptor,
+			x.Ptr(),
+			yD.descriptor,
+			y.Ptr(),
+			bnScaleBiasMeanVar.descriptor,
+			scale.Ptr(), bias.Ptr(),
+			C.double(expAveFactor),
+			resultrunningmean.Ptr(), resultRunningVariance.Ptr(),
+			C.double(epsilon),
+			nil, nil,
+		)).error("BatchNormalizationForwardTraining")
+	}
 	return Status(C.cudnnBatchNormalizationForwardTraining(
 		handle.x,
 		mode.c(),
@@ -185,18 +246,198 @@ func (bnf batchNormFuncs) BatchNormalizationForwardTraining(
 		yD.descriptor,
 		y.Ptr(),
 		bnScaleBiasMeanVar.descriptor,
-		bnscale.Ptr(),
-		bnBias.Ptr(),
+		scale.Ptr(),
+		bias.Ptr(),
 		C.double(expAveFactor),
-		resultrunningmean.Ptr(),
-		resultRunningVariance.Ptr(),
+		resultrunningmean.Ptr(), resultRunningVariance.Ptr(),
 		C.double(epsilon),
-		resultSaveMean.Ptr(),
-		resultSaveInvVariance.Ptr(),
+		resultSaveMean.Ptr(), resultSaveInvVariance.Ptr(),
 	)).error("BatchNormalizationForwardTraining")
 }
 
-/*BatchNormalizationForwardInference info was pulled from cudnn documentation
+//ForwardTrainingEx does the forward training ex algorithm.
+func (bnf batchNormFuncs) ForwardTrainingEx(
+	h *Handle,
+	mode BatchNormMode,
+	ops BatchNormOps,
+	alpha, beta float64, //alpha -result blend factor, beta - dest blend factor
+	xD *TensorD,
+	x gocu.Mem,
+	zD *TensorD,
+	z gocu.Mem,
+	yD *TensorD,
+	y gocu.Mem, //output
+	bnScaleBiasMeanVarDesc *TensorD,
+	scale gocu.Mem,
+	bias gocu.Mem,
+	expoAverageFactor float64,
+	resultRunningMean gocu.Mem,
+	resultRunningVariance gocu.Mem,
+	epsilon float64,
+	resultSaveMean gocu.Mem, //optional can be null this and reslutSaveInVariance either both have to be null or not // output
+	reslutSaveInVariance gocu.Mem, //optional can be null this and resultSaveMean either both have to be null or not. //output
+	actD *ActivationD,
+	wspace gocu.Mem,
+	wspacesib uint,
+	rspace gocu.Mem,
+	rspacesib uint,
+) error {
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+
+	if resultSaveMean == nil || reslutSaveInVariance == nil {
+		return Status(C.cudnnBatchNormalizationForwardTrainingEx(
+			h.x,
+			mode.c(),
+			ops.c(),
+			a.CPtr(), b.CPtr(),
+			xD.descriptor,
+			x.Ptr(),
+			zD.descriptor,
+			z.Ptr(),
+			yD.descriptor,
+			y.Ptr(),
+			bnScaleBiasMeanVarDesc.descriptor,
+			scale.Ptr(),
+			bias.Ptr(),
+			C.double(expoAverageFactor),
+			resultRunningMean.Ptr(),
+			resultRunningVariance.Ptr(),
+			C.double(epsilon),
+			nil,
+			nil,
+			actD.descriptor,
+			wspace.Ptr(),
+			C.size_t(wspacesib),
+			rspace.Ptr(),
+			C.size_t(rspacesib),
+		)).error("ForwardTrainingEx")
+	}
+	return Status(C.cudnnBatchNormalizationForwardTrainingEx(
+		h.x,
+		mode.c(),
+		ops.c(),
+		a.CPtr(), b.CPtr(),
+		xD.descriptor,
+		x.Ptr(),
+		zD.descriptor,
+		z.Ptr(),
+		yD.descriptor,
+		y.Ptr(),
+		bnScaleBiasMeanVarDesc.descriptor,
+		scale.Ptr(),
+		bias.Ptr(),
+		C.double(expoAverageFactor),
+		resultRunningMean.Ptr(),
+		resultRunningVariance.Ptr(),
+		C.double(epsilon),
+		resultSaveMean.Ptr(),
+		reslutSaveInVariance.Ptr(),
+		actD.descriptor,
+		wspace.Ptr(),
+		C.size_t(wspacesib),
+		rspace.Ptr(),
+		C.size_t(rspacesib),
+	)).error("ForwardTrainingEx")
+}
+
+//BackwardEx does the backward ex algorithm.
+func (bnf batchNormFuncs) BackwardEx(
+	h *Handle,
+	mode BatchNormMode,
+	ops BatchNormOps,
+	alphadata, betadata, alphaparam, betaparam float64, //alpha -result blend factor, beta - dest blend factor
+	xD *TensorD,
+	x gocu.Mem,
+	yD *TensorD,
+	y gocu.Mem,
+	dyD *TensorD,
+	dy gocu.Mem,
+	dzD *TensorD,
+	dz gocu.Mem,
+	dxD *TensorD,
+	dx gocu.Mem,
+	dbnScaleBiasMeanVarDesc *TensorD,
+	scale gocu.Mem,
+	bias gocu.Mem,
+	dscale gocu.Mem, //output - for training scale and bias
+	dbias gocu.Mem, //output - for training scale and bias
+	epsilon float64, //input - use the same as forward pass
+	fromresultSaveMean gocu.Mem, //optional can be null this and reslutSaveInVariance either both have to be null or not // input
+	fromreslutSaveInVariance gocu.Mem, //optional can be null this and resultSaveMean either both have to be null or not. //input
+	actD *ActivationD,
+	wspace gocu.Mem,
+	wspacesib uint,
+	rspace gocu.Mem,
+	rspacesib uint,
+) error {
+	ad := cscalarbydatatype(yD.dtype, alphadata)
+	bd := cscalarbydatatype(yD.dtype, betadata)
+	ap := cscalarbydatatype(yD.dtype, alphaparam)
+	bp := cscalarbydatatype(yD.dtype, betaparam)
+	if fromreslutSaveInVariance == nil || fromresultSaveMean == nil {
+		return Status(C.cudnnBatchNormalizationBackwardEx(
+			h.x,
+			mode.c(),
+			ops.c(),
+			ad.CPtr(), bd.CPtr(), ap.CPtr(), bp.CPtr(),
+			xD.descriptor,
+			x.Ptr(),
+			yD.descriptor,
+			y.Ptr(),
+			dyD.descriptor,
+			dy.Ptr(),
+			dzD.descriptor,
+			dz.Ptr(),
+			dxD.descriptor,
+			dx.Ptr(),
+			dbnScaleBiasMeanVarDesc.descriptor,
+			scale.Ptr(),
+			bias.Ptr(),
+			dscale.Ptr(),
+			dbias.Ptr(),
+			C.double(epsilon),
+			nil,
+			nil,
+			actD.descriptor,
+			wspace.Ptr(),
+			C.size_t(wspacesib),
+			rspace.Ptr(),
+			C.size_t(rspacesib),
+		)).error("BackwardEx")
+	}
+	return Status(C.cudnnBatchNormalizationBackwardEx(
+		h.x,
+		mode.c(),
+		ops.c(),
+		ad.CPtr(), bd.CPtr(), ap.CPtr(), bp.CPtr(),
+		xD.descriptor,
+		x.Ptr(),
+		yD.descriptor,
+		y.Ptr(),
+		dyD.descriptor,
+		dy.Ptr(),
+		dzD.descriptor,
+		dz.Ptr(),
+		dxD.descriptor,
+		dx.Ptr(),
+		dbnScaleBiasMeanVarDesc.descriptor,
+		scale.Ptr(),
+		bias.Ptr(),
+		dscale.Ptr(),
+		dbias.Ptr(),
+		C.double(epsilon),
+		fromresultSaveMean.Ptr(),
+		fromreslutSaveInVariance.Ptr(),
+		actD.descriptor,
+		wspace.Ptr(),
+		C.size_t(wspacesib),
+		rspace.Ptr(),
+		C.size_t(rspacesib),
+	)).error("BackwardEx")
+}
+
+/*ForwardInference info was pulled from cudnn documentation
 
 This function performs the forward BatchNormalization layer computation for inference phase.
 This layer is based on the paper "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift", S. Ioffe, C. Szegedy, 2015.
@@ -258,20 +499,16 @@ CUDNN_STATUS_BAD_PARAM
 * according to spatial or per-activation mode. Refer to cudnnBatchNormalizationForwardTraining
 * above for notes on function arguments.
  */
-func (bnf batchNormFuncs) BatchNormalizationForwardInference(
+func (bnf batchNormFuncs) ForwardInference(
 	handle *Handle,
 	mode BatchNormMode,
-	alpha float64, /* alpha[0] = result blend factor */
-	beta float64, /* beta[0] = dest layer blend factor */
+	alpha, beta float64, /* alpha[0] = result blend factor, beta[0] = dest layer blend factor */
 	xD *TensorD,
 	x gocu.Mem, /* NxCxHxW */
 	yD *TensorD,
 	y gocu.Mem, /* NxCxHxW */
-	bnScaleBiasMeanVarDesc *TensorD,
-	bnscale gocu.Mem,
-	bnBias gocu.Mem,
-	estimatedMean gocu.Mem, //same descriptor as bias and scale
-	estimatedVariance gocu.Mem, //same descriptor as bias and scale
+	ScaleBiasMeanVarDesc *TensorD,
+	scale, bias, estimatedMean, estimatedVariance gocu.Mem, //all share the ScaleBiasMeanVarDesc descriptor
 	epsilon float64,
 
 ) error {
@@ -286,26 +523,20 @@ func (bnf batchNormFuncs) BatchNormalizationForwardInference(
 		x.Ptr(),
 		yD.descriptor,
 		y.Ptr(),
-		bnScaleBiasMeanVarDesc.descriptor,
-		bnscale.Ptr(),
-		bnBias.Ptr(),
-		estimatedMean.Ptr(),     //from resultRunningMean
-		estimatedVariance.Ptr(), //from  resultRunningVariance
+		ScaleBiasMeanVarDesc.descriptor,
+		scale.Ptr(), bias.Ptr(), estimatedMean.Ptr(), estimatedVariance.Ptr(),
 		C.double(epsilon),
 	)).error("BatchNormalizationForwardInference")
 }
 
-//BatchNormalizationBackward I don't know if this is set up correctly
+//Backward I don't know if this is set up correctly
 /*
 * Performs backward pass of Batch Normalization layer. Returns x gradient,
 * bnScale gradient and bnBias gradient */
-func (bnf batchNormFuncs) BatchNormalizationBackward(
+func (bnf batchNormFuncs) Backward(
 	handle *Handle,
 	mode BatchNormMode,
-	alphaDataDiff float64,
-	betaDataDiff float64,
-	alphaParamDiff float64,
-	betaParamDiff float64,
+	alphadata, betadata, alphaparam, betaparam float64,
 	xD *TensorD, /* same desc for x, dx, dy */
 	x gocu.Mem,
 	dyD *TensorD,
@@ -314,20 +545,20 @@ func (bnf batchNormFuncs) BatchNormalizationBackward(
 	dx gocu.Mem,
 	/* Shared tensor desc for the 4 tensors below */
 	dBnScaleBiasDesc *TensorD,
-	bnScale gocu.Mem, /* bnBias doesn't affect backpropagation */
+	scale gocu.Mem, /* bias doesn't affect backpropagation */
 	/* scale and bias diff are not backpropagated below this layer */
-	dBnScaleResult gocu.Mem,
-	dBnBiasResult gocu.Mem,
+	dscale gocu.Mem, //output for training
+	dbias gocu.Mem, //output for training
 	/* Same epsilon as forward pass */
 	epsilon float64,
 	/* Optionally cached intermediate results from forward pass */
 	savedMean gocu.Mem,
 	savedInvVariance gocu.Mem,
 ) error {
-	a := cscalarbydatatype(xD.dtype, alphaDataDiff)
-	b := cscalarbydatatype(xD.dtype, betaDataDiff)
-	ap := cscalarbydatatype(xD.dtype, alphaParamDiff)
-	bp := cscalarbydatatype(xD.dtype, betaParamDiff)
+	a := cscalarbydatatype(xD.dtype, alphadata)
+	b := cscalarbydatatype(xD.dtype, betadata)
+	ap := cscalarbydatatype(xD.dtype, alphaparam)
+	bp := cscalarbydatatype(xD.dtype, betaparam)
 	return Status(C.cudnnBatchNormalizationBackward(
 		handle.x,
 		mode.c(),
@@ -342,9 +573,9 @@ func (bnf batchNormFuncs) BatchNormalizationBackward(
 		dxD.descriptor,
 		dx.Ptr(),
 		dBnScaleBiasDesc.descriptor,
-		bnScale.Ptr(),
-		dBnScaleResult.Ptr(),
-		dBnBiasResult.Ptr(),
+		scale.Ptr(),
+		dscale.Ptr(),
+		dbias.Ptr(),
 		C.double(epsilon),
 		savedMean.Ptr(),
 		savedInvVariance.Ptr(),
@@ -528,7 +759,6 @@ func (bnd *BatchD) BatchNormalizationBackwardV2(
 	dxD *TensorD,
 	dx gocu.Mem,
 	/* Shared tensor desc for the 4 tensors below */
-
 	bnScale gocu.Mem, /* bnBias doesn't affect backpropagation */
 	/* scale and bias diff are not backpropagated below this layer */
 	dBnScaleResult gocu.Mem,
@@ -583,6 +813,32 @@ FLAGS
 
 
 */
+
+//BatchNormOps are flags for BatchNormOps when needed
+type BatchNormOps C.cudnnBatchNormOps_t
+
+func (bnm BatchNormOps) c() C.cudnnBatchNormOps_t {
+	return C.cudnnBatchNormOps_t(bnm)
+}
+
+//BatchNormOpsFlag is a null struct that is used to pass BatchNormOps through methods
+type BatchNormOpsFlag struct {
+}
+
+//Normal return  BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN) /* do batch normalization only */
+func (bnm BatchNormOpsFlag) Normal() BatchNormOps {
+	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN)
+}
+
+//Activation returns BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION) /* do batchNorm, then activation */
+func (bnm BatchNormOpsFlag) Activation() BatchNormOps {
+	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION)
+}
+
+//AddActivation returns BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION) /* do batchNorm, then elemWiseAdd, then activation */
+func (bnm BatchNormOpsFlag) AddActivation() BatchNormOps {
+	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION)
+}
 
 //BatchNormModeFlag used to pass BatchNormMode Flags user safe like using methods
 type BatchNormModeFlag struct {

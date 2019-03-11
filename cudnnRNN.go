@@ -74,8 +74,8 @@ func destroyrnnddescriptor(r *RNND) error {
 	return Status(C.cudnnDestroyRNNDescriptor(r.descriptor)).error("DestroyDescriptor-rnn")
 }
 
-//SetRNNDescriptor sets the rnndesctiptor
-func (r *RNND) SetRNNDescriptor(
+//Set sets the rnndesctiptor
+func (r *RNND) Set(
 	handle *Handle,
 	hiddenSize int32,
 	numLayers int32,
@@ -87,9 +87,6 @@ func (r *RNND) SetRNNDescriptor(
 	data DataType,
 
 ) error {
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle, doD)
-	}
 
 	return Status(C.cudnnSetRNNDescriptor(
 		handle.x,
@@ -102,34 +99,28 @@ func (r *RNND) SetRNNDescriptor(
 		rnnmode.c(),
 		rnnalg.c(),
 		data.c(),
-	)).error("SetRNNDescriptor")
+	)).error("(*RNND)Set")
 }
 
-//SetRNNProjectionLayers sets the rnnprojection layers
-func (r *RNND) SetRNNProjectionLayers(
+//SetProjectionLayers sets the rnnprojection layers
+func (r *RNND) SetProjectionLayers(
 	handle *Handle,
 	recProjsize int32,
 	outProjSize int32,
 ) error {
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle)
-	}
 
 	return Status(C.cudnnSetRNNProjectionLayers(
 		handle.x,
 		r.descriptor,
 		C.int(recProjsize),
 		C.int(outProjSize),
-	)).error("SetRNNProjectionLayers")
+	)).error("SetProjectionLayers")
 }
 
-//GetRNNProjectionLayers sets the rnnprojection layers
-func (r *RNND) GetRNNProjectionLayers(
+//GetProjectionLayers sets the rnnprojection layers
+func (r *RNND) GetProjectionLayers(
 	handle *Handle,
 ) (int32, int32, error) {
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle)
-	}
 
 	var rec, out C.int
 
@@ -138,23 +129,21 @@ func (r *RNND) GetRNNProjectionLayers(
 		r.descriptor,
 		&rec,
 		&out,
-	)).error("SetRNNProjectionLayers")
+	)).error("GetProjectionLayers")
 	return int32(rec), int32(out), err
 }
 
-//SetRNNAlgorithmDescriptor sets the RNNalgorithm
-func (r *RNND) SetRNNAlgorithmDescriptor(
+//SetAlgorithmDescriptor sets the RNNalgorithm
+func (r *RNND) SetAlgorithmDescriptor(
 	handle *Handle,
 	algo *AlgorithmD,
 ) error {
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle)
-	}
-	return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error("SetRNNAlgorithmDescriptor")
+
+	return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error("SetAlgorithmDescriptor")
 }
 
-//GetRNNDescriptor gets algo desctiptor values returns a ton of stuff
-func (r *RNND) GetRNNDescriptor(
+//Get gets RNND values that were set
+func (r *RNND) Get(
 	handle *Handle,
 ) (int32, int32, *DropOutD, RNNInputMode, DirectionMode, RNNmode, RNNAlgo, DataType, error) {
 	var hiddensize C.int
@@ -177,18 +166,14 @@ func (r *RNND) GetRNNDescriptor(
 		&algo,
 		&dataType,
 	)).error("GetRNNDescriptor")
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle)
-	}
+
 	return int32(hiddensize), int32(numLayers), &DropOutD{descriptor: dropoutdescriptor},
 		RNNInputMode(inputMode), DirectionMode(direction), RNNmode(mode), RNNAlgo(algo), DataType(dataType), err
 }
 
 //SetRNNMatrixMathType Sets the math type for the descriptor
 func (r *RNND) SetRNNMatrixMathType(math MathType) error {
-	if setkeepalive == true {
-		keepsalivebuffer(r)
-	}
+
 	return Status(C.cudnnSetRNNMatrixMathType(r.descriptor, math.c())).error("SetRNNMatrixMathType")
 }
 
@@ -196,9 +181,7 @@ func (r *RNND) SetRNNMatrixMathType(math MathType) error {
 func (r *RNND) GetRNNMatrixMathType() (MathType, error) {
 	var math C.cudnnMathType_t
 	err := Status(C.cudnnGetRNNMatrixMathType(r.descriptor, &math)).error("SetRNNMatrixMathType")
-	if setkeepalive == true {
-		keepsalivebuffer(r)
-	}
+
 	return MathType(math), err
 }
 
@@ -220,12 +203,7 @@ func (r *RNND) GetRNNWorkspaceSize(
 		&tocxD[0],
 		&sizeinbytes,
 	)).error("GetRNNWorkspaceSize")
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle)
-		for i := range xD {
-			xD[i].keepsalive()
-		}
-	}
+
 	return uint(sizeinbytes), err
 }
 
@@ -244,12 +222,7 @@ func (r *RNND) GetRNNTrainingReserveSize(
 		&tocxD[0],
 		&sizeinbytes,
 	)).error("GetRNNTrainingReserveSize")
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle)
-		for i := range xD {
-			xD[i].keepsalive()
-		}
-	}
+
 	return uint(sizeinbytes), err
 }
 
@@ -267,9 +240,7 @@ func (r *RNND) GetRNNParamsSize(
 		&sizeinbytes,
 		data.c(),
 	)).error("GetRNNParamsSize")
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle, xD)
-	}
+
 	return uint(sizeinbytes), err
 }
 
@@ -326,9 +297,7 @@ func (r *RNND) GetRNNLinLayerMatrixParams(
 		linLayerMatDesc.descriptor,
 		&linLayerMat,
 	)).error("GetRNNLinLayerMatrixParams")
-	if setkeepalive == true {
-		keepsalivebuffer(handle, r, xD, wD, w, linLayerMatDesc, linLayerMat)
-	}
+
 	return linLayerMatDesc, linLayerMat, err
 }
 
@@ -385,9 +354,7 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 		linLayerBiasDesc.descriptor,
 		&linLayerBias,
 	)).error("GetRNNLinLayerBiasParams")
-	if setkeepalive == true {
-		keepsalivebuffer(handle, r, xD, wD, w, linLayerBiasDesc)
-	}
+
 	return linLayerBiasDesc, linLayerBias, err
 }
 
@@ -444,9 +411,7 @@ func (r *RNND) GetRNNForwardInferenceAlgorithmMaxCount(
 		r.descriptor,
 		&count,
 	)).error("GetRNNForwardInferenceAlgorithmMaxCount")
-	if setkeepalive == true {
-		keepsalivebuffer(handle, r)
-	}
+
 	return int32(count), err
 }
 
@@ -503,16 +468,7 @@ func (r *RNND) FindRNNForwardInferenceAlgorithmEx(
 		wspace.Ptr(),
 		C.size_t(wspacesize),
 	)).error("FindRNNForwardInferenceAlgorithmEx")
-	if setkeepalive == true {
-		keepsalivebuffer(handle, r, x, hxD, hx, cxD, cx, wD, w, y, hyD, hy, cyD, cy, wspace)
-		for i := range xD {
-			xD[i].keepsalive()
-		}
-		for i := range yD {
-			yD[i].keepsalive()
-		}
 
-	}
 	return calgoperftogoarray(perfResults), err
 }
 
@@ -523,9 +479,7 @@ func (r *RNND) GetRNNForwardTrainingAlgorithmMaxCount(handle *Handle) (int32, er
 		handle.x,
 		r.descriptor,
 		&count)
-	if setkeepalive == true {
-		keepsalivebuffer(handle, r)
-	}
+
 	return int32(count), Status(stat).error("GetRNNForwardTrainingAlgorithmMaxCount")
 }
 
@@ -630,9 +584,7 @@ func (r *RNND) GetRNNBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error
 		r.descriptor,
 		&count,
 	)).error("GetRNNBackwardDataAlgorithmMaxCount")
-	if setkeepalive == true {
-		keepsalivebuffer(r, handle)
-	}
+
 	return int32(count), err
 }
 
@@ -791,9 +743,7 @@ func (r *RNND) GetRNNBackwardWeightsAlgorithmMaxCount(handle *Handle) (int32, er
 		r.descriptor,
 		&count,
 	)).error("GetRNNBackwardWeightsAlgorithmMaxCount")
-	if setkeepalive == true {
-		keepsalivebuffer(handle, r)
-	}
+
 	return int32(count), err
 }
 
@@ -903,15 +853,7 @@ func (r *RNND) RNNForwardInference(
 ) error {
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
-	if setkeepalive == true {
-		keepsalivebuffer(handle, r, x, y, hxD, hx, hxD, hx, wD, w, y, wspace, cy, cyD, hy, hyD, cx, cxD)
-		for i := range xD {
-			xD[i].keepsalive()
-		}
-		for i := range yD {
-			yD[i].keepsalive()
-		}
-	}
+
 	if wspace == nil {
 		return Status(C.cudnnRNNForwardInference(
 			handle.x,

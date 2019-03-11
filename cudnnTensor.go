@@ -414,6 +414,11 @@ func (d DataTypeFlag) UInt8() DataType {
 	return DataType(C.CUDNN_DATA_UINT8)
 }
 
+//Int8x32 returns  DataType(C.CUDNN_DATA_INT8x32) -- only supported by sm_72.
+func (d DataTypeFlag) Int8x32() DataType {
+	return DataType(C.CUDNN_DATA_INT8x32)
+}
+
 func (d DataType) c() C.cudnnDataType_t { return C.cudnnDataType_t(d) }
 
 /*
