@@ -3,11 +3,12 @@
 
 
 
-Go Bindings for cuDNN 7.4 (I added the functions up to 7.1, I need to added the newer 7.4 functions) using Cuda 10.0 \(Just some Cuda 10.0\) 
+Go Bindings for cuDNN 7.4  using Cuda 10.0 \(Just some Cuda 10.0\) 
+V0.1 is cudnn 7.1 with cuda 10.0
 
-
-This is finally working. I am going to start versioning this.  I was thinking something along the lines of v0.1.7.4 to keep up with the cudnn versioning.  When I finish adding the 7.4 functions. I will branch this one off.
-Then I will add the 7.5 functions.
+In a few weeks I will add the 7.5 functions, and moving to cuda 10.1, because I think they added some functions
+to nvjpeg and npp.  
+Also 7.5 might be an api breaking update.  I've been bashing my head with the flag issues.  I personally hate flags. For each Flag I would use an empty struct to pass the flags through methods, but I think, I am going to have the flags themselves pass the different flags as methods and maybe even update themselves to create less clutter.  
 
 
 
@@ -19,7 +20,7 @@ I've added nvjpeg, but that was before the 10.1 update.  So, I will upgrade to 1
 Any subpackage library bindings I include will most likely only be made to suppliment cudnn.
 
 
-
+# SoftMax 
 Note on how cudnn uses softmax, because to be honest it isn't entirely clear in the documentation how it works.  
 You place what I like to call the answers in the dy part of the function. y is the output of the softmaxforward function.  dx is the gradient going backward.
 A simplfied look at how this softmax function works for cudnn is dx = [(alpha * y) + dy] + beta *dx (the bracket is the operation). 
@@ -42,18 +43,6 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	dx gocu.Mem,      //  ''
 )
 ```
-
-Currently partially tested files
-
-cudaMemory.go  -Ive been using unified memory mostly.  
-cudnnActivation.go - Seems to work
-cudnnPooling.go -seems to work too
-cudnnSoftMax.go -work in my mnist.  
-cudnnOpTensor.go - I know the add works others should work too
-cudnnConvolution.go - Worked for the mnist test I had
-cudnnStatus.go -This works
-cudnnFilter.go -This works
-cudnnTensor.go -This works
 
 
 ## Setup
