@@ -85,6 +85,26 @@ func (t XtraKerns) BackwardLeakyfloat() string {
 	return "backwardleakyfloat"
 }
 
+//ForwardLeakyfloatalpha activation function Relu but negatives get a reduced value result = alpha * activationfunc()
+func (t XtraKerns) ForwardLeakyfloatalpha() string {
+	return "forwardleakyfloatalpha"
+}
+
+//BackwardLeakyfloatalpha activation function Relu but negatives get a reduced value and function gets the ----- result = alpha * activationfunc()
+func (t XtraKerns) BackwardLeakyfloatalpha() string {
+	return "backwardleakyfloatalpha"
+}
+
+//ForwardLeakyfloatalphabeta activation function Relu but negatives get a reduced value and function gets the ----- result = alpha * currentresult + beta * previousresult
+func (t XtraKerns) ForwardLeakyfloatalphabeta() string {
+	return "forwardleakyfloatalphabeta"
+}
+
+//BackwardLeakyfloatalphabeta activation function Relu but negatives get a reduced value and function gets the ----- result = alpha * currentresult + beta * previousresult
+func (t XtraKerns) BackwardLeakyfloatalphabeta() string {
+	return "backwardleakyfloatalphabeta"
+}
+
 //AdaDelta ..
 func (t XtraKerns) AdaDelta() string {
 	return "adadeltafloat"

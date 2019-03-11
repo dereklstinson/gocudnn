@@ -83,6 +83,13 @@ type XActivationD struct {
 	coef      float32
 	propnan   int32
 	istrained bool
+	specials  *leakyspecials
+}
+type leakyspecials struct {
+	alphafwd     *cuda.Kernel
+	alphabwd     *cuda.Kernel
+	alphabetafwd *cuda.Kernel
+	alphabetabwd *cuda.Kernel
 }
 
 //NewXActivationDescriptor - Creates a descriptor for the xtra functions made for gocudnn.
@@ -145,12 +152,32 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 		if err != nil {
 			return nil, err
 		}
+		var ktf kernels.XtraKerns
+		specials := new(leakyspecials)
+
+		specials.alphabwd, err = cuda.MakeKernel(ktf.BackwardLeakyfloatalpha(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		specials.alphafwd, err = cuda.MakeKernel(ktf.ForwardLeakyfloatalpha(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		specials.alphabetabwd, err = cuda.MakeKernel(ktf.BackwardLeakyfloatalphabeta(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		specials.alphabetafwd, err = cuda.MakeKernel(ktf.ForwardLeakyfloatalphabeta(), h.mod)
+		if err != nil {
+			return nil, err
+		}
 		return &XActivationD{
-			fwdmode: fwdmode,
-			bwdmode: bwdmode,
-			coef:    float32(coef),
-			amode:   amode,
-			propnan: nan,
+			fwdmode:  fwdmode,
+			bwdmode:  bwdmode,
+			coef:     float32(coef),
+			amode:    amode,
+			propnan:  nan,
+			specials: specials,
 		}, nil
 	}
 	return nil, errors.New("Unsupported Activation")
@@ -179,8 +206,15 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, 
 		}
 		length := gocudnn.FindLength(sib, dtype)
 		config := h.LaunchConfig(int32(length))
-
-		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef), xA.propnan) //, xA.propnan)
+		if alpha != 1 && beta != 0 {
+			a := float32(alpha)
+			b := float32(beta)
+			return xA.specials.alphabetafwd.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef), a, b)
+		} else if alpha != 1 && beta == 0 {
+			a := float32(alpha)
+			return xA.specials.alphafwd.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef), a)
+		}
+		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef)) //, xA.propnan)
 	case XActivationModeFlag{}.Threshhold():
 
 		length := findvolume(dims[1:])
@@ -192,8 +226,8 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, 
 		if err != nil {
 			return err
 		}
-
-		return nil
+		return errors.New("Unsupported XActivationMode")
+		//return nil
 	case XActivationModeFlag{}.Prelu():
 
 		length := findvolume(dims[1:])
@@ -205,8 +239,8 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, 
 		if err != nil {
 			return err
 		}
-
-		return nil
+		return errors.New("Unsupported XActivationMode")
+		//return nil
 	}
 
 	return errors.New("Unsupported XActivationMode")
@@ -221,7 +255,7 @@ func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
-		return xA.backpropropleaky(h, xD, x, dxD, dx, dyD, dy)
+		return xA.backpropropleaky(h, xD, x, dxD, dx, dyD, dy, alpha, beta)
 	case XActivationModeFlag{}.Threshhold():
 		return xA.threshback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs, thresh, coefs1, dcoefs1)
 	case XActivationModeFlag{}.Prelu():
@@ -253,7 +287,7 @@ func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dx
 	return nil
 
 }
-func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem) error {
+func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, alpha, beta float64) error {
 	dtype, _, _, err := xD.GetDescrptor()
 	if err != nil {
 		return err
@@ -271,7 +305,15 @@ func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.
 	config := h.LaunchConfig(int32(length))
 	//	fmt.Println("alpha beta coef length", alpha, beta, float32(xA.coef))
 	//	fmt.Println("Config:", config)
-	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef), xA.propnan) //, xA.propnan)
+	if alpha != 1 && beta != 0 {
+		a := float32(alpha)
+		b := float32(beta)
+		return xA.specials.alphabetabwd.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef), a, b)
+	} else if alpha != 1 && beta == 0 {
+		a := float32(alpha)
+		return xA.specials.alphabwd.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef), a)
+	}
+	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef)) //, xA.propnan)
 }
 func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem) error {
 	dtype, dims, _, err := xD.GetDescrptor()

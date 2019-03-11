@@ -646,6 +646,7 @@ extern "C" __global__ void ThreshBackward(const int XThreads,
             }
     }
 }
+
 //forwardPrelu does the forward Prelu
 extern "C" __global__ void PreluForward(const int XThreads,
                                         const int batchsize,
@@ -700,11 +701,104 @@ extern "C" __global__ void PreluBackward(const int XThreads,
     }
 }
 
-extern "C" __global__ void forwardleakyfloat(const int length,
+/*
+Leaky functions
+*/
+
+extern "C" __global__ void forwardleakyfloatalphabeta(const int length,
                                              const float *x,
                                              float *y,
                                              const float coef,
-                                             const int PropNan)
+                                             const float alpha,
+                                              const float beta)
+{
+    const float alphaco = alpha*coef;
+    CUDA_GRID_LOOP_X(i, length)
+    {
+          float previous = beta*y[i];
+        if (x[i] > 0.0)
+        {
+            y[i] = previous + (alpha *x[i]) ;
+        }
+        else
+        {
+            y[i] = previous + (x[i] * alphaco);
+        }
+    }
+}
+extern "C" __global__ void backwardleakyfloatalphabeta(const int length,
+                                              const float *x,
+                                              float *dx,
+                                              const float *dy,
+                                              const float coef,
+                                                const float alpha,
+                                              const float beta)
+{
+  const float alphaco = alpha*coef;
+    CUDA_GRID_LOOP_X(i, length)
+    {
+         float previous = beta*dx[i];
+        if (x[i] > 0.0)
+        {
+
+            dx[i] =previous + (dy[i]*alpha);
+        }
+        else
+        {
+
+            dx[i] = previous +(dy[i] * alphaco);
+        }
+    }
+}
+
+extern "C" __global__ void forwardleakyfloatalpha(const int length,
+                                             const float *x,
+                                             float *y,
+                                             const float coef,
+                                             const float alpha)
+{
+    const float alphaco = alpha*coef;
+    CUDA_GRID_LOOP_X(i, length)
+    {
+        if (x[i] > 0.0)
+        {
+            y[i] = alpha *x[i];
+        }
+        else
+        {
+            y[i] = x[i] * alphaco;
+        }
+    }
+}
+extern "C" __global__ void backwardleakyfloatalpha(const int length,
+                                              const float *x,
+                                              float *dx,
+                                              const float *dy,
+                                              const float coef,
+                                              const float alpha)
+{
+  const float alphaco = alpha*coef;
+    CUDA_GRID_LOOP_X(i, length)
+    {
+
+        if (x[i] > 0.0)
+        {
+
+            dx[i] = dy[i]*alpha;
+        }
+        else
+        {
+
+            dx[i] = dy[i] * alphaco;
+        }
+    }
+}
+
+
+extern "C" __global__ void forwardleakyfloat(const int length,
+                                             const float *x,
+                                             float *y,
+                                             const float coef)
 {
     CUDA_GRID_LOOP_X(i, length)
     {
@@ -722,8 +816,7 @@ extern "C" __global__ void backwardleakyfloat(const int length,
                                               const float *x,
                                               float *dx,
                                               const float *dy,
-                                              const float coef,
-                                              const int PropNan)
+                                              const float coef)
 {
 
     CUDA_GRID_LOOP_X(i, length)
