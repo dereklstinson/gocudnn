@@ -39,65 +39,81 @@ func (n InterpolationMode) cint() C.int {
 	return (C.int)(n)
 }
 
-//UNDEFINED returns InterpolationMode(C.NPPI_INTER_UNDEFINED)
-func (n InterpolationMode) UNDEFINED() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_UNDEFINED)
+//UNDEFINED sets and returns InterpolationMode(C.NPPI_INTER_UNDEFINED)
+//
+func (n *InterpolationMode) UNDEFINED() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_UNDEFINED)
+	return *n
 }
 
 //NN returns InterpolationMode(C.NPPI_INTER_NN)
 /**<  Nearest neighbor filtering. */
-func (n InterpolationMode) NN() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_NN)
+func (n *InterpolationMode) NN() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_NN)
+	return *n
 }
 
-//LINEAR returns InterpolationMode(C.NPPI_INTER_LINEAR)
+//LINEAR sets and returns InterpolationMode(C.NPPI_INTER_LINEAR)
 /**<  Linear interpolation. */
-func (n InterpolationMode) LINEAR() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_LINEAR)
+func (n *InterpolationMode) LINEAR() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_LINEAR)
+	return *n
 }
 
-//CUBIC returns InterpolationMode(C.NPPI_INTER_CUBIC)
+//CUBIC sets and returns InterpolationMode(C.NPPI_INTER_CUBIC)
 /**<  Cubic interpolation. */
-func (n InterpolationMode) CUBIC() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_CUBIC)
+func (n *InterpolationMode) CUBIC() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_CUBIC)
+	return *n
 }
 
-//BSPLINE returns InterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
+//BSPLINE sets and returns InterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
 /**<  Two-parameter cubic filter (B=1, C=0) */
-func (n InterpolationMode) BSPLINE() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
+func (n *InterpolationMode) BSPLINE() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_CUBIC2P_BSPLINE)
+	return *n
 }
 
-//CATMULLROM returns InterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
+//CATMULLROM sets and returns InterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
 /**<  Two-parameter cubic filter (B=0, C=1/2) */
-func (n InterpolationMode) CATMULLROM() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
+func (n *InterpolationMode) CATMULLROM() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_CUBIC2P_CATMULLROM)
+	return *n
 }
 
-//B05C03 returns InterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
+//B05C03 sets and returns InterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
 /**<  Two-parameter cubic filter (B=1/2, C=3/10) */
-func (n InterpolationMode) B05C03() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
+func (n *InterpolationMode) B05C03() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_CUBIC2P_B05C03)
+	return *n
 }
 
-//SUPER returns InterpolationMode(C.NPPI_INTER_SUPER)
+//SUPER sets and returns InterpolationMode(C.NPPI_INTER_SUPER)
 /**<  Super sampling. */
-func (n InterpolationMode) SUPER() InterpolationMode { return InterpolationMode(C.NPPI_INTER_SUPER) }
-
-//LANCZOS returns InterpolationMode(C.NPPI_INTER_LANCZOS)
-/**<  Lanczos filtering. */
-func (n InterpolationMode) LANCZOS() InterpolationMode { return InterpolationMode(C.NPPI_INTER_LANCZOS) }
-
-//LANCZ0S3ADVANCED returns InterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
-/**<  Generic Lanczos filtering with order 3. */
-func (n InterpolationMode) LANCZ0S3ADVANCED() InterpolationMode {
-	return InterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
+func (n *InterpolationMode) SUPER() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_SUPER)
+	return *n
 }
 
-//SMOOTHEDGE returns InterpolationMode(C.NPPI_SMOOTH_EDGE)
+//LANCZOS sets and returns InterpolationMode(C.NPPI_INTER_LANCZOS)
+/**<  Lanczos filtering. */
+func (n *InterpolationMode) LANCZOS() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_LANCZOS)
+	return *n
+}
+
+//LANCZ0S3ADVANCED sets and returns InterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
+/**<  Generic Lanczos filtering with order 3. */
+func (n *InterpolationMode) LANCZ0S3ADVANCED() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_INTER_LANCZOS3_ADVANCED)
+	return *n
+}
+
+//SMOOTHEDGE sets and returns InterpolationMode(C.NPPI_SMOOTH_EDGE)
 /**<  Smooth edge filtering. */
-func (n InterpolationMode) SMOOTHEDGE() InterpolationMode {
-	return InterpolationMode(C.NPPI_SMOOTH_EDGE)
+func (n *InterpolationMode) SMOOTHEDGE() InterpolationMode {
+	*n = InterpolationMode(C.NPPI_SMOOTH_EDGE)
+	return *n
 }
 
 //BayerGridPosition is used as flags. Contains methods for different flags
@@ -105,55 +121,67 @@ type BayerGridPosition C.NppiBayerGridPosition
 
 func (b BayerGridPosition) c() C.NppiBayerGridPosition { return C.NppiBayerGridPosition(b) }
 
-//BGGR returns BayerGridPosition(C.NPPI_BAYER_BGGR)
-func (b BayerGridPosition) BGGR() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_BGGR) }
+//BGGR sets and returns BayerGridPosition(C.NPPI_BAYER_BGGR)
+func (b *BayerGridPosition) BGGR() BayerGridPosition {
+	*b = BayerGridPosition(C.NPPI_BAYER_BGGR)
+	return *b
+}
 
-//RGGB returns BayerGridPosition(NPPI_BAYER_RGGB)
-func (b BayerGridPosition) RGGB() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_RGGB) }
+//RGGB sets and returns BayerGridPosition(NPPI_BAYER_RGGB)
+func (b *BayerGridPosition) RGGB() BayerGridPosition {
+	*b = BayerGridPosition(C.NPPI_BAYER_RGGB)
+	return *b
+}
 
-//GRBG 	returns BayerGridPosition(C.NPPI_BAYER_GRBG)
-func (b BayerGridPosition) GRBG() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_GRBG) }
+//GRBG sets and returns BayerGridPosition(C.NPPI_BAYER_GRBG)
+func (b *BayerGridPosition) GRBG() BayerGridPosition {
+	*b = BayerGridPosition(C.NPPI_BAYER_GRBG)
+	return *b
+}
 
-//GBRG 	returns BayerGridPosition(NPPI_BAYER_GBRG)
-func (b BayerGridPosition) GBRG() BayerGridPosition { return BayerGridPosition(C.NPPI_BAYER_GBRG) }
+//GBRG sets and returns BayerGridPosition(NPPI_BAYER_GBRG)
+func (b *BayerGridPosition) GBRG() BayerGridPosition {
+	*b = BayerGridPosition(C.NPPI_BAYER_GBRG)
+	return *b
+}
 
 //MaskSize has methods that are flags that are Fixed filter-kernel sizes.
 type MaskSize C.NppiMaskSize
 
 func (m MaskSize) c() C.NppiMaskSize { return C.NppiMaskSize(m) }
 
-//Size1x3 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size1x3() MaskSize { return MaskSize(C.NPP_MASK_SIZE_1_X_3) }
+//Size1x3 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size1x3() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_1_X_3); return *m }
 
-//Size1x5 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size1x5() MaskSize { return MaskSize(C.NPP_MASK_SIZE_1_X_5) }
+//Size1x5 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size1x5() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_1_X_5); return *m }
 
-//Size3x1 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size3x1() MaskSize { return MaskSize(C.NPP_MASK_SIZE_3_X_1) }
+//Size3x1 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size3x1() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_3_X_1); return *m }
 
-//Size5x1 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size5x1() MaskSize { return MaskSize(C.NPP_MASK_SIZE_5_X_1) }
+//Size5x1 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size5x1() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_5_X_1); return *m }
 
-//Size3x3 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size3x3() MaskSize { return MaskSize(C.NPP_MASK_SIZE_3_X_3) }
+//Size3x3 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size3x3() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_3_X_3); return *m }
 
-//Size5x5 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size5x5() MaskSize { return MaskSize(C.NPP_MASK_SIZE_5_X_5) }
+//Size5x5 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size5x5() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_5_X_5); return *m }
 
-//Size7x7 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size7x7() MaskSize { return MaskSize(C.NPP_MASK_SIZE_7_X_7) }
+//Size7x7 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size7x7() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_7_X_7); return *m }
 
-//Size9x9 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size9x9() MaskSize { return MaskSize(C.NPP_MASK_SIZE_9_X_9) }
+//Size9x9 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size9x9() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_9_X_9); return *m }
 
-//Size11x11 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size11x11() MaskSize { return MaskSize(C.NPP_MASK_SIZE_11_X_11) }
+//Size11x11 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size11x11() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_11_X_11); return *m }
 
-//Size13x13 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size13x13() MaskSize { return MaskSize(C.NPP_MASK_SIZE_13_X_13) }
+//Size13x13 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size13x13() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_13_X_13); return *m }
 
-//Size15x15 returns the NPP flag wrapped in MaskSize
-func (m MaskSize) Size15x15() MaskSize { return MaskSize(C.NPP_MASK_SIZE_15_X_15) }
+//Size15x15 sets and returns the NPP flag wrapped in MaskSize
+func (m *MaskSize) Size15x15() MaskSize { *m = MaskSize(C.NPP_MASK_SIZE_15_X_15); return *m }
 
 /**
  * Differential Filter types
@@ -164,12 +192,16 @@ type DifferentialKernel C.NppiDifferentialKernel
 
 func (d DifferentialKernel) c() C.NppiDifferentialKernel { return C.NppiDifferentialKernel(d) }
 
-//SOBEL returns  DifferentialKernel(C.NPP_FILTER_SOBEL) flag
-func (d DifferentialKernel) SOBEL() DifferentialKernel { return DifferentialKernel(C.NPP_FILTER_SOBEL) }
+//SOBEL sets and returns  DifferentialKernel(C.NPP_FILTER_SOBEL) flag
+func (d *DifferentialKernel) SOBEL() DifferentialKernel {
+	*d = DifferentialKernel(C.NPP_FILTER_SOBEL)
+	return *d
+}
 
-//SCHARR returns DifferentialKernel(C.NPP_FILTER_SCHARR) flag
-func (d DifferentialKernel) SCHARR() DifferentialKernel {
-	return DifferentialKernel(C.NPP_FILTER_SCHARR)
+//SCHARR sets and returns DifferentialKernel(C.NPP_FILTER_SCHARR) flag
+func (d *DifferentialKernel) SCHARR() DifferentialKernel {
+	*d = DifferentialKernel(C.NPP_FILTER_SCHARR)
+	return *d
 }
 
 /*
@@ -185,9 +217,15 @@ func (n *Float32) cptr() *C.Npp32f {
 	return (*C.Npp32f)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Float32) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Float32) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Float32) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Float32) c() C.Npp32f {
 	return C.Npp32f(n)
@@ -209,11 +247,16 @@ func (n *Float64) cptr() *C.Npp64f {
 	return (*C.Npp64f)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Float64) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Float64) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Float64) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
+}
 func (n Float64) c() C.Npp64f {
 	return C.Npp64f(n)
 }
@@ -230,9 +273,15 @@ func (n *Uint8) cptr() *C.Npp8u {
 	return (*C.Npp8u)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Uint8) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Uint8) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Uint8) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Uint8) c() C.Npp8u {
 	return C.Npp8u(n)
@@ -251,9 +300,15 @@ func (n *Int8) cptr() *C.Npp8s {
 	return (*C.Npp8s)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Int8) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Int8) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Int8) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Int8) c() C.Npp8s {
 	return C.Npp8s(n)
@@ -272,11 +327,16 @@ func (n *Uint16) cptr() *C.Npp16u {
 	return (*C.Npp16u)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Uint16) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Uint16) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Uint16) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
+}
 func (n Uint16) c() C.Npp16u {
 	return C.Npp16u(n)
 }
@@ -294,9 +354,15 @@ func (n *Int16) cptr() *C.Npp16s {
 	return (*C.Npp16s)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Int16) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Int16) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Int16) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Int16) c() C.Npp16s {
 	return C.Npp16s(n)
@@ -315,9 +381,15 @@ func (n *Uint32) cptr() *C.Npp32u {
 	return (*C.Npp32u)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Uint32) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Uint32) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Uint32) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Uint32) c() C.Npp32u {
 	return C.Npp32u(n)
@@ -336,9 +408,15 @@ func (n *Int32) cptr() *C.Npp32s {
 	return (*C.Npp32s)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Int32) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Int32) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Int32) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Int32) c() C.Npp32s {
 	return C.Npp32s(n)
@@ -357,9 +435,15 @@ func (n *Uint64) cptr() *C.Npp64u {
 	return (*C.Npp64u)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Uint64) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Uint64) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Uint64) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Uint64) c() C.Npp64u {
 	return C.Npp64u(n)
@@ -378,9 +462,15 @@ func (n *Int64) cptr() *C.Npp64s {
 	return (*C.Npp64s)(n)
 }
 
-//Unsafe returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Int64) Unsafe() unsafe.Pointer {
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Int64) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Int64) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
 }
 func (n Int64) c() C.Npp64s {
 	return C.Npp64s(n)
@@ -738,19 +828,22 @@ typedef struct
 //Axis enums NpiiAxis
 type Axis C.NppiAxis
 
-//Horizontal chooses the Horizontal Axis
-func (n Axis) Horizontal() Axis {
-	return Axis(C.NPP_HORIZONTAL_AXIS)
+//Horizontal sets and returns  Axis(C.NPP_HORIZONTAL_AXIS)
+func (n *Axis) Horizontal() Axis {
+	*n = Axis(C.NPP_HORIZONTAL_AXIS)
+	return *n
 }
 
-//Vertical chooses the verticle Axis
-func (n Axis) Vertical() Axis {
-	return Axis(C.NPP_VERTICAL_AXIS)
+//Vertical sets and returns  Axis(C.NPP_VERTICAL_AXIS)
+func (n *Axis) Vertical() Axis {
+	*n = Axis(C.NPP_VERTICAL_AXIS)
+	return *n
 }
 
-//Both chooses both
-func (n Axis) Both() Axis {
-	return Axis(C.NPP_BOTH_AXIS)
+//Both sets and returns  Axis(C.NPP_BOTH_AXIS)
+func (n *Axis) Both() Axis {
+	*n = Axis(C.NPP_BOTH_AXIS)
+	return *n
 }
 func (n Axis) c() C.NppiAxis {
 	return (C.NppiAxis)(n)
@@ -759,30 +852,20 @@ func (n Axis) c() C.NppiAxis {
 //CmpOp is a flag type used for comparisons
 type CmpOp C.NppCmpOp
 
-//Less is <
-func (n CmpOp) Less() CmpOp {
-	return CmpOp(C.NPP_CMP_LESS)
-}
+//Less is < sets and returns CmpOp(C.NPP_CMP_LESS)
+func (n *CmpOp) Less() CmpOp { *n = CmpOp(C.NPP_CMP_LESS); return *n }
 
-//LessEq is <=
-func (n CmpOp) LessEq() CmpOp {
-	return CmpOp(C.NPP_CMP_LESS_EQ)
-}
+//LessEq is <= sets and returns CmpOp(C.NPP_CMP_LESS_EQ)
+func (n *CmpOp) LessEq() CmpOp { *n = CmpOp(C.NPP_CMP_LESS_EQ); return *n }
 
-//Eq is =
-func (n CmpOp) Eq() CmpOp {
-	return CmpOp(C.NPP_CMP_EQ)
-}
+//Eq is = sets and returns CmpOp(C.NPP_CMP_EQ)
+func (n *CmpOp) Eq() CmpOp { *n = CmpOp(C.NPP_CMP_EQ); return *n }
 
-//GreaterEq is >=
-func (n CmpOp) GreaterEq() CmpOp {
-	return CmpOp(C.NPP_CMP_GREATER_EQ)
-}
+//GreaterEq is >= sets and returns CmpOp(C.NPP_CMP_GREATER_EQ)
+func (n *CmpOp) GreaterEq() CmpOp { *n = CmpOp(C.NPP_CMP_GREATER_EQ); return *n }
 
-//Greater is >
-func (n CmpOp) Greater() CmpOp {
-	return CmpOp(C.NPP_CMP_GREATER)
-}
+//Greater is > sets and returns CmpOp(C.NPP_CMP_GREATER)
+func (n *CmpOp) Greater() CmpOp { *n = CmpOp(C.NPP_CMP_GREATER); return *n }
 
 /**
 NppRoundMode go wrapper for roundimg modes description from original header
@@ -803,9 +886,8 @@ NppRoundMode go wrapper for roundimg modes description from original header
 type RoundMode C.NppRoundMode
 
 //RndNear will round to the nearest number
-func (r RoundMode) RndNear() RoundMode {
-	return RoundMode(C.NPP_RND_NEAR)
-}
+//method sets and returns RoundMode(C.NPP_RND_NEAR)
+func (r *RoundMode) RndNear() RoundMode { *r = RoundMode(C.NPP_RND_NEAR); return *r }
 
 /*RndFinancial -From Original Header
  * Round according to financial rule.
@@ -816,9 +898,8 @@ func (r RoundMode) RndNear() RoundMode {
  * - roundFinancial(0.5)  = 1
  * - roundFinancial(-1.5) = -2
  */
-func (r RoundMode) RndFinancial() RoundMode {
-	return RoundMode(C.NPP_RND_FINANCIAL)
-}
+//method sets and returns RoundMode(C.NPP_RND_FINANCIAL)
+func (r *RoundMode) RndFinancial() RoundMode { *r = RoundMode(C.NPP_RND_FINANCIAL); return *r }
 
 /*RndZero - From Original Header
  * Round towards zero (truncation).
@@ -828,9 +909,8 @@ func (r RoundMode) RndFinancial() RoundMode {
  * - roundZero(1.9) = 1
  * - roundZero(-2.5) = -2
  */
-func (r RoundMode) RndZero() RoundMode {
-	return RoundMode(C.NPP_RND_ZERO)
-}
+//method sets and returns RoundMode(C.NPP_RND_ZERO)
+func (r *RoundMode) RndZero() RoundMode { *r = RoundMode(C.NPP_RND_ZERO); return *r }
 
 /*
  * Other rounding modes supported by IEEE-754 (2008) floating-point standard:
@@ -843,47 +923,44 @@ func (r RoundMode) RndZero() RoundMode {
 //BorderType is a flag type used to set the type of boarder.  Flags are passed through methods
 type BorderType C.NppiBorderType
 
-//Undefined returns BorderType(C.NPP_BORDER_UNDEFINED)
-func (b BorderType) Undefined() BorderType {
-	return BorderType(C.NPP_BORDER_UNDEFINED)
+func (b BorderType) c() C.NppiBorderType {
+	return C.NppiBorderType(b)
 }
 
-//None returns BorderType(C.NPP_BORDER_NONE)
-func (b BorderType) None() BorderType {
-	return BorderType(C.NPP_BORDER_NONE)
-}
+//Undefined sets and returns BorderType(C.NPP_BORDER_UNDEFINED)
+func (b *BorderType) Undefined() BorderType { *b = BorderType(C.NPP_BORDER_UNDEFINED); return *b }
 
-//Constant returns BorderType(C.NPP_BORDER_CONSTANT)
-func (b BorderType) Constant() BorderType {
-	return BorderType(C.NPP_BORDER_CONSTANT)
-}
+//None sets and returns BorderType(C.NPP_BORDER_NONE)
+func (b *BorderType) None() BorderType { *b = BorderType(C.NPP_BORDER_NONE); return *b }
 
-//Replicate returns  BorderType(C.NPP_BORDER_REPLICATE)
-func (b BorderType) Replicate() BorderType {
-	return BorderType(C.NPP_BORDER_REPLICATE)
-}
+//Constant sets and returns BorderType(C.NPP_BORDER_CONSTANT)
+func (b *BorderType) Constant() BorderType { *b = BorderType(C.NPP_BORDER_CONSTANT); return *b }
 
-//Wrap returns BorderType(C.NPP_BORDER_WRAP)
-func (b BorderType) Wrap() BorderType {
-	return BorderType(C.NPP_BORDER_WRAP)
-}
+//Replicate sets and returns  BorderType(C.NPP_BORDER_REPLICATE)
+func (b *BorderType) Replicate() BorderType { *b = BorderType(C.NPP_BORDER_REPLICATE); return *b }
+
+//Wrap sets and returns BorderType(C.NPP_BORDER_WRAP)
+func (b *BorderType) Wrap() BorderType { *b = BorderType(C.NPP_BORDER_WRAP); return *b }
 
 //Mirror returns BorderType(C.NPP_BORDER_MIRROR)
-func (b BorderType) Mirror() BorderType {
-	return BorderType(C.NPP_BORDER_MIRROR)
-}
+func (b *BorderType) Mirror() BorderType { *b = BorderType(C.NPP_BORDER_MIRROR); return *b }
 
 //HintAlgorithm are flags
 type HintAlgorithm C.NppHintAlgorithm
 
-//None returns HintAlgorithm(C.NPP_ALG_HINT_NONE)
-func (h HintAlgorithm) None() HintAlgorithm { return HintAlgorithm(C.NPP_ALG_HINT_NONE) }
+func (h HintAlgorithm) c() C.NppHintAlgorithm { return C.NppHintAlgorithm(h) }
 
-//Fast returns HintAlgorithm(C.NPP_ALG_HINT_FAST)
-func (h HintAlgorithm) Fast() HintAlgorithm { return HintAlgorithm(C.NPP_ALG_HINT_FAST) }
+//None sets and returns HintAlgorithm(C.NPP_ALG_HINT_NONE)
+func (h *HintAlgorithm) None() HintAlgorithm { *h = HintAlgorithm(C.NPP_ALG_HINT_NONE); return *h }
 
-//Accurate returns HintAlgorithm(C.NPP_ALG_HINT_ACCURATE)
-func (h HintAlgorithm) Accurate() HintAlgorithm { return HintAlgorithm(C.NPP_ALG_HINT_ACCURATE) }
+//Fast sets and returns HintAlgorithm(C.NPP_ALG_HINT_FAST)
+func (h *HintAlgorithm) Fast() HintAlgorithm { *h = HintAlgorithm(C.NPP_ALG_HINT_FAST); return *h }
+
+//Accurate sets and returns HintAlgorithm(C.NPP_ALG_HINT_ACCURATE)
+func (h *HintAlgorithm) Accurate() HintAlgorithm {
+	*h = HintAlgorithm(C.NPP_ALG_HINT_ACCURATE)
+	return *h
+}
 
 /*
  * Alpha composition controls.
@@ -892,44 +969,46 @@ func (h HintAlgorithm) Accurate() HintAlgorithm { return HintAlgorithm(C.NPP_ALG
 //AlphaOp contains methods used to pass flags for composition controlls
 type AlphaOp C.NppiAlphaOp
 
-//AlphaOver returns AlphaOp(C.NPPI_OP_ALPHA_OVER)}
-func (a AlphaOp) AlphaOver() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OVER) }
+func (a AlphaOp) c() C.NppiAlphaOp { return C.NppiAlphaOp(a) }
 
-//AlphaIn returns AlphaOp(C.NPPI_OP_ALPHA_IN)}
-func (a AlphaOp) AlphaIn() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_IN) }
+//AlphaOver sets and returns AlphaOp(C.NPPI_OP_ALPHA_OVER)}
+func (a *AlphaOp) AlphaOver() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_OVER); return *a }
 
-//AlphaOut returns AlphaOp(C.NPPI_OP_ALPHA_OUT)}
-func (a AlphaOp) AlphaOut() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OUT) }
+//AlphaIn sets and returns AlphaOp(C.NPPI_OP_ALPHA_IN)}
+func (a *AlphaOp) AlphaIn() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_IN); return *a }
 
-//AlphaAtop returns AlphaOp(C.NPPI_OP_ALPHA_ATOP)}
-func (a AlphaOp) AlphaAtop() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_ATOP) }
+//AlphaOut sets and returns AlphaOp(C.NPPI_OP_ALPHA_OUT)}
+func (a *AlphaOp) AlphaOut() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_OUT); return *a }
 
-//AlphaXOR returns AlphaOp(C.NPPI_OP_ALPHA_XOR)}
-func (a AlphaOp) AlphaXOR() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_XOR) }
+//AlphaAtop sets and returns AlphaOp(C.NPPI_OP_ALPHA_ATOP)}
+func (a *AlphaOp) AlphaAtop() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_ATOP); return *a }
 
-//AlphaPlus returns AlphaOp(C.NPPI_OP_ALPHA_PLUS)}
-func (a AlphaOp) AlphaPlus() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_PLUS) }
+//AlphaXOR sets and returns AlphaOp(C.NPPI_OP_ALPHA_XOR)}
+func (a *AlphaOp) AlphaXOR() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_XOR); return *a }
 
-//AlphaOverPremul returns AlphaOp(C.NPPI_OP_ALPHA_OVER_PREMUL)}
-func (a AlphaOp) AlphaOverPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OVER_PREMUL) }
+//AlphaPlus sets and returns AlphaOp(C.NPPI_OP_ALPHA_PLUS)}
+func (a *AlphaOp) AlphaPlus() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_PLUS); return *a }
 
-//AlphaInPremul returns AlphaOp(C.NPPI_OP_ALPHA_IN_PREMUL)}
-func (a AlphaOp) AlphaInPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_IN_PREMUL) }
+//AlphaOverPremul sets and returns AlphaOp(C.NPPI_OP_ALPHA_OVER_PREMUL)}
+func (a *AlphaOp) AlphaOverPremul() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_OVER_PREMUL); return *a }
 
-//AlphaOutPremul returns AlphaOp(C.NPPI_OP_ALPHA_OUT_PREMUL)}
-func (a AlphaOp) AlphaOutPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_OUT_PREMUL) }
+//AlphaInPremul sets and returns AlphaOp(C.NPPI_OP_ALPHA_IN_PREMUL)}
+func (a *AlphaOp) AlphaInPremul() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_IN_PREMUL); return *a }
 
-//AlphaAtopPremul returns AlphaOp(C.NPPI_OP_ALPHA_ATOP_PREMUL)}
-func (a AlphaOp) AlphaAtopPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_ATOP_PREMUL) }
+//AlphaOutPremul sets and returns AlphaOp(C.NPPI_OP_ALPHA_OUT_PREMUL)}
+func (a *AlphaOp) AlphaOutPremul() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_OUT_PREMUL); return *a }
 
-//AlphaXORPremul returns AlphaOp(C.NPPI_OP_ALPHA_XOR_PREMUL)}
-func (a AlphaOp) AlphaXORPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_XOR_PREMUL) }
+//AlphaAtopPremul sets and returns AlphaOp(C.NPPI_OP_ALPHA_ATOP_PREMUL)}
+func (a *AlphaOp) AlphaAtopPremul() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_ATOP_PREMUL); return *a }
 
-//AlphaPlusPremul returns AlphaOp(C.NPPI_OP_ALPHA_PLUS_PREMUL)}
-func (a AlphaOp) AlphaPlusPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_PLUS_PREMUL) }
+//AlphaXORPremul sets and returns AlphaOp(C.NPPI_OP_ALPHA_XOR_PREMUL)}
+func (a *AlphaOp) AlphaXORPremul() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_XOR_PREMUL); return *a }
 
-//AlphaPremul returns AlphaOp(C.NPPI_OP_ALPHA_PREMUL)}
-func (a AlphaOp) AlphaPremul() AlphaOp { return AlphaOp(C.NPPI_OP_ALPHA_PREMUL) }
+//AlphaPlusPremul sets and returns AlphaOp(C.NPPI_OP_ALPHA_PLUS_PREMUL)}
+func (a *AlphaOp) AlphaPlusPremul() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_PLUS_PREMUL); return *a }
+
+//AlphaPremul sets and returns AlphaOp(C.NPPI_OP_ALPHA_PREMUL)}
+func (a *AlphaOp) AlphaPremul() AlphaOp { *a = AlphaOp(C.NPPI_OP_ALPHA_PREMUL); return *a }
 
 //HOGConfig type defines the configuration parameters for the HOG descriptor
 type HOGConfig C.NppiHOGConfig
@@ -1055,23 +1134,27 @@ typedef struct
 //ZCType is a type that holds flags through methods
 type ZCType C.NppsZCType
 
-//ZCR sign change
-func (z ZCType) ZCR() ZCType { return ZCType(C.nppZCR) }
+func (z ZCType) c() C.NppsZCType { return C.NppsZCType(z) }
 
-//ZCXor sign change XOR
-func (z ZCType) ZCXor() ZCType { return ZCType(C.nppZCXor) }
+//ZCR sets and returns sign change  -- returns and sets ZCType(C.nppZCR)
+func (z *ZCType) ZCR() ZCType { *z = ZCType(C.nppZCR); return *z }
 
-//ZCC sign change count_0
-func (z ZCType) ZCC() ZCType { return ZCType(C.nppZCC) }
+//ZCXor sets and returns sign change XOR  -- returns and sets ZCType(C.nppZCXor)
+func (z *ZCType) ZCXor() ZCType { *z = ZCType(C.nppZCXor); return *z }
+
+//ZCC sets and returns sign change count_0  -- returns and sets ZCType(C.nppZCC)
+func (z *ZCType) ZCC() ZCType { *z = ZCType(C.nppZCC); return *z }
 
 //HuffmanTableType is a type used for HuffmanTableType flags flags are passed by methods
 type HuffmanTableType C.NppiHuffmanTableType
 
-//DCTable - DC Table flag
-func (h HuffmanTableType) DCTable() HuffmanTableType { return HuffmanTableType(C.nppiDCTable) }
+func (h HuffmanTableType) c() C.NppiHuffmanTableType { return C.NppiHuffmanTableType(h) }
 
-//ACTable - AC Table flag
-func (h HuffmanTableType) ACTable() HuffmanTableType { return HuffmanTableType(C.nppiACTable) }
+//DCTable - DC Table flag -- returns and sets HuffmanTableType(C.nppiDCTable)
+func (h *HuffmanTableType) DCTable() HuffmanTableType { *h = HuffmanTableType(C.nppiDCTable); return *h }
+
+//ACTable - AC Table flag  -- returns and sets HuffmanTableType(C.nppiACTable)
+func (h *HuffmanTableType) ACTable() HuffmanTableType { *h = HuffmanTableType(C.nppiACTable); return *h }
 
 //Norm is used for norm flags where needed Norm will return flags through methods
 type Norm C.NppiNorm

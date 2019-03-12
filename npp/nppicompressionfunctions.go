@@ -218,7 +218,6 @@ func freeNPPIDCTstate(x *DCTState) error {
 }
 
 /*
-
 func NPPIDCTQuantFwd8x8LS_JPEG_8u16s_C1R_NEW( Npp8u  * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep,  Npp8u * pQuantizationTable, NppiSize oSizeROI, NppiDCTState* pState) error{
     return status(C.nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R_NEW()).ToError()
 }
@@ -294,12 +293,6 @@ func NPPIJpegDecodeJobCreateFinalize(NppiJpegDecodeJob * pJob) error{
 func NPPIDCTInv4x4_WebP_16s_C1R( Npp16s * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep, NppiSize oSizeROI) error{
     return status(C.nppiDCTInv4x4_WebP_16s_C1R()).ToError()
 }
-
-
 size_t NPPIJpegDecodeGetScanDeadzoneSize(void);
-
-
-size_t NPPIJpegDecodeGetDCTBufferSize(NppiSize oBlocks);
-
-
+size_t NPPIJpegDecodeGetDCTBufferSize(NppiSize oBlocks)
 */

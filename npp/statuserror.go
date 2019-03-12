@@ -207,8 +207,8 @@ func (g GpuComputeCapability) String() string {
 		return "NPP_CUDA_7_0"
 	case GpuComputeCapability(C.NPP_CUDA_7_2):
 		return "NPP_CUDA_7_2"
-	case GpuComputeCapability(C.NPP_CUDA_7_3):
-		return "NPP_CUDA_7_3"
+		//	case GpuComputeCapability(C.NPP_CUDA_7_3):
+		//		return "NPP_CUDA_7_3"
 	case GpuComputeCapability(C.NPP_CUDA_7_5):
 		return "NPP_CUDA_7_5"
 	}
