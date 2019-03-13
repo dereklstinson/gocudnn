@@ -11,8 +11,7 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-// Image is an Output descriptor.
-// Data that is written to planes depends on output forman
+//Image is of type C.nvjpegImage_t.
 type Image C.nvjpegImage_t
 
 //Get gets the underlying values of image
@@ -30,15 +29,7 @@ func (im *Image) c() C.nvjpegImage_t {
 	return (C.nvjpegImage_t)(*im)
 }
 
-/*
-typedef struct
-{
-    unsigned char * channel[NVJPEG_MAX_COMPONENT];
-    unsigned int    pitch[NVJPEG_MAX_COMPONENT];
-} nvjpegImage_t;
-*/
-
-// Handle - Opaque library handle identifier.
+//Handle - Opaque library handle identifier.
 type Handle struct {
 	h C.nvjpegHandle_t
 }
@@ -52,8 +43,10 @@ func nvjpegDestroy(h *Handle) error {
 	return nil
 }
 
-// CreateSimple creates an nvjpeg handle with default backend and default memory allocators.
-// INT/OUT    handle        : Codec instance, use for other calls
+/*CreateSimple creates an nvjpeg handle with default backend and default memory allocators.
+
+Returns    handle        : Codec instance, use for other calls
+*/
 func CreateSimple() (*Handle, error) {
 	h := new(Handle)
 	err := status(C.nvjpegCreateSimple(&h.h)).error()

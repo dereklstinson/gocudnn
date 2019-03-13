@@ -4,11 +4,12 @@ package nvjpeg
 #include <nvjpeg.h>
 */
 import "C"
-import "runtime"
 
 //if you want to create your own allocator feel free to write up the code
 //It uses callbacks and stuff. You will probably want ot read the documentation. It would be hard to do in go.
+//I am going to comment this out so it is not in the godoc.
 
+/*
 // CreateEx =  of nvjpeg handle with additional parameters. This handle is used for all consecutive nvjpeg calls
 // IN         backend       : Backend to use. Currently Default or Hybrid (which is the same at the moment) is supported.
 // IN         dev_allocator : Pointer to nvjpegDevAllocator. If NULL - use default cuda calls (cudaMalloc/cudaFree)
@@ -51,13 +52,8 @@ func (p PinnedAllocator) c() C.nvjpegPinnedAllocator_t {
 	return p.pa
 }
 
-/*
-typedef struct
-{
-    tDevMalloc dev_malloc;
-    tDevFree dev_free;
-} nvjpegDevAllocator_t;
-*/
+
+
 
 //Backend are flags that are used to set the implimentation.
 type Backend C.nvjpegBackend_t
@@ -88,3 +84,4 @@ func (b *Backend) GPUHybrid() Backend {
 	*b = Backend(C.NVJPEG_BACKEND_GPU_HYBRID)
 	return *b
 }
+*/

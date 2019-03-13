@@ -5,35 +5,25 @@ package nvjpeg
 */
 import "C"
 
-//LibraryPropertyType are flags for finding the library major, minor,patch
-type LibraryPropertyType C.libraryPropertyType
-
-func (l LibraryPropertyType) c() C.libraryPropertyType {
-	return C.libraryPropertyType(l)
-}
-
-//LibraryPropertyTypeFlag passes LibraryPropertyType flags through methods
-type LibraryPropertyTypeFlag struct {
-}
-
-//Major passes the Major flag
-func (l LibraryPropertyTypeFlag) Major() LibraryPropertyType {
-	return LibraryPropertyType(C.MAJOR_VERSION)
-}
-
-//Minor passes the minor flag
-func (l LibraryPropertyTypeFlag) Minor() LibraryPropertyType {
-	return LibraryPropertyType(C.MINOR_VERSION)
-}
-
-//Patch passes the patch flag
-func (l LibraryPropertyTypeFlag) Patch() LibraryPropertyType {
-	return LibraryPropertyType(C.PATCH_LEVEL)
-}
-
-// GetProperty returns library's property values, such as MAJOR_VERSION, MINOR_VERSION or PATCH_LEVEL
-func GetProperty(ltype LibraryPropertyType) (int, error) {
-	var x C.int
-	err := status(C.nvjpegGetProperty(ltype.c(), &x)).error()
-	return int(x), err
+// GetLibraryProperties returns library's property values. The major ,minor,and patch version
+func GetLibraryProperties() (major, minor, patch int, err error) {
+	var cmaj C.int
+	var cmin C.int
+	var cpat C.int
+	err = status(C.nvjpegGetProperty(C.MAJOR_VERSION, &cmaj)).error()
+	if err != nil {
+		return
+	}
+	err = status(C.nvjpegGetProperty(C.MINOR_VERSION, &cmin)).error()
+	if err != nil {
+		return
+	}
+	err = status(C.nvjpegGetProperty(C.PATCH_LEVEL, &cpat)).error()
+	if err != nil {
+		return
+	}
+	major = int(cmaj)
+	minor = int(cmin)
+	patch = int(cpat)
+	return major, minor, patch, nil
 }

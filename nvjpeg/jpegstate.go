@@ -36,55 +36,60 @@ func nvjpegJpegStateDestroy(j *JpegState) error {
 	return nil
 }
 
-// Decode does the nvjpegDecode
-// Decodes single image. Destination buffers should be large enough to be able to store
-// output of specified format. For each color plane sizes could be retrieved for image using nvjpegGetImageInfo()
-// and minimum required memory buffer for each plane is nPlaneHeight*nPlanePitch where nPlanePitch >= nPlaneWidth for
-// planar output formats and nPlanePitch >= nPlaneWidth*nOutputComponents for interleaved output format.
-//
-// IN/OUT     handle        : Library handle
-// INT/OUT    jpeg_handle   : Decoded jpeg image state handle
-// IN         data          : Pointer to the buffer containing the jpeg image to be decoded.
-// IN         length        : Length of the jpeg image buffer.
-// IN         output_format : Output data format. See nvjpegOutputFormat_t for description
-// IN/OUT     destination   : Pointer to structure with information about output buffers. See nvjpegImage_t description.
-// IN/OUT     stream        : CUDA stream where to submit all GPU work
-//
-// \return NVJPEG_STATUS_SUCCESS if successful
+/*Decode does the nvjpegDecode
+
+  Decodes single image. Destination buffers should be large enough to be able to store
+  output of specified format. For each color plane sizes could be retrieved for image using nvjpegGetImageInfo()
+  and minimum required memory buffer for each plane is nPlaneHeight*nPlanePitch where nPlanePitch >= nPlaneWidth for
+  planar output formats and nPlanePitch >= nPlaneWidth*nOutputComponents for interleaved output format.
+
+
+  IN/OUT     h             : Library handle
+
+  IN         data          : Pointer to the buffer containing the jpeg image to be decoded.
+
+  IN         fmt           : Output data format. See nvjpegOutputFormat_t for description
+
+  IN/OUT     dest	 	 : Pointer to structure with information about output buffers. See nvjpegImage_t description.
+
+  IN/OUT     s             : gocu.Streamer where to submit all GPU work
+
+*/
 func (j *JpegState) Decode(h *Handle, data []byte, frmt OutputFormat, dest *Image, s gocu.Streamer) error {
 	d := (*C.uchar)(&data[0])
 	length := len(data)
 	return status(C.nvjpegDecode(h.h, j.j, d, C.size_t(length), frmt.c(), dest.cptr(), stream(s))).error()
 }
 
-//Decode in Phases
+/*DecodePhase1 - CPU processing
 
-// Same functionality and parameters as for nvjpegDecodePlanar, but separated in steps:
-// 1) CPU processing
-// 2) Mixed processing that requires interaction of both GPU and CPU. Any previous call
-// to nvjpegDecodeGPU() with same handle should be finished before this call, i.e. cudaStreamSycnhronize() could be used
-// 3) GPU processing
-// Actual amount of work done in each separate step depends on the selected backend. But in any way all
-// of those functions must be called in this specific order. If one of the steps returns error - decode should be done from the beginning.
-
-//DecodePhaseOne - CPU processing
-func (j *JpegState) DecodePhaseOne(h *Handle, data []byte, frmt OutputFormat, s gocu.Streamer) error {
+If error is received restart at phase one
+*/
+func (j *JpegState) DecodePhase1(h *Handle, data []byte, frmt OutputFormat, s gocu.Streamer) error {
 	d := (*C.uchar)(&data[0])
 	length := len(data)
 	return status(C.nvjpegDecodePhaseOne(h.h, j.j, d, C.size_t(length), frmt.c(), stream(s))).error()
 }
 
-//DecodePhaseTwo -  Mixed processing that requires interaction of both GPU and CPU. Any previous call
-// to nvjpegDecodeGPU() with same handle should be finished before this call, i.e. cudaStreamSycnhronize() could be used
-func (j *JpegState) DecodePhaseTwo(h *Handle, s gocu.Streamer) error {
+/*DecodePhase2 -  Mixed processing that requires interaction of both GPU and CPU.
+
+Any previous call DecodeGPU() with same handle should be finished before this call, i.e Sync() using a gocu.Streamer.
+
+DecodePhase1 must be ran before DecodePhase2.
+
+If error is received restart at phase one.
+*/
+func (j *JpegState) DecodePhase2(h *Handle, s gocu.Streamer) error {
 	return status(C.nvjpegDecodePhaseTwo(h.h, j.j, stream(s))).error()
 }
 
-//DecodePhaseThree GPU processing
-// Actual amount of work done in each separate step depends on the selected backend. But in any way all
-// of those functions must be called in this specific order. If one of the steps
-// returns error - decode should be done from the beginning.
-func (j *JpegState) DecodePhaseThree(h *Handle, dest *Image, s gocu.Streamer) error {
+/*DecodePhase3 - GPU processing.
+
+DecodePhase2() must be ran before DecodePhase3().
+
+If error is received restart at phase one.
+*/
+func (j *JpegState) DecodePhase3(h *Handle, dest *Image, s gocu.Streamer) error {
 	return status(C.nvjpegDecodePhaseThree(h.h, j.j, dest.cptr(), stream(s))).error()
 }
 
@@ -92,32 +97,35 @@ func (j *JpegState) DecodePhaseThree(h *Handle, dest *Image, s gocu.Streamer) er
 /////////////// Batch decoding ///////////////
 //////////////////////////////////////////////
 
-// DecodeBatchedInitialize - Resets and initizlizes batch decoder for working on the batches of specified size
-// Should be called once for decoding bathes of this specific size, also use to reset failed batches
-// IN/OUT     handle          : Library handle
-// INT/OUT    jpeg_handle     : Decoded jpeg image state handle
-// IN         batch_size      : Size of the batch
-// IN         max_cpu_threads : Maximum number of CPU threads that will be processing this batch
-// IN         output_format   : Output data format. Will be the same for every image in batch
-//
-// \return NVJPEG_STATUS_SUCCESS if successful
+/*DecodeBatchedInitialize - Resets and initizlizes batch decoder for working on the batches of specified size
+Should be called once for decoding batches of this specific size, also use to reset failed batches
+
+IN/OUT     h             : Library handle
+
+IN         batchsize     : Size of the batch
+
+IN         maxCPUthreads : Maximum number of CPU threads that will be processing this batch
+
+IN         frmt          : Output data format. Will be the same for every image in batch
+*/
 func (j *JpegState) DecodeBatchedInitialize(h *Handle, batchsize, maxCPUthreads int, frmt OutputFormat) error {
 	return status(C.nvjpegDecodeBatchedInitialize(h.h, j.j, C.int(batchsize), C.int(maxCPUthreads), frmt.c())).error()
 }
 
-//DecodeBatched - Decodes batch of images. Output buffers should be large enough to be able to store
-// outputs of specified format, see single image decoding description for details. Call to
-// nvjpegDecodeBatchedInitialize() is required prior to this call, batch size is expected to be the same as
-// parameter to this batch initialization function.
-//
-// IN/OUT     handle        : Library handle
-// INT/OUT    jpeg_handle   : Decoded jpeg image state handle
-// IN         data          : Array of size batch_size of pointers to the input buffers containing the jpeg images to be decoded.
-// IN         lengths       : Array of size batch_size with lengths of the jpeg images' buffers in the batch.
-// IN/OUT     destinations  : Array of size batch_size with pointers to structure with information about output buffers,
-// IN/OUT     stream        : CUDA stream where to submit all GPU work
-//
-// \return NVJPEG_STATUS_SUCCESS if successful
+/*DecodeBatched - Decodes batch of images.
+Output buffers should be large enough to be able to store
+outputs of specified format, see single image decoding description for details. Call to
+nvjpegDecodeBatchedInitialize() is required prior to this call, batch size is expected to be the same as
+parameter to this batch initialization function.
+
+IN/OUT     h             : Library handle
+
+IN         data          : Slice of byte slices of input buffers containing the jpeg images to be decoded.
+
+IN/OUT     destinations  : Array of pointers to structure with information about output buffers. len(dest) == len(data)
+
+IN/OUT     s             : gocu.Streamer where to submit all GPU work
+*/
 func (j *JpegState) DecodeBatched(h *Handle, data [][]byte, dest []*Image, s gocu.Streamer) error {
 	x := make([]*C.uchar, len(data))
 	y := make([]C.size_t, len(data))
@@ -133,32 +141,28 @@ func (j *JpegState) DecodeBatched(h *Handle, data [][]byte, dest []*Image, s goc
 	return status(C.nvjpegDecodeBatched(h.h, j.j, &x[0], &y[0], z[0], stream(s))).error()
 }
 
-//Phased Decoding Batches.
-
-// Same functionality as nvjpegDecodePlanarBatched but done in separate consecutive steps:
-// 1) nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
-// This function is thread safe and could be called by multiple threads simultaneously, by providing
-// thread_idx (thread_idx should be less than max_cpu_threads from nvjpegDecodeBatchedInitialize())
-// 2) nvjpegDecodePlanarBatchedMixed. Any previous call to nvjpegDecodeBatchedGPU() should be done by this point
-// 3) nvjpegDecodePlanarBatchedGPU
-// Actual amount of work done in each separate step depends on the selected backend. But in any way all
-// of those functions must be called in this specific order. If one of the steps returns error -
-// reset batch with nvjpegDecodeBatchedInitialize().
-
-//DecodeBatchedPhaseOne - nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
-// This function is thread safe and could be called by multiple threads simultaneously, by providing
-// thread_idx (thread_idx should be less than max_cpu_threads from nvjpegDecodeBatchedInitialize())
+/*DecodeBatchedPhaseOne - nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
+This function is thread safe and could be called by multiple threads simultaneously, by providing
+thread_idx (thread_idx should be less than max_cpu_threads from nvjpegDecodeBatchedInitialize())
+If error is received restart at phase one.
+*/
 func (j *JpegState) DecodeBatchedPhaseOne(h *Handle, data []byte, length uint, imageidx, threadidx int, s gocu.Streamer) error {
 
 	return status(C.nvjpegDecodeBatchedPhaseOne(h.h, j.j, (*C.uchar)(&data[0]), C.size_t(len(data)), C.int(imageidx), C.int(threadidx), stream(s))).error()
 }
 
-//DecodeBatchedPhaseTwo - nvjpegDecodePlanarBatchedMixed. Any previous call to nvjpegDecodeBatchedGPU() should be done by this point
+/*DecodeBatchedPhaseTwo - nvjpegDecodePlanarBatchedMixed. Any previous call to nvjpegDecodeBatchedGPU() should be done by this point
+
+If error is received restart at phase one.
+*/
 func (j *JpegState) DecodeBatchedPhaseTwo(h *Handle, s gocu.Streamer) error {
 	return status(C.nvjpegDecodeBatchedPhaseTwo(h.h, j.j, stream(s))).error()
 }
 
-//DecodeBatchedPhaseThree - nvjpegDecodePlanarBatchedGPU
+/*DecodeBatchedPhaseThree - nvjpegDecodePlanarBatchedGPU
+
+If error is received restart at phase one.
+*/
 func (j *JpegState) DecodeBatchedPhaseThree(h *Handle, dest []*Image, s gocu.Streamer) error {
 	z := make([]*C.nvjpegImage_t, len(dest))
 	for i := range z {
