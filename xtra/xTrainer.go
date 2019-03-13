@@ -71,10 +71,11 @@ func (a *RegParams) SetBatch(batch float32) {
 //TrainingParams is a struct can be use for training params.
 //When selecting the training mode the params that are not part of the training mode will be ignored.
 type TrainingParams struct {
-	eps   float32
-	rate  float32
-	beta1 float32
-	beta2 float32
+	eps     float32
+	rate    float32
+	beta1   float32
+	beta2   float32
+	dwalpha float32
 }
 
 //SetBeta1 sets beta1
@@ -97,14 +98,20 @@ func (a *TrainingParams) SetEps(eps float32) {
 	a.eps = eps
 }
 
+//SetDWalpha sets the dwalpha which is a smoothing factor of dw.
+func (a *TrainingParams) SetDWalpha(dwalpha float32) {
+	a.dwalpha = dwalpha
+}
+
 //CreateParamsFloat32 creates float32 paramaters for the different types of optimization
-func CreateParamsFloat32(eps, rate, beta1, beta2 float32) TrainingParams {
+func CreateParamsFloat32(eps, rate, beta1, beta2, dwalpha float32) TrainingParams {
 	return TrainingParams{
 
-		eps:   eps,
-		rate:  rate,
-		beta1: beta1,
-		beta2: beta2,
+		eps:     eps,
+		rate:    rate,
+		beta1:   beta1,
+		beta2:   beta2,
+		dwalpha: dwalpha,
 	}
 }
 

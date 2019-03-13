@@ -500,7 +500,8 @@ extern "C" __global__ void adagradfloat(const int length,
                                         float *dw,        //input and will have to set to zero
                                         float *gsum,      //storage
                                         const float rate, //input
-                                        const float eps)
+                                        const float eps,
+                                        const float dwalpha)
 { //input
     CUDA_GRID_LOOP_X(cell, length)
     {
@@ -508,7 +509,8 @@ extern "C" __global__ void adagradfloat(const int length,
         int holder = gsum[cell];
         gsum[cell] = holder + (dw[cell] * dw[cell]);
         weights[cell] = -(rate * dw[cell]) / (sqrtf(gsum[cell]) + eps);
-        dw[cell] = 0.0;
+        const float previous= dw[cell]*dwalpha;
+        dw[cell] = previous;
     }
 }
 
@@ -521,18 +523,20 @@ extern "C" __global__ void adamfloat(const int length,
                                      const float beta1,
                                      const float beta2,
                                      const float eps,
-                                     const float counter)
+                                     const float counter,
+                                     const float dwalpha)
 {
 
     CUDA_GRID_LOOP_X(i, length)
     {
-
+      
         gsum[i] = (beta1 * gsum[i]) + ((1.0 - beta1) * dw[i]);
         float gsumt = gsum[i] / (1.0 - powf(beta1, counter));
         xsum[i] = (beta2 * xsum[i]) + ((1.0 - beta2) * (dw[i] * dw[i]));
         float xsumt = xsum[i] / (1.0 - powf(beta2, counter));
         w[i] += -(rate * gsumt) / (sqrtf(xsumt) + eps);
-        dw[i] = 0.0;
+        const float previous=dwalpha*dw[i];
+        dw[i]=  previous;
     }
 }
 
@@ -542,7 +546,8 @@ extern "C" __global__ void adadeltafloat(const int length,
                                          float *xsum,      //storage
                                          float *dw,        //input and will have to set to zero
                                          const float rate, //input
-                                         const float eps)
+                                         const float eps,
+                                         const float dwalpha)
 {
 
     CUDA_GRID_LOOP_X(cell, length)
@@ -550,7 +555,8 @@ extern "C" __global__ void adadeltafloat(const int length,
 
         gsum[cell] = gsum[cell] + (dw[cell] * dw[cell]);
         weights[cell] = -(rate * dw[cell]) / (sqrtf(gsum[cell]) + eps);
-        dw[cell] = 0.0;
+        const float previous= dw[cell]*dwalpha;
+        dw[cell] = previous;
     }
 }
 
@@ -842,15 +848,24 @@ extern "C" __global__ void backwardleakyfloat(const int length,
     }
 }
 
-extern "C" __global__ void MSELoss(const int length, float *errors, const float *target, const float *networkout, float *loss)
+extern "C" __global__ void MSELoss(const int length, 
+                            float *errors, 
+                            const float *target,
+                            const float *networkout, 
+                            float *loss,
+                            const float alpha,
+                            const float beta)
 {
-  
+    const float previous = loss[0];
+    float current = 0;
     CUDA_GRID_LOOP_X(i, length)
     {
         const float y = networkout[i] - target[i];
         errors[i] = y;
-        atomicAdd(loss, (y * y) / 2);
+        atomicAdd(&current, (y * y) / 2);
     }
+    __syncthreads();
+    loss[0]=(alpha*current)+(previous*beta);
 }
 extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythreads, float *errors, const float *target, const float *networkout, float *loss)
 {

@@ -85,7 +85,7 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 	y gocu.Mem, //input -target values
 	dyD *gocudnn.TensorD, //input network output values
 	dy gocu.Mem, //input network output values
-	//loss Memer, // this is the loss calculated by the network
+	alpha, beta float64,
 ) (float32, error) {
 	dxdtype, dxdims, _, err := dxD.GetDescrptor()
 	if err != nil {
@@ -117,16 +117,14 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 	}
 	switch l.mode {
 	case l.flg.MSE():
-		err = cudart.Memset(l.loss, 0, 4)
-		if err != nil {
-			return -1, err
-		}
 		err = h.s.Sync()
 		if err != nil {
 			return -1, err
 		}
+		a := float32(alpha)
+		b := float32(beta)
 		config := h.LaunchConfig(int32(length))
-		err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.loss)
+		err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.loss, a, b)
 		if err != nil {
 			return -1, err
 		}
@@ -136,7 +134,7 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 		}
 		err = cudart.MemCpy(l.cpuptr, l.loss, 4, l.memcopykind)
 
-		h.s.Sync()
+		err = h.s.Sync()
 		if err != nil {
 			return -1, err
 		}
