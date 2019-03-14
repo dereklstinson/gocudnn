@@ -141,29 +141,28 @@ func (j *JpegState) DecodeBatched(h *Handle, data [][]byte, dest []*Image, s goc
 	return status(C.nvjpegDecodeBatched(h.h, j.j, &x[0], &y[0], z[0], stream(s))).error()
 }
 
-/*DecodeBatchedPhaseOne - nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
+/*DecodeBatchedPhase1 - nvjpegDecodePlanarBatchedCPU should be called [batch_size] times for each image in batch.
 This function is thread safe and could be called by multiple threads simultaneously, by providing
 thread_idx (thread_idx should be less than max_cpu_threads from nvjpegDecodeBatchedInitialize())
 If error is received restart at phase one.
 */
-func (j *JpegState) DecodeBatchedPhaseOne(h *Handle, data []byte, length uint, imageidx, threadidx int, s gocu.Streamer) error {
-
+func (j *JpegState) DecodeBatchedPhase1(h *Handle, data []byte, imageidx, threadidx int, s gocu.Streamer) error {
 	return status(C.nvjpegDecodeBatchedPhaseOne(h.h, j.j, (*C.uchar)(&data[0]), C.size_t(len(data)), C.int(imageidx), C.int(threadidx), stream(s))).error()
 }
 
-/*DecodeBatchedPhaseTwo - nvjpegDecodePlanarBatchedMixed. Any previous call to nvjpegDecodeBatchedGPU() should be done by this point
+/*DecodeBatchedPhase2 - nvjpegDecodePlanarBatchedMixed. Any previous call to nvjpegDecodeBatchedGPU() should be done by this point
 
 If error is received restart at phase one.
 */
-func (j *JpegState) DecodeBatchedPhaseTwo(h *Handle, s gocu.Streamer) error {
+func (j *JpegState) DecodeBatchedPhase2(h *Handle, s gocu.Streamer) error {
 	return status(C.nvjpegDecodeBatchedPhaseTwo(h.h, j.j, stream(s))).error()
 }
 
-/*DecodeBatchedPhaseThree - nvjpegDecodePlanarBatchedGPU
+/*DecodeBatchedPhase3 - nvjpegDecodePlanarBatchedGPU
 
 If error is received restart at phase one.
 */
-func (j *JpegState) DecodeBatchedPhaseThree(h *Handle, dest []*Image, s gocu.Streamer) error {
+func (j *JpegState) DecodeBatchedPhase3(h *Handle, dest []*Image, s gocu.Streamer) error {
 	z := make([]*C.nvjpegImage_t, len(dest))
 	for i := range z {
 

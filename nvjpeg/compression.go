@@ -6,6 +6,7 @@ package nvjpeg
 */
 import "C"
 import (
+	"fmt"
 	"runtime"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
@@ -168,5 +169,14 @@ func (es *EncoderState) GetCompressedBufferSize(h *Handle, s gocu.Streamer) (uin
 func (es *EncoderState) ReadBitStream(h *Handle, p []byte, s gocu.Streamer) (n int, err error) {
 	length := C.size_t(len(p))
 	err = status(C.nvjpegEncodeRetrieveBitstream(h.h, es.es, (*C.uchar)(&p[0]), &length, stream(s)))
-	return int(length), err
+	if err != nil {
+		msg := err.Error()
+		lenact, err2 := es.GetCompressedBufferSize(h, s)
+		if err2 != nil {
+			suberr := err2.Error()
+			return 0, fmt.Errorf("Double Error one in Reading int p (%s), and next finding length (%s)", msg, suberr)
+		}
+		return 0, fmt.Errorf("len of p passed %d, it should be %d. From Cuda(%s)", length, lenact, msg)
+	}
+	return int(length), nil
 }
