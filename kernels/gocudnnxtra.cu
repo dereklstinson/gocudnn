@@ -856,16 +856,16 @@ extern "C" __global__ void MSELoss(const int length,
                             const float alpha,
                             const float beta)
 {
-    const float previous = loss[0];
-    float current = 0;
+    
+    loss[0]=0;
     CUDA_GRID_LOOP_X(i, length)
     {
         const float y = networkout[i] - target[i];
         errors[i] = y;
-        atomicAdd(&current, (y * y) / 2);
+        atomicAdd(loss, (y * y) / 2);
     }
-    __syncthreads();
-    loss[0]=(alpha*current)+(previous*beta);
+
+   
 }
 extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythreads, float *errors, const float *target, const float *networkout, float *loss)
 {

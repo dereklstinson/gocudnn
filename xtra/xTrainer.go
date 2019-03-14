@@ -202,8 +202,8 @@ func NewTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) 
 func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, gocudnn.DataType) {
 	return d.mode, d.data
 }
-func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream gocu.Streamer, length int32, w, gsum, xsum, dw gocu.Mem, rate, beta1, beta2, eps, counter interface{}) error {
-	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter)
+func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream gocu.Streamer, length int32, w, gsum, xsum, dw gocu.Mem, rate, beta1, beta2, eps, counter, dwalpha interface{}) error {
+	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter, dwalpha)
 }
 
 //L1L2Regularization does the l1l2 regularization
@@ -246,7 +246,7 @@ func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xs
 	switch d.mode {
 	case TrainingModeFlag{}.Adam():
 
-		err = d.adam(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, float32(d.counter))
+		err = d.adam(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, float32(d.counter), params.dwalpha)
 		if err != nil {
 			return err
 		}
