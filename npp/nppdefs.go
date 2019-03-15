@@ -206,6 +206,30 @@ func (d *DifferentialKernel) SCHARR() DifferentialKernel {
 
 /*
  *
+ * Float16
+ *
+ */
+
+//Float16 is a half used by npp.
+type Float16 C.Npp16f
+
+func (n *Float16) cptr() *C.Npp16f {
+	return (*C.Npp16f)(n)
+}
+
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Float16) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an double pointer used for allocating memory on device
+func (n *Float16) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return (*unsafe.Pointer)(&x)
+}
+
+/*
+ *
  * Float32
  *
  */
@@ -540,6 +564,17 @@ func convertCNpp8utoNpp8uarray(x []C.Npp8u) []Uint8 {
  */
 type Uint8Complex C.Npp8uc
 
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Uint8Complex) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an *unsafe pointer to this variable location.
+func (n *Uint8Complex) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return &x
+}
+
 //Set sets the real and imaginary vals
 func (n *Uint8Complex) Set(real, imaginary Uint8) {
 	n.re = real.c()
@@ -577,6 +612,17 @@ func (n *Uint16Complex) Get() (real, imaginary Uint16) {
  * This struct represents a short complex number.
  */
 type Int16Complex C.Npp16sc
+
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Int16Complex) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an *unsafe pointer to this variable location.
+func (n *Int16Complex) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return &x
+}
 
 //Set sets the real and imaginary vals
 func (n *Int16Complex) Set(real, imaginary Int16) {
@@ -621,6 +667,17 @@ func (n *Int32Complex) Set(real, imaginary Int32) {
 	n.im = imaginary.c()
 }
 
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Int32Complex) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an *unsafe pointer to this variable location.
+func (n *Int32Complex) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return &x
+}
+
 //Get gets the real and imaginary vals
 func (n *Int32Complex) Get() (real, imaginary Int32) {
 	real = (Int32)(n.re)
@@ -630,6 +687,17 @@ func (n *Int32Complex) Get() (real, imaginary Int32) {
 
 //Float32Complex This struct represents a single floating-point complex number.
 type Float32Complex C.Npp32fc
+
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Float32Complex) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an *unsafe pointer to this variable location.
+func (n *Float32Complex) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return &x
+}
 
 func (n *Float32Complex) c() C.Npp32fc {
 	return C.Npp32fc(*n)
@@ -651,6 +719,17 @@ func (n *Float32Complex) Get() (real, imaginary Float32) {
 // Int64Complex struct represents a long long complex number.
 type Int64Complex C.Npp64sc
 
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Int64Complex) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an *unsafe pointer to this variable location.
+func (n *Int64Complex) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return &x
+}
+
 //Set sets the real and imaginary vals
 func (n *Int64Complex) Set(real, imaginary Int64) {
 	n.re = real.c()
@@ -666,6 +745,17 @@ func (n *Int64Complex) Get() (real, imaginary Int64) {
 
 //Float64Complex struct represents a double floating-point complex number.
 type Float64Complex C.Npp64fc
+
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Float64Complex) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an *unsafe pointer to this variable location.
+func (n *Float64Complex) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return &x
+}
 
 //Set sets the real and imaginary vals
 func (n *Float64Complex) Set(real, imaginary Float64) {
@@ -884,6 +974,10 @@ NppRoundMode go wrapper for roundimg modes description from original header
 
 //RoundMode methods return the rounding mode flags
 type RoundMode C.NppRoundMode
+
+func (r *RoundMode) c() C.NppRoundMode {
+	return C.NppRoundMode(*r)
+}
 
 //RndNear will round to the nearest number
 //method sets and returns RoundMode(C.NPP_RND_NEAR)

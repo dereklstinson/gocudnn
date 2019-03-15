@@ -10,6 +10,8 @@ import (
 type DCTState struct {
 	state *C.NppiDCTState
 }
+
+//
 type DecodeHuffmanSpec C.NppiDecodeHuffmanSpec
 type EncodeHuffmanSpec C.NppiEncodeHuffmanSpec
 type JpegFrameDescr C.NppiJpegFrameDescr

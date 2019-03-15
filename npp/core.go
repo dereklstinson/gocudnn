@@ -57,6 +57,28 @@ func GetGpuDeviceProperties() (pMaxThreadsPerSM, pMaxThreadsPerBlock, pNumberOfS
 
 }
 
+//StreamContext is a stream context for npp
+type StreamContext struct {
+	s C.NppStreamContext
+}
+
+func (s *StreamContext) cptr() *C.NppStreamContext {
+	return &s.s
+}
+func (s *StreamContext) c() C.NppStreamContext {
+	return s.s
+}
+
+//GetStreamContext gets a stream context for npp
+func GetStreamContext() (*StreamContext, error) {
+	s := new(StreamContext)
+	err := status(C.nppGetStreamContext(&s.s)).ToError()
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
 //SetStream sets the stream
 func SetStream(hStream gocu.Streamer) error {
 	return status(C.nppSetStream((C.cudaStream_t)(hStream.Ptr()))).error()

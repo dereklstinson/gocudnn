@@ -19,6 +19,11 @@ type Mem interface {
 	Ptr() unsafe.Pointer
 }
 
+//Offset returns a gocu.Mem with the unsafe.Pointer stored in it at the offset bybytes
+func Offset(mem Mem, bybytes uint) Mem {
+	return WrapUnsafe(unsafe.Pointer(uintptr(mem.Ptr()) + uintptr(bybytes)))
+}
+
 func init() {
 	x := C.cuInit(0)
 	if x != C.CUDA_SUCCESS {
