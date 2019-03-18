@@ -13,8 +13,9 @@ import (
 
 //BatchNorm Holds Batch Normalization Flags and functions, and is used to call Batchnorm desctriptor
 type BatchNorm struct {
-	Flg   BatchNormModeFlag
-	Funcs batchNormFuncs
+	Flg       BatchNormModeFlag
+	Funcs     batchNormFuncs
+	finalizer bool
 }
 
 //BatchD is the Descriptor that holds the batchnorm descriptor
@@ -32,25 +33,22 @@ func (b BatchNorm) DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) 
 	if xDesc.dims > 5 || xDesc.dims < 4 {
 		return nil, errors.New("dims for descriptor must be 4 or 5")
 	}
-	var desc C.cudnnTensorDescriptor_t
-	err = Status(C.cudnnCreateTensorDescriptor(&desc)).error("DeriveBNTensorDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	err = Status(C.cudnnDeriveBNTensorDescriptor(desc, xDesc.descriptor, mode.c())).error("DeriveBNTensorDescriptor-Derive")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &TensorD{
-		descriptor: desc,
-		dims:       xDesc.dims,
-	}
-	descriptor.frmt = xDesc.Format()
-	descriptor.dtype, descriptor.dimsarray, descriptor.stride, err = descriptor.GetDescrptor()
 
+descriptor,err:=createtensordescriptor()
+	if err != nil {
+		return nil, err
+	}
+	err = Status(C.cudnnDeriveBNTensorDescriptor(descriptor.descriptor, xDesc.descriptor, mode.c())).error("DeriveBNTensorDescriptor-Derive")
 	if setfinalizer == true {
 		runtime.SetFinalizer(descriptor, destroytensordescriptor)
 	}
+	if err != nil {
+		return nil, err
+	}
+
+	 descriptor.dtype, descriptor.dimsarray, descriptor.stride, err = descriptor.GetDescrptor()
+
+
 	if err != nil {
 		return nil, err
 	}

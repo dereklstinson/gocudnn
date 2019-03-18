@@ -43,14 +43,12 @@ type TensorD struct {
 	dimsarray  []int32
 	dtype      DataType
 	stride     []int32
-	strided    bool
+	setbyother bool
 	frmt       TensorFormat
 	flag       descflag
+	finalizer bool
 }
 
-func (t *TensorD) keepsalive() {
-	runtime.KeepAlive(t)
-}
 func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 	descs := make([]C.cudnnTensorDescriptor_t, len(input))
 	for i := 0; i < len(input); i++ {
@@ -59,16 +57,26 @@ func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 	return descs
 }
 
-//Shape basically takes some arguments and makes a slice out of them. This is made out of convenience to the user when building a tensor. It will not return an error
-func (t Tensor) Shape(nums ...int32) []int32 {
-	return nums
+func createtensordescriptor(setbyotheroperations bool) (*TensorD, error) {
+	d := new(TensorD)
+	err := Status(C.cudnnCreateTensorDescriptor(&d.descriptor)).error("NewTensor4dDescriptor-create")
+	if setfinalizer {
+		d.finalizer=true
+		runtime.SetFinalizer(d, destroytensordescriptor)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if setbyotheroperations {
+		d.frmt.Unknown()
+	}
+
+	return d, nil
 }
 
 //NewTensor4dDescriptor Creates and Sets a Tensor 4d Descriptor.
 func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape []int32) (*TensorD, error) {
-	if len(shape) != 4 {
-		return nil, errors.New("Shape array has to be length 4")
-	}
+
 	stride := stridecalc(shape)
 	var descriptor C.cudnnTensorDescriptor_t
 	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptor-create")
@@ -93,7 +101,7 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 	if len(shape) != 4 || len(stride) != 4 {
 		return nil, errors.New("len(shape) = " + strconv.Itoa(len(shape)) + " len(stride) = " + strconv.Itoa(len(stride)) + " .. both have to equal 4")
 	}
-
+	var tflg TensorFormat
 	var descriptor C.cudnnTensorDescriptor_t
 	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptorEx-create")
 	if err != nil {
@@ -103,7 +111,7 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 	if err != nil {
 		return nil, err
 	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, strided: true, dims: C.int(4), flag: t4dex}
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, frmt: tflg.Strided(), dims: C.int(4), flag: t4dex}
 	if setfinalizer == true {
 		runtime.SetFinalizer(x, destroytensordescriptor)
 	}
@@ -132,7 +140,8 @@ func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*Te
 	if err != nil {
 		return nil, err
 	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, strided: true, stride: stride, dims: dims, flag: tnd}
+	var tflg TensorFormat
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: tflg.Strided(), stride: stride, dims: dims, flag: tnd}
 	if setfinalizer == true {
 		runtime.SetFinalizer(x, destroytensordescriptor)
 	}
@@ -158,7 +167,7 @@ func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shap
 	if err != nil {
 		return nil, err
 	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, dims: dims, flag: tndex}
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: dims, flag: tndex}
 	if setfinalizer == true {
 		runtime.SetFinalizer(x, destroytensordescriptor)
 	}
@@ -167,18 +176,16 @@ func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shap
 }
 
 //GetFormat returns the format of the tensor error will return if tensor supports slide//
-func (t *TensorD) GetFormat() (TensorFormat, error) {
-
-	if t.flag == tndex || t.flag == t4d {
-		return t.frmt, nil
+func (t *TensorD) GetFormat() TensorFormat {
+	if t.descriptor != nil {
+		return t.frmt
 	}
-
-	return 255, errors.New("Tensor Uses slide method")
+	return t.frmt.Unknown()
 
 }
 
 //GetDescrptor returns Data Type the Dims for shape and stride and error.  for Descriptors without stride it will still return junk info. so be mindful when you code.
-func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
+func (t *TensorD) GetDescrptor() (frmt TensorFormat, dtype DataType, tshape []int32, tstride []int32, err error) {
 
 	shape := make([]C.int, t.dims)
 	stride := make([]C.int, t.dims)
@@ -186,23 +193,23 @@ func (t *TensorD) GetDescrptor() (DataType, []int32, []int32, error) {
 	if t.flag == t4d || t.flag == t4dex {
 		x := C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])
 
-		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
+		return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 
 	} else if t.flag == tnd || t.flag == tndex {
 		var holder C.int
 		x := C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])
 
-		return DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
+		return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
 	} else {
 		var holder C.int
 		if Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])).error("Checking") != nil {
 			if Status(C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])).error("Checking") != nil {
-				return DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tripplecheckpoint Didn't work I don't know what this tensorD is")
+				return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tripplecheckpoint Didn't work I don't know what this tensorD is")
 			}
-			return DataType(data), cintToint32(shape), cintToint32(stride), nil
+			return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), nil
 		}
 
-		return DataType(data), cintToint32(shape), cintToint32(stride), nil
+		return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), nil
 	}
 }
 
@@ -260,14 +267,19 @@ func (t *TensorD) GetSizeInBytes() (uint, error) {
 	var sizebytes C.size_t
 	x := C.cudnnGetTensorSizeInBytes(t.descriptor, &sizebytes)
 
-	return uint(sizebytes), Status(x).error("GetTensorNdDescriptor")
+	return uint(sizebytes), Status(x).error("GetSizeInBytes")
 }
 
 //IsDestroyed checks if the tensor is destroyed.  It will return a true if it is destroyed. If it is then this can be used again.
 
-//DestroyDescriptor destroys the tensor
-func (t *TensorD) DestroyDescriptor() error {
-
+//DestroyDescriptor destroys the tensor.
+//In future I am going to add a GC setting.  
+//For now it will run the garbage collector
+func (t *TensorD) Destroy() error {
+if t.finalizer {
+	runtime.GC()
+	
+}
 	return destroytensordescriptor(t)
 }
 func destroytensordescriptor(t *TensorD) error {
@@ -346,7 +358,7 @@ type TensorFlags struct {
 	Math   MathTypeFlag
 	NaN    PropagationNANFlag
 	Deter  DeterminismFlag
-	Format TensorFormatFlag
+	Format TensorFormat
 }
 
 /*
@@ -505,40 +517,68 @@ func (d Determinism) string() string {
 	return "Deterministic "
 }
 
-/*
-*
-*
-*       TensorFormatFlag
-*
-*
- */
-
-//TensorFormatFlag used to pass TensorFormat Flags semi safely
-type TensorFormatFlag struct {
-}
-
-//TensorFormat is the type used for flags to set tensor format
+//TensorFormat is the type used for flags to set tensor format.
+//Type contains methods that change the value of the type.
+//Caution: Methods will also change the value of variable that calls the method.
+//		   If you need to make a case switch make another variable and call it flag and use that.  Look at ToString.
+//
+//Semi-Custom gocudnn flag.  NCHW,NHWC,NCHWvectC come from cudnn. GoCudnn adds Strided, and Unknown
+//Reasonings --
+//Strided - When the tensor is set with strides there is no TensorFormat flag passed.
+//Also cudnnGetTensor4dDescriptor,and cudnnGetTensorNdDescriptor doesn't return the tensor format.
+//Which is really annoying.  GoCudnn will hide this flag in TensorD so that it can be returned with the tensor.
+//Unknown--Was was made because with at least with the new AttentionD in cudnn V7.5 it will make a descriptor for you.
+//IDK what the tensor format will be. So lets not make an (ASSUME) and mark it with this.
 type TensorFormat C.cudnnTensorFormat_t
 
 //NCHW return TensorFormat(C.CUDNN_TENSOR_NCHW)
-func (t TensorFormatFlag) NCHW() TensorFormat {
+//Method sets type and returns new value.
+func (t *TensorFormat) NCHW() TensorFormat {
 	return TensorFormat(C.CUDNN_TENSOR_NCHW)
 }
 
 //NHWC return TensorFormat(C.CUDNN_TENSOR_NHWC)
-func (t TensorFormatFlag) NHWC() TensorFormat {
+//Method sets type and returns new value.
+func (t *TensorFormat) NHWC() TensorFormat {
 	return TensorFormat(C.CUDNN_TENSOR_NHWC)
 }
 
 //NCHWvectC return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
-func (t TensorFormatFlag) NCHWvectC() TensorFormat {
+//Method sets type and returns new value.
+func (t *TensorFormat) NCHWvectC() TensorFormat {
 	return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
 }
 
-/*
-//SlideMethod will be used pretty much only as a backend.
-func (t TensorFormatFlag)SlideMethod() TensorFormat{
-	return TensorFormat(C.cudnnTensorFormat_t(255))
+//Strided returns  TensorFormat(127) This is custom GoCudnn flag. Read TensorFormat notes for explanation.
+//Method sets type and returns new value.
+func (t *TensorFormat) Strided() TensorFormat {
+
+	return TensorFormat(127)
 }
-*/
+
+//Unknown returns TensorFormat(128). This is custom GoCudnn flag.  Read TensorFormat notes for explanation.
+//Method sets type and returns new value.
+func (t *TensorFormat) Unknown() TensorFormat {
+	return TensorFormat(128)
+}
+
 func (t TensorFormat) c() C.cudnnTensorFormat_t { return C.cudnnTensorFormat_t(t) }
+
+//ToString will return a human readable string that can be printed for debugging.
+func (t TensorFormat) ToString() string {
+	var flg TensorFormat
+	switch t {
+	case flg.NCHW():
+		return "NCHW"
+	case flg.NHWC():
+		return "NHWC"
+	case flg.NCHWvectC():
+		return "NCHWvectC"
+	case flg.Strided():
+		return "Strided"
+	case flg.Unknown():
+		return "Unknown"
+
+	}
+	return "ERROR no such flag"
+}

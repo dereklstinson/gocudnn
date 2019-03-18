@@ -213,23 +213,16 @@ func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 //ResizeForward does the reshape operation
 func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x gocu.Mem, ydesc *gocudnn.TensorD, y gocu.Mem) error {
 
-	_, dimsx, _, err := xdesc.GetDescrptor()
+	frmtx, _, dimsx, _, err := xdesc.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	_, dimsy, _, err := ydesc.GetDescrptor()
+	frmty, _, dimsy, _, err := ydesc.GetDescrptor()
 	if err != nil {
 		return err
 	}
-	var fmtflag gocudnn.TensorFormatFlag
-	frmtx, err := xdesc.GetFormat()
-	if err != nil {
-		return err
-	}
-	frmty, err := ydesc.GetFormat()
-	if err != nil {
-		return err
-	}
+	var fmtflag gocudnn.TensorFormat
+
 	if frmtx != frmty {
 		return errors.New("ResizeForward - tensors must match")
 	}
@@ -269,25 +262,18 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x gocu.
 
 //ResizeBackward does a reshape backwards but it will add the errors on the backprop.
 func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx gocu.Mem, dydesc *gocudnn.TensorD, dy gocu.Mem) error {
-	_, dimsx, _, err := dxdesc.GetDescrptor()
+	frmtx, _, dimsx, _, err := dxdesc.GetDescrptor()
 	if err != nil {
 		return err
 	}
 
-	_, dimsy, _, err := dydesc.GetDescrptor()
+	frmty, _, dimsy, _, err := dydesc.GetDescrptor()
 	if err != nil {
 		return err
 	}
 
-	var fmtflag gocudnn.TensorFormatFlag
-	frmtx, err := dxdesc.GetFormat()
-	if err != nil {
-		return err
-	}
-	frmty, err := dydesc.GetFormat()
-	if err != nil {
-		return err
-	}
+	var fmtflag gocudnn.TensorFormat
+
 	if frmtx != frmty {
 		return errors.New("ResizeForward - tensors must match")
 	}
@@ -353,25 +339,18 @@ func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 //To get the y tensor please use FindShapetoBatchoutputTensor.
 func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, x gocu.Mem, yDesc *gocudnn.TensorD, y gocu.Mem, hstride int32, wstride int32, S2B bool) error {
 
-	dtype, xdims, _, err := xDesc.GetDescrptor()
+	frmt, dtype, xdims, _, err := xDesc.GetDescrptor()
 	var dflag gocudnn.DataTypeFlag
 	if dtype != dflag.Float() {
 		return errors.New("Only Supported dtype is float32")
 	}
 
-	dtype, ydims, _, err := yDesc.GetDescrptor()
+	frmt2, dtype, ydims, _, err := yDesc.GetDescrptor()
 	if dtype != dflag.Float() {
 		return errors.New("Only Supported dytype is float32")
 	}
-	var tflag gocudnn.TensorFormatFlag
-	frmt, err := xDesc.GetFormat()
-	if err != nil {
-		return err
-	}
-	frmt2, err := yDesc.GetFormat()
-	if err != nil {
-		return err
-	}
+	var tflag gocudnn.TensorFormat
+
 	if frmt != frmt2 {
 		return errors.New("TensorFormats Must be the same")
 	}
@@ -506,7 +485,7 @@ func copytogpuunified(x *GoPointer) (gocu.Mem, error) {
 
 //GetBatchtoShapeOutputProperties will place the batches into the shape.  It will only work if xdims[0]/(h*w) doesn't have a remainder.
 func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *gocudnn.TensorD, h, w, hstride, wstride int32) (gocudnn.TensorFormat, gocudnn.DataType, []int32, error) {
-	dtype, dims, _, err := descX.GetDescrptor()
+	xfrmt, dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
 		return 255, 255, nil, err
 	}
@@ -514,8 +493,8 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *gocudnn.TensorD,
 	if dtype != dflag.Float() {
 		return 255, 255, nil, errors.New("Only Supported Format is float32")
 	}
-	var frmt gocudnn.TensorFormatFlag
-	xfrmt, err := descX.GetFormat()
+	var frmt gocudnn.TensorFormat
+
 	if dims[0]%(h*w) != 0 {
 		return 255, 255, nil, errors.New("descx batches/(h*w) must not have a remainder")
 	}
@@ -546,7 +525,7 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *gocudnn.TensorD,
 
 //GetShapetoBatchOutputProperties returns properties to make a new descriptor
 func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *gocudnn.TensorD, h, w, hstride, wstride int32) (gocudnn.TensorFormat, gocudnn.DataType, []int32, error) {
-	dtype, dims, _, err := descX.GetDescrptor()
+	xfrmt, dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
 		return 255, 255, nil, err
 	}
@@ -554,8 +533,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *gocudnn.TensorD,
 	if dtype != dflag.Float() {
 		return 255, 255, nil, errors.New("Only Supported Format is float32")
 	}
-	var frmt gocudnn.TensorFormatFlag
-	xfrmt, err := descX.GetFormat()
+	var frmt gocudnn.TensorFormat
 
 	switch xfrmt {
 	case frmt.NCHW():
@@ -603,7 +581,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *gocudnn.TensorD,
 
 //GetShapetoBatchOutputPropertiesPLUS returns properties to make a new descriptor. PLUS the N1,N2 used to resize the dims
 func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *gocudnn.TensorD, h, w, hstride, wstride int32) (gocudnn.TensorFormat, gocudnn.DataType, []int32, []int32, error) {
-	dtype, dims, _, err := descX.GetDescrptor()
+	xfrmt, dtype, dims, _, err := descX.GetDescrptor()
 	if err != nil {
 		return 255, 255, nil, nil, err
 	}
@@ -611,8 +589,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *gocudnn.Tens
 	if dtype != dflag.Float() {
 		return 255, 255, nil, nil, errors.New("Only Supported Format is float32")
 	}
-	var frmt gocudnn.TensorFormatFlag
-	xfrmt, err := descX.GetFormat()
+	var frmt gocudnn.TensorFormat
 
 	switch xfrmt {
 	case frmt.NCHW():

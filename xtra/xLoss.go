@@ -47,7 +47,7 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 			return nil, err
 		}
 
-		gpu := new(gocu.DevicePtr)
+		gpu := new(gocu.CudaPtr)
 		err = cudart.MallocManagedGlobal(gpu, 4)
 		//	gpu, err := nvidia.MallocGlobal(h, 4)
 		if err != nil {
@@ -87,15 +87,15 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 	dy gocu.Mem, //input network output values
 	alpha, beta float64,
 ) (float32, error) {
-	dxdtype, dxdims, _, err := dxD.GetDescrptor()
+	_, dxdtype, dxdims, _, err := dxD.GetDescrptor()
 	if err != nil {
 		return -1, err
 	}
-	ydtype, ydims, _, err := yD.GetDescrptor()
+	_, ydtype, ydims, _, err := yD.GetDescrptor()
 	if err != nil {
 		return -1, err
 	}
-	dydtype, dydims, _, err := dyD.GetDescrptor()
+	_, dydtype, dydims, _, err := dyD.GetDescrptor()
 	if err != nil {
 		return -1, err
 	}
