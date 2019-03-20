@@ -30,7 +30,6 @@ func (a AttnQueryMap) c() C.cudnnAttnQueryMap_t {
 	return C.cudnnAttnQueryMap_t(a)
 }
 
-
 //AttentionD holds opaque values used for attention operations
 type AttentionD struct {
 	descriptor C.cudnnAttnDescriptor_t
@@ -187,9 +186,94 @@ func (a *AttentionD) GetMultiHeadAttnWeights(h *Handle, wkind MultiHeadAttnWeigh
 	return wD, w, err
 }
 
-//MultiHeadAttnForward look at documentation.  Kind of more confusing than normal
+//Forward look at documentation.  Kind of more confusing than normal
 //if currIdx <0  trainingmode, currIdx >=0 inference mode
-func (a *AttentionD)MultiHeadAttnForward(h *Handle,
-		currIdx int32,  //if currIdx <0  trainingmode, currIdx >=0 inference mode
-		loWinIdx,hiWinIdx,seqLengthArrayQRO,seqLengthArrayKV []int32,
-	qDesc )
+func (a *AttentionD) Forward(
+	h *Handle,
+	currIdx int32, //if currIdx <0  trainingmode, currIdx >=0 inference mode
+	loWinIdx []int32, // array of lower (inclusive) key and value time step windows
+	hiWinIdx []int32, // array of upper (exclusive) key and value time step windows
+	seqLengthArrayQRO []int32, // array of lengths for for queries,residuals,and out
+	seqLengthArrayKV []int32, // array of lengths for keys and values
+	qrDesc *SeqDataD, queries, residuals gocu.Mem,
+	kDesc *SeqDataD, keys gocu.Mem,
+	vDesc *SeqDataD, values gocu.Mem,
+	oDesc *SeqDataD, out gocu.Mem,
+	wbuffSIB uint, wbuff gocu.Mem,
+	wspaceSIB uint, wspace gocu.Mem,
+	rspaceSIB uint, rspace gocu.Mem) error {
+	lo := int32Tocint(loWinIdx)
+	hi := int32Tocint(hiWinIdx)
+	QRO := int32Tocint(seqLengthArrayQRO)
+	KV := int32Tocint(seqLengthArrayKV)
+	return Status(C.cudnnMultiHeadAttnForward(h.x, a.descriptor, (C.int)(currIdx), &lo[0], &hi[0], &QRO[0], &KV[0],
+		qrDesc.descriptor, queries.Ptr(), residuals.Ptr(), kDesc.descriptor, keys.Ptr(), vDesc.descriptor, values.Ptr(), oDesc.descriptor, out.Ptr(),
+		(C.size_t)(wbuffSIB), wbuff.Ptr(), (C.size_t)(wspaceSIB), wspace.Ptr(), (C.size_t)(rspaceSIB), rspace.Ptr())).error("Forward")
+
+}
+
+//BackwardData does the backward propigation for data.
+func (a *AttentionD) BackwardData(
+	h *Handle,
+	loWinIdx []int32, // array of lower (inclusive) key and value time step windows
+	hiWinIdx []int32, // array of upper (exclusive) key and value time step windows
+	seqLengthArrayDQDO []int32, //array of lengths for dqueries and dout
+	seqLengthArrayDKDV []int32, //array of lengths for dkeys and dvalues
+	doDesc *SeqDataD, dout gocu.Mem,
+	dqDesc *SeqDataD, dqueries, queries gocu.Mem, //dqueries is output
+	dkDesc *SeqDataD, dkeys, keys gocu.Mem, //dkeys is output
+	dvDesc *SeqDataD, dvalues, values gocu.Mem, //dvalues is output
+	wbuffSIB uint, wbuff gocu.Mem, wspaceSIB uint, wspace gocu.Mem, rspaceSIB uint, rspace gocu.Mem) error {
+	lo := int32Tocint(loWinIdx)
+	hi := int32Tocint(hiWinIdx)
+	DQDO := int32Tocint(seqLengthArrayDQDO)
+	DKDV := int32Tocint(seqLengthArrayDKDV)
+	return Status(C.cudnnMultiHeadAttnBackwardData(h.x, a.descriptor, &lo[0], &hi[0], &DQDO[0], &DKDV[0],
+		doDesc.descriptor, dout.Ptr(),
+		dqDesc.descriptor, dqueries.Ptr(), queries.Ptr(),
+		dkDesc.descriptor, dkeys.Ptr(), keys.Ptr(),
+		dvDesc.descriptor, dvalues.Ptr(), values.Ptr(),
+		(C.size_t)(wbuffSIB), wbuff.Ptr(),
+		(C.size_t)(wspaceSIB), wspace.Ptr(),
+		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
+}
+
+//WgradMode is used for flags and can be changed through methods
+type WgradMode C.cudnnWgradMode_t
+
+func (w WgradMode) c() C.cudnnWgradMode_t {
+	return (C.cudnnWgradMode_t)(w)
+}
+
+//Add sets w to Add and returns Add flag
+func (w *WgradMode) Add() WgradMode {
+	*w = WgradMode(C.CUDNN_WGRAD_MODE_ADD)
+	return *w
+}
+
+//Set sets w to Set and returns Set flag
+func (w *WgradMode) Set() WgradMode {
+	*w = WgradMode(C.CUDNN_WGRAD_MODE_SET)
+	return *w
+}
+
+//BackwardWeights does the backward propigation for weights.
+func (a *AttentionD) BackwardWeights(
+	h *Handle,
+	wgmode WgradMode,
+	qDesc *SeqDataD, queries gocu.Mem,
+	kDesc *SeqDataD, keys gocu.Mem,
+	vDesc *SeqDataD, values gocu.Mem,
+	doDesc *SeqDataD, dout gocu.Mem,
+	wbuffSIB uint, wbuff, dwbuff gocu.Mem,
+	wspaceSIB uint, wspace gocu.Mem, rspaceSIB uint, rspace gocu.Mem) error {
+
+	return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
+		qDesc.descriptor, queries.Ptr(),
+		kDesc.descriptor, keys.Ptr(),
+		vDesc.descriptor, values.Ptr(),
+		doDesc.descriptor, dout.Ptr(),
+		(C.size_t)(wbuffSIB), wbuff.Ptr(), dwbuff.Ptr(),
+		(C.size_t)(wspaceSIB), wspace.Ptr(),
+		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
+}

@@ -10,58 +10,46 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//OpTensor is a struct that is used in making op tensors it holds the Funcs and Flgs for optensors
-type OpTensor struct {
-	Flgs OpTensorFlag
-}
-
 //OPTensorD holds OP Tensor information
 type OPTensorD struct {
 	descriptor C.cudnnOpTensorDescriptor_t
+	gogc       bool
 }
 
-//NewOpTensorDescriptor creates and sets an OpTensor
-func (op OpTensor) NewOpTensorDescriptor(opTensOp OpTensorOp, opTensorCompType DataType, opTensorNanOpt PropagationNAN) (descriptor *OPTensorD, err error) {
-	var desc C.cudnnOpTensorDescriptor_t
-	err = Status(C.cudnnCreateOpTensorDescriptor(&desc)).error("NewOpTensorDescriptor-Create")
-	if err != nil {
-		return nil, err
-	}
-	err = Status(C.cudnnSetOpTensorDescriptor(desc, opTensOp.c(), C.cudnnDataType_t(opTensorCompType), C.cudnnNanPropagation_t(opTensorNanOpt))).error("NewOpTensorDescriptor-set")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &OPTensorD{descriptor: desc}
+//CreateOpTensorDescriptor creates and sets an OpTensor
+func CreateOpTensorDescriptor() (*OPTensorD, error) {
+	desc := new(OPTensorD)
+	err := Status(C.cudnnCreateOpTensorDescriptor(&desc.descriptor)).error("NewOpTensorDescriptor-Create")
 	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroyopdesc)
+		runtime.SetFinalizer(desc, destroyopdesc)
 	}
 
-	return descriptor, nil
+	return descriptor, err
 }
 
-//GetDescriptor returns the descriptor information with error
-func (t *OPTensorD) GetDescriptor() (OpTensorOp, DataType, PropagationNAN, error) {
-	var tensop C.cudnnOpTensorOp_t
-	var datatype C.cudnnDataType_t
-	var nanprop C.cudnnNanPropagation_t
+//Set sets the OPTensorD.
+func (t *OPTensorD) Set(op OpTensorOp, dtype DataType, nan NANProp) error {
+	err = Status(C.cudnnSetOpTensorDescriptor(t.descriptor, op.c(), dtype.c(), nan.c())).error("NewOpTensorDescriptor-set")
 
-	x := C.cudnnGetOpTensorDescriptor(t.descriptor, &tensop, &datatype, &nanprop)
-	if setkeepalive {
-		t.keepsalive()
-	}
-	return OpTensorOp(tensop), DataType(datatype), PropagationNAN(nanprop), Status(x).error("GetOpTensorDescriptor")
+}
+
+//Get returns the descriptor information with error
+func (t *OPTensorD) Get() (op OpTensorOp, dtype DataType, nan NANProp, err error) {
+
+	err = Status(C.cudnnGetOpTensorDescriptor(t.descriptor, op.cptr(), dtype.cptr(), nan.cptr())).error("GetOpTensorDescriptor")
+
+	return op, dtype, nan, err
 
 }
 func destroyopdesc(t *OPTensorD) error {
 	return Status(C.cudnnDestroyOpTensorDescriptor(t.descriptor)).error("destroyoptensor")
 }
-func (t *OPTensorD) keepsalive() {
-	runtime.KeepAlive(t)
-}
 
 //DestroyDescriptor destroys the descriptor
-func (t *OPTensorD) DestroyDescriptor() error {
-
+func (t *OPTensorD) Destroy() error {
+	if setfinalizer || t.gogc {
+		return
+	}
 	return destroyopdesc(t)
 }
 
@@ -96,40 +84,26 @@ func (t *OPTensorD) OpTensor(
 	return Status(x).error("OpTensor")
 }
 
-//OpTensorFlag is used pass OpTensorOp Flags Semi Safely using methods
-type OpTensorFlag struct {
-}
-
 //OpTensorOp is used for flags for the Optensor functions
 type OpTensorOp C.cudnnOpTensorOp_t
 
-//Add returns 	 OpTensorOp(C.CUDNN_OP_TENSOR_ADD)
-func (o OpTensorFlag) Add() OpTensorOp {
-	return OpTensorOp(C.CUDNN_OP_TENSOR_ADD)
-}
+//Add sets o to OpTensorOp(C.CUDNN_OP_TENSOR_ADD) and returns the new value
+func (o *OpTensorOp) Add() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_ADD); return *o }
 
-//Mul returns  OpTensorOp(C.CUDNN_OP_TENSOR_MUL)
-func (o OpTensorFlag) Mul() OpTensorOp {
-	return OpTensorOp(C.CUDNN_OP_TENSOR_MUL)
-}
+//Mul sets o to OpTensorOp(C.CUDNN_OP_TENSOR_MUL) and returns the new value
+func (o *OpTensorOp) Mul() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_MUL); return *o }
 
-//Min returns OpTensorOp(C.CUDNN_OP_TENSOR_MIN)
-func (o OpTensorFlag) Min() OpTensorOp {
-	return OpTensorOp(C.CUDNN_OP_TENSOR_MIN)
-}
+//Min sets o to OpTensorOp(C.CUDNN_OP_TENSOR_MIN)  and returns the new value
+func (o *OpTensorOp) Min() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_MIN); return *o }
 
-//Max returns OpTensorOp(C.CUDNN_OP_TENSOR_MAX)
-func (o OpTensorFlag) Max() OpTensorOp {
-	return OpTensorOp(C.CUDNN_OP_TENSOR_MAX)
-}
+//Max sets o to OpTensorOp(C.CUDNN_OP_TENSOR_MAX) and returns the new value
+func (o *OpTensorOp) Max() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_MAX); return *o }
 
-//Sqrt returns OpTensorOp(C.CUDNN_OP_TENSOR_SQRT)
-func (o OpTensorFlag) Sqrt() OpTensorOp {
-	return OpTensorOp(C.CUDNN_OP_TENSOR_SQRT)
-}
+//Sqrt sets o to OpTensorOp(C.CUDNN_OP_TENSOR_SQRT) and returns the new value
+func (o *OpTensorOp) Sqrt() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_SQRT); return *o }
 
-//Not returns OpTensorOp(C.CUDNN_OP_TENSOR_NOT)
-func (o OpTensorFlag) Not() OpTensorOp {
-	return OpTensorOp(C.CUDNN_OP_TENSOR_NOT)
-}
-func (o OpTensorOp) c() C.cudnnOpTensorOp_t { return C.cudnnOpTensorOp_t(o) }
+//Not returns OpTensorOp(C.CUDNN_OP_TENSOR_NOT) and returns the new value
+func (o *OpTensorOp) Not() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_NOT); return *o }
+
+func (o OpTensorOp) c() C.cudnnOpTensorOp_t      { return C.cudnnOpTensorOp_t(o) }
+func (o *OpTensorOp) cptr() *C.cudnnOpTensorOp_t { return (*C.cudnnOpTensorOp_t)(o) }

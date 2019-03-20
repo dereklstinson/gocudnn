@@ -12,36 +12,28 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//Pooling is used to hold flags and funcs for pooling operations
-type Pooling struct {
-	PFlg PoolingModeFlag
-	NFlg PropagationNANFlag
-}
-
 //PoolingD handles the pooling descriptor
 type PoolingD struct {
 	descriptor C.cudnnPoolingDescriptor_t
 	dims       C.int
+	gogc       bool
 }
 
-//NewPooling2dDescriptor creates and sets a pooling 2d Descriptor
-func (pool Pooling) NewPooling2dDescriptor(
-	mode PoolingMode,
-	nan PropagationNAN,
-	window []int32, // height and wideth
-	padding []int32, //height and width
-	stride []int32, //height and width
-) (descriptor *PoolingD, err error) {
-	if len(window) != len(padding) || len(window) != len(stride) || len(window) != 2 {
-		return nil, errors.New("Window Padding and Stride array lengths need to be 2")
+//CreatePoolingDescriptor creates a pooling descriptor.
+func CreatePoolingDescriptor() (*PoolingD, error) {
+	p := new(PoolingD)
+	err := Status(C.cudnnCreatePoolingDescriptor(&p.descriptor)).error("NewPooling2dDescriptor-create")
+	if setfinalizer || p.gogc {
+		runtime.SetFinalizer(p, destroypoolingdescriptor)
 	}
-	var desc C.cudnnPoolingDescriptor_t
-	err = Status(C.cudnnCreatePoolingDescriptor(&desc)).error("NewPooling2dDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	err = Status(C.cudnnSetPooling2dDescriptor(
-		desc,
+	return p, err
+
+}
+
+//Set2D sets pooling descriptor to 2d
+func (p *PoolingD) Set2D(mode PoolingMode, nan NANProp, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride int32) error {
+	return Status(C.cudnnSetPooling2dDescriptor(
+		p.descriptor,
 		mode.c(),
 		nan.c(),
 		C.int(window[0]),
@@ -50,22 +42,58 @@ func (pool Pooling) NewPooling2dDescriptor(
 		C.int(padding[1]),
 		C.int(stride[0]),
 		C.int(stride[1]),
-	)).error("NewPooling2dDescriptor-set")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &PoolingD{descriptor: desc, dims: C.int(2)}
-	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroypoolingdescriptor)
-	}
-	return descriptor, nil
+	)).error("(*PoolingD)Set2Dex")
 }
-func (p *PoolingD) keepsalive() {
-	runtime.KeepAlive(p)
+
+//Set2DEx sets up a 2D pooling descriptor but with the window padding and stride are in slices.
+func (p *PoolingD) Set2DEx(mode PoolingMode, nan NANProp, window, padding, stride []int32) error {
+	if len(window) != len(padding) || len(window) != len(stride) || len(window) != 2 {
+		return nil, errors.New("Window Padding and Stride array lengths need to be 2")
+	}
+	return Status(C.cudnnSetPooling2dDescriptor(
+		p.descriptor,
+		mode.c(),
+		nan.c(),
+		C.int(window[0]),
+		C.int(window[1]),
+		C.int(padding[0]),
+		C.int(padding[1]),
+		C.int(stride[0]),
+		C.int(stride[1]),
+	)).error("(*PoolingD)Set2Dex")
+
+}
+
+//SetND sets pooling descriptor to values passed
+func (p *PoolingD) SetND(mode PoolingMode, nan NANProp, window, padding, stride []int32) error {
+	cwindow := int32Tocint(window)
+	cpadding := int32Tocint(padding)
+	cstride := int32Tocint(stride)
+	return Status(C.cudnnSetPoolingNdDescriptor(
+		p.descriptor,
+		mode.c(),
+		nan.c(),
+		C.int(dims),
+		&cwindow[0],
+		&cpadding[0],
+		&cstride[0],
+	)).error("(*PoolingD)SetND")
+}
+
+func (p *PoolingD) Get2D() (mode PoolingMode, nan NANProp, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride int32, err error) {
+	var hw, ww, vp, hp, vs, hs C.int
+	err = Status(C.cudnnGetPooling2dDescriptor(
+		p.descriptor,
+		mode.cptr(), nan.cptr(),
+		&hw, &ww, &vp, &hp, &vs, &hs,
+	)).error("GetPooling2dDescriptor-2d")
+	(C.int)()
+	Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride = (C.int)(hw), (C.int)(ww), (C.int)(vp), (C.int)(hp), (C.int)(vs), (C.int)(hs)
+	return
 }
 
 //GetPoolingDescriptor returns the pooling descriptors and the error
-func (p *PoolingD) GetPoolingDescriptor() (PoolingMode, PropagationNAN, []int32, []int32, []int32, error) {
+func (p *PoolingD) GetPoolingDescriptor() (PoolingMode, NANProp, []int32, []int32, []int32, error) {
 	var mode C.cudnnPoolingMode_t
 	var nan C.cudnnNanPropagation_t
 	window := make([]C.int, p.dims)
@@ -237,31 +265,29 @@ func (p *PoolingD) PoolingBackward(
  *  pooling mode
  */
 
-//PoolingModeFlag is used to pass PoolingMode flags for human users semi-safely using methods
-type PoolingModeFlag struct {
-}
-
 //PoolingMode is used for flags in pooling
 type PoolingMode C.cudnnPoolingMode_t
 
 //Max returns PoolingMode(C.CUDNN_POOLING_MAX) flag
-func (p PoolingModeFlag) Max() PoolingMode {
-	return PoolingMode(C.CUDNN_POOLING_MAX)
-}
+func (p *PoolingMode) Max() PoolingMode { *p = PoolingMode(C.CUDNN_POOLING_MAX); return *p }
 
 //AverageCountIncludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING) flag
-func (p PoolingModeFlag) AverageCountIncludePadding() PoolingMode {
-	return PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING)
+func (p *PoolingMode) AverageCountIncludePadding() PoolingMode {
+	*p = PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING)
+	return *p
 }
 
 //AverageCountExcludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING) flag
-func (p PoolingModeFlag) AverageCountExcludePadding() PoolingMode {
-	return PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING)
+func (p *PoolingMode) AverageCountExcludePadding() PoolingMode {
+	*p = PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING)
+	return *p
 }
 
 //MaxDeterministic returns PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC) flag
-func (p PoolingModeFlag) MaxDeterministic() PoolingMode {
-	return PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC)
+func (p *PoolingMode) MaxDeterministic() PoolingMode {
+	*p = PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC)
+	return *p
 }
 
-func (p PoolingMode) c() C.cudnnPoolingMode_t { return C.cudnnPoolingMode_t(p) }
+func (p PoolingMode) c() C.cudnnPoolingMode_t      { return C.cudnnPoolingMode_t(p) }
+func (p *PoolingMode) cptr() *C.cudnnPoolingMode_t { return (*C.cudnnPoolingMode_t)(p) }

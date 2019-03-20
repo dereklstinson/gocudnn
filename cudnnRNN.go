@@ -36,11 +36,9 @@ type AlgorithmPerformance struct {
 //RNND  holdes Rnn descriptor
 type RNND struct {
 	descriptor C.cudnnRNNDescriptor_t
+	gogc bool
 }
 
-func (r *RNND) keepsalive() {
-	runtime.KeepAlive(r)
-}
 func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
 	array := make([]C.cudnnRNNDescriptor_t, len(input))
 	for i := 0; i < len(input); i++ {
@@ -50,24 +48,26 @@ func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
 }
 
 //CreateRNNDescriptor creates an RNND descriptor
-func (rn RNN) CreateRNNDescriptor() (descriptor *RNND, err error) {
-	var desc C.cudnnRNNDescriptor_t
-	err = Status(C.cudnnCreateRNNDescriptor(&desc)).error("CreateRNNDescriptor")
+func (rn RNN) CreateRNNDescriptor() (desc *RNND, err error) {
+	desc=new(RNND)	
+	err = Status(C.cudnnCreateRNNDescriptor(&desc.descriptor)).error("CreateRNNDescriptor")
 	if err != nil {
 		return nil, err
 	}
-	descriptor = &RNND{
-		descriptor: desc,
-	}
+
 	if setfinalizer == true {
-		runtime.SetFinalizer(descriptor, destroyrnnddescriptor)
+		runtime.SetFinalizer(desc, destroyrnnddescriptor)
 	}
 
-	return descriptor, err
+	return desc, err
 }
 
-//DestroyDescriptor destroys the descriptor
-func (r *RNND) DestroyDescriptor() error {
+//Destroy destroys the descriptor
+//Right now this doesn't work because gocudnn uses go's GC.
+func (r *RNND) Destroy() error {
+	if setfinalizer || r.gogc{
+		return nil
+	}
 	return destroyrnnddescriptor(r)
 }
 func destroyrnnddescriptor(r *RNND) error {
@@ -173,7 +173,6 @@ func (r *RNND) Get(
 
 //SetRNNMatrixMathType Sets the math type for the descriptor
 func (r *RNND) SetRNNMatrixMathType(math MathType) error {
-
 	return Status(C.cudnnSetRNNMatrixMathType(r.descriptor, math.c())).error("SetRNNMatrixMathType")
 }
 
@@ -380,9 +379,6 @@ func (r *RNND) NewPersistentRNNPlan(minibatch int32, data DataType) (plan *Persi
 		runtime.SetFinalizer(plan, destroypersistantrnnplan)
 	}
 	return plan, err
-}
-func (p *PersistentRNNPlan) keepsalive() {
-	runtime.KeepAlive(p)
 }
 
 //DestroyPersistentRNNPlan destroys the C.cudnnPersistentRNNPlan_t in the PersistentRNNPlan struct

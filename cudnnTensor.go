@@ -46,7 +46,7 @@ type TensorD struct {
 	setbyother bool
 	frmt       TensorFormat
 	flag       descflag
-	finalizer bool
+	finalizer  bool
 }
 
 func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
@@ -61,7 +61,7 @@ func createtensordescriptor(setbyotheroperations bool) (*TensorD, error) {
 	d := new(TensorD)
 	err := Status(C.cudnnCreateTensorDescriptor(&d.descriptor)).error("NewTensor4dDescriptor-create")
 	if setfinalizer {
-		d.finalizer=true
+		d.finalizer = true
 		runtime.SetFinalizer(d, destroytensordescriptor)
 	}
 	if err != nil {
@@ -272,14 +272,15 @@ func (t *TensorD) GetSizeInBytes() (uint, error) {
 
 //IsDestroyed checks if the tensor is destroyed.  It will return a true if it is destroyed. If it is then this can be used again.
 
-//DestroyDescriptor destroys the tensor.
-//In future I am going to add a GC setting.  
+//Destroy destroys the tensor.
+//In future I am going to add a GC setting that will enable or disable the GC.
+//When the GC is disabled It will allow the user more control over memory.
 //For now it will run the garbage collector
 func (t *TensorD) Destroy() error {
-if t.finalizer {
-	runtime.GC()
-	
-}
+	if t.finalizer {
+		runtime.GC()
+
+	}
 	return destroytensordescriptor(t)
 }
 func destroytensordescriptor(t *TensorD) error {
@@ -352,86 +353,40 @@ func (t Tensor) SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
 	return Status(x).error("SetTensor")
 }
 
-//TensorFlags holds all things that tensors use for flags
-type TensorFlags struct {
-	Data   DataTypeFlag
-	Math   MathTypeFlag
-	NaN    PropagationNANFlag
-	Deter  DeterminismFlag
-	Format TensorFormat
-}
-
 /*
 *
 *
-*       DataTypeFlag
+*       DataType
 *
 *
  */
 
-//DataTypeFlag is used to pass DataType flags semi-safely though methods
-type DataTypeFlag struct {
-}
-
 //DataType is used for flags for the tensor layer structs
 type DataType C.cudnnDataType_t
 
-/*
-//FindScalar finds a CScalar value for the datatype being used by the tensors
-func FindScalar(datatype DataType, x float64) gocu.CScalar {
-	switch datatype {
-	case DataType(C.CUDNN_DATA_FLOAT):
-		return CFloat(x)
-	case DataType(C.CUDNN_DATA_DOUBLE):
-		return CDouble(x)
-	case DataType(C.CUDNN_DATA_INT8):
-		return CInt8(x)
-	case DataType(C.CUDNN_DATA_INT32):
-		return CInt(x)
-	case DataType(C.CUDNN_DATA_HALF):
-		return CHalf(half.NewFloat16(float32(x)))
-	default:
-		return CInt(x)
-	}
-}
-*/
+// Float sets d to DataType(C.CUDNN_DATA_FLOAT) and returns the changed value
+func (d *DataType) Float() DataType { *d = DataType(C.CUDNN_DATA_FLOAT); return *d }
 
-// Float return DataType(C.CUDNN_DATA_FLOAT)
-func (d DataTypeFlag) Float() DataType {
-	return DataType(C.CUDNN_DATA_FLOAT)
-}
+// Double sets d to DataType(C.CUDNN_DATA_DOUBLE) and returns the changed value
+func (d *DataType) Double() DataType { *d = DataType(C.CUDNN_DATA_DOUBLE); return *d }
 
-// Double return DataType(C.CUDNN_DATA_DOUBLE)
-func (d DataTypeFlag) Double() DataType {
-	return DataType(C.CUDNN_DATA_DOUBLE)
-}
+// Int8 sets d to DataType(C.CUDNN_DATA_INT8) and returns the changed value
+func (d *DataType) Int8() DataType { *d = DataType(C.CUDNN_DATA_INT8); return *d }
 
-// Int8 return DataType(C.CUDNN_DATA_INT8)
-func (d DataTypeFlag) Int8() DataType {
-	return DataType(C.CUDNN_DATA_INT8)
-}
+// Int32 sets d to DataType(C.CUDNN_DATA_INT32) and returns the changed value
+func (d *DataType) Int32() DataType { *d = DataType(C.CUDNN_DATA_INT32); return *d }
 
-// Int32 return DataType(C.CUDNN_DATA_INT32)
-func (d DataTypeFlag) Int32() DataType {
-	return DataType(C.CUDNN_DATA_INT32)
-}
+// Half sets d to DataType(C.CUDNN_DATA_HALF) and returns the changed value
+func (d *DataType) Half() DataType { *d = DataType(C.CUDNN_DATA_HALF); return *d }
 
-// Half returns DataType(C.CUDNN_DATA_HALF)
-func (d DataTypeFlag) Half() DataType {
-	return DataType(C.CUDNN_DATA_HALF)
-}
+// UInt8 sets d to DataType(C.CUDNN_DATA_INT8) and returns the changed value
+func (d *DataType) UInt8() DataType { *d = DataType(C.CUDNN_DATA_INT8); return *d }
 
-// UInt8 return DataType(C.CUDNN_DATA_INT8)
-func (d DataTypeFlag) UInt8() DataType {
-	return DataType(C.CUDNN_DATA_UINT8)
-}
+//Int8x32 sets d to  DataType(C.CUDNN_DATA_INT8x32) and returns the changed value -- only supported by sm_72.
+func (d *DataType) Int8x32() DataType { *d = DataType(C.CUDNN_DATA_INT8x32); return *d }
 
-//Int8x32 returns  DataType(C.CUDNN_DATA_INT8x32) -- only supported by sm_72.
-func (d DataTypeFlag) Int8x32() DataType {
-	return DataType(C.CUDNN_DATA_INT8x32)
-}
-
-func (d DataType) c() C.cudnnDataType_t { return C.cudnnDataType_t(d) }
+func (d DataType) c() C.cudnnDataType_t      { return C.cudnnDataType_t(d) }
+func (d *DataType) cptr() *C.cudnnDataType_t { return *(C.cudnnDataType_t)(d) }
 
 /*
 *
@@ -441,24 +396,17 @@ func (d DataType) c() C.cudnnDataType_t { return C.cudnnDataType_t(d) }
 *
  */
 
-//MathTypeFlag used to pass MathType Flags semi-safely through methods.
-type MathTypeFlag struct {
-}
-
-//MathType are flags to set for cudnnMathType_t
+//MathType are flags to set for cudnnMathType_t and can be called by types methods
 type MathType C.cudnnMathType_t
 
-//Default return MathType(C.CUDNN_DEFAULT_MATH)
-func (math MathTypeFlag) Default() MathType {
-	return MathType(C.CUDNN_DEFAULT_MATH)
-}
+//Default sets m to MathType(C.CUDNN_DEFAULT_MATH) and returns changed value
+func (m *MathType) Default() MathType { *m = MathType(C.CUDNN_DEFAULT_MATH); return *m }
 
 //TensorOpMath return MathType(C.CUDNN_TENSOR_OP_MATH)
-func (math MathTypeFlag) TensorOpMath() MathType {
-	return MathType(C.CUDNN_TENSOR_OP_MATH)
-}
+func (m *MathType) TensorOpMath() MathType { *m = MathType(C.CUDNN_TENSOR_OP_MATH); return *m }
 
-func (math MathType) c() C.cudnnMathType_t { return C.cudnnMathType_t(math) }
+func (math MathType) c() C.cudnnMathType_t   { return C.cudnnMathType_t(math) }
+func (m *MathType) cptr() *C.cudnnMathType_t { (*C.cudnnMathType_t)(m) }
 
 /*
 *
@@ -468,47 +416,37 @@ func (math MathType) c() C.cudnnMathType_t { return C.cudnnMathType_t(math) }
 *
  */
 
-//PropagationNANFlag used to return Propagation flags semi-safely through methods
-type PropagationNANFlag struct {
-}
+//NANProp is type for C.cudnnNanPropagation_t used for flags and are called and changed through type's methods
+type NANProp C.cudnnNanPropagation_t
 
-//PropagationNAN  is type for C.cudnnNanPropagation_t used for flags
-type PropagationNAN C.cudnnNanPropagation_t
+//NotPropigate sets p to PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN) and returns that value
+func (p *NANProp) NotPropigate() NANProp { *p = NANProp(C.CUDNN_NOT_PROPAGATE_NAN); return *p }
 
-//NotPropagateNan return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN) flag
-func (p PropagationNANFlag) NotPropagateNan() PropagationNAN {
-	return PropagationNAN(C.CUDNN_NOT_PROPAGATE_NAN)
-}
+//Propigate sets p to PropagationNAN(C.CUDNN_PROPAGATE_NAN) and returns that value
+func (p *NANProp) Propigate() NANProp { *p = NANProp(C.CUDNN_PROPAGATE_NAN); return *p }
 
-//PropagateNan return PropagationNAN(C.CUDNN_PROPAGATE_NAN) flag
-func (p PropagationNANFlag) PropagateNan() PropagationNAN {
-	return PropagationNAN(C.CUDNN_PROPAGATE_NAN)
-}
-
-func (p PropagationNAN) c() C.cudnnNanPropagation_t { return C.cudnnNanPropagation_t(p) }
+func (p NANProp) c() C.cudnnNanPropagation_t     { return C.cudnnNanPropagation_t(p) }
+func (p *NANProp) cptr() C.cudnnNanPropagation_t { return C.cudnnNanPropagation_t(p) }
 
 /*
 *
 *
-*       DeterminismFlag
+*       Determinism
 *
 *
  */
 
-//DeterminismFlag used to pass Determinism flags semi-safely using methods
-type DeterminismFlag struct {
-}
-
-//Determinism is the type for flags that set Determinism
+//Determinism is the type for flags that set Determinism and are called and changed through type's methods
 type Determinism C.cudnnDeterminism_t
 
-//Non returns  Determinism(C.CUDNN_NON_DETERMINISTIC)
-func (d DeterminismFlag) Non() Determinism { return Determinism(C.CUDNN_NON_DETERMINISTIC) }
+func (d *Determinism) cptr() *C.cudnnDeterminism_t { return (*C.cudnnDeterminism_t)(d) }
+func (d Determinism) c() C.cudnnDeterminism_t      { return C.cudnnDeterminism_t(d) }
 
-//Deter returns Determinism(C.CUDNN_DETERMINISTIC)
-func (d DeterminismFlag) Deter() Determinism { return Determinism(C.CUDNN_DETERMINISTIC) }
+//Non returns sets d to Determinism(C.CUDNN_NON_DETERMINISTIC) and returns the value
+func (d *Determinism) Non() Determinism { *d = Determinism(C.CUDNN_NON_DETERMINISTIC); return *d }
 
-func (d Determinism) c() C.cudnnDeterminism_t { return C.cudnnDeterminism_t(d) }
+//Deterministic sets d to Determinism(C.CUDNN_DETERMINISTIC) and returns the value
+func (d *Determinism) Deterministic() { *d = Determinism(C.CUDNN_DETERMINISTIC); return *d }
 
 func (d Determinism) string() string {
 	if d == Determinism(C.CUDNN_NON_DETERMINISTIC) {
@@ -563,6 +501,9 @@ func (t *TensorFormat) Unknown() TensorFormat {
 }
 
 func (t TensorFormat) c() C.cudnnTensorFormat_t { return C.cudnnTensorFormat_t(t) }
+func (t *TensorFormat) cptr() *C.cudnnTensorFormat_t {
+	return (*C.cudnnTensorFormat_t)(t)
+}
 
 //ToString will return a human readable string that can be printed for debugging.
 func (t TensorFormat) ToString() string {

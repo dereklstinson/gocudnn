@@ -6,6 +6,8 @@
 Go Bindings for cuDNN 7.4  using Cuda 10.0 \(Just some Cuda 10.0\) 
 V0.1 is cudnn 7.1 with cuda 10.0
 
+Master is currently broken while I tidy things up.
+
 In a few weeks I will add the 7.5 functions, and moving to cuda 10.1, because I think they added some functions
 to nvjpeg and npp.  
 Also 7.5 might be an api breaking update.  I've been bashing my head with the flag issues.  I personally hate flags. For each Flag I would use an empty struct to pass the flags through methods, but I think, I am going to have the flags themselves pass the different flags as methods and maybe even update themselves to create less clutter.  

@@ -34,7 +34,7 @@ func (b BatchNorm) DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) 
 		return nil, errors.New("dims for descriptor must be 4 or 5")
 	}
 
-descriptor,err:=createtensordescriptor()
+	descriptor, err = createtensordescriptor(true)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +46,7 @@ descriptor,err:=createtensordescriptor()
 		return nil, err
 	}
 
-	 descriptor.dtype, descriptor.dimsarray, descriptor.stride, err = descriptor.GetDescrptor()
-
+	descriptor.frmt, descriptor.dtype, descriptor.dimsarray, descriptor.stride, err = descriptor.GetDescrptor()
 
 	if err != nil {
 		return nil, err
