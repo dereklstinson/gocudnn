@@ -6,7 +6,7 @@
 Go Bindings for cuDNN 7.4  using Cuda 10.0 \(Just some Cuda 10.0\) 
 V0.1 is cudnn 7.1 with cuda 10.0
 
-Master is currently broken while I tidy things up.
+ V0.1_75_101 is currently broken while I fix things up
 
 In a few weeks I will add the 7.5 functions, and moving to cuda 10.1, because I think they added some functions
 to nvjpeg and npp.  
@@ -15,6 +15,7 @@ Also 7.5 might be an api breaking update.  I've been bashing my head with the fl
 
 
 # Back into alpha
+
 I am making the code more like an actual binding. I have seperated the different libraries into their own packages.  
 I would have liked to not use cuda.h, but it is needed to run the kernels.  Its that or you would have to make a shared library every time you make a new kernel.  
 I am adding some nppi.h to the mix as a subpackage.
@@ -23,6 +24,7 @@ Any subpackage library bindings I include will most likely only be made to suppl
 
 
 # SoftMax 
+
 Note on how cudnn uses softmax, because to be honest it isn't entirely clear in the documentation how it works.  
 You place what I like to call the answers in the dy part of the function. y is the output of the softmaxforward function.  dx is the gradient going backward.
 A simplfied look at how this softmax function works for cudnn is dx = [(alpha * y) + dy] + beta *dx (the bracket is the operation). 
