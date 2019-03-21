@@ -18,7 +18,7 @@ type XActivationModeFlag struct {
 }
 
 func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
-	dtf := gocudnn.DataTypeFlag{}
+	var dtf gocudnn.DataType
 	var xaflg XActivationModeFlag
 	if dtype != dtf.Float() {
 		return "error XActivationMode - DataTypeNotSupported"
@@ -38,7 +38,7 @@ func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
 }
 
 func (x XActivationMode) tostringbwd(dtype gocudnn.DataType) string {
-	dtf := gocudnn.DataTypeFlag{}
+	var dtf gocudnn.DataType
 	var xaflg XActivationModeFlag
 	if dtype != dtf.Float() {
 		return "error XActivationMode - DataTypeNotSupported"
@@ -95,10 +95,10 @@ type leakyspecials struct {
 //NewXActivationDescriptor - Creates a descriptor for the xtra functions made for gocudnn.
 //Note: Only trainable activations will be trained.  tmode will be ignored for unsupported activations
 //Note: Only functions requiring coef will get it.  coef will be ignored for unsupported activations
-func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.DataType, nanprop gocudnn.PropagationNAN, coef float64) (*XActivationD, error) {
-	var nanflg gocudnn.PropagationNANFlag
+func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.DataType, nanprop gocudnn.NANProp, coef float64) (*XActivationD, error) {
+	var nanflg gocudnn.NANProp
 	var nan int32
-	if nanflg.NotPropagateNan() == nanprop {
+	if nanflg.NotPropigate() == nanprop {
 		nan = 0
 	} else {
 		nan = 1
@@ -193,7 +193,7 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, 
 	if err != nil {
 		return err
 	}
-	var df gocudnn.DataTypeFlag
+	var df gocudnn.DataType
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
@@ -269,7 +269,7 @@ func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dx
 	if err != nil {
 		return err
 	}
-	var df gocudnn.DataTypeFlag
+	var df gocudnn.DataType
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
@@ -292,7 +292,7 @@ func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.
 	if err != nil {
 		return err
 	}
-	var df gocudnn.DataTypeFlag
+	var df gocudnn.DataType
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
@@ -320,7 +320,7 @@ func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, d
 	if err != nil {
 		return err
 	}
-	var df gocudnn.DataTypeFlag
+	var df gocudnn.DataType
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}

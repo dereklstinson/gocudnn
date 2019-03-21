@@ -11,59 +11,53 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//Algorithm is an empty struct that is used to call algorithm type functions
-type Algorithm struct {
-	Funcs AlgoFuncs
-}
-
 //AlgorithmD holds the C.cudnnAlgorithmDescriptor_t
 type AlgorithmD struct {
 	descriptor C.cudnnAlgorithmDescriptor_t
+	gogc       bool
 }
 
-func (a *AlgorithmD) keepsalive() {
-	runtime.KeepAlive(a)
-}
+//Algorithm is used to pass generic stuff
+type Algorithm C.cudnnAlgorithm_t
 
-//Algos is used to pass generic stuff
-type Algos C.cudnnAlgorithm_t
+func (a Algorithm) c() C.cudnnAlgorithm_t      { return C.cudnnAlgorithm_t(a) }
+func (a *Algorithm) cptr() *C.cudnnAlgorithm_t { return (*C.cudnnAlgorithm_t)(a) }
 
-func (a Algos) c() C.cudnnAlgorithm_t { return C.cudnnAlgorithm_t(a) }
+//CreateAlgorithmDescriptor creates an AlgorithmD that needs to be set
+func CreateAlgorithmDescriptor() (*AlgorithmD, error) {
 
-//NewAlgorithmDescriptor creates and sets an *AlgorthmD
-func (a Algorithm) NewAlgorithmDescriptor(algo Algos) (descriptor *AlgorithmD, err error) {
-
-	var desc C.cudnnAlgorithmDescriptor_t
-	err = Status(C.cudnnCreateAlgorithmDescriptor(&desc)).error("CreateAlgorithmDescriptor")
+	x := new(AlgorithmD)
+	x.gogc = setfinalizer
+	err := Status(C.cudnnCreateAlgorithmDescriptor(&x.descriptor)).error("CreateAlgorithmDescriptor")
 	if err != nil {
 		return nil, err
 	}
-	err = Status(C.cudnnSetAlgorithmDescriptor(
-		desc,
-		algo.c(),
-	)).error("SetAlgorithmDescriptor")
-	descriptor = &AlgorithmD{
-		descriptor: desc,
-	}
 	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroyalgorithmdescriptor)
+		runtime.SetFinalizer(x, destroyalgorithmdescriptor)
 	}
-	return descriptor, err
+	return x, nil
 
 }
+//Set sets the algorthm into the algorithmd
+func (a *AlgorithmD) Set(algo Algorithm) error {
+	return Status(C.cudnnSetAlgorithmDescriptor(
+		a.descriptor,
+		algo.c(),
+	)).error("SetAlgorithmDescriptor")
+}
 
-// GetAlgorithmDescriptor returns a Algorithm
-func (a *AlgorithmD) GetAlgorithmDescriptor() (Algos, error) {
+// Get returns AlgrothmD values a Algorithm.
+func (a *AlgorithmD) Get() (Algorithm, error) {
 	var algo C.cudnnAlgorithm_t
 	err := Status(C.cudnnGetAlgorithmDescriptor(
 		a.descriptor,
 		&algo,
 	)).error("GetAlgorithmDescriptor")
-	return Algos(algo), err
+	return Algorithm(algo), err
 }
 
-//CopyAlgorithmDescriptor returns a copy of AlgorithmD
-func (a *AlgorithmD) CopyAlgorithmDescriptor() (*AlgorithmD, error) {
+//Copy returns a copy of AlgorithmD
+func (a *AlgorithmD) Copy() (*AlgorithmD, error) {
 	var desc C.cudnnAlgorithmDescriptor_t
 	err := Status(C.cudnnCopyAlgorithmDescriptor(
 		a.descriptor,
@@ -77,17 +71,25 @@ func (a *AlgorithmD) CopyAlgorithmDescriptor() (*AlgorithmD, error) {
 	}, nil
 }
 
-//DestroyDescriptor destroys descriptor
-func (a *AlgorithmD) DestroyDescriptor() error {
+//Destroy destroys descriptor. Right now since gocudnn is on go's gc this won't do anything
+func (a *AlgorithmD) Destroy() error {
+	if a.gogc||setfinalizer {
+		return nil
+	}
 	return destroyalgorithmdescriptor(a)
 }
 func destroyalgorithmdescriptor(a *AlgorithmD) error {
-	return Status(C.cudnnDestroyAlgorithmDescriptor(a.descriptor)).error("DestroyDescriptor")
+	err := Status(C.cudnnDestroyAlgorithmDescriptor(a.descriptor)).error("DestroyDescriptor")
+	if err != nil {
+		return err
+	}
+	a = nil
+	return nil
 
 }
 
 //CreateAlgorithmPerformance creates and returns an AlgorithmPerformance //This might have to return an array be an array
-func (a Algorithm) CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, error) {
+func CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, error) {
 	//var algoperf C.cudnnAlgorithmPerformance_t
 	algoperf := make([]C.cudnnAlgorithmPerformance_t, numberToCreate)
 
@@ -95,7 +97,7 @@ func (a Algorithm) CreateAlgorithmPerformance(numberToCreate int32) ([]Algorithm
 		&algoperf[0],
 		C.int(numberToCreate),
 	)).error("CreateAlgorithmPerformance")
-	return calgoperftogoarray(algoperf), err
+	return calgoperftogoarray(algoperf, setfinalizer), err
 }
 
 //SetAlgorithmPerformance sets the algo performance
@@ -128,8 +130,11 @@ func (a *AlgorithmPerformance) GetAlgorithmPerformance() (AlgorithmD, Status, fl
 	return algoD, Status(status), float32(time), uint(mem), err
 }
 
-//DestroyPerformance destroys the perfmance
-func (a *AlgorithmPerformance) DestroyPerformance() error {
+//Destroy destroys the perfmance
+func (a *AlgorithmPerformance) Destroy() error {
+	if a.gogc || setfinalizer {
+		return nil
+	}
 	return destroyalgorithmperformance(a)
 }
 
@@ -140,35 +145,28 @@ func destroyalgorithmperformance(a *AlgorithmPerformance) error {
 	)).error("DestroyPerformance")
 }
 
-func calgoperftogoarray(input []C.cudnnAlgorithmPerformance_t) []AlgorithmPerformance {
+func calgoperftogoarray(input []C.cudnnAlgorithmPerformance_t, gogc bool) []AlgorithmPerformance {
 	size := len(input)
 	output := make([]AlgorithmPerformance, size)
 	for i := 0; i < size; i++ {
+		output[i].gogc = gogc
 		output[i].descriptor = (input[i])
 		output[i].index = C.int(i)
 	}
 	return output
 }
 
-//AlgoFuncs is a nil struct used to calling algo functions
-type AlgoFuncs struct {
-}
-
 //GetAlgorithmSpaceSize gets the size in bytes of the algorithm
 func (a *AlgorithmD) GetAlgorithmSpaceSize(handle *Handle) (uint, error) {
 	var sizet C.size_t
 	err := Status(C.cudnnGetAlgorithmSpaceSize(handle.x, a.descriptor, &sizet)).error("GetAlgorithmSpaceSize")
-	if setkeepalive {
-		keepsalivebuffer(handle, a)
-	}
+
 	return uint(sizet), err
 }
 
 //SaveAlgorithm saves the algorithm to host
 func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbytes uint) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, a, algoSpace)
-	}
+
 	return Status(C.cudnnSaveAlgorithm(
 		handle.x,
 		a.descriptor,
@@ -179,9 +177,7 @@ func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbyt
 
 //RestoreAlgorithm from host
 func (a *AlgorithmD) RestoreAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbytes uint) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, a, algoSpace)
-	}
+
 	return Status(C.cudnnRestoreAlgorithm(
 		handle.x,
 		algoSpace.Ptr(),

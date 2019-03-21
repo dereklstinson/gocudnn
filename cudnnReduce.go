@@ -36,7 +36,7 @@ func (reduce *ReduceTensorD) TensorOP() ReduceTensorOp { return ReduceTensorOp(r
 func (reduce *ReduceTensorD) CompType() DataType { return DataType(reduce.tensorCompType) }
 
 //NanOpt returns the Nan operation flag for the reduce tensor
-func (reduce *ReduceTensorD) NanOpt() PropagationNAN { return PropagationNAN(reduce.tensorNanOpt) }
+func (reduce *ReduceTensorD) NanOpt() NANProp { return NANProp(reduce.tensorNanOpt) }
 
 //Indices returns the indicies for the Reudce tensor
 func (reduce *ReduceTensorD) Indices() ReduceTensorIndices {
@@ -50,7 +50,7 @@ func (reduce *ReduceTensorD) IndicType() IndiciesType { return IndiciesType(redu
 func (red Reduce) NewReduceTensorDescriptor(
 	reduceop ReduceTensorOp,
 	datatype DataType,
-	nanprop PropagationNAN,
+	nanprop NANProp,
 	reducetensorinds ReduceTensorIndices,
 	indicietype IndiciesType) (descriptor *ReduceTensorD, err error) {
 	//	var reduce ReduceTensorD

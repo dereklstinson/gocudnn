@@ -7,23 +7,42 @@ package gocudnn
 import "C"
 import "github.com/dereklstinson/GoCudnn/gocu"
 
-//SoftMax holds the soft max flags and soft max funcs
-type SoftMax struct {
-	Flgs  SoftMaxFlags
-	Funcs SoftMaxFuncs
+//SoftMaxD holds the soft max flags and soft max funcs
+type SoftMaxD struct {
+	set  bool
+	algo C.cudnnSoftmaxAlgorithm_t
+	mode C.cudnnSoftmaxMode_t
 }
 
 //SoftMaxFuncs is a nil struct that is used to call SoftMax Functions
 type SoftMaxFuncs struct {
 }
 
+//CreateSoftMaxDescriptor creates a gocudnn softmax descriptor.  It is not part of cudnn, but I wanted to make the library
+//A little more stream lined after using it for a while
+func CreateSoftMaxDescriptor() *SoftMaxD {
+	return &SoftMaxD{}
+}
+
+//Set sets the soft max algos.
+func (s *SoftMaxD) Set(algo SoftMaxAlgorithm, mode SoftMaxMode) error {
+	s.algo = algo.c()
+	s.mode = mode.c()
+	return nil
+}
+
+//Get gets the softmax descriptor values
+func (s *SoftMaxD) Get() (algo SoftMaxAlgorithm, mode SoftMaxMode, err error) {
+
+	return SoftMaxAlgorithm(s.algo), SoftMaxMode(s.mode), nil
+}
+
 /* Softmax functions: All of the form "output = alpha * Op(inputs) + beta * output" */
 
-//SoftMaxForward performs forward softmax
-func (soft SoftMaxFuncs) SoftMaxForward(
+//Forward performs forward softmax
+func (s *SoftMaxD) Forward(
 	handle *Handle,
-	algo SoftMaxAlgorithm,
-	mode SoftMaxMode,
+
 	alpha float64,
 	xD *TensorD,
 	x gocu.Mem,
@@ -34,8 +53,8 @@ func (soft SoftMaxFuncs) SoftMaxForward(
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnSoftmaxForward(
 		handle.x,
-		algo.c(),
-		mode.c(),
+		s.algo,
+		s.mode,
 		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
@@ -45,11 +64,9 @@ func (soft SoftMaxFuncs) SoftMaxForward(
 	)).error("SoftMaxForward")
 }
 
-//SoftMaxBackward performs the backward softmax
-func (soft SoftMaxFuncs) SoftMaxBackward(
+//Backward performs the backward softmax
+func (s *SoftMaxD) Backward(
 	handle *Handle,
-	algo SoftMaxAlgorithm,
-	mode SoftMaxMode,
 	alpha float64,
 	yD *TensorD,
 	y gocu.Mem,
@@ -63,8 +80,8 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	b := cscalarbydatatype(dxD.dtype, beta)
 	return Status(C.cudnnSoftmaxBackward(
 		handle.x,
-		algo.c(),
-		mode.c(),
+		s.algo,
+		s.mode,
 		a.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
@@ -76,51 +93,39 @@ func (soft SoftMaxFuncs) SoftMaxBackward(
 	)).error("SoftMaxBackward")
 }
 
-//SoftMaxFlags holds all the soft max flag
-type SoftMaxFlags struct {
-	Algo SoftMaxAlgorithmFlag
-	Mode SoftMaxModeFlag
-}
-
-//SoftMaxAlgorithm is used for flags
+//SoftMaxAlgorithm is used for flags and are exposed through its methods
 type SoftMaxAlgorithm C.cudnnSoftmaxAlgorithm_t
 
-//SoftMaxAlgorithmFlag used to pass SoftMaxAlgorithm flags through methods
-type SoftMaxAlgorithmFlag struct {
+//Fast changes s to and returns SoftMaxAlgorithm(C.CUDNN_SOFTMAX_FAST)
+func (s *SoftMaxAlgorithm) Fast() SoftMaxAlgorithm {
+	*s = SoftMaxAlgorithm(C.CUDNN_SOFTMAX_FAST)
+	return *s
 }
 
-//Fast returns SoftMaxAlgorithm(C.CUDNN_SOFTMAX_FAST)
-func (s SoftMaxAlgorithmFlag) Fast() SoftMaxAlgorithm { /* straightforward implementation */
-	return SoftMaxAlgorithm(C.CUDNN_SOFTMAX_FAST)
+//Accurate changes s to and returns SoftMaxAlgorithm(C.CUDNN_SOFTMAX_ACCURATE)
+func (s *SoftMaxAlgorithm) Accurate() SoftMaxAlgorithm {
+	*s = SoftMaxAlgorithm(C.CUDNN_SOFTMAX_ACCURATE)
+	return *s
 }
 
-//Accurate returns SoftMaxAlgorithm(C.CUDNN_SOFTMAX_ACCURATE)
-func (s SoftMaxAlgorithmFlag) Accurate() SoftMaxAlgorithm { /* subtract max from every point to avoid overflow */
-	return SoftMaxAlgorithm(C.CUDNN_SOFTMAX_ACCURATE)
+//Log changes s to and returns SoftMaxAlgorithm(C.CUDNN_SOFTMAX_LOG)
+func (s *SoftMaxAlgorithm) Log() SoftMaxAlgorithm {
+	*s = SoftMaxAlgorithm(C.CUDNN_SOFTMAX_LOG)
+	return *s
 }
 
-//Log returns SoftMaxAlgorithm(C.CUDNN_SOFTMAX_LOG)
-func (s SoftMaxAlgorithmFlag) Log() SoftMaxAlgorithm {
-	return SoftMaxAlgorithm(C.CUDNN_SOFTMAX_LOG)
-}
+func (s SoftMaxAlgorithm) c() C.cudnnSoftmaxAlgorithm_t { return C.cudnnSoftmaxAlgorithm_t(s) }
 
-func (sm SoftMaxAlgorithm) c() C.cudnnSoftmaxAlgorithm_t { return C.cudnnSoftmaxAlgorithm_t(sm) }
-
-//SoftMaxMode is used for softmaxmode flags
+//SoftMaxMode is used for softmaxmode flags and are exposed through its methods
 type SoftMaxMode C.cudnnSoftmaxMode_t
 
-//SoftMaxModeFlag passes SoftMaxMode flags through methods
-type SoftMaxModeFlag struct {
+//Instance changes s to SoftMaxMode(C.CUDNN_SOFTMAX_MODE_INSTANCE) and returns changed value
+func (s *SoftMaxMode) Instance() SoftMaxMode {
+	*s = SoftMaxMode(C.CUDNN_SOFTMAX_MODE_INSTANCE)
+	return *s
 }
 
-//Instance returns SoftMaxMode(C.CUDNN_SOFTMAX_MODE_INSTANCE)
-func (s SoftMaxModeFlag) Instance() SoftMaxMode { /* subtract max from every point to avoid overflow */
-	return SoftMaxMode(C.CUDNN_SOFTMAX_MODE_INSTANCE)
-}
+//Channel changes s to SoftMaxMode(C.CUDNN_SOFTMAX_MODE_CHANNEL) and returns changed value
+func (s *SoftMaxMode) Channel() SoftMaxMode { *s = SoftMaxMode(C.CUDNN_SOFTMAX_MODE_CHANNEL); return *s }
 
-//Channel returns SoftMaxMode(C.CUDNN_SOFTMAX_MODE_CHANNEL)
-func (s SoftMaxModeFlag) Channel() SoftMaxMode {
-	return SoftMaxMode(C.CUDNN_SOFTMAX_MODE_CHANNEL)
-}
-
-func (sm SoftMaxMode) c() C.cudnnSoftmaxMode_t { return C.cudnnSoftmaxMode_t(sm) }
+func (s SoftMaxMode) c() C.cudnnSoftmaxMode_t { return C.cudnnSoftmaxMode_t(s) }

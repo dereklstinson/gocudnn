@@ -19,7 +19,7 @@ type XLossD struct {
 	cpuloss     []float32
 	cpuptr      gocu.Mem
 	flg         XLossModeFlag
-	dflg        gocudnn.DataTypeFlag
+	dflg        gocudnn.DataType
 	memcopykind cudart.MemcpyKind
 }
 

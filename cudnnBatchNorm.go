@@ -11,12 +11,15 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//BatchNorm Holds Batch Normalization Flags and functions, and is used to call Batchnorm desctriptor
-type BatchNorm struct {
-	Flg       BatchNormModeFlag
-	Funcs     batchNormFuncs
-	finalizer bool
+/*
+type BatchNormD struct{
+	mode  C.cudnnBatchNormMode_t
 }
+type BatchNormExD struct{
+	mode C.cudnnBatchNormMode_t
+	ops C.cudnnBatchNormOps_t
+}
+*/
 
 //BatchD is the Descriptor that holds the batchnorm descriptor
 type BatchD struct {
@@ -29,12 +32,16 @@ type BatchD struct {
 * scale, invVariance, bnBias, bnScale tensors. Use this tensor desc for
 * bnScaleBiasMeanVarDesc and bnScaleBiasDiffDesc in Batch Normalization forward and backward functions.
  */
-func (b BatchNorm) DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) (descriptor *TensorD, err error) {
+func DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) (descriptor *TensorD, err error) {
 	if xDesc.dims > 5 || xDesc.dims < 4 {
 		return nil, errors.New("dims for descriptor must be 4 or 5")
 	}
+	if setfinalizer {
+		descriptor, err = createtensordescriptor(true, true)
+	} else {
+		descriptor, err = createtensordescriptor(true, false)
+	}
 
-	descriptor, err = createtensordescriptor(true)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +62,7 @@ func (b BatchNorm) DeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode) 
 }
 
 //GetForwardTrainingExWorkspaceSize gets the forward training ex workspacesize
-func (b BatchNorm) GetForwardTrainingExWorkspaceSize(h *Handle,
+func GetForwardTrainingExWorkspaceSize(h *Handle,
 	mode BatchNormMode,
 	op BatchNormOps,
 	xD, zD, yD, bnScaleBiasMeanVarDesc *TensorD,
@@ -76,7 +83,7 @@ func (b BatchNorm) GetForwardTrainingExWorkspaceSize(h *Handle,
 }
 
 //GetBackwardExWorkspaceSize gets the workspace size in bytes for the backward operation
-func (b BatchNorm) GetBackwardExWorkspaceSize(
+func GetBackwardExWorkspaceSize(
 	h *Handle,
 	mode BatchNormMode,
 	op BatchNormOps,
@@ -89,7 +96,7 @@ func (b BatchNorm) GetBackwardExWorkspaceSize(
 }
 
 //GetTrainingExReserveSpaceSize gets the reserve space size for ex operation
-func (b BatchNorm) GetTrainingExReserveSpaceSize(h *Handle,
+func GetTrainingExReserveSpaceSize(h *Handle,
 	mode BatchNormMode,
 	ops BatchNormOps,
 	actD *ActivationD,
@@ -606,7 +613,7 @@ Version 2
 */
 
 //DeriveBNTensorDescriptorV2 is a new one
-func (b BatchNorm) DeriveBNTensorDescriptorV2(xDesc *TensorD, mode BatchNormMode) (descriptor *BatchD, err error) {
+func DeriveBNTensorDescriptorV2(xDesc *TensorD, mode BatchNormMode) (descriptor *BatchD, err error) {
 	if xDesc.dims > 5 || xDesc.dims < 4 {
 		return nil, errors.New("dims for descriptor must be 4 or 5")
 	}
@@ -814,50 +821,45 @@ FLAGS
 //BatchNormOps are flags for BatchNormOps when needed
 type BatchNormOps C.cudnnBatchNormOps_t
 
-func (bnm BatchNormOps) c() C.cudnnBatchNormOps_t {
-	return C.cudnnBatchNormOps_t(bnm)
+func (b BatchNormOps) c() C.cudnnBatchNormOps_t {
+	return C.cudnnBatchNormOps_t(b)
 }
 
-//BatchNormOpsFlag is a null struct that is used to pass BatchNormOps through methods
-type BatchNormOpsFlag struct {
+//Normal sets b to  BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN) and returns that new value /* do batch normalization only */
+func (b *BatchNormOps) Normal() BatchNormOps { *b = BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN); return *b }
+
+//Activation sets b to BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION) /* do batchNorm, then activation */
+func (b *BatchNormOps) Activation() BatchNormOps {
+	*b = BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION)
+	return *b
 }
 
-//Normal return  BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN) /* do batch normalization only */
-func (bnm BatchNormOpsFlag) Normal() BatchNormOps {
-	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN)
-}
-
-//Activation returns BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION) /* do batchNorm, then activation */
-func (bnm BatchNormOpsFlag) Activation() BatchNormOps {
-	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ACTIVATION)
-}
-
-//AddActivation returns BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION) /* do batchNorm, then elemWiseAdd, then activation */
-func (bnm BatchNormOpsFlag) AddActivation() BatchNormOps {
-	return BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION)
-}
-
-//BatchNormModeFlag used to pass BatchNormMode Flags user safe like using methods
-type BatchNormModeFlag struct {
+//AddActivation sets b to BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION) /* do batchNorm, then elemWiseAdd, then activation */
+func (b *BatchNormOps) AddActivation() BatchNormOps {
+	*b = BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION)
+	return *b
 }
 
 //BatchNormMode used for BatchNormMode Flags
 type BatchNormMode C.cudnnBatchNormMode_t
 
-//PerActivation return  BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION) flag
-func (bnm BatchNormModeFlag) PerActivation() BatchNormMode {
-	return BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION)
+//PerActivation sets b to BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION) and returns that new value
+func (b *BatchNormMode) PerActivation() BatchNormMode {
+	*b = BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION)
+	return *b
 }
 
-//Spatial returns  BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL) flag
-func (bnm BatchNormModeFlag) Spatial() BatchNormMode {
-	return BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL)
+//Spatial sets b to BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL) and returns that new value
+func (b *BatchNormMode) Spatial() BatchNormMode {
+	*b = BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL)
+	return *b
 }
 
-// SpatialPersistent returns  BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT) flag
-func (bnm BatchNormModeFlag) SpatialPersistent() BatchNormMode {
-	return BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT)
+// SpatialPersistent sets b to BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT) and returns that new value
+func (b *BatchNormMode) SpatialPersistent() BatchNormMode {
+	*b = BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT)
+	return *b
 }
-func (bnm BatchNormMode) c() C.cudnnBatchNormMode_t { return C.cudnnBatchNormMode_t(bnm) }
+func (b BatchNormMode) c() C.cudnnBatchNormMode_t { return C.cudnnBatchNormMode_t(b) }
 
 const bnMinEpsilon = float64(1e-5)

@@ -17,40 +17,44 @@ import (
 
 //Handle is a struct containing a cudnnHandle_t which is basically a Pointer to a CUContext
 type Handle struct {
-	x C.cudnnHandle_t
+	x    C.cudnnHandle_t
+	gogc bool
 }
 
 //Pointer is a pointer to the handle
 func (handle *Handle) Pointer() unsafe.Pointer {
-	if setkeepalive {
-		handle.keepsalive()
-	}
+
 	return unsafe.Pointer(handle.x)
 }
 
 //NewHandle creates a handle its basically a Context
-func NewHandle() *Handle {
+//usegogc is for future use.  Right now it is always on the gc.
+func NewHandle(usegogc bool) *Handle {
 
-	var handle C.cudnnHandle_t
-
-	err := Status(C.cudnnCreate(&handle)).error("NewHandle")
+	handle := new(Handle)
+	err := Status(C.cudnnCreate(&handle.x)).error("NewHandle")
 	if err != nil {
 		panic(err)
 	}
-	var handler = &Handle{x: handle}
+
 	if setfinalizer {
-		runtime.SetFinalizer(handler, destroycudnnhandle)
+		handle.gogc = true
+		runtime.SetFinalizer(handle, destroycudnnhandle)
+	} else {
+		if usegogc {
+			handle.gogc = true
+			runtime.SetFinalizer(handle, destroycudnnhandle)
+		}
 	}
 
-	return handler
+	return handle
 }
 
-func (handle *Handle) keepsalive() {
-	runtime.KeepAlive(handle)
-}
-
-//Destroy destroys the handle
+//Destroy destroys the handle if GC is being use it won't do anything.
 func (handle *Handle) Destroy() error {
+	if setfinalizer || handle.gogc {
+		return nil
+	}
 	return destroycudnnhandle(handle)
 }
 func destroycudnnhandle(handle *Handle) error {
@@ -61,9 +65,7 @@ func destroycudnnhandle(handle *Handle) error {
 func (handle *Handle) SetStream(s gocu.Streamer) error {
 
 	y := C.cudnnSetStream(handle.x, C.cudaStream_t(s.Ptr()))
-	if setkeepalive {
-		keepsalivebuffer(handle, s)
-	}
+
 	return Status(y).error("(*Handle).SetStream")
 }
 

@@ -22,10 +22,10 @@ type CTCLoss struct {
 }
 
 //Algo returns al algo
-func (c CTCLossAlgo) Algo() Algos {
+func (c CTCLossAlgo) Algo() Algorithm {
 	var algo C.cudnnAlgorithm_t
 	C.MakeAlgorithmforCTCL(&algo, c.c())
-	return Algos(algo)
+	return Algorithm(algo)
 }
 
 //CTCLossD holdes the C.cudnnCTCLossDescriptor_t

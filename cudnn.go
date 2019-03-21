@@ -21,7 +21,7 @@ const DimMax = int32(8)
 //CScalarByDataType takes the DataType flag and puts num into a CScalar interface. The value of num will be bound by what is passed for DataType.
 //If a DataType isn't supported by the function it will return nil.
 func cscalarbydatatype(dtype DataType, num float64) gocu.CScalar {
-	var x DataTypeFlag //CUDNN_DATATYPE_FLOAT
+	var x DataType //CUDNN_DATATYPE_FLOAT
 	switch dtype {
 	case x.Double():
 		return gocu.CDouble(num)
@@ -48,7 +48,7 @@ func cscalarbydatatype(dtype DataType, num float64) gocu.CScalar {
 //CScalarByDataType takes the DataType flag and puts num into a CScalar interface. The value of num will be bound by what is passed for DataType.
 //If a DataType isn't supported by the function it will return nil.
 func cscalarbydatatypeforsettensor(dtype DataType, num float64) gocu.CScalar {
-	var x DataTypeFlag //CUDNN_DATATYPE_FLOAT
+	var x DataType //CUDNN_DATATYPE_FLOAT
 	switch dtype {
 	case x.Double():
 		return gocu.CDouble(num)

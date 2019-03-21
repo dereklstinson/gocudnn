@@ -340,7 +340,7 @@ func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, x gocu.Mem, yDesc *gocudnn.TensorD, y gocu.Mem, hstride int32, wstride int32, S2B bool) error {
 
 	frmt, dtype, xdims, _, err := xDesc.GetDescrptor()
-	var dflag gocudnn.DataTypeFlag
+	var dflag gocudnn.DataType
 	if dtype != dflag.Float() {
 		return errors.New("Only Supported dtype is float32")
 	}
@@ -489,7 +489,7 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *gocudnn.TensorD,
 	if err != nil {
 		return 255, 255, nil, err
 	}
-	var dflag gocudnn.DataTypeFlag
+	var dflag gocudnn.DataType
 	if dtype != dflag.Float() {
 		return 255, 255, nil, errors.New("Only Supported Format is float32")
 	}
@@ -529,7 +529,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *gocudnn.TensorD,
 	if err != nil {
 		return 255, 255, nil, err
 	}
-	var dflag gocudnn.DataTypeFlag
+	var dflag gocudnn.DataType
 	if dtype != dflag.Float() {
 		return 255, 255, nil, errors.New("Only Supported Format is float32")
 	}
@@ -585,7 +585,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *gocudnn.Tens
 	if err != nil {
 		return 255, 255, nil, nil, err
 	}
-	var dflag gocudnn.DataTypeFlag
+	var dflag gocudnn.DataType
 	if dtype != dflag.Float() {
 		return 255, 255, nil, nil, errors.New("Only Supported Format is float32")
 	}

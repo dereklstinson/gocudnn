@@ -22,19 +22,6 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//Convolution is a helper struct that is helpfun when coding in something like vs code. It will allow methods and flags to be
-//easily accessed through intellisense.
-type Convolution struct {
-	Funcs ConvolutionFuncs
-	Flgs  ConvolutionFlags
-}
-
-//ConvolutionFuncs contains the different operations that can be done with convolution
-type ConvolutionFuncs struct {
-	Fwd ConvolutionFwdFuncs
-	Bwd ConvolutionBwdFuncs
-}
-
 /*
 
 
@@ -47,71 +34,58 @@ Descriptors
 type ConvolutionD struct {
 	descriptor C.cudnnConvolutionDescriptor_t
 	dims       C.int
-	flag       descflag
+	isconv2d   bool
 }
 
-//NewConvolution2dDescriptor creates and sets a 2d convolution descriptor
-func (conv Convolution) NewConvolution2dDescriptor(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) (descriptor *ConvolutionD, err error) {
-	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) != 2 {
-		return nil, errors.New("pad stride and dialation need to be size 2")
-	}
-	var desc C.cudnnConvolutionDescriptor_t
-	err = Status(C.cudnnCreateConvolutionDescriptor(&desc)).error("NewConvolution2dDescriptor-create")
+const convolutionnd2dtestflag = true
+
+//CreateConvolutionDescriptor creates a convolution descriptor
+func CreateConvolutionDescriptor() (*ConvolutionD, error) {
+	d := new(ConvolutionD)
+	err := Status(C.cudnnCreateConvolutionDescriptor(&d.descriptor)).error("NewConvolution2dDescriptor-create")
 	if err != nil {
 		return nil, err
+	}
+	if setfinalizer {
+		runtime.SetFinalizer(d, destroyconvolutiondescriptor)
+	}
+	return d, nil
+}
+
+//Set2D sets convolution descriptor to 2D
+func (c *ConvolutionD) Set2D(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
+	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) != 2 {
+		return errors.New("pad stride and dialation need to be size 2")
 	}
 	cdata := data.c()
 	cmode := mode.c()
 	cpad := int32Tocint(pad)
 	cstride := int32Tocint(stride)
 	cdialation := int32Tocint(dialation)
+	c.isconv2d = true
+	if convolutionnd2dtestflag {
+		dims := C.int(len(pad))
+		return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-Set2D")
 
-	err = Status(C.cudnnSetConvolution2dDescriptor(desc, cpad[0], cpad[1], cstride[0], cstride[1], cdialation[0], cdialation[1], cmode, cdata)).error("NewConvolution2dDescriptor-set")
-	if err != nil {
-		return nil, err
 	}
-	descriptor = &ConvolutionD{descriptor: desc, dims: 2, flag: t2d}
-	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroyconvolutiondescriptor)
-	}
-	return descriptor, nil
+	return Status(C.cudnnSetConvolution2dDescriptor(c.descriptor, cpad[0], cpad[1], cstride[0], cstride[1], cdialation[0], cdialation[1], cmode, cdata)).error("NewConvolution2dDescriptor-set")
 }
 
-//NewConvolutionNdDescriptor creates and sets a new Convolution ND descriptor
-func (conv Convolution) NewConvolutionNdDescriptor(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) (descriptor *ConvolutionD, err error) {
-	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) < 2 {
-		return nil, errors.New("pad stride and dialation need to be size 2 or greater")
-	}
-	var desc C.cudnnConvolutionDescriptor_t
-	err = Status(C.cudnnCreateConvolutionDescriptor(&desc)).error("NewConvolution2dDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	cdata := C.cudnnDataType_t(data)
-	cmode := C.cudnnConvolutionMode_t(mode)
+//SetND sets the convolution descriptor to ND
+func (c *ConvolutionD) SetND(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
+	cdata := data.c()
+	cmode := mode.c()
 	cpad := int32Tocint(pad)
 	cstride := int32Tocint(stride)
 	cdialation := int32Tocint(dialation)
-	//var holder C.int
 	dims := C.int(len(pad))
-	err = Status(C.cudnnSetConvolutionNdDescriptor(desc, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &ConvolutionD{descriptor: desc, dims: dims, flag: tnd}
-	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroyconvolutiondescriptor)
-	}
-	return descriptor, nil
+	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
+
 }
 
-func (c *ConvolutionD) keepsalive() {
-	runtime.KeepAlive(c)
-}
-
-//GetDescriptor gets returns the values used to make the convolution descriptor
-func (c *ConvolutionD) GetDescriptor() (ConvolutionMode, DataType, []int32, []int32, []int32, error) {
-	if c.flag == t2d {
+//Get gets returns the values used to make the convolution descriptor
+func (c *ConvolutionD) Get() (ConvolutionMode, DataType, []int32, []int32, []int32, error) {
+	if !convolutionnd2dtestflag {
 		var padh C.int
 		var padw C.int
 		var u C.int
@@ -195,10 +169,10 @@ func destroyconvolutiondescriptor(c *ConvolutionD) error {
 /* helper function to provide the convolution algo that fit best the requirement */
 
 //Algo returns an Algorithm struct
-func (cbd ConvBwdDataAlgo) Algo() Algos {
+func (c ConvBwdDataAlgo) Algo() Algorithm {
 	var algorithm C.cudnnAlgorithm_t
-	C.MakeAlgorithmforBWDData(&algorithm, cbd.c())
-	return Algos(algorithm)
+	C.MakeAlgorithmforBWDData(&algorithm, c.c())
+	return Algorithm(algorithm)
 
 }
 
@@ -226,8 +200,8 @@ func convertConvBwdDataAlgoPerformance(input C.cudnnConvolutionBwdDataAlgoPerf_t
 	return x
 }
 
-func (cbd ConvBwdDataAlgo) print() {
-	switch cbd {
+func (c ConvBwdDataAlgo) print() {
+	switch c {
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0):
 		fmt.Println("ConvBwdDataAlgo0")
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1):
@@ -258,7 +232,7 @@ func (cbd ConvBwdDataAlgoPerformance) Print() {
 	fmt.Println("MathType:", cbd.MathType)
 }
 
-//GetConvolutionBackwardDataAlgorithmMaxCount returns the max number of algos
+//GetConvolutionBackwardDataAlgorithmMaxCount returns the max number of Algorithm
 func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	x := Status(C.cudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionBackwardDataAlgorithmMaxCount")
@@ -469,14 +443,14 @@ func (cbf ConvolutionBwdFuncs) Im2Col(
 }
 
 //Algo returns an Algorithm Struct
-func (cb ConvBwdFiltAlgo) Algo() Algos {
+func (c ConvBwdFiltAlgo) Algo() Algorithm {
 	var algorithm C.cudnnAlgorithm_t
-	C.MakeAlgorithmforBWDFilter(&algorithm, cb.c())
-	return Algos(algorithm)
+	C.MakeAlgorithmforBWDFilter(&algorithm, c.c())
+	return Algorithm(algorithm)
 }
 
-func (cb ConvBwdFiltAlgo) print() {
-	switch cb {
+func (c ConvBwdFiltAlgo) print() {
+	switch c {
 	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0):
 		fmt.Println("ConvBwdFiltAlgo0")
 	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1):
@@ -535,7 +509,7 @@ func (cb ConvBwdFiltAlgoPerformance) Print() {
 type ConvolutionBwdFuncs struct {
 }
 
-//GetConvolutionBackwardFilterAlgorithmMaxCount returns the max number of algos
+//GetConvolutionBackwardFilterAlgorithmMaxCount returns the max number of Algorithm
 func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithmMaxCount(handle *Handle) (int32, error) {
 
 	var count C.int
@@ -743,15 +717,15 @@ func (c *ConvolutionD) BackwardFilter(
 }
 
 //Algo returns an Algorithm Struct
-func (a ConvFwdAlgo) Algo() Algos {
+func (c ConvFwdAlgo) Algo() Algorithm {
 	var algorithm C.cudnnAlgorithm_t
-	C.MakeAlgorithmforFWD(&algorithm, a.c())
-	return Algos(algorithm)
+	C.MakeAlgorithmforFWD(&algorithm, c.c())
+	return Algorithm(algorithm)
 }
 
-func (a ConvFwdAlgo) toString() string {
+func (c ConvFwdAlgo) toString() string {
 	var x string
-	switch a {
+	switch c {
 	case ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM):
 		x = "Implicit Gemm"
 	case ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM):
@@ -815,7 +789,7 @@ func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFw
 type ConvolutionFwdFuncs struct {
 }
 
-//GetConvolutionForwardAlgorithmMaxCount returns the max number of algos
+//GetConvolutionForwardAlgorithmMaxCount returns the max number of Algorithm
 func (cfo ConvolutionFwdFuncs) GetConvolutionForwardAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	x := Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionForwardAlgorithmMaxCount")
@@ -884,10 +858,10 @@ func (cfo ConvolutionFwdFuncs) GetConvolutionForwardAlgorithm(
 	wD *FilterD,
 	cD *ConvolutionD,
 	yD *TensorD,
-	pref ConvolutionFwdPreference,
+	pref ConvolutionForwardPref,
 	wsmemlimit uint) (ConvFwdAlgo, error) {
 	var algo C.cudnnConvolutionFwdAlgo_t
-	err := Status(C.cudnnGetConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, cD.descriptor, yD.descriptor, C.cudnnConvolutionFwdPreference_t(pref), C.size_t(wsmemlimit), &algo)).error("GetConvolutionForwardAlgorithm")
+	err := Status(C.cudnnGetConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, cD.descriptor, yD.descriptor, pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionForwardAlgorithm")
 
 	return ConvFwdAlgo(algo), err
 }
@@ -1043,49 +1017,46 @@ Flags
 //ConvolutionFlags is used to store the different Convolution Flags.  Hopefully it can make it easier when
 //Using something like VSCode.
 type ConvolutionFlags struct {
-	Mode ConvolutionModeFlag
+	Mode ConvolutionMode
 	Bwd  ConvolutionBwdFlags
 	Fwd  ConvolutionFwdFlags
 }
 
 //ConvolutionFwdFlags holds the different flags used for the convlution fwd
 type ConvolutionFwdFlags struct {
-	Pref ConvolutionFwdPrefFlag
-	Algo ConvFwdAlgoFlag
+	Pref ConvolutionForwardPref
+	Algo ConvFwdAlgo
 }
 
 //ConvolutionBwdFlags holds the different type of BwdConvolutionFlags
 type ConvolutionBwdFlags struct {
-	DataPref ConvBwdDataPrefFlag
-	DataAlgo ConvBwdDataAlgoFlag
-	FltrPref ConvBwdFilterPrefFlag
-	FltrAlgo ConvBwdFiltAlgoFlag
+	DataPref ConvBwdDataPref
+	DataAlgo ConvBwdDataAlgo
+	FltrPref ConvBwdFilterPref
+	FltrAlgo ConvBwdFiltAlgo
 }
 
 /*
 *
 *
-*       ConvolutionModeFlag
+*       ConvolutionMode
 *
 *
  */
 
-//ConvolutionModeFlag is used to pass Convolution Mode Flags in a
-//semi-safe way for human users by using methods
-type ConvolutionModeFlag struct {
-}
-
 //ConvolutionMode is the type to describe the convolution mode flags
 type ConvolutionMode C.cudnnConvolutionMode_t
 
-//Convolution returns  ConvolutionMode(C.CUDNN_CONVOLUTION)
-func (c ConvolutionModeFlag) Convolution() ConvolutionMode {
-	return ConvolutionMode(C.CUDNN_CONVOLUTION)
+//Convolution sets and returns value of c to ConvolutionMode(C.CUDNN_CONVOLUTION)
+func (c *ConvolutionMode) Convolution() ConvolutionMode {
+	*c = ConvolutionMode(C.CUDNN_CONVOLUTION)
+	return *c
 }
 
-// CrossCorrelation returns ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
-func (c ConvolutionModeFlag) CrossCorrelation() ConvolutionMode {
-	return ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
+// CrossCorrelation n sets and returns value of c to  ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
+func (c *ConvolutionMode) CrossCorrelation() ConvolutionMode {
+	*c = ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
+	return *c
 }
 
 func (c ConvolutionMode) c() C.cudnnConvolutionMode_t { return C.cudnnConvolutionMode_t(c) }
@@ -1098,30 +1069,29 @@ func (c ConvolutionMode) c() C.cudnnConvolutionMode_t { return C.cudnnConvolutio
 *
  */
 
-//ConvBwdDataPrefFlag used to pass ConvBwdDataPref flags through methods
-type ConvBwdDataPrefFlag struct {
-}
-
-//ConvBwdDataPref used for flags on bwddatapref
+//ConvBwdDataPref used for flags on bwddatapref exposing them through methods
 type ConvBwdDataPref C.cudnnConvolutionBwdDataPreference_t
 
-//NoWorkSpace returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE)
-func (c ConvBwdDataPrefFlag) NoWorkSpace() ConvBwdDataPref {
-	return ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE)
+//NoWorkSpace sets c to returns ConvBwdDataPref( C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE) and returns value of c
+func (c *ConvBwdDataPref) NoWorkSpace() ConvBwdDataPref {
+	*c = ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE)
+	return *c
 }
 
-//PreferFastest returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
-func (c ConvBwdDataPrefFlag) PreferFastest() ConvBwdDataPref {
-	return ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST)
+//PreferFastest  sets c to ConvBwdDataPref( C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST) and returns value of c
+func (c *ConvBwdDataPref) PreferFastest() ConvBwdDataPref {
+	*c = ConvBwdDataPref(C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
+	return *c
 }
 
-//SpecifyWorkSpaceLimit returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
-func (c ConvBwdDataPrefFlag) SpecifyWorkSpaceLimit() ConvBwdDataPref {
-	return ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_SPECIFY_WORKSPACE_LIMIT)
+//SpecifyWorkSpaceLimit  sets c to ConvBwdDataPref( C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)and returns value of c
+func (c *ConvBwdDataPref) SpecifyWorkSpaceLimit() ConvBwdDataPref {
+	*c = ConvBwdDataPref(C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
+	return *c
 }
 
-func (cbd ConvBwdDataPref) c() C.cudnnConvolutionBwdDataPreference_t {
-	return C.cudnnConvolutionBwdDataPreference_t(cbd)
+func (c ConvBwdDataPref) c() C.cudnnConvolutionBwdDataPreference_t {
+	return C.cudnnConvolutionBwdDataPreference_t(c)
 }
 
 /*
@@ -1132,50 +1102,52 @@ func (cbd ConvBwdDataPref) c() C.cudnnConvolutionBwdDataPreference_t {
 *
  */
 
-//ConvBwdDataAlgoFlag is used to pass ConvBwdDataAlgo Flags
-type ConvBwdDataAlgoFlag struct {
-}
-
-//ConvBwdDataAlgo used for flags in the bacward data algorithms
+//ConvBwdDataAlgo used for flags in the bacward data algorithms  exposing them through methods
 type ConvBwdDataAlgo C.cudnnConvolutionBwdDataAlgo_t
 
-//Algo0 return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0) /* non-deterministic */
-func (c ConvBwdDataAlgoFlag) Algo0() ConvBwdDataAlgo {
-	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0)
+//Algo0  sets c to  ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0)  and returns value of c /* non-deterministic */
+func (c *ConvBwdDataAlgo) Algo0() ConvBwdDataAlgo {
+	*c = ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0)
+	return *c
 }
 
-//Algo1 return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1)
-func (c ConvBwdDataAlgoFlag) Algo1() ConvBwdDataAlgo {
-	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1)
+//Algo1  sets c to  ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1)  and returns value of c
+func (c *ConvBwdDataAlgo) Algo1() ConvBwdDataAlgo {
+	*c = ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1)
+	return *c
 }
 
-//FFT return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT)
-func (c ConvBwdDataAlgoFlag) FFT() ConvBwdDataAlgo {
-	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT)
+//FFT  sets c to  ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT)  and returns value of c
+func (c *ConvBwdDataAlgo) FFT() ConvBwdDataAlgo {
+	*c = ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT)
+	return *c
 }
 
-//FFTTiling return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING)
-func (c ConvBwdDataAlgoFlag) FFTTiling() ConvBwdDataAlgo {
-	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING)
+//FFTTiling  sets c to  ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING)  and returns value of c
+func (c *ConvBwdDataAlgo) FFTTiling() ConvBwdDataAlgo {
+	*c = ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING)
+	return *c
 }
 
-//Winograd 	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD)
-func (c ConvBwdDataAlgoFlag) Winograd() ConvBwdDataAlgo {
-	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD)
+//Winograd 	 sets c to  ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD)  and returns value of c
+func (c *ConvBwdDataAlgo) Winograd() ConvBwdDataAlgo {
+	*c = ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD)
+	return *c
 }
 
-//WinogradNonFused return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED)
-func (c ConvBwdDataAlgoFlag) WinogradNonFused() ConvBwdDataAlgo {
-	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED)
+//WinogradNonFused  sets c to  ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED)  and returns value of c
+func (c *ConvBwdDataAlgo) WinogradNonFused() ConvBwdDataAlgo {
+	*c = ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED)
+	return *c
 }
 
-//Count return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT)
-func (c ConvBwdDataAlgoFlag) Count() ConvBwdDataAlgo {
-	return ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT)
+//Count  sets c to  ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT)  and returns value of c
+func (c *ConvBwdDataAlgo) Count() ConvBwdDataAlgo {
+	*c = ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT)
+	return *c
 }
-
-func (cbd ConvBwdDataAlgo) c() C.cudnnConvolutionBwdDataAlgo_t {
-	return C.cudnnConvolutionBwdDataAlgo_t(cbd)
+func (c ConvBwdDataAlgo) c() C.cudnnConvolutionBwdDataAlgo_t {
+	return C.cudnnConvolutionBwdDataAlgo_t(c)
 }
 
 /*
@@ -1186,30 +1158,29 @@ func (cbd ConvBwdDataAlgo) c() C.cudnnConvolutionBwdDataAlgo_t {
 *
  */
 
-//ConvBwdFilterPref are used for flags for the backwds filters
+//ConvBwdFilterPref are used for flags for the backwds filters  exposing them through methods
 type ConvBwdFilterPref C.cudnnConvolutionBwdFilterPreference_t
 
-//ConvBwdFilterPrefFlag is used to pass ConvBwdFilterPref flags through methods
-type ConvBwdFilterPrefFlag struct {
+//NoWorkSpace sets c to  ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)  and returns value of c
+func (c *ConvBwdFilterPref) NoWorkSpace() ConvBwdFilterPref {
+	*c = ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
+	return *c
 }
 
-//NoWorkSpace return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
-func (c ConvBwdFilterPrefFlag) NoWorkSpace() ConvBwdFilterPref {
-	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
+//PrefFastest sets c to  ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)  and returns value of c
+func (c *ConvBwdFilterPref) PrefFastest() ConvBwdFilterPref {
+	*c = ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
+	return *c
 }
 
-//PrefFastest return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)
-func (c ConvBwdFilterPrefFlag) PrefFastest() ConvBwdFilterPref {
-	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)
+//SpecifyWorkSpaceLimit sets c to  ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)  and returns value of c
+func (c *ConvBwdFilterPref) SpecifyWorkSpaceLimit() ConvBwdFilterPref {
+	*c = ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
+	return *c
 }
 
-//SpecifyWorkSpaceLimit return ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
-func (c ConvBwdFilterPrefFlag) SpecifyWorkSpaceLimit() ConvBwdFilterPref {
-	return ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_SPECIFY_WORKSPACE_LIMIT)
-}
-
-func (bw ConvBwdFilterPref) c() C.cudnnConvolutionBwdFilterPreference_t {
-	return C.cudnnConvolutionBwdFilterPreference_t(bw)
+func (c ConvBwdFilterPref) c() C.cudnnConvolutionBwdFilterPreference_t {
+	return C.cudnnConvolutionBwdFilterPreference_t(c)
 }
 
 /*
@@ -1220,54 +1191,58 @@ func (bw ConvBwdFilterPref) c() C.cudnnConvolutionBwdFilterPreference_t {
 *
  */
 
-//ConvBwdFiltAlgo Used for ConvBwdFiltAlgo flags
+//ConvBwdFiltAlgo Used for ConvBwdFiltAlgo flags  exposing them through methods
 type ConvBwdFiltAlgo C.cudnnConvolutionBwdFilterAlgo_t
 
-//ConvBwdFiltAlgoFlag is used to pass ConvBwdFiltAlgo Flags
-type ConvBwdFiltAlgoFlag struct {
+//Algo0 sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0) and returns value of c /* non-deterministic */
+func (c *ConvBwdFiltAlgo) Algo0() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0)
+	return *c
 }
 
-//Algo0 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0) /* non-deterministic */
-func (c ConvBwdFiltAlgoFlag) Algo0() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0)
+//Algo1 sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1) and returns value of c
+func (c *ConvBwdFiltAlgo) Algo1() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1)
+	return *c
 }
 
-//Algo1 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1)
-func (c ConvBwdFiltAlgoFlag) Algo1() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1)
+//FFT sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT) and returns value of c
+func (c *ConvBwdFiltAlgo) FFT() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT)
+	return *c
 }
 
-//FFT return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT)
-func (c ConvBwdFiltAlgoFlag) FFT() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT)
+//Algo3 sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3) and returns value of c
+func (c *ConvBwdFiltAlgo) Algo3() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3)
+	return *c
 }
 
-//Algo3 return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3)
-func (c ConvBwdFiltAlgoFlag) Algo3() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3)
+//Winograd 	sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD) and returns value of c
+func (c *ConvBwdFiltAlgo) Winograd() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD)
+	return *c
 }
 
-//Winograd 	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD)
-func (c ConvBwdFiltAlgoFlag) Winograd() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD)
+//WinogradNonFused sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED) and returns value of c
+func (c *ConvBwdFiltAlgo) WinogradNonFused() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED)
+	return *c
 }
 
-//WinogradNonFused return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED)
-func (c ConvBwdFiltAlgoFlag) WinogradNonFused() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED)
+//FFTTiling sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING) and returns value of c
+func (c *ConvBwdFiltAlgo) FFTTiling() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING)
+	return *c
 }
 
-//FFTTiling return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING)
-func (c ConvBwdFiltAlgoFlag) FFTTiling() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING)
+//Count sets c to  ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT) and returns value of c
+func (c *ConvBwdFiltAlgo) Count() ConvBwdFiltAlgo {
+	*c = ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT)
+	return *c
 }
-
-//Count return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT)
-func (c ConvBwdFiltAlgoFlag) Count() ConvBwdFiltAlgo {
-	return ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT)
-}
-func (cb ConvBwdFiltAlgo) c() C.cudnnConvolutionBwdFilterAlgo_t {
-	return C.cudnnConvolutionBwdFilterAlgo_t(cb)
+func (c ConvBwdFiltAlgo) c() C.cudnnConvolutionBwdFilterAlgo_t {
+	return C.cudnnConvolutionBwdFilterAlgo_t(c)
 }
 
 /*
@@ -1278,29 +1253,29 @@ func (cb ConvBwdFiltAlgo) c() C.cudnnConvolutionBwdFilterAlgo_t {
 *
  */
 
-// ConvolutionFwdPreference used for flags
-type ConvolutionFwdPreference C.cudnnConvolutionFwdPreference_t
+// ConvolutionForwardPref used for flags  exposing them through methods
+type ConvolutionForwardPref C.cudnnConvolutionFwdPreference_t
 
-/* helper function to provide the convolution algo that fit best the requirement */
-//these are flags for ConvolutionFwdPreference
-
-//ConvolutionFwdPrefFlag transfer flags for ConvolutionFwdPreference through methods
-type ConvolutionFwdPrefFlag struct {
+func (c ConvolutionForwardPref) c() C.cudnnConvolutionFwdPreference_t {
+	return C.cudnnConvolutionFwdPreference_t(c)
 }
 
-//NoWorkSpace returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE)
-func (c ConvolutionFwdPrefFlag) NoWorkSpace() ConvolutionFwdPreference {
-	return ConvolutionFwdPreference(C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE)
+//NoWorkSpace sets c to ConvolutionForwardPref( C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE) and returns value of c
+func (c *ConvolutionForwardPref) NoWorkSpace() ConvolutionForwardPref {
+	*c = ConvolutionForwardPref(C.CUDNN_CONVOLUTION_FWD_NO_WORKSPACE)
+	return *c
 }
 
-//PreferFastest returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
-func (c ConvolutionFwdPrefFlag) PreferFastest() ConvolutionFwdPreference {
-	return ConvolutionFwdPreference(C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
+//PreferFastest returns ConvolutionForwardPref( C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
+func (c *ConvolutionForwardPref) PreferFastest() ConvolutionForwardPref {
+	*c = ConvolutionForwardPref(C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
+	return *c
 }
 
-//SpecifyWorkSpaceLimit returns ConvolutionFwdPreference( C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
-func (c ConvolutionFwdPrefFlag) SpecifyWorkSpaceLimit() ConvolutionFwdPreference {
-	return ConvolutionFwdPreference(C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
+//SpecifyWorkSpaceLimit returns ConvolutionForwardPref( C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
+func (c *ConvolutionForwardPref) SpecifyWorkSpaceLimit() ConvolutionForwardPref {
+	*c = ConvolutionForwardPref(C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
+	return *c
 }
 
 /*
@@ -1311,58 +1286,60 @@ func (c ConvolutionFwdPrefFlag) SpecifyWorkSpaceLimit() ConvolutionFwdPreference
 *
  */
 
-//ConvFwdAlgo flags for cudnnConvFwdAlgo_t
+//ConvFwdAlgo flags for cudnnConvFwdAlgo_t  exposing them through methods
 type ConvFwdAlgo C.cudnnConvolutionFwdAlgo_t
 
-//ConvFwdAlgoFlag transfer flags for ConvFwdAlgo through methods
-type ConvFwdAlgoFlag struct {
+//ImplicitGemm sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM) and returns value of c
+func (c *ConvFwdAlgo) ImplicitGemm() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM)
+	return *c
 }
 
-//ImplicitGemm returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM)
-func (c ConvFwdAlgoFlag) ImplicitGemm() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM)
+//ImplicitPrecompGemm sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM) and returns value of c
+func (c *ConvFwdAlgo) ImplicitPrecompGemm() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM)
+	return *c
 }
 
-//ImplicitPrecompGemm returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM)
-func (c ConvFwdAlgoFlag) ImplicitPrecompGemm() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM)
+//Gemm sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM) and returns value of c
+func (c *ConvFwdAlgo) Gemm() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM)
+	return *c
 }
 
-//Gemm returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM)
-func (c ConvFwdAlgoFlag) Gemm() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM)
+//Direct sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT) and returns value of c
+func (c *ConvFwdAlgo) Direct() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT)
+	return *c
 }
 
-//Direct returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT)
-func (c ConvFwdAlgoFlag) Direct() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT)
+//FFT sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT) and returns value of c
+func (c *ConvFwdAlgo) FFT() ConvFwdAlgo { *c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT); return *c }
+
+//FFTTiling sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING) and returns value of c
+func (c *ConvFwdAlgo) FFTTiling() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING)
+	return *c
 }
 
-//FFT returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT)
-func (c ConvFwdAlgoFlag) FFT() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT)
+//WinoGrad sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD) and returns value of c
+func (c *ConvFwdAlgo) WinoGrad() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD)
+	return *c
 }
 
-//FFTTiling returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING)
-func (c ConvFwdAlgoFlag) FFTTiling() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING)
+//WinoGradNonFused sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED) and returns value of c
+func (c *ConvFwdAlgo) WinoGradNonFused() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED)
+	return *c
 }
 
-//WinoGrad  returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD)
-func (c ConvFwdAlgoFlag) WinoGrad() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD)
+//Count sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT) and returns value of c
+func (c *ConvFwdAlgo) Count() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
+	return *c
 }
 
-//WinoGradNonFused   returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED)
-func (c ConvFwdAlgoFlag) WinoGradNonFused() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED)
-}
-
-//Count    returns ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
-func (c ConvFwdAlgoFlag) Count() ConvFwdAlgo {
-	return ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT)
-}
-
-func (a ConvFwdAlgo) c() C.cudnnConvolutionFwdAlgo_t {
-	return C.cudnnConvolutionFwdAlgo_t(a)
+func (c ConvFwdAlgo) c() C.cudnnConvolutionFwdAlgo_t {
+	return C.cudnnConvolutionFwdAlgo_t(c)
 }

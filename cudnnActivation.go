@@ -18,14 +18,15 @@ type ActivationD struct {
 //CreateActivationDescriptor creates an activation descriptor
 func CreateActivationDescriptor() (*ActivationD, error) {
 	desc := new(ActivationD)
-	err = Status(C.cudnnCreateActivationDescriptor(desc.descriptor)).error("NewActivationDescriptor-create")
+	err := Status(C.cudnnCreateActivationDescriptor(&desc.descriptor)).error("NewActivationDescriptor-create")
 	if setfinalizer {
 		runtime.SetFinalizer(desc, destroyactivationdescriptor)
 	}
 	return desc, err
 }
 
-func (a *ActivationD) Set(Mode ActivationMode, nan NANProp, ceof float64) error {
+//Set sets the activation operation according to the settings passed
+func (a *ActivationD) Set(mode ActivationMode, nan NANProp, coef float64) error {
 	return Status(C.cudnnSetActivationDescriptor(a.descriptor, mode.c(), nan.c(), C.double(coef))).error("NewActivationDescriptor-set")
 }
 
@@ -117,4 +118,4 @@ func (a *ActivationMode) Identity() ActivationMode {
 	return *a
 }
 func (a ActivationMode) c() C.cudnnActivationMode_t      { return C.cudnnActivationMode_t(a) }
-func (a *ActivationMode) cptr() *C.cudnnActivationMode_t { (C.cudnnActivationMode_t)(a) }
+func (a *ActivationMode) cptr() *C.cudnnActivationMode_t { return (*C.cudnnActivationMode_t)(a) }

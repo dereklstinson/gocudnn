@@ -21,22 +21,23 @@ type RNN struct {
 }
 
 //Algo returns an Algorithm used for
-func (r RNNAlgo) Algo() Algos {
+func (r RNNAlgo) Algo() Algorithm {
 	var algorithm C.cudnnAlgorithm_t
 	C.MakeAlgorithmforRNN(&algorithm, r.c())
-	return Algos(algorithm)
+	return Algorithm(algorithm)
 }
 
 //AlgorithmPerformance go typed C.cudnnAlgorithmPerformance_t
 type AlgorithmPerformance struct {
 	descriptor C.cudnnAlgorithmPerformance_t
 	index      C.int
+	gogc       bool
 }
 
 //RNND  holdes Rnn descriptor
 type RNND struct {
 	descriptor C.cudnnRNNDescriptor_t
-	gogc bool
+	gogc       bool
 }
 
 func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
@@ -49,7 +50,7 @@ func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
 
 //CreateRNNDescriptor creates an RNND descriptor
 func (rn RNN) CreateRNNDescriptor() (desc *RNND, err error) {
-	desc=new(RNND)	
+	desc = new(RNND)
 	err = Status(C.cudnnCreateRNNDescriptor(&desc.descriptor)).error("CreateRNNDescriptor")
 	if err != nil {
 		return nil, err
@@ -65,7 +66,7 @@ func (rn RNN) CreateRNNDescriptor() (desc *RNND, err error) {
 //Destroy destroys the descriptor
 //Right now this doesn't work because gocudnn uses go's GC.
 func (r *RNND) Destroy() error {
-	if setfinalizer || r.gogc{
+	if setfinalizer || r.gogc {
 		return nil
 	}
 	return destroyrnnddescriptor(r)
@@ -465,7 +466,7 @@ func (r *RNND) FindRNNForwardInferenceAlgorithmEx(
 		C.size_t(wspacesize),
 	)).error("FindRNNForwardInferenceAlgorithmEx")
 
-	return calgoperftogoarray(perfResults), err
+	return calgoperftogoarray(perfResults, setfinalizer), err
 }
 
 //GetRNNForwardTrainingAlgorithmMaxCount gets the max number of algorithms for rnnforward training algo
@@ -479,7 +480,7 @@ func (r *RNND) GetRNNForwardTrainingAlgorithmMaxCount(handle *Handle) (int32, er
 	return int32(count), Status(stat).error("GetRNNForwardTrainingAlgorithmMaxCount")
 }
 
-//FindRNNForwardTrainingAlgorithmEx finds and orders the performance of rnn algos for training returns that list with an error
+//FindRNNForwardTrainingAlgorithmEx finds and orders the performance of rnn Algorithm for training returns that list with an error
 func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 	handle *Handle,
 	seqLen int32, //input
@@ -539,7 +540,7 @@ func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 			C.size_t(rspacesize),
 		)).error("FindRNNForwardTrainingAlgorithmEx")
 
-		return calgoperftogoarray(perfresults), err
+		return calgoperftogoarray(perfresults, handle.gogc), err
 	}
 	err := Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
 		handle.x,
@@ -569,7 +570,7 @@ func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 		C.size_t(rspacesize),
 	)).error("FindRNNForwardTrainingAlgorithmEx")
 
-	return calgoperftogoarray(perfresults), err
+	return calgoperftogoarray(perfresults, handle.gogc), err
 }
 
 //GetRNNBackwardDataAlgorithmMaxCount gets the max number of algorithms for the back prop rnn
@@ -584,7 +585,7 @@ func (r *RNND) GetRNNBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error
 	return int32(count), err
 }
 
-//FindRNNBackwardDataAlgorithmEx finds a list of algos for backprop this passes like 26 parameters and pointers and stuff so watch out.
+//FindRNNBackwardDataAlgorithmEx finds a list of Algorithm for backprop this passes like 26 parameters and pointers and stuff so watch out.
 func (r *RNND) FindRNNBackwardDataAlgorithmEx(
 	handle *Handle,
 
@@ -680,7 +681,7 @@ func (r *RNND) FindRNNBackwardDataAlgorithmEx(
 			C.size_t(rspacesize),
 			//31 total?
 		)).error("FindRNNBackwardDataAlgorithmEx")
-		return calgoperftogoarray(perfresults), err
+		return calgoperftogoarray(perfresults, handle.gogc), err
 	}
 	err := Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
 		handle.x,
@@ -728,10 +729,10 @@ func (r *RNND) FindRNNBackwardDataAlgorithmEx(
 		C.size_t(rspacesize),
 		//31 total?
 	)).error("FindRNNBackwardDataAlgorithmEx")
-	return calgoperftogoarray(perfresults), err
+	return calgoperftogoarray(perfresults, handle.gogc), err
 }
 
-//GetRNNBackwardWeightsAlgorithmMaxCount gets the max number of algos for weights
+//GetRNNBackwardWeightsAlgorithmMaxCount gets the max number of Algorithm for weights
 func (r *RNND) GetRNNBackwardWeightsAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	err := Status(C.cudnnGetRNNBackwardWeightsAlgorithmMaxCount(
@@ -743,7 +744,7 @@ func (r *RNND) GetRNNBackwardWeightsAlgorithmMaxCount(handle *Handle) (int32, er
 	return int32(count), err
 }
 
-//FindRNNBackwardWeightsAlgorithmEx returns some algos and their performance and stuff
+//FindRNNBackwardWeightsAlgorithmEx returns some Algorithm and their performance and stuff
 func (r *RNND) FindRNNBackwardWeightsAlgorithmEx(
 	handle *Handle,
 	seqLen int32,
@@ -794,7 +795,7 @@ func (r *RNND) FindRNNBackwardWeightsAlgorithmEx(
 			C.size_t(rspacesize),
 		)).error("FindRNNBackwardWeightsAlgorithmEx")
 
-		return calgoperftogoarray(perfresults), err
+		return calgoperftogoarray(perfresults, handle.gogc), err
 	}
 	err := Status(C.cudnnFindRNNBackwardWeightsAlgorithmEx(
 		handle.x,
@@ -822,7 +823,7 @@ func (r *RNND) FindRNNBackwardWeightsAlgorithmEx(
 		C.size_t(rspacesize),
 	)).error("FindRNNBackwardWeightsAlgorithmEx")
 
-	return calgoperftogoarray(perfresults), err
+	return calgoperftogoarray(perfresults, handle.gogc), err
 }
 
 //RNNForwardInference is the forward inference

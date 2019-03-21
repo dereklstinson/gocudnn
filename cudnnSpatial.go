@@ -13,7 +13,7 @@ import (
 //Spatial hods the funcs and flags of Spatial Stuff
 type Spatial struct {
 	Funcs SpatialFuncs
-	Flgs  SamplerTypeFlag
+	Flgs  SamplerType
 }
 
 //SpatialFuncs is a struct used to call Spatial functions as methods
@@ -126,15 +126,11 @@ func (st *SpatialTransformerD) SpatialTfSamplerBackward(
 
 /* APIs for spatial transformer network*/
 
-//SamplerTypeFlag is used to pass the Bilinear flag as a method
-type SamplerTypeFlag struct {
-}
-
-//Bilinear returns SamplerType(C.CUDNN_SAMPLER_BILINEAR)
-func (s SamplerTypeFlag) Bilinear() SamplerType { return SamplerType(C.CUDNN_SAMPLER_BILINEAR) }
-
 //SamplerType is used for flags
 type SamplerType C.cudnnSamplerType_t
+
+//Bilinear sets s to  SamplerType(C.CUDNN_SAMPLER_BILINEAR) and returns new value of s
+func (s *SamplerType) Bilinear() SamplerType { *s = SamplerType(C.CUDNN_SAMPLER_BILINEAR); return *s }
 
 func (s SamplerType) c() C.cudnnSamplerType_t { return C.cudnnSamplerType_t(s) }
 

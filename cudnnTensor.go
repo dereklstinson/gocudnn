@@ -14,13 +14,8 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//Tensor is used for calling Tensor Funcs and also holds the flags
-type Tensor struct {
-	Flgs TensorFlags
-}
-
-func (math MathType) string() string {
-	if math == MathType(C.CUDNN_DEFAULT_MATH) {
+func (m MathType) string() string {
+	if m == MathType(C.CUDNN_DEFAULT_MATH) {
 		return "Math Type Default"
 	}
 	return "Math Type Tensor OP"
@@ -46,7 +41,7 @@ type TensorD struct {
 	setbyother bool
 	frmt       TensorFormat
 	flag       descflag
-	finalizer  bool
+	gogc       bool
 }
 
 func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
@@ -57,11 +52,11 @@ func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 	return descs
 }
 
-func createtensordescriptor(setbyotheroperations bool) (*TensorD, error) {
+func createtensordescriptor(setbyotheroperations, gogc bool) (*TensorD, error) {
 	d := new(TensorD)
 	err := Status(C.cudnnCreateTensorDescriptor(&d.descriptor)).error("NewTensor4dDescriptor-create")
-	if setfinalizer {
-		d.finalizer = true
+	if setfinalizer || gogc {
+		d.gogc = true
 		runtime.SetFinalizer(d, destroytensordescriptor)
 	}
 	if err != nil {
@@ -74,8 +69,17 @@ func createtensordescriptor(setbyotheroperations bool) (*TensorD, error) {
 	return d, nil
 }
 
+//CreateTensorDescriptor creates an empty tensor descriptor
+func CreateTensorDescriptor() (*TensorD, error) {
+	if setfinalizer {
+		return createtensordescriptor(false, true)
+	}
+	return createtensordescriptor(false, false)
+
+}
+
 //NewTensor4dDescriptor Creates and Sets a Tensor 4d Descriptor.
-func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape []int32) (*TensorD, error) {
+func NewTensor4dDescriptor(data DataType, format TensorFormat, shape []int32) (*TensorD, error) {
 
 	stride := stridecalc(shape)
 	var descriptor C.cudnnTensorDescriptor_t
@@ -88,7 +92,7 @@ func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape 
 		return nil, err
 	}
 	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: C.int(4), flag: t4d}
-	if setfinalizer == true {
+	if setfinalizer {
 		runtime.SetFinalizer(x, destroytensordescriptor)
 	}
 
@@ -97,7 +101,7 @@ func (t Tensor) NewTensor4dDescriptor(data DataType, format TensorFormat, shape 
 }
 
 //NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
-func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*TensorD, error) {
+func NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*TensorD, error) {
 	if len(shape) != 4 || len(stride) != 4 {
 		return nil, errors.New("len(shape) = " + strconv.Itoa(len(shape)) + " len(stride) = " + strconv.Itoa(len(stride)) + " .. both have to equal 4")
 	}
@@ -121,7 +125,7 @@ func (t Tensor) NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*
 }
 
 //NewTensorNdDescriptor creates and sets an nd descriptor
-func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*TensorD, error) {
+func NewTensorNdDescriptor(data DataType, shape, stride []int32) (*TensorD, error) {
 	if len(shape) != len(stride) {
 		return nil, errors.New("len(shape) must equal len(stride)")
 	}
@@ -149,7 +153,7 @@ func (t Tensor) NewTensorNdDescriptor(data DataType, shape, stride []int32) (*Te
 }
 
 //NewTensorNdDescriptorEx creates and sets an ND descriptor ex
-func (t Tensor) NewTensorNdDescriptorEx(format TensorFormat, data DataType, shape []int32) (*TensorD, error) {
+func NewTensorNdDescriptorEx(format TensorFormat, data DataType, shape []int32) (*TensorD, error) {
 	if len(shape) < 4 {
 		return nil, errors.New("Shape array has to be greater than  4")
 	}
@@ -275,11 +279,10 @@ func (t *TensorD) GetSizeInBytes() (uint, error) {
 //Destroy destroys the tensor.
 //In future I am going to add a GC setting that will enable or disable the GC.
 //When the GC is disabled It will allow the user more control over memory.
-//For now it will run the garbage collector
+//right now it does nothing and returns nil
 func (t *TensorD) Destroy() error {
-	if t.finalizer {
-		runtime.GC()
-
+	if t.gogc || setfinalizer {
+		return nil
 	}
 	return destroytensordescriptor(t)
 }
@@ -310,7 +313,7 @@ cudnnStatus_t cudnnTransformTensor(
 y = Transfomr((alpha *x),(beta * y))
 This will change the layout of a tensor stride wise
 */
-func (t Tensor) TransformTensor(h *Handle, alpha float64, tx *TensorD, x gocu.Mem, beta float64, ty *TensorD, y gocu.Mem) error {
+func TransformTensor(h *Handle, alpha float64, tx *TensorD, x gocu.Mem, beta float64, ty *TensorD, y gocu.Mem) error {
 
 	var s Status
 	a := cscalarbydatatype(ty.dtype, alpha)
@@ -328,7 +331,7 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func (t Tensor) AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, beta float64, cD *TensorD, c gocu.Mem) error {
+func AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, beta float64, cD *TensorD, c gocu.Mem) error {
 	a := cscalarbydatatype(aD.dtype, alpha)
 	b := cscalarbydatatype(aD.dtype, beta)
 	s := Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A.Ptr(), b.CPtr(), cD.descriptor, c.Ptr()))
@@ -338,14 +341,14 @@ func (t Tensor) AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, bet
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
 //
-func (t Tensor) ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha float64) error {
+func ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha float64) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), a.CPtr())).error("ScaleTensor")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
 //v is type casted to the correct type within function
-func (t Tensor) SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
+func SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
 
 	vc := cscalarbydatatypeforsettensor(yD.dtype, v)
 	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), vc.CPtr())
@@ -386,7 +389,7 @@ func (d *DataType) UInt8() DataType { *d = DataType(C.CUDNN_DATA_INT8); return *
 func (d *DataType) Int8x32() DataType { *d = DataType(C.CUDNN_DATA_INT8x32); return *d }
 
 func (d DataType) c() C.cudnnDataType_t      { return C.cudnnDataType_t(d) }
-func (d *DataType) cptr() *C.cudnnDataType_t { return *(C.cudnnDataType_t)(d) }
+func (d *DataType) cptr() *C.cudnnDataType_t { return (*C.cudnnDataType_t)(d) }
 
 /*
 *
@@ -405,8 +408,8 @@ func (m *MathType) Default() MathType { *m = MathType(C.CUDNN_DEFAULT_MATH); ret
 //TensorOpMath return MathType(C.CUDNN_TENSOR_OP_MATH)
 func (m *MathType) TensorOpMath() MathType { *m = MathType(C.CUDNN_TENSOR_OP_MATH); return *m }
 
-func (math MathType) c() C.cudnnMathType_t   { return C.cudnnMathType_t(math) }
-func (m *MathType) cptr() *C.cudnnMathType_t { (*C.cudnnMathType_t)(m) }
+func (m MathType) c() C.cudnnMathType_t      { return (C.cudnnMathType_t)(m) }
+func (m *MathType) cptr() *C.cudnnMathType_t { return (*C.cudnnMathType_t)(m) }
 
 /*
 *
@@ -425,8 +428,8 @@ func (p *NANProp) NotPropigate() NANProp { *p = NANProp(C.CUDNN_NOT_PROPAGATE_NA
 //Propigate sets p to PropagationNAN(C.CUDNN_PROPAGATE_NAN) and returns that value
 func (p *NANProp) Propigate() NANProp { *p = NANProp(C.CUDNN_PROPAGATE_NAN); return *p }
 
-func (p NANProp) c() C.cudnnNanPropagation_t     { return C.cudnnNanPropagation_t(p) }
-func (p *NANProp) cptr() C.cudnnNanPropagation_t { return C.cudnnNanPropagation_t(p) }
+func (p NANProp) c() C.cudnnNanPropagation_t      { return C.cudnnNanPropagation_t(p) }
+func (p *NANProp) cptr() *C.cudnnNanPropagation_t { return (*C.cudnnNanPropagation_t)(p) }
 
 /*
 *
@@ -446,7 +449,7 @@ func (d Determinism) c() C.cudnnDeterminism_t      { return C.cudnnDeterminism_t
 func (d *Determinism) Non() Determinism { *d = Determinism(C.CUDNN_NON_DETERMINISTIC); return *d }
 
 //Deterministic sets d to Determinism(C.CUDNN_DETERMINISTIC) and returns the value
-func (d *Determinism) Deterministic() { *d = Determinism(C.CUDNN_DETERMINISTIC); return *d }
+func (d *Determinism) Deterministic() Determinism { *d = Determinism(C.CUDNN_DETERMINISTIC); return *d }
 
 func (d Determinism) string() string {
 	if d == Determinism(C.CUDNN_NON_DETERMINISTIC) {

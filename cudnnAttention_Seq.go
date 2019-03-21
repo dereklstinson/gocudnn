@@ -44,9 +44,13 @@ type SeqDataD struct {
 	seqlenarraysize C.size_t
 	nbDims          C.int
 	padding         float64
-	finalizer       bool
+	gogc            bool
 }
 
+//CreateSeqDataDescriptor creates a new SeqDataD
+func CreateSeqDataDescriptor() (*SeqDataD, error) {
+	return cudnnCreateSeqDataDescriptor()
+}
 func cudnnCreateSeqDataDescriptor() (seqdata *SeqDataD, err error) {
 	seqdata = new(SeqDataD)
 	err = Status(C.cudnnCreateSeqDataDescriptor(&seqdata.descriptor)).error("cudnnCreateSeqDataDescriptor")
@@ -54,7 +58,7 @@ func cudnnCreateSeqDataDescriptor() (seqdata *SeqDataD, err error) {
 		return nil, err
 	}
 	if setfinalizer {
-		seqdata.finalizer = true
+		seqdata.gogc = true
 		runtime.SetFinalizer(seqdata, cudnnDestroySeqDataDescriptor)
 
 	}
@@ -72,18 +76,16 @@ func cudnnDestroySeqDataDescriptor(s *SeqDataD) error {
 }
 
 //Destroy will destroy the descriptor
-//For now since everything is on the runtime. This will run the garbage collector.
-//Sometime in the future. I will have an option to turn on and off the GC.
+//For now since everything is on the runtime, and will do nothing
 func (s *SeqDataD) Destroy() error {
-	if s.finalizer || setfinalizer {
-		runtime.GC()
+	if s.gogc || setfinalizer {
 		return nil
 	}
 	return cudnnDestroySeqDataDescriptor(s)
 
 }
 
-//cudnnSetSeqDataDescriptor- from reading the documentation this is what it seems like how you set it up, and the possible work around with gocudnn.
+//Set - from reading the documentation this is what it seems like how you set it up, and the possible work around with gocudnn.
 //
 //len(dimsA) && len(axes) needs to equal 4. len(seqLengthArray) needs to be < dimsA[(*seqDataAxis).Time()]
 //
@@ -111,14 +113,16 @@ func (s *SeqDataD) Destroy() error {
 //seqLengthArray - Array that holds the sequence lengths of each sequence.
 //paddingfill - Points to a value, of dataType, that is used to fill up the buffer beyond the sequence length of each sequence. The only supported value for paddingFill is 0.
 //paddingfill is autoconverted to the datatype that it needs in the function
-func (s *SeqDataD) cudnnSetSeqDataDescriptor(dtype DataType, dimsA []int32, axes []SeqDataAxis, seqLengthArray []int32, paddingfill float64) error {
+func (s *SeqDataD) Set(dtype DataType, dimsA []int32, axes []SeqDataAxis, seqLengthArray []int32, paddingfill float64) error {
 	pf := cscalarbydatatype(dtype, paddingfill)
 	s.nbDims = (C.int)(len(dimsA))
 	s.seqlenarraysize = (C.size_t)(len(seqLengthArray))
 	s.padding = paddingfill
 	return Status(C.cudnnSetSeqDataDescriptor(s.descriptor, dtype.c(), s.nbDims, (*C.int)(&dimsA[0]), (*C.cudnnSeqDataAxis_t)(&axes[0]), s.seqlenarraysize, (*C.int)(&seqLengthArray[0]), pf.CPtr())).error("cudnnSetSeqDataDescriptor")
 }
-func (s *SeqDataD) cudnnGetSeqDataDescriptor() (dtype DataType, dimsA []int32, axes []SeqDataAxis, seqLengthArray []int32, paddingfill float64, err error) {
+
+//Get gets values used in setting up s
+func (s *SeqDataD) Get() (dtype DataType, dimsA []int32, axes []SeqDataAxis, seqLengthArray []int32, paddingfill float64, err error) {
 
 	dimsA = make([]int32, s.nbDims)
 	axes = make([]SeqDataAxis, s.nbDims)

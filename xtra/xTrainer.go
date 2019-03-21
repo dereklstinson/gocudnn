@@ -32,7 +32,7 @@ type TrainerD struct {
 	counter uint32
 	kmode   *cuda.Kernel
 	kreg    *cuda.Kernel
-	dtflg   gocudnn.DataTypeFlag
+	dtflg   gocudnn.DataType
 }
 
 //RegParams holds the regulator paramaters
@@ -169,8 +169,7 @@ func NewTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) 
 		return nil, errors.New("TrainingMode Not Supported")
 	}
 
-	var tflag gocudnn.Tensor
-	dt := tflag.Flgs.Data
+	var dt gocudnn.DataType
 	switch data {
 
 	case dt.Float(): //this is just used to check if it is true.

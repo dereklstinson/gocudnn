@@ -55,7 +55,7 @@ func stridecalc(dims []int32) []int32 {
 
 //FindLength returns the length of of the array considering the number of bytes and the Datatype
 func FindLength(s uint, dtype DataType) uint32 {
-	var dflg DataTypeFlag
+	var dflg DataType
 	var size uint32
 	switch dtype {
 	case dflg.Float():
@@ -85,7 +85,7 @@ func FindSizeTfromVol(volume []int32, dtype DataType) uint {
 	case DataType(C.CUDNN_DATA_FLOAT):
 		return uint(vol * int32(4))
 	case DataType(C.CUDNN_DATA_DOUBLE):
-		return uint(vol * int32(8)) 
+		return uint(vol * int32(8))
 	case DataType(C.CUDNN_DATA_INT8):
 		return uint(vol)
 	case DataType(C.CUDNN_DATA_HALF):

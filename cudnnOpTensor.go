@@ -21,15 +21,16 @@ func CreateOpTensorDescriptor() (*OPTensorD, error) {
 	desc := new(OPTensorD)
 	err := Status(C.cudnnCreateOpTensorDescriptor(&desc.descriptor)).error("NewOpTensorDescriptor-Create")
 	if setfinalizer {
+		desc.gogc=true
 		runtime.SetFinalizer(desc, destroyopdesc)
 	}
 
-	return descriptor, err
+	return desc, err
 }
 
 //Set sets the OPTensorD.
 func (t *OPTensorD) Set(op OpTensorOp, dtype DataType, nan NANProp) error {
-	err = Status(C.cudnnSetOpTensorDescriptor(t.descriptor, op.c(), dtype.c(), nan.c())).error("NewOpTensorDescriptor-set")
+	return Status(C.cudnnSetOpTensorDescriptor(t.descriptor, op.c(), dtype.c(), nan.c())).error("NewOpTensorDescriptor-set")
 
 }
 
@@ -45,10 +46,10 @@ func destroyopdesc(t *OPTensorD) error {
 	return Status(C.cudnnDestroyOpTensorDescriptor(t.descriptor)).error("destroyoptensor")
 }
 
-//DestroyDescriptor destroys the descriptor
+//Destroy destroys the descriptor
 func (t *OPTensorD) Destroy() error {
 	if setfinalizer || t.gogc {
-		return
+		return nil
 	}
 	return destroyopdesc(t)
 }

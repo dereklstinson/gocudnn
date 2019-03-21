@@ -33,10 +33,26 @@ func (a AttnQueryMap) c() C.cudnnAttnQueryMap_t {
 //AttentionD holds opaque values used for attention operations
 type AttentionD struct {
 	descriptor C.cudnnAttnDescriptor_t
+	gogc       bool
 }
 
-//NewcAttentionD creates and sets a AttnDescriptor
-func NewcAttentionD(
+//CreateAttnDescriptor creates an Attention Descriptor
+func CreateAttnDescriptor() (*AttentionD, error) {
+	d := new(AttentionD)
+	err := Status(C.cudnnCreateAttnDescriptor(&d.descriptor)).error("NewAttnDescriptor-cudnnCreateAttnDescriptor")
+	if err != nil {
+		return nil, err
+	}
+	if setfinalizer {
+		d.gogc = true
+		runtime.SetFinalizer(d, cudnnDestroyAttnDescriptor)
+
+	}
+	return d, nil
+}
+
+//Set sets an already made AttentionD called from CreateAttnDescriptor.
+func (a *AttentionD) Set(
 	qMap AttnQueryMap,
 	nHead int32,
 	smScaler float64,
@@ -49,16 +65,12 @@ func NewcAttentionD(
 	qProjSize, kProjSize, vProjSize, oProjSize int32,
 	qoMaxSeqLen, kvMaxSeqLen int32,
 	maxBatchSize, maxBeamSize int32,
-) (*AttentionD, error) {
-	d := new(AttentionD)
-	err := Status(C.cudnnCreateAttnDescriptor(&d.descriptor)).error("NewAttnDescriptor-cudnnCreateAttnDescriptor")
-	if err != nil {
-		return nil, err
-	}
+) error {
+
 	x := func(y int32) C.int { //I did this so I didn't have to constantly type (C.int)(value)
 		return (C.int)(y)
 	}
-	err = Status(C.cudnnSetAttnDescriptor(d.descriptor,
+	return Status(C.cudnnSetAttnDescriptor(a.descriptor,
 		qMap.c(),
 		x(nHead),
 		(C.double)(smScaler),
@@ -71,11 +83,15 @@ func NewcAttentionD(
 		x(qProjSize), x(kProjSize), x(vProjSize), x(oProjSize),
 		x(qoMaxSeqLen), x(kvMaxSeqLen), x(maxBatchSize), x(maxBeamSize),
 	)).error("NewAttnDescriptor-cudnnSetAttnDescriptor")
-	runtime.SetFinalizer(d, cudnnDestroyAttnDescriptor)
-	if err != nil {
-		return nil, err
+}
+
+//Destroy will destroy the descriptor if not on GC if it is on gc it will do nothing but return nil
+//Currently, gocudnn is always on go's gc
+func (a *AttentionD) Destroy() error {
+	if setfinalizer || a.gogc {
+		return nil
 	}
-	return d, nil
+	return cudnnDestroyAttnDescriptor(a)
 }
 func cudnnDestroyAttnDescriptor(d *AttentionD) error {
 	err := Status(C.cudnnDestroyAttnDescriptor(d.descriptor)).error("cudnnDestroyAttnDescriptor")
@@ -171,7 +187,7 @@ func (m *MultiHeadAttnWeightKind) Output() MultiHeadAttnWeightKind {
 //GetMultiHeadAttnWeights returns a Descripter for w and its goco.Mem
 func (a *AttentionD) GetMultiHeadAttnWeights(h *Handle, wkind MultiHeadAttnWeightKind, wbuffSIB uint, wbuff gocu.Mem) (wD *TensorD, w gocu.Mem, err error) {
 	w = new(gocu.CudaPtr)
-	wD, err = createtensordescriptor(true)
+	wD, err = createtensordescriptor(true, h.gogc)
 	if err != nil {
 		return nil, nil, err
 	}

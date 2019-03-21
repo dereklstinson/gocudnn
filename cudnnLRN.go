@@ -13,14 +13,11 @@ import (
 )
 
 //LRN is a struct that is used in making lrn layers. It holds the Funcs, and Flags
-type LRN struct {
-	LRNFlgs LRNmodeFlag
-	DivFlgs DivNormModeFlag
-}
 
 // LRND holds the LRN Descriptor
 type LRND struct {
 	descriptor C.cudnnLRNDescriptor_t
+	gogc       bool
 }
 
 const (
@@ -50,45 +47,41 @@ func (l LRND) MinBeta() float64 {
 	return lrnminBeta
 }
 
-//NewLRNDecriptor creates and sets and returns an LRN descriptor
-func (l LRN) NewLRNDecriptor(
-	lrnN uint32,
-	lrnAlpha,
-	lrnBeta,
-	lrnK float64,
-) (descriptor *LRND, err error) {
-	if lrnN < lrnminN || lrnN > lrnmaxN || lrnK < lrnminK || lrnBeta < 0.01 {
-		min := strconv.Itoa(int(lrnminN))
-		max := strconv.Itoa(int(lrnmaxN))
-		return nil, errors.New("NewLRNDecriptor: lrnN <" + min + "|| lrnN>" + max + "or lrnminK<1e-5|| lrnBeta < 0.01")
-	}
-	var desc C.cudnnLRNDescriptor_t
-	err = Status(C.cudnnCreateLRNDescriptor(&desc)).error("NewLRNDecriptor-create")
+//CreateLRNDescriptor creates an RND descriptor
+func CreateLRNDescriptor() (*LRND, error) {
+	x := new(LRND)
+	err := Status(C.cudnnCreateLRNDescriptor(&x.descriptor)).error("NewLRNDecriptor-create")
 	if err != nil {
 		return nil, err
 	}
-	err = Status(C.cudnnSetLRNDescriptor(
-		desc,
+	if setfinalizer {
+		x.gogc = true
+		runtime.SetFinalizer(x, destroylrndescriptor)
+	}
+	return x, nil
+}
+
+//Set sets the LRND
+func (l *LRND) Set(lrnN uint32,
+	lrnAlpha,
+	lrnBeta,
+	lrnK float64) error {
+	if lrnN < lrnminN || lrnN > lrnmaxN || lrnK < lrnminK || lrnBeta < 0.01 {
+		min := strconv.Itoa(int(lrnminN))
+		max := strconv.Itoa(int(lrnmaxN))
+		return errors.New("NewLRNDecriptor: lrnN <" + min + "|| lrnN>" + max + "or lrnminK<1e-5|| lrnBeta < 0.01")
+	}
+	return Status(C.cudnnSetLRNDescriptor(
+		l.descriptor,
 		C.unsigned(lrnN),
 		C.double(lrnAlpha),
 		C.double(lrnBeta),
 		C.double(lrnK),
 	)).error("NewLRNDecriptor-set")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &LRND{descriptor: desc}
-	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroylrndescriptor)
-	}
-	return descriptor, nil
-}
-func (l *LRND) keepsalive() {
-	runtime.KeepAlive(l)
 }
 
-//GetDescriptor returns the descriptor values
-func (l *LRND) GetDescriptor() (uint32, float64, float64, float64, error) {
+//Get returns the descriptor values that were set with set
+func (l *LRND) Get() (uint32, float64, float64, float64, error) {
 	var N C.unsigned
 	var Al, Bet, K C.double
 
@@ -99,14 +92,16 @@ func (l *LRND) GetDescriptor() (uint32, float64, float64, float64, error) {
 		&Bet,
 		&K,
 	)).error("GetDescriptor-LRN")
-	if setkeepalive {
-		l.keepsalive()
-	}
+
 	return uint32(N), float64(Al), float64(Bet), float64(K), err
 }
 
-//DestroyDescriptor destroys the descriptor
-func (l *LRND) DestroyDescriptor() error {
+//Destroy destroys the descriptor if not using gc it will just return nil if not on.
+//Currently gc is always on
+func (l *LRND) Destroy() error {
+	if l.gogc || setfinalizer {
+		return nil
+	}
 	return destroylrndescriptor(l)
 }
 func destroylrndescriptor(l *LRND) error {
@@ -248,25 +243,16 @@ type LRNmode C.cudnnLRNMode_t
 
 func (l LRNmode) c() C.cudnnLRNMode_t { return C.cudnnLRNMode_t(l) }
 
-//LRNmodeFlag is used to pass LRNmode flags through methods
-type LRNmodeFlag struct {
-}
-
-//rossChanelDim1 returns LRNmode( C.CUDNN_LRN_CROSS_CHANNEL_DIM1)
-func (l LRNmodeFlag) rossChanelDim1() LRNmode {
-	return LRNmode(C.CUDNN_LRN_CROSS_CHANNEL_DIM1)
-}
+//CrossChanelDim1 sets l to and returns LRNmode( C.CUDNN_LRN_CROSS_CHANNEL_DIM1)
+func (l *LRNmode) CrossChanelDim1() LRNmode { *l = LRNmode(C.CUDNN_LRN_CROSS_CHANNEL_DIM1); return *l }
 
 //DivNormMode is usde for C.cudnnDivNormMode_t flags
 type DivNormMode C.cudnnDivNormMode_t
 
-//DivNormModeFlag is used to pass flags for DivNormMode through methods
-type DivNormModeFlag struct {
-}
-
-//PrecomputedMeans return DivNormMode(C.CUDNN_DIVNORM_PRECOMPUTED_MEANS)
-func (d DivNormModeFlag) PrecomputedMeans() DivNormMode {
-	return DivNormMode(C.CUDNN_DIVNORM_PRECOMPUTED_MEANS)
+//PrecomputedMeans sets d to and returns DivNormMode(C.CUDNN_DIVNORM_PRECOMPUTED_MEANS)
+func (d *DivNormMode) PrecomputedMeans() DivNormMode {
+	*d = DivNormMode(C.CUDNN_DIVNORM_PRECOMPUTED_MEANS)
+	return *d
 }
 
 func (d DivNormMode) c() C.cudnnDivNormMode_t { return C.cudnnDivNormMode_t(d) }

@@ -11,75 +11,59 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//DropOut is the struct that is used to call dropout functions
-type DropOut struct {
-	Funcs DropOutFuncs
-}
-
-//DropOutFuncs is an empty struct used to call DropOut Functions
-type DropOutFuncs struct {
-}
-
 //DropOutD holds the dropout descriptor
 type DropOutD struct {
 	descriptor C.cudnnDropoutDescriptor_t
+	gogc       bool
 }
 
-func (d *DropOutD) keepsalive() {
-	runtime.KeepAlive(d)
-}
+//CreateDropOutDescriptor creates a drop out descriptor to be set
+func CreateDropOutDescriptor() (*DropOutD, error) {
+	dod := new(DropOutD)
 
-//NewDropoutDescriptor creates a dropout descriptor
-func (d DropOut) NewDropoutDescriptor(handle *Handle,
-	dropout float32, //probability that the input value is set to zero
-	states gocu.Mem,
-	bytes uint,
-	seed uint64,
-) (descriptor *DropOutD, err error) {
-	var desc C.cudnnDropoutDescriptor_t
-	err = Status(C.cudnnCreateDropoutDescriptor(&desc)).error("CreateDropoutDescriptor")
+	err := Status(C.cudnnCreateDropoutDescriptor(&dod.descriptor)).error("CreateDropoutDescriptor")
 	if err != nil {
 		return nil, err
 	}
-	err = Status(C.cudnnSetDropoutDescriptor(
-		desc,
+	if setfinalizer {
+		dod.gogc = true
+		runtime.SetFinalizer(dod, destroydropoutdescriptor)
+	}
+	return nil, nil
+}
+
+//Set sets the drop out descriptor
+func (d *DropOutD) Set(handle Handle, dropout float32, states gocu.Mem, bytes uint, seed uint64) error {
+	return Status(C.cudnnSetDropoutDescriptor(
+		d.descriptor,
 		handle.x,
 		C.float(dropout),
 		states.Ptr(),
 		C.size_t(bytes),
 		C.ulonglong(seed),
 	)).error("SetDropoutDescriptor")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &DropOutD{
-		descriptor: desc,
-	}
-	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroydropoutdescriptor)
-	}
-	return descriptor, nil
 }
 
-//DestroyDescriptor destroys the dropout descriptor
-func (d *DropOutD) DestroyDescriptor() error {
+//Destroy destroys the dropout descriptor unless the the finalizer flag was set.
+func (d *DropOutD) Destroy() error {
+	if setfinalizer || d.gogc {
+		return nil
+	}
 	return destroydropoutdescriptor(d)
 }
 func destroydropoutdescriptor(d *DropOutD) error {
 	return Status(C.cudnnDestroyDropoutDescriptor(d.descriptor)).error("DestroyDescriptor")
 }
 
-//RestoreDropoutDescriptor restores the descriptor to a previously saved-off state
-func (d *DropOutD) RestoreDropoutDescriptor(
+//Restore restores the descriptor to a previously saved-off state
+func (d *DropOutD) Restore(
 	handle *Handle,
 	dropout float32, //probability that the input value is set to zero
 	states gocu.Mem,
 	bytes uint,
 	seed uint64,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(d, handle, states)
-	}
+
 	return Status(C.cudnnRestoreDropoutDescriptor(
 		d.descriptor,
 		handle.x,
@@ -90,8 +74,8 @@ func (d *DropOutD) RestoreDropoutDescriptor(
 	)).error("RestoreDropoutDescriptor")
 }
 
-//GetDropoutDescriptor gets the descriptor to a previously saved-off state
-func (d *DropOutD) GetDropoutDescriptor(
+//Get gets the descriptor to a previously saved-off state
+func (d *DropOutD) Get(
 	handle *Handle,
 	states gocu.Mem,
 
@@ -107,34 +91,30 @@ func (d *DropOutD) GetDropoutDescriptor(
 		&x,
 		&seed,
 	)).error("GetDropoutDescriptor")
-	if setkeepalive {
-		keepsalivebuffer(d, handle, states)
-	}
+
 	return float32(dropout), states, uint64(seed), err
 }
 
-//DropoutGetStateSize returns the  state size in bytes
-func (d DropOutFuncs) DropoutGetStateSize(handle *Handle) (uint, error) {
+//GetStateSize returns the  state size in bytes
+//Method calls a function that doesn't use DropOutD, but it is a dropout type function, and is
+//used to get the size the gocu.Mem needs to for state.
+func (d *DropOutD) GetStateSize(handle *Handle) (uint, error) {
 	var size C.size_t
 	err := Status(C.cudnnDropoutGetStatesSize(handle.x, &size)).error("DropoutGetStateSize")
-	if setkeepalive {
-		keepsalivebuffer(handle)
-	}
+
 	return uint(size), err
 }
 
-//DropoutGetReserveSpaceSize returns the size of reserve space in bytes
-func (d DropOutFuncs) DropoutGetReserveSpaceSize(t *TensorD) (uint, error) {
+//GetReserveSpaceSize returns the size of reserve space in bytes.  Method calls a function that doesn't
+//use the DropOutD, but function is releveant to the DropOut operation
+func (d *DropOutD) GetReserveSpaceSize(t *TensorD) (uint, error) {
 	var size C.size_t
 	err := Status(C.cudnnDropoutGetReserveSpaceSize(t.descriptor, &size)).error("DropoutGetReserveSpaceSize")
-	if setkeepalive {
-		keepsalivebuffer(t)
-	}
 	return uint(size), err
 }
 
-//DropoutForward performs the dropoutForward
-func (d *DropOutD) DropoutForward(
+//Forward performs the dropoutForward
+func (d *DropOutD) Forward(
 	handle *Handle,
 	xD *TensorD, //input
 	x gocu.Mem, //input
@@ -143,9 +123,7 @@ func (d *DropOutD) DropoutForward(
 	reserveSpace gocu.Mem, //input/output
 	reservesize uint,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, d, xD, x, yD, y, reserveSpace)
-	}
+
 	return Status(C.cudnnDropoutForward(
 		handle.x,
 		d.descriptor,
@@ -158,8 +136,8 @@ func (d *DropOutD) DropoutForward(
 	)).error("DropoutForward")
 }
 
-//DropoutBackward performs the dropoutForward
-func (d *DropOutD) DropoutBackward(
+//Backward performs the dropoutForward
+func (d *DropOutD) Backward(
 	handle *Handle,
 	dyD *TensorD, //input
 	dy gocu.Mem, //input
@@ -168,9 +146,7 @@ func (d *DropOutD) DropoutBackward(
 	reserveSpace gocu.Mem, //input/output
 	reservesize uint,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(handle, d, dxD, dx, dyD, dy, reserveSpace)
-	}
+
 	return Status(C.cudnnDropoutBackward(
 		handle.x,
 		d.descriptor,

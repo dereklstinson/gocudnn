@@ -55,7 +55,7 @@ func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdes
 	if inverse {
 		isinverse = 255
 	}
-	var dflg gocudnn.DataTypeFlag
+	var dflg gocudnn.DataType
 	if Adesc.DataType() == dflg.Float() {
 		return s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
 	}
@@ -78,7 +78,7 @@ func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdes
 	batchvol := findvol(dims[1:])
 	//cfg := h.LaunchConfig2d(batches, batchvol)
 	cfg := h.LaunchConfig(batchvol)
-	var dflg gocudnn.DataTypeFlag
+	var dflg gocudnn.DataType
 	if Adesc.DataType() == dflg.Float() {
 		return s.swapeveryother.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
 	}
