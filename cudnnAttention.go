@@ -61,8 +61,8 @@ func (a *AttentionD) Set(
 	mtype MathType,
 	attn *DropOutD,
 	post *DropOutD,
-	qSize, kSize, vSize int32,
-	qProjSize, kProjSize, vProjSize, oProjSize int32,
+	qSize, keySize, vSize int32,
+	qProjSize, keyProjSize, vProjSize, oProjSize int32,
 	qoMaxSeqLen, kvMaxSeqLen int32,
 	maxBatchSize, maxBeamSize int32,
 ) error {
@@ -79,8 +79,8 @@ func (a *AttentionD) Set(
 		mtype.c(),
 		attn.descriptor,
 		post.descriptor,
-		x(qSize), x(kSize), x(vSize),
-		x(qProjSize), x(kProjSize), x(vProjSize), x(oProjSize),
+		x(qSize), x(keySize), x(vSize),
+		x(qProjSize), x(keyProjSize), x(vProjSize), x(oProjSize),
 		x(qoMaxSeqLen), x(kvMaxSeqLen), x(maxBatchSize), x(maxBeamSize),
 	)).error("NewAttnDescriptor-cudnnSetAttnDescriptor")
 }
@@ -112,8 +112,8 @@ func (a *AttentionD) Get() (
 	mtype MathType,
 	attn *DropOutD,
 	post *DropOutD,
-	qSize, kSize, vSize int32,
-	qProjSize, kProjSize, vProjSize, oProjSize int32,
+	qSize, keySize, vSize int32,
+	qProjSize, keyProjSize, vProjSize, oProjSize int32,
 	qoMaxSeqLen, kvMaxSeqLen int32,
 	maxBatchSize, maxBeamSize int32,
 	err error) {
@@ -132,11 +132,11 @@ func (a *AttentionD) Get() (
 		return
 	}
 	qMap = AttnQueryMap(qm)
-	nHead, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLen, kvMaxSeqLen, maxBatchSize, maxBeamSize = x(nh), x(qs), x(ks), x(vs), x(qps), x(kps), x(vps), x(ops), x(qom), x(kvm), x(mbas), x(mbes)
+	nHead, qSize, keySize, vSize, qProjSize, keyProjSize, vProjSize, oProjSize, qoMaxSeqLen, kvMaxSeqLen, maxBatchSize, maxBeamSize = x(nh), x(qs), x(ks), x(vs), x(qps), x(kps), x(vps), x(ops), x(qom), x(kvm), x(mbas), x(mbes)
 	smScaler = (float64)(sms)
 	dtype, computePrecision = (DataType)(dt), (DataType)(cp)
 	mtype = (MathType)(mt)
-	return qMap, nHead, smScaler, dtype, computePrecision, mtype, attn, post, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLen, kvMaxSeqLen, maxBatchSize, maxBeamSize, nil
+	return qMap, nHead, smScaler, dtype, computePrecision, mtype, attn, post, qSize, keySize, vSize, qProjSize, keyProjSize, vProjSize, oProjSize, qoMaxSeqLen, kvMaxSeqLen, maxBatchSize, maxBeamSize, nil
 }
 
 //GetMultiHeadBuffers returns the Size In Bytes (SIB) needed for allocation for operation.
@@ -212,7 +212,7 @@ func (a *AttentionD) Forward(
 	seqLengthArrayQRO []int32, // array of lengths for for queries,residuals,and out
 	seqLengthArrayKV []int32, // array of lengths for keys and values
 	qrDesc *SeqDataD, queries, residuals gocu.Mem,
-	kDesc *SeqDataD, keys gocu.Mem,
+	keyDesc *SeqDataD, keys gocu.Mem,
 	vDesc *SeqDataD, values gocu.Mem,
 	oDesc *SeqDataD, out gocu.Mem,
 	wbuffSIB uint, wbuff gocu.Mem,
@@ -223,7 +223,7 @@ func (a *AttentionD) Forward(
 	QRO := int32Tocint(seqLengthArrayQRO)
 	KV := int32Tocint(seqLengthArrayKV)
 	return Status(C.cudnnMultiHeadAttnForward(h.x, a.descriptor, (C.int)(currIdx), &lo[0], &hi[0], &QRO[0], &KV[0],
-		qrDesc.descriptor, queries.Ptr(), residuals.Ptr(), kDesc.descriptor, keys.Ptr(), vDesc.descriptor, values.Ptr(), oDesc.descriptor, out.Ptr(),
+		qrDesc.descriptor, queries.Ptr(), residuals.Ptr(), keyDesc.descriptor, keys.Ptr(), vDesc.descriptor, values.Ptr(), oDesc.descriptor, out.Ptr(),
 		(C.size_t)(wbuffSIB), wbuff.Ptr(), (C.size_t)(wspaceSIB), wspace.Ptr(), (C.size_t)(rspaceSIB), rspace.Ptr())).error("Forward")
 
 }
@@ -278,7 +278,7 @@ func (a *AttentionD) BackwardWeights(
 	h *Handle,
 	wgmode WgradMode,
 	qDesc *SeqDataD, queries gocu.Mem,
-	kDesc *SeqDataD, keys gocu.Mem,
+	keyDesc *SeqDataD, keys gocu.Mem,
 	vDesc *SeqDataD, values gocu.Mem,
 	doDesc *SeqDataD, dout gocu.Mem,
 	wbuffSIB uint, wbuff, dwbuff gocu.Mem,
@@ -286,7 +286,7 @@ func (a *AttentionD) BackwardWeights(
 
 	return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
 		qDesc.descriptor, queries.Ptr(),
-		kDesc.descriptor, keys.Ptr(),
+		keyDesc.descriptor, keys.Ptr(),
 		vDesc.descriptor, values.Ptr(),
 		doDesc.descriptor, dout.Ptr(),
 		(C.size_t)(wbuffSIB), wbuff.Ptr(), dwbuff.Ptr(),

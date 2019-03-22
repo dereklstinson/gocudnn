@@ -15,12 +15,6 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//CTCLoss is used to call CTC funcs and flags
-type CTCLoss struct {
-	Funcs CTCLossFuncs
-	Flags CTCLossAlgoFlag
-}
-
 //Algo returns al algo
 func (c CTCLossAlgo) Algo() Algorithm {
 	var algo C.cudnnAlgorithm_t
@@ -31,74 +25,61 @@ func (c CTCLossAlgo) Algo() Algorithm {
 //CTCLossD holdes the C.cudnnCTCLossDescriptor_t
 type CTCLossD struct {
 	descriptor C.cudnnCTCLossDescriptor_t
+	gogc       bool
 }
 
-func (c *CTCLossD) keepsalive() {
-	runtime.KeepAlive(c)
-}
-
-//NewCTCLossDescriptor Creates and sets a CTCLossD if there is no error
-func (ctc CTCLoss) NewCTCLossDescriptor(data DataType) (descriptor *CTCLossD, err error) {
-	var desc C.cudnnCTCLossDescriptor_t
-	err = Status(C.cudnnCreateCTCLossDescriptor(&desc)).error("CreateCTCLossDescriptor-create")
+//CreateCTCLossDescriptor creates
+func CreateCTCLossDescriptor() (*CTCLossD, error) {
+	x := new(CTCLossD)
+	err := Status(C.cudnnCreateCTCLossDescriptor(&x.descriptor)).error("CreateCTCLossDescriptor-create")
 	if err != nil {
 		return nil, err
-	}
-	err = Status(C.cudnnSetCTCLossDescriptor(desc, data.c())).error("CreateCTCLossDescriptor-set")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &CTCLossD{
-		descriptor: desc,
 	}
 	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroyctclossdescriptor)
+		runtime.SetFinalizer(x, cudnnDestroyCTCLossDescriptor)
 	}
-	return descriptor, nil
+	return x, err
 }
 
-//GetDescriptor returns the datatype and error
-func (c *CTCLossD) GetDescriptor() (DataType, error) {
+//Set sets the CTCLossD
+func (c *CTCLossD) Set(data DataType) error {
+	return Status(C.cudnnSetCTCLossDescriptor(c.descriptor, data.c())).error("CreateCTCLossDescriptor-set")
+}
+
+//Get returns the datatype and error
+func (c *CTCLossD) Get() (DataType, error) {
 	var data C.cudnnDataType_t
 	err := Status(C.cudnnGetCTCLossDescriptor(c.descriptor, &data)).error("GetDescriptor")
-	if setkeepalive {
-		c.keepsalive()
-	}
+
 	return DataType(data), err
 
 }
 
-//DestroyDescriptor destroys the descriptor inside CTCLossD
-func (c *CTCLossD) DestroyDescriptor() error {
-	return destroyctclossdescriptor(c)
+//Destroy destroys the descriptor inside CTCLossD
+func (c *CTCLossD) Destroy() error {
+	return cudnnDestroyCTCLossDescriptor(c)
 }
-func destroyctclossdescriptor(c *CTCLossD) error {
+func cudnnDestroyCTCLossDescriptor(c *CTCLossD) error {
 	return Status(C.cudnnDestroyCTCLossDescriptor(c.descriptor)).error("DestroyDescriptor")
 }
 
 //CTCLossAlgo used to hold flags
 type CTCLossAlgo C.cudnnCTCLossAlgo_t
 
-//CTCLossAlgoFlag used to give a semi safe way of exporting CTCLossAlgo flags through methods
-type CTCLossAlgoFlag struct {
+//Deterministic sets c to and returns CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_DETERMINISTIC)
+func (c *CTCLossAlgo) Deterministic() CTCLossAlgo {
+	*c = CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_DETERMINISTIC)
+	return *c
 }
 
-//Deterministic returns CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_DETERMINISTIC)
-func (c CTCLossAlgoFlag) Deterministic() CTCLossAlgo {
-	return CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_DETERMINISTIC)
-}
-
-//NonDeterministic returns   CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_NON_DETERMINISTIC) Flag
-func (c CTCLossAlgoFlag) NonDeterministic() CTCLossAlgo {
-	return CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_NON_DETERMINISTIC)
+//NonDeterministic sets c to and returns CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_NON_DETERMINISTIC) Flag
+func (c *CTCLossAlgo) NonDeterministic() CTCLossAlgo {
+	*c = CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_NON_DETERMINISTIC)
+	return *c
 }
 
 func (c CTCLossAlgo) c() C.cudnnCTCLossAlgo_t {
 	return C.cudnnCTCLossAlgo_t(c)
-}
-
-//CTCLossFuncs is a empty struct used to call CTCLoss funcs
-type CTCLossFuncs struct {
 }
 
 //Need to finish this

@@ -12,15 +12,11 @@ func (r RNNClipMode) c() C.cudnnRNNClipMode_t {
 	return C.cudnnRNNClipMode_t(r)
 }
 
-//None returns the none flag  for clip mode
-func (r RNNClipMode) None() RNNClipMode {
-	return RNNClipMode(C.CUDNN_RNN_CLIP_NONE)
-}
+//None sets r to and returns RNNClipMode(C.CUDNN_RNN_CLIP_NONE)
+func (r *RNNClipMode) None() RNNClipMode { *r = RNNClipMode(C.CUDNN_RNN_CLIP_NONE); return *r }
 
-//MinMax returns the minmaxflag for clip mode
-func (r RNNClipMode) MinMax() RNNClipMode {
-	return RNNClipMode(C.CUDNN_RNN_CLIP_MINMAX)
-}
+//MinMax sets r to and returns RNNClipMode(C.CUDNN_RNN_CLIP_MINMAX)
+func (r *RNNClipMode) MinMax() RNNClipMode { *r = RNNClipMode(C.CUDNN_RNN_CLIP_MINMAX); return *r }
 
 //SetClip sets the clip mode into descriptor
 func (r *RNND) SetClip(h *Handle, mode RNNClipMode, nanprop NANProp, lclip, rclip float64) error {

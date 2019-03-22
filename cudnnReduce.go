@@ -10,11 +10,6 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//Reduce holds Reduce flags and funcs also used to access create reduce tensor function
-type Reduce struct {
-	Flgs ReduceFlags
-}
-
 //ReduceTensorD is the struct that is used for reduce tensor ops
 type ReduceTensorD struct {
 	tensorDesc        C.cudnnReduceTensorDescriptor_t
@@ -23,10 +18,7 @@ type ReduceTensorD struct {
 	tensorNanOpt      C.cudnnNanPropagation_t
 	tensorIndices     C.cudnnReduceTensorIndices_t
 	tensorIndicesType C.cudnnIndicesType_t
-}
-
-func (reduce *ReduceTensorD) keepsalive() {
-	runtime.KeepAlive(reduce)
+	gogc              bool
 }
 
 //TensorOP returns the tensorop value for the ReduceTensor
@@ -46,8 +38,29 @@ func (reduce *ReduceTensorD) Indices() ReduceTensorIndices {
 //IndicType returns the IndicieType flag
 func (reduce *ReduceTensorD) IndicType() IndiciesType { return IndiciesType(reduce.tensorIndicesType) }
 
+func CreateReduceTensorDescriptor() (*ReduceTensorD, error) {
+	rt := new(ReduceTensorD)
+	err := Status(C.cudnnCreateReduceTensorDescriptor(&rt.tensorDesc)).error("CreateReduceTensorDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	if setfinalizer {
+		rt.gogc = true
+		runtime.SetFinalizer(rt, cudnnDestroyReduceTensorDescriptor)
+	}
+	return rt, nil
+}
+func (r *ReduceTensorD) Set(reduceop ReduceTensorOp,
+	datatype DataType,
+	nanprop NANProp,
+	reducetensorinds ReduceTensorIndices,
+	indicietype IndiciesType) error {
+	return Status(C.cudnnSetReduceTensorDescriptor(r.tensorDesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
+}
+
+/*
 //NewReduceTensorDescriptor creates and sets a reduce tensor Descriptor
-func (red Reduce) NewReduceTensorDescriptor(
+func NewReduceTensorDescriptor(
 	reduceop ReduceTensorOp,
 	datatype DataType,
 	nanprop NANProp,
@@ -69,11 +82,11 @@ func (red Reduce) NewReduceTensorDescriptor(
 	}
 	err = Status(C.cudnnSetReduceTensorDescriptor(rtensdesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
 	if setfinalizer == true {
-		runtime.SetFinalizer(descriptor, destroyreducetensordescriptor)
+		runtime.SetFinalizer(descriptor, cudnnDestroyReduceTensorDescriptor)
 	}
 	return descriptor, err
 }
-
+*/
 //SetReduceTensorDescriptor Sets the reduce tensor Descriptor
 func (reduce *ReduceTensorD) setReduceTensorDescriptor() error {
 
@@ -83,19 +96,26 @@ func (reduce *ReduceTensorD) setReduceTensorDescriptor() error {
 
 /*
 //GetReduceTensorDescriptor Gets a copy of reduce tensor descriptor
-func (reduce *ReduceTensor) GetReduceTensorDescriptor() (ReduceTensor, error) {
-	var reducex ReduceTensor
+func (reduce *ReduceTensorD) GetReduceTensorDescriptor() (reduceop ReduceTensorOp,
+	datatype DataType,
+	nanprop NANProp,
+	reducetensorinds ReduceTensorIndices,
+	indicietype IndiciesType) {
+
 	reducex.tensorDesc = reduce.tensorDesc
-	x := C.cudnnGetReduceTensorDescriptor(reducex.tensorDesc, &reducex.tensorOp, &reducex.tensorCompType, &reducex.tensorNanOpt, &reducex.tensorIndices, &reducex.tensorIndicesType)
+	x := C.cudnnGetReduceTensorDescriptor(reduce.tensorDesc, &reducex.tensorOp, &reducex.tensorCompType, &reducex.tensorNanOpt, &reducex.tensorIndices, &reducex.tensorIndicesType)
 	return reducex, Status(x).error("GetReduceTensorDescriptor")
 }
 */
 
 //Destroy destroys the reducetensordescriptor
 func (reduce *ReduceTensorD) Destroy() error {
-	return destroyreducetensordescriptor(reduce)
+	if setfinalizer || reduce.gogc {
+		return nil
+	}
+	return cudnnDestroyReduceTensorDescriptor(reduce)
 }
-func destroyreducetensordescriptor(reduce *ReduceTensorD) error {
+func cudnnDestroyReduceTensorDescriptor(reduce *ReduceTensorD) error {
 	x := C.cudnnDestroyReduceTensorDescriptor(reduce.tensorDesc)
 	err := Status(x).error("DestroyTensorDescriptor")
 
@@ -103,6 +123,7 @@ func destroyreducetensordescriptor(reduce *ReduceTensorD) error {
 }
 
 /*IndiciesSize Helper function to return the minimum size in bytes of the index space to be passed to the reduction given the input and output tensors */
+/*
 func (reduce *ReduceTensorD) IndiciesSize(
 	handle *Handle,
 	aDesc, cDesc *TensorD) (uint, error) {
@@ -114,6 +135,7 @@ func (reduce *ReduceTensorD) IndiciesSize(
 	return uint(sizeinbytes), Status(x).error("GetReductionIndicesSize")
 
 }
+*/
 
 //GetWorkSpaceSize  Helper function to return the minimum size of the workspace to be passed to the reduction given the input and output tensors
 func (reduce *ReduceTensorD) GetWorkSpaceSize(
@@ -170,13 +192,6 @@ func (reduce *ReduceTensorD) ReduceTensorOp(
 	return Status(x).error("ReduceTensor")
 }
 
-//ReduceFlags holds the flag holders that are used for reduce flags
-type ReduceFlags struct {
-	RedTenOp   ReduceTensorOpFlag
-	RedTenIndc ReduceTensorIndicesFlag
-	IndcType   IndiciesTypeFlag
-}
-
 //ReduceTensorOp used for flags for reduce tensor functions
 type ReduceTensorOp C.cudnnReduceTensorOp_t
 
@@ -184,72 +199,73 @@ func (r ReduceTensorOp) c() C.cudnnReduceTensorOp_t {
 	return C.cudnnReduceTensorOp_t(r)
 }
 
-//ReduceTensorOpFlag is used to pass ReduceTensorOp flags semi safely for users using methods
-type ReduceTensorOpFlag struct {
+//Add sets r to and returns reduceTensorAdd flag
+func (r *ReduceTensorOp) Add() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_ADD)
+	return *r
 }
 
-//Add returns reduceTensorAdd flag
-func (r ReduceTensorOpFlag) Add() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_ADD)
+//Mul sets r to and returns reduceTensorMul flag
+func (r *ReduceTensorOp) Mul() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MUL)
+	return *r
 }
 
-//Mul returns reduceTensorMul flag
-func (r ReduceTensorOpFlag) Mul() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MUL)
+//Min sets r to and returns reduceTensorMin flag
+func (r *ReduceTensorOp) Min() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MIN)
+	return *r
 }
 
-//Min returns reduceTensorMin flag
-func (r ReduceTensorOpFlag) Min() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MIN)
+//Max sets r to and returns reduceTensorMax flag
+func (r *ReduceTensorOp) Max() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MAX)
+	return *r
 }
 
-//Max returns reduceTensorMax flag
-func (r ReduceTensorOpFlag) Max() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MAX)
+//Amax sets r to and returns reduceTensorAmax flag
+func (r *ReduceTensorOp) Amax() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_AMAX)
+	return *r
 }
 
-//Amax returns reduceTensorAmax flag
-func (r ReduceTensorOpFlag) Amax() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_AMAX)
+//Avg sets r to and returns reduceTensorAvg flag
+func (r *ReduceTensorOp) Avg() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_AVG)
+	return *r
 }
 
-//Avg returns reduceTensorAvg flag
-func (r ReduceTensorOpFlag) Avg() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_AVG)
+//Norm1 sets r to and returns reduceTensorNorm1 flag
+func (r *ReduceTensorOp) Norm1() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_NORM1)
+	return *r
 }
 
-//Norm1 returns reduceTensorNorm1 flag
-func (r ReduceTensorOpFlag) Norm1() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_NORM1)
+//Norm2 sets r to and returns reduceTensorNorm2 flag
+func (r *ReduceTensorOp) Norm2() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_NORM2)
+	return *r
 }
 
-//Norm2 returns reduceTensorNorm2 flag
-func (r ReduceTensorOpFlag) Norm2() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_NORM2)
+//MulNoZeros sets r to and returns reduceTensorMulNoZeros flag
+func (r *ReduceTensorOp) MulNoZeros() ReduceTensorOp {
+	*r = ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MUL_NO_ZEROS)
+	return *r
 }
 
-//MulNoZeros returns reduceTensorMulNoZeros flag
-func (r ReduceTensorOpFlag) MulNoZeros() ReduceTensorOp {
-	return ReduceTensorOp(C.CUDNN_REDUCE_TENSOR_MUL_NO_ZEROS)
-}
-
-//ReduceTensorIndices are used for flags
+//ReduceTensorIndices are used for flags exposed by type's methods
 type ReduceTensorIndices C.cudnnReduceTensorIndices_t
 
-//ReduceTensorIndicesFlag used to pass reduce tensor indices through methods
-type ReduceTensorIndicesFlag struct {
+//NoIndices sets r to and returns  ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_NO_INDICES)
+func (r *ReduceTensorIndices) NoIndices() ReduceTensorIndices {
+	*r = ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_NO_INDICES)
+	return *r
 }
 
-//NoIndices returns reduceTensorNoIndices flag
-func (r ReduceTensorIndicesFlag) NoIndices() ReduceTensorIndices {
-
-	return ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_NO_INDICES)
-}
-
-//FlattenedIndicies returns reduceTensorFlattenedIndicies flag
-func (r ReduceTensorIndicesFlag) FlattenedIndicies() ReduceTensorIndices {
-
-	return ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_FLATTENED_INDICES)
+//FlattenedIndicies sets r to and returns  ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_FLATTENED_INDICES)
+func (r *ReduceTensorIndices) FlattenedIndicies() ReduceTensorIndices {
+	*r = ReduceTensorIndices(C.CUDNN_REDUCE_TENSOR_FLATTENED_INDICES)
+	return *r
 }
 
 func (r ReduceTensorIndices) c() C.cudnnReduceTensorIndices_t {
@@ -259,27 +275,15 @@ func (r ReduceTensorIndices) c() C.cudnnReduceTensorIndices_t {
 //IndiciesType are flags
 type IndiciesType C.cudnnIndicesType_t
 
-//IndiciesTypeFlag is used to pass IndiciesType flags through method
-type IndiciesTypeFlag struct {
-}
+//Type32Bit sets i to and returns IndiciesType( C.CUDNN_32BIT_INDICES) flag
+func (i *IndiciesType) Type32Bit() IndiciesType { *i = IndiciesType(C.CUDNN_32BIT_INDICES); return *i }
 
-//Type32Bit returns  IndiciesType( C.CUDNN_32BIT_INDICES) flag
-func (i IndiciesTypeFlag) Type32Bit() IndiciesType {
-	return IndiciesType(C.CUDNN_32BIT_INDICES)
-}
+//Type64Bit sets i to and returns  IndiciesType( C.CUDNN_64BIT_INDICES) flag
+func (i *IndiciesType) Type64Bit() IndiciesType { *i = IndiciesType(C.CUDNN_64BIT_INDICES); return *i }
 
-//Type64Bit returns  IndiciesType( C.CUDNN_64BIT_INDICES) flag
-func (i IndiciesTypeFlag) Type64Bit() IndiciesType {
-	return IndiciesType(C.CUDNN_64BIT_INDICES)
-}
+//Type16Bit sets i to and returns IndiciesType( C.CUDNN_16BIT_INDICES) flag
+func (i *IndiciesType) Type16Bit() IndiciesType { *i = IndiciesType(C.CUDNN_16BIT_INDICES); return *i }
 
-//Type16Bit returns IndiciesType( C.CUDNN_16BIT_INDICES) flag
-func (i IndiciesTypeFlag) Type16Bit() IndiciesType {
-	return IndiciesType(C.CUDNN_16BIT_INDICES)
-}
-
-//Type8Bit returns  IndiciesType( C.CUDNN_8BIT_INDICES) flag
-func (i IndiciesTypeFlag) Type8Bit() IndiciesType {
-	return IndiciesType(C.CUDNN_8BIT_INDICES)
-}
+//Type8Bit sets i to and returns  IndiciesType( C.CUDNN_8BIT_INDICES) flag
+func (i *IndiciesType) Type8Bit() IndiciesType { *i = IndiciesType(C.CUDNN_8BIT_INDICES); return *i }
 func (i IndiciesType) c() C.cudnnIndicesType_t { return C.cudnnIndicesType_t(i) }

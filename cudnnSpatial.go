@@ -10,18 +10,15 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//Spatial hods the funcs and flags of Spatial Stuff
-type Spatial struct {
-	Funcs SpatialFuncs
-	Flgs  SamplerType
+//SpatialTransformerD holdes the spatial descriptor
+type SpatialTransformerD struct {
+	descriptor C.cudnnSpatialTransformerDescriptor_t
+	dims       C.int
+	gogc       bool
 }
 
-//SpatialFuncs is a struct used to call Spatial functions as methods
-type SpatialFuncs struct {
-}
-
-//SpatialTfGridGeneratorForward This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
-func (st *SpatialTransformerD) SpatialTfGridGeneratorForward(
+//GridGeneratorForward This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
+func (s *SpatialTransformerD) GridGeneratorForward(
 	handle *Handle,
 	theta gocu.Mem, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
 	grid gocu.Mem, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
@@ -29,37 +26,32 @@ func (st *SpatialTransformerD) SpatialTfGridGeneratorForward(
 	second coordinate is y*/
 
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(st, handle, grid, theta)
-	}
+
 	return Status(C.cudnnSpatialTfGridGeneratorForward(
 		handle.x,
-		st.descriptor,
+		s.descriptor,
 		theta.Ptr(),
 		grid.Ptr(),
 	)).error("SpatialTfGridGeneratorForward")
 }
 
-//SpatialTfGridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
-func (st *SpatialTransformerD) SpatialTfGridGeneratorBackward(
+//GridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
+func (s *SpatialTransformerD) GridGeneratorBackward(
 	handle *Handle,
 	grid gocu.Mem,
 	theta gocu.Mem,
 ) error {
-	if setkeepalive {
-		keepsalivebuffer(st, handle, grid, theta)
-	}
 
 	return Status(C.cudnnSpatialTfGridGeneratorBackward(
 		handle.x,
-		st.descriptor,
+		s.descriptor,
 		grid.Ptr(),
 		theta.Ptr(),
 	)).error("SpatialTfGridGeneratorBackward")
 }
 
-//SpatialTfSamplerForward performs the spatialtfsampleforward
-func (st *SpatialTransformerD) SpatialTfSamplerForward(
+//SamplerForward performs the spatialtfsampleforward
+func (s *SpatialTransformerD) SamplerForward(
 	handle *Handle,
 	alpha float64,
 	xD *TensorD,
@@ -74,7 +66,7 @@ func (st *SpatialTransformerD) SpatialTfSamplerForward(
 
 	return Status(C.cudnnSpatialTfSamplerForward(
 		handle.x,
-		st.descriptor,
+		s.descriptor,
 		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
@@ -85,8 +77,8 @@ func (st *SpatialTransformerD) SpatialTfSamplerForward(
 	)).error("SpatialTfSamplerForward")
 }
 
-//SpatialTfSamplerBackward does the spatial Tranform Sample Backward
-func (st *SpatialTransformerD) SpatialTfSamplerBackward(
+//SamplerBackward does the spatial Tranform Sample Backward
+func (s *SpatialTransformerD) SamplerBackward(
 	handle *Handle,
 	alpha float64,
 	xD *TensorD,
@@ -108,7 +100,7 @@ func (st *SpatialTransformerD) SpatialTfSamplerBackward(
 	bd := cscalarbydatatype(dxD.dtype, betaDgrid)
 	return Status(C.cudnnSpatialTfSamplerBackward(
 		handle.x,
-		st.descriptor,
+		s.descriptor,
 		a.CPtr(),
 		xD.descriptor,
 		x.Ptr(),
@@ -134,53 +126,37 @@ func (s *SamplerType) Bilinear() SamplerType { *s = SamplerType(C.CUDNN_SAMPLER_
 
 func (s SamplerType) c() C.cudnnSamplerType_t { return C.cudnnSamplerType_t(s) }
 
-//SpatialTransformerD holdes the spatial descriptor
-type SpatialTransformerD struct {
-	descriptor C.cudnnSpatialTransformerDescriptor_t
-	dims       C.int
+//CreateSpatialTransformerDescriptor creates the spacial tesnor
+func CreateSpatialTransformerDescriptor() (*SpatialTransformerD, error) {
+	x := new(SpatialTransformerD)
+	err := Status(C.cudnnCreateSpatialTransformerDescriptor(&x.descriptor)).error("NewSpatialTransformerNdDescriptor-create")
+	if setfinalizer {
+		runtime.SetFinalizer(x, cudnnDestroySpatialTransformerDescriptor)
+	}
+	return x, err
 }
 
-//NewSpatialTransformerNdDescriptor creates and sets SpatialTransformerD
-func (sp Spatial) NewSpatialTransformerNdDescriptor(
-	sampler SamplerType,
-	data DataType,
-	dimA []int32,
-) (descriptor *SpatialTransformerD, err error) {
-	var desc C.cudnnSpatialTransformerDescriptor_t
-	err = Status(C.cudnnCreateSpatialTransformerDescriptor(&desc)).error("NewSpatialTransformerNdDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
+//SetND sets spacial to nd descriptor.
+func (s *SpatialTransformerD) SetND(sampler SamplerType, data DataType, dimA []int32) error {
 	dims := C.int(len(dimA))
 	cdimA := int32Tocint(dimA)
-	err = Status(C.cudnnSetSpatialTransformerNdDescriptor(
-		desc,
+	return Status(C.cudnnSetSpatialTransformerNdDescriptor(
+		s.descriptor,
 		sampler.c(),
 		data.c(),
 		dims,
 		&cdimA[0],
 	)).error("NewSpatialTransformerNdDescriptor-Set")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &SpatialTransformerD{
-		descriptor: desc,
-		dims:       dims,
-	}
-	if setfinalizer {
-		runtime.SetFinalizer(descriptor, destroyspatialtransformdescriptor)
-	}
-
-	return descriptor, nil
-}
-func (st *SpatialTransformerD) keepsalive() {
-	runtime.KeepAlive(st)
 }
 
-//DestroyDescriptor destroys the spatial Transformer Desctiptor
-func (st *SpatialTransformerD) DestroyDescriptor() error {
-	return destroyspatialtransformdescriptor(st)
+//Destroy destroys the spatial Transformer Desctiptor.  If GC is enable this function won't delete transformer. It will only return nil
+//Since gc is automatically enabled this function is not functional.
+func (s *SpatialTransformerD) Destroy() error {
+	if s.gogc || setfinalizer {
+		return nil
+	}
+	return cudnnDestroySpatialTransformerDescriptor(s)
 }
-func destroyspatialtransformdescriptor(st *SpatialTransformerD) error {
-	return Status(C.cudnnDestroySpatialTransformerDescriptor(st.descriptor)).error("DestroyDescriptor")
+func cudnnDestroySpatialTransformerDescriptor(s *SpatialTransformerD) error {
+	return Status(C.cudnnDestroySpatialTransformerDescriptor(s.descriptor)).error("DestroyDescriptor")
 }
