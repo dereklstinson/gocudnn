@@ -7,9 +7,7 @@ package gocudnn
 */
 import "C"
 import (
-	"errors"
 	"runtime"
-	"strconv"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -21,27 +19,27 @@ func (m MathType) string() string {
 	return "Math Type Tensor OP"
 }
 
-type descflag uint32
-
-const (
-	t4d   descflag = 1
-	tnd   descflag = 2
-	t2d   descflag = 3
-	t4dex descflag = 4
-	tndex descflag = 5
-)
-
 //TensorD holds the cudnnTensorDescriptor. Which is basically the tensor itself
 type TensorD struct {
 	descriptor C.cudnnTensorDescriptor_t
 	dims       C.int
-	dimsarray  []int32
-	dtype      DataType
+	shape      []int32
 	stride     []int32
+	dtype      DataType
 	setbyother bool
 	frmt       TensorFormat
-	flag       descflag
+	fflag      TensorFormat
 	gogc       bool
+}
+
+//Dims returns the shape of the tensor
+func (t *TensorD) Dims() []int32 {
+	return t.shape
+}
+
+//DataType returns the datatype of the tensor
+func (t *TensorD) DataType() DataType {
+	return t.dtype
 }
 
 func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
@@ -78,164 +76,41 @@ func CreateTensorDescriptor() (*TensorD, error) {
 
 }
 
-//NewTensor4dDescriptor Creates and Sets a Tensor 4d Descriptor.
-func NewTensor4dDescriptor(data DataType, format TensorFormat, shape []int32) (*TensorD, error) {
+//Set sets the tensor accourding to the values passed.
+//
+//Note stride is ignored if frmt is set to frmt.Strided()
+func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) error {
+	t.frmt = frmt
+	t.shape = shape
 
-	stride := stridecalc(shape)
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	err = Status(C.cudnnSetTensor4dDescriptor(descriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), C.int(shape[0]), C.int(shape[1]), C.int(shape[2]), C.int(shape[3]))).error("NewTensor4dDescriptor-set")
-	if err != nil {
-		return nil, err
-	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: C.int(4), flag: t4d}
-	if setfinalizer {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
+	t.dims = (C.int)(len(shape))
+	t.dtype = data
+	switch t.frmt {
+	case t.fflag.Strided():
+		t.stride = stride
+		shapecint := int32Tocint(shape)
+		stridecint := int32Tocint(stride)
+		return Status(C.cudnnSetTensorNdDescriptor(t.descriptor, C.cudnnDataType_t(data), t.dims, &shapecint[0], &stridecint[0])).error("cudnnSetTensorNdDescriptor")
 
-	return x, nil
+	default:
+		t.stride = stridecalc(shape)
+		shapecint := int32Tocint(shape)
+		return Status(C.cudnnSetTensorNdDescriptorEx(t.descriptor, t.frmt.c(), data.c(), t.dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
+
+	}
 
 }
 
-//NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
-func NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*TensorD, error) {
-	if len(shape) != 4 || len(stride) != 4 {
-		return nil, errors.New("len(shape) = " + strconv.Itoa(len(shape)) + " len(stride) = " + strconv.Itoa(len(stride)) + " .. both have to equal 4")
-	}
-	var tflg TensorFormat
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptorEx-create")
-	if err != nil {
-		return nil, err
-	}
-	err = Status(C.cudnnSetTensor4dDescriptorEx(descriptor, C.cudnnDataType_t(data), C.int(shape[0]), C.int(shape[1]), C.int(shape[2]), C.int(shape[3]), C.int(stride[0]), C.int(stride[1]), C.int(stride[2]), C.int(stride[3]))).error("NewTensor4dDescriptorEX-set")
-	if err != nil {
-		return nil, err
-	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, frmt: tflg.Strided(), dims: C.int(4), flag: t4dex}
-	if setfinalizer == true {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
-
-	return x, nil
-
-}
-
-//NewTensorNdDescriptor creates and sets an nd descriptor
-func NewTensorNdDescriptor(data DataType, shape, stride []int32) (*TensorD, error) {
-	if len(shape) != len(stride) {
-		return nil, errors.New("len(shape) must equal len(stride)")
-	}
-	if len(stride) < 4 || len(stride) > 8 {
-		return nil, errors.New("length of arrays need to be >4 or <8")
-	}
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensorNdDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	dims := C.int(len(shape))
-	shapecint := int32Tocint(shape)
-	stridecint := int32Tocint(stride)
-	err = Status(C.cudnnSetTensorNdDescriptor(descriptor, C.cudnnDataType_t(data), dims, &shapecint[0], &stridecint[0])).error("cudnnSetTensorNdDescriptor")
-	if err != nil {
-		return nil, err
-	}
-	var tflg TensorFormat
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: tflg.Strided(), stride: stride, dims: dims, flag: tnd}
-	if setfinalizer == true {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
-	return x, nil
-}
-
-//NewTensorNdDescriptorEx creates and sets an ND descriptor ex
-func NewTensorNdDescriptorEx(format TensorFormat, data DataType, shape []int32) (*TensorD, error) {
-	if len(shape) < 4 {
-		return nil, errors.New("Shape array has to be greater than  4")
-	}
-
-	stride := stridecalc(shape)
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensorNdDescriptorEx-create")
-	if err != nil {
-		return nil, err
-	}
-	dims := C.int(len(shape))
-	shapecint := int32Tocint(shape)
-
-	err = Status(C.cudnnSetTensorNdDescriptorEx(descriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
-	if err != nil {
-		return nil, err
-	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: dims, flag: tndex}
-	if setfinalizer == true {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
-	return x, nil
-
-}
-
-//GetFormat returns the format of the tensor error will return if tensor supports slide//
-func (t *TensorD) GetFormat() TensorFormat {
-	if t.descriptor != nil {
-		return t.frmt
-	}
-	return t.frmt.Unknown()
-
-}
-
-//GetDescrptor returns Data Type the Dims for shape and stride and error.  for Descriptors without stride it will still return junk info. so be mindful when you code.
-func (t *TensorD) GetDescrptor() (frmt TensorFormat, dtype DataType, tshape []int32, tstride []int32, err error) {
-
-	shape := make([]C.int, t.dims)
-	stride := make([]C.int, t.dims)
-	var data C.cudnnDataType_t
-	if t.flag == t4d || t.flag == t4dex {
-		x := C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])
-
-		return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
-
-	} else if t.flag == tnd || t.flag == tndex {
-		var holder C.int
-		x := C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])
-
-		return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), Status(x).error("GetDescriptor")
-	} else {
-		var holder C.int
-		if Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, &data, &holder, &shape[0], &stride[0])).error("Checking") != nil {
-			if Status(C.cudnnGetTensor4dDescriptor(t.descriptor, &data, &shape[0], &shape[1], &shape[2], &shape[3], &stride[0], &stride[1], &stride[2], &stride[3])).error("Checking") != nil {
-				return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), errors.New("Tripplecheckpoint Didn't work I don't know what this tensorD is")
-			}
-			return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), nil
-		}
-
-		return t.frmt, DataType(data), cintToint32(shape), cintToint32(stride), nil
-	}
-}
-
-//Dims returns the dims
-func (t *TensorD) Dims() []int32 {
-	return t.dimsarray
-}
-
-//Strides returns the strides
-func (t *TensorD) Strides() []int32 {
-	return t.stride
-}
-
-//Format returns the format
-func (t *TensorD) Format() TensorFormat {
-	return t.frmt
-}
-
-//DataType holds the datatype
-func (t *TensorD) DataType() DataType {
-	return t.dtype
-
+//Get returns Data Type the Dims for shape and stride and error.  for Descriptors without stride it will still return junk info. so be mindful when you code.
+func (t *TensorD) Get() (frmt TensorFormat, dtype DataType, shape []int32, stride []int32, err error) {
+	shapec := make([]C.int, t.dims)
+	stridec := make([]C.int, t.dims)
+	frmt = t.frmt
+	var holder C.int
+	err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &holder, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+	shape = cintToint32(shapec)
+	stride = cintToint32(stridec)
+	return frmt, dtype, shape, stride, err
 }
 
 /*
@@ -526,3 +401,117 @@ func (t TensorFormat) ToString() string {
 	}
 	return "ERROR no such flag"
 }
+
+/*
+//NewTensor4dDescriptor Creates and Sets a Tensor 4d Descriptor.
+func NewTensor4dDescriptor(data DataType, format TensorFormat, shape []int32) (*TensorD, error) {
+
+	stride := stridecalc(shape)
+	var descriptor C.cudnnTensorDescriptor_t
+	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	err = Status(C.cudnnSetTensor4dDescriptor(descriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), C.int(shape[0]), C.int(shape[1]), C.int(shape[2]), C.int(shape[3]))).error("NewTensor4dDescriptor-set")
+	if err != nil {
+		return nil, err
+	}
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: C.int(4), flag: t4d}
+	if setfinalizer {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
+
+	return x, nil
+
+}
+
+//NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
+func NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*TensorD, error) {
+	if len(shape) != 4 || len(stride) != 4 {
+		return nil, errors.New("len(shape) = " + strconv.Itoa(len(shape)) + " len(stride) = " + strconv.Itoa(len(stride)) + " .. both have to equal 4")
+	}
+	var tflg TensorFormat
+	var descriptor C.cudnnTensorDescriptor_t
+	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptorEx-create")
+	if err != nil {
+		return nil, err
+	}
+	err = Status(C.cudnnSetTensor4dDescriptorEx(descriptor, C.cudnnDataType_t(data), C.int(shape[0]), C.int(shape[1]), C.int(shape[2]), C.int(shape[3]), C.int(stride[0]), C.int(stride[1]), C.int(stride[2]), C.int(stride[3]))).error("NewTensor4dDescriptorEX-set")
+	if err != nil {
+		return nil, err
+	}
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, frmt: tflg.Strided(), dims: C.int(4), flag: t4dex}
+	if setfinalizer == true {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
+
+	return x, nil
+
+}
+
+//NewTensorNdDescriptor creates and sets an nd descriptor
+func NewTensorNdDescriptor(data DataType, shape, stride []int32) (*TensorD, error) {
+	if len(shape) != len(stride) {
+		return nil, errors.New("len(shape) must equal len(stride)")
+	}
+	if len(stride) < 4 || len(stride) > 8 {
+		return nil, errors.New("length of arrays need to be >4 or <8")
+	}
+	var descriptor C.cudnnTensorDescriptor_t
+	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensorNdDescriptor-create")
+	if err != nil {
+		return nil, err
+	}
+	dims := C.int(len(shape))
+	shapecint := int32Tocint(shape)
+	stridecint := int32Tocint(stride)
+	err = Status(C.cudnnSetTensorNdDescriptor(descriptor, C.cudnnDataType_t(data), dims, &shapecint[0], &stridecint[0])).error("cudnnSetTensorNdDescriptor")
+	if err != nil {
+		return nil, err
+	}
+	var tflg TensorFormat
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: tflg.Strided(), stride: stride, dims: dims, flag: tnd}
+	if setfinalizer == true {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
+	return x, nil
+}
+
+//NewTensorNdDescriptorEx creates and sets an ND descriptor ex
+func NewTensorNdDescriptorEx(format TensorFormat, data DataType, shape []int32) (*TensorD, error) {
+	if len(shape) < 4 {
+		return nil, errors.New("Shape array has to be greater than  4")
+	}
+
+	stride := stridecalc(shape)
+	var descriptor C.cudnnTensorDescriptor_t
+	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensorNdDescriptorEx-create")
+	if err != nil {
+		return nil, err
+	}
+	dims := C.int(len(shape))
+	shapecint := int32Tocint(shape)
+
+	err = Status(C.cudnnSetTensorNdDescriptorEx(descriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
+	if err != nil {
+		return nil, err
+	}
+	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: dims, flag: tndex}
+	if setfinalizer == true {
+		runtime.SetFinalizer(x, destroytensordescriptor)
+	}
+	return x, nil
+
+}
+*/
+
+/*
+//GetFormat returns the format of the tensor error will return if tensor supports slide//
+func (t *TensorD) GetFormat() TensorFormat {
+	if t.descriptor != nil {
+		return t.frmt
+	}
+	return t.frmt.Unknown()
+
+}
+*/

@@ -97,8 +97,8 @@ func (t *TransformD) Get() (destFormat TensorFormat, padBefore, padAfter []int32
 //TransformTensor transforms a tensor according to how TransformD was set
 func (t *TransformD) TransformTensor(h *Handle, alpha float64, srcD *TensorD, src gocu.Mem, beta float64, destD *TensorD, dest gocu.Mem) error {
 
-	a := cscalarbydatatype(srcD.DataType(), alpha)
-	b := cscalarbydatatype(destD.DataType(), beta)
+	a := cscalarbydatatype(srcD.dtype, alpha)
+	b := cscalarbydatatype(destD.dtype, beta)
 	return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformTensorEx")
 }
 

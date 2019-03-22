@@ -12,32 +12,16 @@ import (
 
 //ReduceTensorD is the struct that is used for reduce tensor ops
 type ReduceTensorD struct {
-	tensorDesc        C.cudnnReduceTensorDescriptor_t
-	tensorOp          C.cudnnReduceTensorOp_t
-	tensorCompType    C.cudnnDataType_t
-	tensorNanOpt      C.cudnnNanPropagation_t
-	tensorIndices     C.cudnnReduceTensorIndices_t
-	tensorIndicesType C.cudnnIndicesType_t
-	gogc              bool
+	tensorDesc C.cudnnReduceTensorDescriptor_t
+	//	tensorOp          C.cudnnReduceTensorOp_t
+	//	tensorCompType    C.cudnnDataType_t
+	//	tensorNanOpt      C.cudnnNanPropagation_t
+	//	tensorIndices     C.cudnnReduceTensorIndices_t
+	//	tensorIndicesType C.cudnnIndicesType_t
+	gogc bool
 }
 
-//TensorOP returns the tensorop value for the ReduceTensor
-func (reduce *ReduceTensorD) TensorOP() ReduceTensorOp { return ReduceTensorOp(reduce.tensorOp) }
-
-//CompType returns the Datatype of the reducetensor
-func (reduce *ReduceTensorD) CompType() DataType { return DataType(reduce.tensorCompType) }
-
-//NanOpt returns the Nan operation flag for the reduce tensor
-func (reduce *ReduceTensorD) NanOpt() NANProp { return NANProp(reduce.tensorNanOpt) }
-
-//Indices returns the indicies for the Reudce tensor
-func (reduce *ReduceTensorD) Indices() ReduceTensorIndices {
-	return ReduceTensorIndices(reduce.tensorIndices)
-}
-
-//IndicType returns the IndicieType flag
-func (reduce *ReduceTensorD) IndicType() IndiciesType { return IndiciesType(reduce.tensorIndicesType) }
-
+//CreateReduceTensorDescriptor creates an empry Reduce Tensor Descriptor
 func CreateReduceTensorDescriptor() (*ReduceTensorD, error) {
 	rt := new(ReduceTensorD)
 	err := Status(C.cudnnCreateReduceTensorDescriptor(&rt.tensorDesc)).error("CreateReduceTensorDescriptor-create")
@@ -50,70 +34,38 @@ func CreateReduceTensorDescriptor() (*ReduceTensorD, error) {
 	}
 	return rt, nil
 }
+
+//Set sets r with the values passed
 func (r *ReduceTensorD) Set(reduceop ReduceTensorOp,
 	datatype DataType,
 	nanprop NANProp,
 	reducetensorinds ReduceTensorIndices,
 	indicietype IndiciesType) error {
+
+	//r.tensorOp = reduceop.c()
+	//	r.tensorCompType = datatype.c()
+	//	r.tensorNanOpt = nanprop.c()
+	//	r.tensorIndices = reducetensorinds.c()
+	//	r.tensorIndicesType = indicietype.c()
 	return Status(C.cudnnSetReduceTensorDescriptor(r.tensorDesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
 }
 
-/*
-//NewReduceTensorDescriptor creates and sets a reduce tensor Descriptor
-func NewReduceTensorDescriptor(
-	reduceop ReduceTensorOp,
+//Get values that were set for r in set
+func (r *ReduceTensorD) Get() (reduceop ReduceTensorOp,
 	datatype DataType,
 	nanprop NANProp,
 	reducetensorinds ReduceTensorIndices,
-	indicietype IndiciesType) (descriptor *ReduceTensorD, err error) {
-	//	var reduce ReduceTensorD
-	var rtensdesc C.cudnnReduceTensorDescriptor_t
-	err = Status(C.cudnnCreateReduceTensorDescriptor(&rtensdesc)).error("CreateReduceTensorDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	descriptor = &ReduceTensorD{
-		tensorDesc:        rtensdesc,
-		tensorOp:          reduceop.c(),
-		tensorCompType:    datatype.c(),
-		tensorNanOpt:      nanprop.c(),
-		tensorIndices:     reducetensorinds.c(),
-		tensorIndicesType: indicietype.c(),
-	}
-	err = Status(C.cudnnSetReduceTensorDescriptor(rtensdesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
-	if setfinalizer == true {
-		runtime.SetFinalizer(descriptor, cudnnDestroyReduceTensorDescriptor)
-	}
-	return descriptor, err
+	indicietype IndiciesType, err error) {
+	err = Status(C.cudnnGetReduceTensorDescriptor(r.tensorDesc, reduceop.cptr(), datatype.cptr(), nanprop.cptr(), reducetensorinds.cptr(), indicietype.cptr())).error("SetReduceTensorDescriptor")
+	return reduceop, datatype, nanprop, reducetensorinds, indicietype, err
 }
-*/
-//SetReduceTensorDescriptor Sets the reduce tensor Descriptor
-func (reduce *ReduceTensorD) setReduceTensorDescriptor() error {
-
-	x := C.cudnnSetReduceTensorDescriptor(reduce.tensorDesc, reduce.tensorOp, reduce.tensorCompType, reduce.tensorNanOpt, reduce.tensorIndices, reduce.tensorIndicesType)
-	return Status(x).error("SetReduceTensorDescriptor")
-}
-
-/*
-//GetReduceTensorDescriptor Gets a copy of reduce tensor descriptor
-func (reduce *ReduceTensorD) GetReduceTensorDescriptor() (reduceop ReduceTensorOp,
-	datatype DataType,
-	nanprop NANProp,
-	reducetensorinds ReduceTensorIndices,
-	indicietype IndiciesType) {
-
-	reducex.tensorDesc = reduce.tensorDesc
-	x := C.cudnnGetReduceTensorDescriptor(reduce.tensorDesc, &reducex.tensorOp, &reducex.tensorCompType, &reducex.tensorNanOpt, &reducex.tensorIndices, &reducex.tensorIndicesType)
-	return reducex, Status(x).error("GetReduceTensorDescriptor")
-}
-*/
 
 //Destroy destroys the reducetensordescriptor
-func (reduce *ReduceTensorD) Destroy() error {
-	if setfinalizer || reduce.gogc {
+func (r *ReduceTensorD) Destroy() error {
+	if setfinalizer || r.gogc {
 		return nil
 	}
-	return cudnnDestroyReduceTensorDescriptor(reduce)
+	return cudnnDestroyReduceTensorDescriptor(r)
 }
 func cudnnDestroyReduceTensorDescriptor(reduce *ReduceTensorD) error {
 	x := C.cudnnDestroyReduceTensorDescriptor(reduce.tensorDesc)
@@ -138,14 +90,12 @@ func (reduce *ReduceTensorD) IndiciesSize(
 */
 
 //GetWorkSpaceSize  Helper function to return the minimum size of the workspace to be passed to the reduction given the input and output tensors
-func (reduce *ReduceTensorD) GetWorkSpaceSize(
+func (r *ReduceTensorD) GetWorkSpaceSize(
 	handle *Handle,
 	aDesc, cDesc *TensorD) (uint, error) {
 	var sizeinbytes C.size_t
-	x := C.cudnnGetReductionWorkspaceSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
-	if setkeepalive == true {
-		keepsalivebuffer(reduce, handle, aDesc, cDesc)
-	}
+	x := C.cudnnGetReductionWorkspaceSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+
 	return uint(sizeinbytes), Status(x).error("GetReductionWorkspaceSize")
 
 }
@@ -153,7 +103,7 @@ func (reduce *ReduceTensorD) GetWorkSpaceSize(
 //ReduceTensorOp Tensor operation : C = reduce op( alpha * A ) + beta * C */
 /* The NaN propagation enum applies to only the min and max reduce ops; the other reduce ops propagate NaN as usual. */
 /* The indices space is ignored for reduce ops other than min or max. */
-func (reduce *ReduceTensorD) ReduceTensorOp(
+func (r *ReduceTensorD) ReduceTensorOp(
 	handle *Handle,
 	indices gocu.Mem,
 	indiciessize uint,
@@ -169,21 +119,21 @@ func (reduce *ReduceTensorD) ReduceTensorOp(
 	b := cscalarbydatatype(cDesc.dtype, beta)
 	var x C.cudnnStatus_t
 	if indices == nil && wspace != nil {
-		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, nil,
+		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
 			C.size_t(0), wspace.Ptr(), C.size_t(wspacesize),
 			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 	} else if indices != nil && wspace == nil {
-		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, indices.Ptr(),
+		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
 			C.size_t(indiciessize), nil, C.size_t(0),
 			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	} else if indices == nil && wspace == nil {
-		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, nil,
+		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
 			C.size_t(0), nil, C.size_t(0),
 			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	} else {
-		x = C.cudnnReduceTensor(handle.x, reduce.tensorDesc, indices.Ptr(),
+		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
 			C.size_t(indiciessize), wspace.Ptr(), C.size_t(wspacesize),
 			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
@@ -197,6 +147,9 @@ type ReduceTensorOp C.cudnnReduceTensorOp_t
 
 func (r ReduceTensorOp) c() C.cudnnReduceTensorOp_t {
 	return C.cudnnReduceTensorOp_t(r)
+}
+func (r *ReduceTensorOp) cptr() *C.cudnnReduceTensorOp_t {
+	return (*C.cudnnReduceTensorOp_t)(r)
 }
 
 //Add sets r to and returns reduceTensorAdd flag
@@ -271,6 +224,9 @@ func (r *ReduceTensorIndices) FlattenedIndicies() ReduceTensorIndices {
 func (r ReduceTensorIndices) c() C.cudnnReduceTensorIndices_t {
 	return C.cudnnReduceTensorIndices_t(r)
 }
+func (r *ReduceTensorIndices) cptr() *C.cudnnReduceTensorIndices_t {
+	return (*C.cudnnReduceTensorIndices_t)(r)
+}
 
 //IndiciesType are flags
 type IndiciesType C.cudnnIndicesType_t
@@ -285,5 +241,25 @@ func (i *IndiciesType) Type64Bit() IndiciesType { *i = IndiciesType(C.CUDNN_64BI
 func (i *IndiciesType) Type16Bit() IndiciesType { *i = IndiciesType(C.CUDNN_16BIT_INDICES); return *i }
 
 //Type8Bit sets i to and returns  IndiciesType( C.CUDNN_8BIT_INDICES) flag
-func (i *IndiciesType) Type8Bit() IndiciesType { *i = IndiciesType(C.CUDNN_8BIT_INDICES); return *i }
-func (i IndiciesType) c() C.cudnnIndicesType_t { return C.cudnnIndicesType_t(i) }
+func (i *IndiciesType) Type8Bit() IndiciesType      { *i = IndiciesType(C.CUDNN_8BIT_INDICES); return *i }
+func (i IndiciesType) c() C.cudnnIndicesType_t      { return C.cudnnIndicesType_t(i) }
+func (i *IndiciesType) cptr() *C.cudnnIndicesType_t { return (*C.cudnnIndicesType_t)(i) }
+
+/*
+//TensorOP returns the tensorop value for the ReduceTensor
+func (r *ReduceTensorD) TensorOP() ReduceTensorOp { return ReduceTensorOp(r.tensorOp) }
+
+//CompType returns the Datatype of the reducetensor
+func (rrndArrayToCarray *ReduceTensorD) CompType() DataType { return DataType(r.tensorCompType) }
+
+//NanOpt returns the Nan operation flag for the reduce tensor
+func (r *ReduceTensorD) NanOpt() NANProp { return NANProp(r.tensorNanOpt) }
+
+//Indices returns the indicies for the Reudce tensor
+func (r *ReduceTensorD) Indices() ReduceTensorIndices {
+	return ReduceTensorIndices(r.tensorIndices)
+}
+
+//IndicType returns the IndicieType flag
+func (r *ReduceTensorD) IndicType() IndiciesType { return IndiciesType(r.tensorIndicesType) }
+*/

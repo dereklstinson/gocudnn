@@ -340,10 +340,13 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 
 	*/
 
-) (FilterD, unsafe.Pointer, error) {
-	var linLayerBiasDesc FilterD
-	var linLayerBias unsafe.Pointer
-	err := Status(C.cudnnGetRNNLinLayerBiasParams(
+) (BiasD *FilterD, Bias gocu.Mem, err error) {
+	BiasD, err = CreateFilterDescriptor()
+	if err != nil {
+		return nil, nil, err
+	}
+	Bias = new(gocu.CudaPtr)
+	err = Status(C.cudnnGetRNNLinLayerBiasParams(
 		handle.x,
 		r.descriptor,
 		C.int(pseudoLayer),
@@ -351,11 +354,11 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 		wD.descriptor,
 		w.Ptr(),
 		C.int(linlayerID),
-		linLayerBiasDesc.descriptor,
-		&linLayerBias,
+		BiasD.descriptor,
+		Bias.DPtr(),
 	)).error("GetRNNLinLayerBiasParams")
 
-	return linLayerBiasDesc, linLayerBias, err
+	return BiasD, Bias, err
 }
 
 //PersistentRNNPlan holds  C.cudnnPersistentRNNPlan_t
@@ -1149,111 +1152,71 @@ FLAGS
 
 //RNNFlags holds all the RNN flags
 type RNNFlags struct {
-	Mode      RNNModeFlag
-	Algo      RNNAlgoFlag
-	Direction DirectionModeFlag
-	Input     RNNInputModeFlag
+	Mode      RNNmode
+	Algo      RNNAlgo
+	Direction DirectionMode
+	Input     RNNInputMode
 }
 
-//RNNmode is used for flags use RNNModeFlag to pass them through methods
+//RNNmode is used for flags exposing the flags through methods
 type RNNmode C.cudnnRNNMode_t
-
-//RNNModeFlag is used to pass RNNMode flags semi safely through methods.
-type RNNModeFlag struct {
-}
 
 func (r RNNmode) c() C.cudnnRNNMode_t { return C.cudnnRNNMode_t(r) }
 
-//Relu return RNNMode(C.CUDNN_RNN_RELU)
-func (r RNNModeFlag) Relu() RNNmode {
-	return RNNmode(C.CUDNN_RNN_RELU)
-}
+//Relu sets r to and returns RNNMode(C.CUDNN_RNN_RELU)
+func (r *RNNmode) Relu() RNNmode { *r = RNNmode(C.CUDNN_RNN_RELU); return *r }
 
-//Tanh returns rnnTanh
-func (r RNNModeFlag) Tanh() RNNmode {
-	return RNNmode(C.CUDNN_RNN_TANH)
-}
+//Tanh  sets r to and returns RNNmode(C.CUDNN_RNN_TANH)
+func (r *RNNmode) Tanh() RNNmode { *r = RNNmode(C.CUDNN_RNN_RELU); return *r }
 
-//Lstm returns rnnLstm
-func (r RNNModeFlag) Lstm() RNNmode {
-	return RNNmode(C.CUDNN_LSTM)
-}
+//Lstm  sets r to and returns RNNmode(C.CUDNN_LSTM)
+func (r *RNNmode) Lstm() RNNmode { *r = RNNmode(C.CUDNN_RNN_RELU); return *r }
 
-//Gru returns rnnGru
-func (r RNNModeFlag) Gru() RNNmode {
-	return RNNmode(C.CUDNN_GRU)
-}
+//Gru  sets r to and returns RNNmode(C.CUDNN_GRU)
+func (r *RNNmode) Gru() RNNmode { *r = RNNmode(C.CUDNN_RNN_RELU); return *r }
 
-//DirectionModeFlag is used to pass DirectionModes through its methods.
-type DirectionModeFlag struct {
-}
-
-//DirectionMode use DirectionModeFlag to pass them safe-ish.
+//DirectionMode is used for flags and exposes flags of type through types methods
 type DirectionMode C.cudnnDirectionMode_t
 
 func (r DirectionMode) c() C.cudnnDirectionMode_t { return C.cudnnDirectionMode_t(r) }
 
-//Uni returns uniDirectional flag
-func (r DirectionModeFlag) Uni() DirectionMode {
-	return DirectionMode(C.CUDNN_UNIDIRECTIONAL)
-}
+//Uni sets r to and returns DirectionMode(C.CUDNN_UNIDIRECTIONAL)
+func (r *DirectionMode) Uni() DirectionMode { *r = DirectionMode(C.CUDNN_UNIDIRECTIONAL); return *r }
 
-//Bi returns biDirectional flag
-func (r DirectionModeFlag) Bi() DirectionMode {
-	return DirectionMode(C.CUDNN_BIDIRECTIONAL)
-}
+//Bi sets r to and returns DirectionMode(C.CUDNN_BIDIRECTIONAL)
+func (r *DirectionMode) Bi() DirectionMode { *r = DirectionMode(C.CUDNN_BIDIRECTIONAL); return *r }
 
 /*
  *   RNN INPUT MODE FLAGS
  */
 
-//RNNInputModeFlag used to pass RNNInputMode Flags semi-safely through its methods.
-type RNNInputModeFlag struct {
-}
-
-//RNNInputMode is used for flags
+//RNNInputMode is used for flags and exposes the different flags through its methods
 type RNNInputMode C.cudnnRNNInputMode_t
 
-//Linear returns C.CUDNN_LINEAR_INPUT
-func (r RNNInputModeFlag) Linear() RNNInputMode {
-	return RNNInputMode(C.CUDNN_LINEAR_INPUT)
-}
+//Linear sets r to and returns RNNInputMode(C.CUDNN_LINEAR_INPUT)
+func (r *RNNInputMode) Linear() RNNInputMode { *r = RNNInputMode(C.CUDNN_LINEAR_INPUT); return *r }
 
-//Skip returns C.CUDNN_SKIP_INPUT
-func (r RNNInputModeFlag) Skip() RNNInputMode {
-	return RNNInputMode(C.CUDNN_SKIP_INPUT)
-}
+//Skip sets r to and returns RNNInputMode(C.CUDNN_SKIP_INPUT)
+func (r *RNNInputMode) Skip() RNNInputMode      { *r = RNNInputMode(C.CUDNN_SKIP_INPUT); return *r }
 func (r RNNInputMode) c() C.cudnnRNNInputMode_t { return C.cudnnRNNInputMode_t(r) }
 
 /*
  *   RNN ALGO FLAGS
  */
 
-//RNNAlgoFlag used to pass RNNAlgo flags semi-safely.
-type RNNAlgoFlag struct {
-}
-
-//RNNAlgo is used for flags
+//RNNAlgo s used for flags and exposes the different flags through its methods
 type RNNAlgo C.cudnnRNNAlgo_t
 
-//Standard returns RNNAlgo( C.CUDNN_RNN_ALGO_STANDARD) flag
-func (r RNNAlgoFlag) Standard() RNNAlgo {
-	return RNNAlgo(C.CUDNN_RNN_ALGO_STANDARD)
-}
+//Standard sets r to and returns RNNAlgo( C.CUDNN_RNN_ALGO_STANDARD) flag
+func (r *RNNAlgo) Standard() RNNAlgo { *r = RNNAlgo(C.CUDNN_RNN_ALGO_STANDARD); return *r }
 
-//PersistStatic returns RNNAlgo( C.CUDNN_RNN_ALGO_PERSIST_STATIC) flag
-func (r RNNAlgoFlag) PersistStatic() RNNAlgo {
-	return RNNAlgo(C.CUDNN_RNN_ALGO_PERSIST_STATIC)
-}
+//PersistStatic sets r to and returns RNNAlgo( C.CUDNN_RNN_ALGO_PERSIST_STATIC) flag
+func (r *RNNAlgo) PersistStatic() RNNAlgo { *r = RNNAlgo(C.CUDNN_RNN_ALGO_PERSIST_STATIC); return *r }
 
-//PersistDynamic returns RNNAlgo( C.CUDNN_RNN_ALGO_PERSIST_DYNAMIC) flag
-func (r RNNAlgoFlag) PersistDynamic() RNNAlgo {
-	return RNNAlgo(C.CUDNN_RNN_ALGO_PERSIST_DYNAMIC)
-}
+//PersistDynamic sets r to and returns RNNAlgo( C.CUDNN_RNN_ALGO_PERSIST_DYNAMIC) flag
+func (r *RNNAlgo) PersistDynamic() RNNAlgo { *r = RNNAlgo(C.CUDNN_RNN_ALGO_PERSIST_DYNAMIC); return *r }
 
-//Count returns RNNAlgo( C.CUDNN_RNN_ALGO_COUNT) flag
-func (r RNNAlgoFlag) Count() RNNAlgo {
-	return RNNAlgo(C.CUDNN_RNN_ALGO_COUNT)
-}
+//Count sets r to and returns RNNAlgo( C.CUDNN_RNN_ALGO_COUNT) flag
+func (r *RNNAlgo) Count() RNNAlgo { *r = RNNAlgo(C.CUDNN_RNN_ALGO_COUNT); return *r }
 
 func (r RNNAlgo) c() C.cudnnRNNAlgo_t { return C.cudnnRNNAlgo_t(r) }

@@ -70,30 +70,27 @@ func cscalarbydatatypeforsettensor(dtype DataType, num float64) gocu.CScalar {
 
 }
 
-//RuntimeTag is a type that cudnn uses that I am not sure of yet
+//RuntimeTag is a type that cudnn looks to check or kernels to see if they are working correctly.
+//Should be used with batchnormialization
 type RuntimeTag C.cudnnRuntimeTag_t
 
-// ErrQueryMode are basically flags that are used for different modes
+// ErrQueryMode are basically flags that are used for different modes that are exposed through the
+//types methods
 type ErrQueryMode C.cudnnErrQueryMode_t
 
-//ErrQueryModeFlag returns the default flag of ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE) can be changed with methods
-func ErrQueryModeFlag() ErrQueryMode {
-	return ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE)
+//RawCode sets e to and returns ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE)
+func (e *ErrQueryMode) RawCode() ErrQueryMode { *e = ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE); return *e }
+
+//NonBlocking sets e to and returns ErrQueryMode(C.CUDNN_ERRQUERY_NONBLOCKING)
+func (e *ErrQueryMode) NonBlocking() ErrQueryMode {
+	*e = ErrQueryMode(C.CUDNN_ERRQUERY_NONBLOCKING)
+	return *e
 }
 
-//RawCode return  ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE)
-func (e ErrQueryMode) RawCode() ErrQueryMode {
-	return ErrQueryMode(C.CUDNN_ERRQUERY_RAWCODE)
-}
-
-//NonBlocking return  ErrQueryMode(C.CUDNN_ERRQUERY_NONBLOCKING)
-func (e ErrQueryMode) NonBlocking() ErrQueryMode {
-	return ErrQueryMode(C.CUDNN_ERRQUERY_NONBLOCKING)
-}
-
-//Blocking 	return  ErrQueryMode(C.CUDNN_ERRQUERY_BLOCKING)
-func (e ErrQueryMode) Blocking() ErrQueryMode {
-	return ErrQueryMode(C.CUDNN_ERRQUERY_BLOCKING)
+//Blocking sets e to and returns ErrQueryMode(C.CUDNN_ERRQUERY_BLOCKING)
+func (e *ErrQueryMode) Blocking() ErrQueryMode {
+	*e = ErrQueryMode(C.CUDNN_ERRQUERY_BLOCKING)
+	return *e
 }
 
 func (e ErrQueryMode) c() C.cudnnErrQueryMode_t { return C.cudnnErrQueryMode_t(e) }
@@ -109,6 +106,7 @@ func GetCudaartVersion() uint {
 }
 
 //QueryRuntimeError check cudnnQueryRuntimeError in DEEP Learning SDK Documentation
+//tag should be nil
 func (handle *Handle) QueryRuntimeError(mode ErrQueryMode, tag *RuntimeTag) (Status, error) {
 	var rstatus C.cudnnStatus_t
 
@@ -117,9 +115,7 @@ func (handle *Handle) QueryRuntimeError(mode ErrQueryMode, tag *RuntimeTag) (Sta
 
 		return Status(rstatus), err
 	}
-	if setkeepalive {
-		keepsalivebuffer(handle)
-	}
+
 	return Status(rstatus), errors.New("Tag flags not supported")
 
 }

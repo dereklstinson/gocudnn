@@ -27,9 +27,9 @@ func (handle *Handle) Pointer() unsafe.Pointer {
 	return unsafe.Pointer(handle.x)
 }
 
-//NewHandle creates a handle its basically a Context
+//CreateHandle creates a handle its basically a Context
 //usegogc is for future use.  Right now it is always on the gc.
-func NewHandle(usegogc bool) *Handle {
+func CreateHandle(usegogc bool) *Handle {
 
 	handle := new(Handle)
 	err := Status(C.cudnnCreate(&handle.x)).error("NewHandle")

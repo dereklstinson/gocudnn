@@ -15,7 +15,6 @@ void MakeAlgorithmforFWD(cudnnAlgorithm_t *input,cudnnConvolutionFwdAlgo_t algo 
 */
 import "C"
 import (
-	"errors"
 	"fmt"
 	"runtime"
 
@@ -35,6 +34,7 @@ type ConvolutionD struct {
 	descriptor C.cudnnConvolutionDescriptor_t
 	dims       C.int
 	isconv2d   bool
+	gogc       bool
 }
 
 const convolutionnd2dtestflag = true
@@ -52,27 +52,17 @@ func CreateConvolutionDescriptor() (*ConvolutionD, error) {
 	return d, nil
 }
 
-//Set2D sets convolution descriptor to 2D
-func (c *ConvolutionD) Set2D(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
-	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) != 2 {
-		return errors.New("pad stride and dialation need to be size 2")
-	}
-	cdata := data.c()
-	cmode := mode.c()
-	cpad := int32Tocint(pad)
-	cstride := int32Tocint(stride)
-	cdialation := int32Tocint(dialation)
-	c.isconv2d = true
-	if convolutionnd2dtestflag {
-		dims := C.int(len(pad))
-		return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-Set2D")
-
-	}
-	return Status(C.cudnnSetConvolution2dDescriptor(c.descriptor, cpad[0], cpad[1], cstride[0], cstride[1], cdialation[0], cdialation[1], cmode, cdata)).error("NewConvolution2dDescriptor-set")
-}
-
-//SetND sets the convolution descriptor to ND
-func (c *ConvolutionD) SetND(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
+//Set sets the convolution descriptor
+//Input.Type of the filter layout format. If this input is set to CUDNN_TENSOR_NCHW, which is one of the enumerated values allowed by cudnnTensorFormat_t descriptor, then the layout of the filter is as follows:
+//
+//For N=4, i.e., for a 4D filter descriptor, the filter layout is in the form of KCRS (K represents the number of output feature maps, C the number of input feature maps, R the number of rows per filter, and S the number of columns per filter.)
+//For N=3, i.e., for a 3D filter descriptor, the number S (number of columns per filter) is omitted.
+//For N=5 and greater, the layout of the higher dimensions immediately follow RS.
+//On the other hand, if this input is set to CUDNN_TENSOR_NHWC, then the layout of the filter is as follows:
+//for N=4, i.e., for a 4D filter descriptor, the filter layout is in the form of KRSC.
+//For N=3, i.e., for a 3D filter descriptor, the number S (number of columns per filter) is omitted, and the layout of C immediately follows R.
+//For N=5 and greater, the layout of the higher dimensions are inserted between S and C. See also the description for cudnnTensorFormat_t.
+func (c *ConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
 	cdata := data.c()
 	cmode := mode.c()
 	cpad := int32Tocint(pad)
@@ -139,27 +129,24 @@ func (c *ConvolutionD) SetMathType(mathtype MathType) error {
 	return x.error("SetGroupCountandMathtype-Math")
 }
 
-//GetConvolution2dForwardOutputDim is a helper func that will output the shape of the convolution
-func (c *ConvolutionD) GetConvolution2dForwardOutputDim(input *TensorD, filter *FilterD) ([]int32, error) {
-	var shape [4]C.int
-	x := Status(C.cudnnGetConvolution2dForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor,
-		&shape[0], &shape[1], &shape[2], &shape[3]))
-	retshap := cintToint32(shape[:4])
-
-	return retshap, x.error("GetConvolution2dForwardOutputDim")
-
-}
-
-//GetConvolutionNdForwardOutputDim is a helper function to give the size of the output of of a COnvolutionNDForward
-func (c *ConvolutionD) GetConvolutionNdForwardOutputDim(input *TensorD, filter *FilterD) ([]int32, error) {
-	dims := make([]C.int, int32(c.dims))
-	x := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, c.dims, &dims[0])).error("GetConvolutionNdForwardOutputDim")
+//GetOutputDims is a helper function to give the size of the output of of a COnvolutionNDForward
+//Each dimension of the (nbDims-2)-D images of the output tensor is computed as followed:
+//
+//    outputDim = 1 + ( inputDim + 2*pad - (((filterDim-1)*dilation)+1) )/convolutionStride;
+//
+func (c *ConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32, error) {
+	dims := make([]C.int, int32(input.dims))
+	x := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, input.dims, &dims[0])).error("GetConvolutionNdForwardOutputDim")
 
 	return cintToint32(dims), x
 }
 
-//DestroyDescriptor destroys the ConvolutionDescriptor
-func (c *ConvolutionD) DestroyDescriptor() error {
+//Destroy destroys the ConvolutionDescriptor. If GC is set then it only returns nil.
+//Currently GC is set with no option to turn off
+func (c *ConvolutionD) Destroy() error {
+	if setfinalizer || c.gogc {
+		return nil
+	}
 	return destroyconvolutiondescriptor(c)
 }
 func destroyconvolutiondescriptor(c *ConvolutionD) error {
@@ -1343,3 +1330,48 @@ func (c *ConvFwdAlgo) Count() ConvFwdAlgo {
 func (c ConvFwdAlgo) c() C.cudnnConvolutionFwdAlgo_t {
 	return C.cudnnConvolutionFwdAlgo_t(c)
 }
+
+/*
+//Set2D sets convolution descriptor to 2D
+func (c *ConvolutionD) Set2D(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
+	if len(pad) != len(stride) || len(pad) != len(dialation) || len(pad) != 2 {
+		return errors.New("pad stride and dialation need to be size 2")
+	}
+	cdata := data.c()
+	cmode := mode.c()
+	cpad := int32Tocint(pad)
+	cstride := int32Tocint(stride)
+	cdialation := int32Tocint(dialation)
+	c.isconv2d = true
+	if convolutionnd2dtestflag {
+		dims := C.int(len(pad))
+		return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-Set2D")
+
+	}
+	return Status(C.cudnnSetConvolution2dDescriptor(c.descriptor, cpad[0], cpad[1], cstride[0], cstride[1], cdialation[0], cdialation[1], cmode, cdata)).error("NewConvolution2dDescriptor-set")
+}
+
+//SetND sets the convolution descriptor to ND
+func (c *ConvolutionD) SetND(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
+	cdata := data.c()
+	cmode := mode.c()
+	cpad := int32Tocint(pad)
+	cstride := int32Tocint(stride)
+	cdialation := int32Tocint(dialation)
+	dims := C.int(len(pad))
+	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
+
+}
+*/
+/*
+//GetConvolution2dForwardOutputDim is a helper func that will output the shape of the convolution
+func (c *ConvolutionD) GetConvolution2dForwardOutputDim(input *TensorD, filter *FilterD) ([]int32, error) {
+	var shape [4]C.int
+	x := Status(C.cudnnGetConvolution2dForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor,
+		&shape[0], &shape[1], &shape[2], &shape[3]))
+	retshap := cintToint32(shape[:4])
+
+	return retshap, x.error("GetConvolution2dForwardOutputDim")
+
+}
+*/

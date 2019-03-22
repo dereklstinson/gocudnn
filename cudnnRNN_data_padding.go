@@ -95,22 +95,29 @@ func (r RNNDataLayout) c() C.cudnnRNNDataLayout_t {
 	return C.cudnnRNNDataLayout_t(r)
 }
 
-//SeqMajorUnPacked returns CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_UNPACKED flag
-func (r RNNDataLayout) SeqMajorUnPacked() RNNDataLayout {
-	return RNNDataLayout(C.CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_UNPACKED)
+func (r *RNNDataLayout) cptr() *C.cudnnRNNDataLayout_t {
+	return (*C.cudnnRNNDataLayout_t)(r)
 }
 
-//SeqMajorPacked returns CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_PACKED flag
-func (r RNNDataLayout) SeqMajorPacked() RNNDataLayout {
-	return RNNDataLayout(C.CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_PACKED)
+//SeqMajorUnPacked sets r to and returns CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_UNPACKED flag
+func (r *RNNDataLayout) SeqMajorUnPacked() RNNDataLayout {
+	*r = RNNDataLayout(C.CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_UNPACKED)
+	return *r
 }
 
-//BatchMajorUnPacked returns CUDNN_RNN_DATA_LAYOUT_BATCH_MAJOR_UNPACKED flag
-func (r RNNDataLayout) BatchMajorUnPacked() RNNDataLayout {
-	return RNNDataLayout(C.CUDNN_RNN_DATA_LAYOUT_BATCH_MAJOR_UNPACKED)
+//SeqMajorPacked sets r to  CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_PACKED flag
+func (r *RNNDataLayout) SeqMajorPacked() RNNDataLayout {
+	*r = RNNDataLayout(C.CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_PACKED)
+	return *r
 }
 
-//RNNPaddingMode is the padding mode
+//BatchMajorUnPacked sets r to  CUDNN_RNN_DATA_LAYOUT_BATCH_MAJOR_UNPACKED flag
+func (r *RNNDataLayout) BatchMajorUnPacked() RNNDataLayout {
+	*r = RNNDataLayout(C.CUDNN_RNN_DATA_LAYOUT_BATCH_MAJOR_UNPACKED)
+	return *r
+}
+
+//RNNPaddingMode is the padding mode flag
 type RNNPaddingMode C.cudnnRNNPaddingMode_t
 
 func (r RNNPaddingMode) c() C.cudnnRNNPaddingMode_t {
@@ -120,14 +127,16 @@ func (r *RNNPaddingMode) cptr() *C.cudnnRNNPaddingMode_t {
 	return (*C.cudnnRNNPaddingMode_t)(r)
 }
 
-//Disabled returns CUDNN_RNN_PADDED_IO_DISABLED
-func (r RNNPaddingMode) Disabled() RNNPaddingMode {
-	return RNNPaddingMode(C.CUDNN_RNN_PADDED_IO_DISABLED)
+//Disabled sets r to and returns RNNPaddingMode(C.CUDNN_RNN_PADDED_IO_DISABLED)
+func (r *RNNPaddingMode) Disabled() RNNPaddingMode {
+	*r = RNNPaddingMode(C.CUDNN_RNN_PADDED_IO_DISABLED)
+	return *r
 }
 
-//Enabled returns CUDNN_RNN_PADDED_IO_ENABLED
-func (r RNNPaddingMode) Enabled() RNNPaddingMode {
-	return RNNPaddingMode(C.CUDNN_RNN_PADDED_IO_ENABLED)
+//Enabled sets r to and returns RNNPaddingMode(C.CUDNN_RNN_PADDED_IO_ENABLED)
+func (r *RNNPaddingMode) Enabled() RNNPaddingMode {
+	*r = RNNPaddingMode(C.CUDNN_RNN_PADDED_IO_ENABLED)
+	return *r
 }
 
 //SetPaddingMode sets the padding mode with flag passed

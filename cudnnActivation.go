@@ -13,13 +13,16 @@ import (
 //ActivationD is an opaque struct that holds the description of an activation operation.
 type ActivationD struct {
 	descriptor C.cudnnActivationDescriptor_t
+	gogc       bool
 }
 
 //CreateActivationDescriptor creates an activation descriptor
 func CreateActivationDescriptor() (*ActivationD, error) {
 	desc := new(ActivationD)
+
 	err := Status(C.cudnnCreateActivationDescriptor(&desc.descriptor)).error("NewActivationDescriptor-create")
 	if setfinalizer {
+		desc.gogc = true
 		runtime.SetFinalizer(desc, destroyactivationdescriptor)
 	}
 	return desc, err
@@ -38,8 +41,12 @@ func (a *ActivationD) Get() (mode ActivationMode, nan NANProp, coef float64, err
 	return (mode), (nan), (coef), err
 }
 
-//DestroyDescriptor destroys the activation descriptor
-func (a *ActivationD) DestroyDescriptor() error {
+//Destroy destroys the activation descriptor if GC is not set. if not set method will only return nil
+//Currently GC is always set with no way of turning it off
+func (a *ActivationD) Destroy() error {
+	if setfinalizer || a.gogc {
+		return nil
+	}
 	return destroyactivationdescriptor(a)
 }
 func destroyactivationdescriptor(a *ActivationD) error {

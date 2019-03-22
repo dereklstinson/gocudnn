@@ -10,7 +10,15 @@ V0.1 is cudnn 7.1 with cuda 10.0
 
 In a few weeks I will add the 7.5 functions, and moving to cuda 10.1, because I think they added some functions
 to nvjpeg and npp.  
-Also 7.5 might be an api breaking update.  I've been bashing my head with the flag issues.  I personally hate flags. For each Flag I would use an empty struct to pass the flags through methods, but I think, I am going to have the flags themselves pass the different flags as methods and maybe even update themselves to create less clutter.  
+7.5 is an api breaking update.  Flags are being used completely differently.  Now flags have methods that change value of the type, but also return that changed value.  Also, I am trimming out all non "ND" functions.
+This will make less under the hood things that I was adding to get this binding to work. I was using 4d tensors in GoCuNets.  If there is a significant hit to performance when I conform to the new bindings. I will add it back to the bindings.  
+That being said. It shouldn't be a much of a change since I was using arrays as inputs to the functions even if it was a 4D functions. 
+
+I got rid of New....Descriptor.  It is now Create...Descriptor.  The descriptors will now need to be set. with (type)Set(....flags). I tried to change every GetDescriptor() to Get(). So, that it will be streamlined.
+
+extra cudnn:
+
+I made a BatchNormalD descriptor and BatchNormDEx descriptor.  You will call this with a "Create" function. and set it like the other descriptors.  
 
 
 

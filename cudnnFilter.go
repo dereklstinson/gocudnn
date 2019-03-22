@@ -6,7 +6,6 @@ package gocudnn
 import "C"
 
 import (
-	"errors"
 	"runtime"
 )
 
@@ -15,8 +14,9 @@ type FilterD struct {
 	descriptor C.cudnnFilterDescriptor_t
 	gogc       bool
 	dims       C.int
-	flags      descflag
 }
+
+const filterdescriptorallndtest = true
 
 /*
 //TensorD returns the tensor descripter of FilterD.  //Kind of a hack
@@ -42,46 +42,19 @@ func CreateFilterDescriptor() (*FilterD, error) {
 	return flt, err
 }
 
-//SetND sets the filter to ND
-func (f *FilterD) SetND(dtype DataType, format TensorFormat, shape []int32) error {
+//Set sets the filter descriptor
+func (f *FilterD) Set(dtype DataType, format TensorFormat, shape []int32) error {
 	cshape := int32Tocint(shape)
-	f.flags = tnd
 	f.dims = (C.int)(len(shape))
+
 	return Status(C.cudnnSetFilterNdDescriptor(f.descriptor, dtype.c(), format.c(), f.dims, &cshape[0])).error("(*FilterD)SetND")
-}
-
-//Set4DEx sets the filter up like nd but using a 4d
-func (f *FilterD) Set4DEx(dtype DataType, format TensorFormat, shape []int32) error {
-	l := len(shape)
-	f.flags = t4d
-	f.dims = (C.int)(len(shape))
-	if l != 4 {
-		return errors.New("length of shape needs to be 4")
-	}
-	cshape := int32Tocint(shape)
-	return Status(C.cudnnSetFilter4dDescriptor(f.descriptor, dtype.c(), format.c(), cshape[0], cshape[1], cshape[2], cshape[3])).error("(*FilterD)Set4DEx")
-}
-
-//Set4D sets the filter like normal
-func (f *FilterD) Set4D(dtype DataType, format TensorFormat, k, c, h, w int32) error {
-	f.flags = t4d
-	f.dims = (C.int)(2)
-	return Status(C.cudnnSetFilter4dDescriptor(f.descriptor, dtype.c(), format.c(), (C.int)(k), (C.int)(c), (C.int)(h), (C.int)(w))).error("(*FilterD)Set4DEx")
 }
 
 //Get returns a copy of the ConvolutionD
 func (f *FilterD) Get() (dtype DataType, frmt TensorFormat, shape []int32, err error) {
-
+	var holder C.int
 	shape = make([]int32, f.dims)
-	if f.flags == t4d {
-		err = Status(C.cudnnGetFilter4dDescriptor(f.descriptor, dtype.cptr(), frmt.cptr(), (*C.int)(&shape[0]), (*C.int)(&shape[1]), (*C.int)(&shape[2]), (*C.int)(&shape[3]))).error("GetFilter4dDescriptor")
-	} else if f.flags == tnd {
-		var holder C.int
-		err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error("GetFilterNdDescriptor")
-	} else {
-		err = errors.New("Unsupported flag for descriptor")
-	}
-
+	err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error("cudnnGetFilterNdDescriptor")
 	return dtype, frmt, shape, err
 }
 
@@ -104,3 +77,28 @@ func destroyfilterdescriptor(f *FilterD) error {
 	return nil
 
 }
+
+/*
+//Set4DEx sets the filter up like nd but using a 4d
+func (f *FilterD) Set4D(dtype DataType, format TensorFormat, shape []int32) error {
+	l := len(shape)
+	f.flags = t4d
+	f.dims = (C.int)(len(shape))
+	if l != 4 {
+		return errors.New("length of shape needs to be 4")
+	}
+	cshape := int32Tocint(shape)
+	if filterdescriptorallndtest{
+		return Status(C.cudnnSetFilterNdDescriptor(f.descriptor, dtype.c(), format.c(), f.dims, &cshape[0])).error("(*FilterD)SetND")
+	}
+	return Status(C.cudnnSetFilter4dDescriptor(f.descriptor, dtype.c(), format.c(), cshape[0], cshape[1], cshape[2], cshape[3])).error("(*FilterD)Set4DEx")
+}
+*/
+/*
+//Set4D sets the filter like normal
+func (f *FilterD) Set4D(dtype DataType, format TensorFormat, k, c, h, w int32) error {
+	f.flags = t4d
+	f.dims = (C.int)(2)
+	return Status(C.cudnnSetFilter4dDescriptor(f.descriptor, dtype.c(), format.c(), (C.int)(k), (C.int)(c), (C.int)(h), (C.int)(w))).error("(*FilterD)Set4DEx")
+}
+*/

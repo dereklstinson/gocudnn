@@ -189,7 +189,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 //Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
 func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, yD *gocudnn.TensorD, y gocu.Mem, coefs, thresh, coefs1 gocu.Mem, alpha, beta float64) error {
-	_, dtype, dims, _, err := xD.GetDescrptor()
+	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
 	}
@@ -265,7 +265,7 @@ func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD
 }
 
 func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs gocu.Mem) error {
-	_, dtype, dims, _, err := xD.GetDescrptor()
+	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dx
 
 }
 func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, alpha, beta float64) error {
-	_, dtype, _, _, err := xD.GetDescrptor()
+	_, dtype, _, _, err := xD.Get()
 	if err != nil {
 		return err
 	}
@@ -316,7 +316,7 @@ func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.
 	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef)) //, xA.propnan)
 }
 func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem) error {
-	_, dtype, dims, _, err := xD.GetDescrptor()
+	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
 	}

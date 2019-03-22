@@ -6,7 +6,6 @@ package gocudnn
 */
 import "C"
 import (
-	"errors"
 	"runtime"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
@@ -30,43 +29,8 @@ func CreatePoolingDescriptor() (*PoolingD, error) {
 
 }
 
-//Set2D sets pooling descriptor to 2d
-func (p *PoolingD) Set2D(mode PoolingMode, nan NANProp, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride int32) error {
-	return Status(C.cudnnSetPooling2dDescriptor(
-		p.descriptor,
-		mode.c(),
-		nan.c(),
-		C.int(Hwindow),
-		C.int(Wwindow),
-		C.int(Vpadding),
-		C.int(Hpadding),
-		C.int(Vstride),
-		C.int(Hstride),
-	)).error("(*PoolingD)Set2Dex")
-}
-
-//Set2DEx sets up a 2D pooling descriptor but with the window padding and stride are in slices.
-func (p *PoolingD) Set2DEx(mode PoolingMode, nan NANProp, window, padding, stride []int32) error {
-	if len(window) != len(padding) || len(window) != len(stride) || len(window) != 2 {
-		return errors.New("Window Padding and Stride array lengths need to be 2")
-	}
-	p.dims = (C.int)(len(window))
-	return Status(C.cudnnSetPooling2dDescriptor(
-		p.descriptor,
-		mode.c(),
-		nan.c(),
-		C.int(window[0]),
-		C.int(window[1]),
-		C.int(padding[0]),
-		C.int(padding[1]),
-		C.int(stride[0]),
-		C.int(stride[1]),
-	)).error("(*PoolingD)Set2Dex")
-
-}
-
-//SetND sets pooling descriptor to values passed
-func (p *PoolingD) SetND(mode PoolingMode, nan NANProp, window, padding, stride []int32) error {
+//Set sets pooling descriptor to values passed
+func (p *PoolingD) Set(mode PoolingMode, nan NANProp, window, padding, stride []int32) error {
 	cwindow := int32Tocint(window)
 	cpadding := int32Tocint(padding)
 	cstride := int32Tocint(stride)
@@ -82,37 +46,8 @@ func (p *PoolingD) SetND(mode PoolingMode, nan NANProp, window, padding, stride 
 	)).error("(*PoolingD)SetND")
 }
 
-//Get2D get 2d gets the 2D descriptor values
-func (p *PoolingD) Get2D() (mode PoolingMode, nan NANProp, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride int32, err error) {
-	var hw, ww, vp, hp, vs, hs C.int
-	err = Status(C.cudnnGetPooling2dDescriptor(
-		p.descriptor,
-		mode.cptr(), nan.cptr(),
-		&hw, &ww, &vp, &hp, &vs, &hs,
-	)).error("GetPooling2dDescriptor-2d")
-
-	Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride = (int32)(hw), (int32)(ww), (int32)(vp), (int32)(hp), (int32)(vs), (int32)(hs)
-	return mode, nan, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride, err
-}
-
-//Get2DEx gets the 2d descriptor values in ND mode.
-func (p *PoolingD) Get2DEx() (mode PoolingMode, nan NANProp, window, padding, stride []int32, err error) {
-
-	window = make([]int32, 2)
-	padding = make([]int32, 2)
-	stride = make([]int32, 2)
-	hw, ww, vp, hp, vs, hs := (*C.int)(&window[0]), (*C.int)(&window[1]), (*C.int)(&padding[0]), (*C.int)(&padding[1]), (*C.int)(&stride[0]), (*C.int)(&stride[1])
-	err = Status(C.cudnnGetPooling2dDescriptor(
-		p.descriptor,
-		mode.cptr(), nan.cptr(),
-		hw, ww, vp, hp, vs, hs,
-	)).error("GetPooling2dDescriptor-2d")
-
-	return mode, nan, window, padding, stride, err
-}
-
-//GetND gets the nd descriptor for pooling
-func (p *PoolingD) GetND() (mode PoolingMode, nan NANProp, window, padding, stride []int32, err error) {
+//Get gets the descriptor values for pooling
+func (p *PoolingD) Get() (mode PoolingMode, nan NANProp, window, padding, stride []int32, err error) {
 	windowc := make([]C.int, p.dims)
 	paddingc := make([]C.int, p.dims)
 	stridec := make([]C.int, p.dims)
@@ -131,35 +66,18 @@ func (p *PoolingD) GetND() (mode PoolingMode, nan NANProp, window, padding, stri
 	return mode, nan, window, padding, stride, err
 }
 
-//GetOutputDim will return the forward output dims from the pooling desc, and the tensor passed
-func (p *PoolingD) GetOutputDim(
+//GetOutputDims will return the forward output dims from the pooling desc, and the tensor passed
+func (p *PoolingD) GetOutputDims(
 	input *TensorD,
 ) ([]int32, error) {
-	if p.dims > 2 {
-		outputdims := make([]C.int, p.dims)
-		err := Status(C.cudnnGetPoolingNdForwardOutputDim(
-			p.descriptor,
-			input.descriptor,
-			p.dims,
-			&outputdims[0],
-		)).error("GetPoolingForwardOutputDim-nd")
-		if setkeepalive {
-			keepsalivebuffer(p, input)
-		}
-		return cintToint32(outputdims), err
-	}
-	outputdims := make([]C.int, 4)
-	err := Status(C.cudnnGetPooling2dForwardOutputDim(
+	outputdims := make([]C.int, input.dims)
+	err := Status(C.cudnnGetPoolingNdForwardOutputDim(
 		p.descriptor,
 		input.descriptor,
+		input.dims,
 		&outputdims[0],
-		&outputdims[1],
-		&outputdims[2],
-		&outputdims[3],
-	)).error("GetPoolingForwardOutputDim-2d")
-	if setkeepalive {
-		keepsalivebuffer(p, input)
-	}
+	)).error("GetPoolingForwardOutputDim-nd")
+
 	return cintToint32(outputdims), err
 }
 
@@ -253,3 +171,137 @@ func (p *PoolingMode) MaxDeterministic() PoolingMode {
 
 func (p PoolingMode) c() C.cudnnPoolingMode_t      { return C.cudnnPoolingMode_t(p) }
 func (p *PoolingMode) cptr() *C.cudnnPoolingMode_t { return (*C.cudnnPoolingMode_t)(p) }
+
+/*
+//Set2D sets pooling descriptor to 2d
+func (p *PoolingD) Set2D(mode PoolingMode, nan NANProp, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride int32) error {
+	return Status(C.cudnnSetPooling2dDescriptor(
+		p.descriptor,
+		mode.c(),
+		nan.c(),
+		C.int(Hwindow),
+		C.int(Wwindow),
+		C.int(Vpadding),
+		C.int(Hpadding),
+		C.int(Vstride),
+		C.int(Hstride),
+	)).error("(*PoolingD)Set2Dex")
+}
+
+//Set2DEx sets up a 2D pooling descriptor but with the window padding and stride are in slices.
+func (p *PoolingD) Set2DEx(mode PoolingMode, nan NANProp, window, padding, stride []int32) error {
+	if len(window) != len(padding) || len(window) != len(stride) || len(window) != 2 {
+		return errors.New("Window Padding and Stride array lengths need to be 2")
+	}
+	p.dims = (C.int)(len(window))
+	return Status(C.cudnnSetPooling2dDescriptor(
+		p.descriptor,
+		mode.c(),
+		nan.c(),
+		C.int(window[0]),
+		C.int(window[1]),
+		C.int(padding[0]),
+		C.int(padding[1]),
+		C.int(stride[0]),
+		C.int(stride[1]),
+	)).error("(*PoolingD)Set2Dex")
+
+}
+
+//SetND sets pooling descriptor to values passed
+func (p *PoolingD) SetND(mode PoolingMode, nan NANProp, window, padding, stride []int32) error {
+	cwindow := int32Tocint(window)
+	cpadding := int32Tocint(padding)
+	cstride := int32Tocint(stride)
+	p.dims = (C.int)(len(window))
+	return Status(C.cudnnSetPoolingNdDescriptor(
+		p.descriptor,
+		mode.c(),
+		nan.c(),
+		p.dims,
+		&cwindow[0],
+		&cpadding[0],
+		&cstride[0],
+	)).error("(*PoolingD)SetND")
+}
+//Get2D get 2d gets the 2D descriptor values
+func (p *PoolingD) Get2D() (mode PoolingMode, nan NANProp, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride int32, err error) {
+	var hw, ww, vp, hp, vs, hs C.int
+	err = Status(C.cudnnGetPooling2dDescriptor(
+		p.descriptor,
+		mode.cptr(), nan.cptr(),
+		&hw, &ww, &vp, &hp, &vs, &hs,
+	)).error("GetPooling2dDescriptor-2d")
+
+	Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride = (int32)(hw), (int32)(ww), (int32)(vp), (int32)(hp), (int32)(vs), (int32)(hs)
+	return mode, nan, Hwindow, Wwindow, Vpadding, Hpadding, Vstride, Hstride, err
+}
+
+//Get2DEx gets the 2d descriptor values in ND mode.
+func (p *PoolingD) Get2DEx() (mode PoolingMode, nan NANProp, window, padding, stride []int32, err error) {
+
+	window = make([]int32, 2)
+	padding = make([]int32, 2)
+	stride = make([]int32, 2)
+	hw, ww, vp, hp, vs, hs := (*C.int)(&window[0]), (*C.int)(&window[1]), (*C.int)(&padding[0]), (*C.int)(&padding[1]), (*C.int)(&stride[0]), (*C.int)(&stride[1])
+	err = Status(C.cudnnGetPooling2dDescriptor(
+		p.descriptor,
+		mode.cptr(), nan.cptr(),
+		hw, ww, vp, hp, vs, hs,
+	)).error("GetPooling2dDescriptor-2d")
+
+	return mode, nan, window, padding, stride, err
+}
+
+//GetND gets the nd descriptor for pooling
+func (p *PoolingD) GetND() (mode PoolingMode, nan NANProp, window, padding, stride []int32, err error) {
+	windowc := make([]C.int, p.dims)
+	paddingc := make([]C.int, p.dims)
+	stridec := make([]C.int, p.dims)
+	var actual C.int
+	err = Status(C.cudnnGetPoolingNdDescriptor(
+		p.descriptor,
+		p.dims,
+		mode.cptr(),
+		nan.cptr(),
+		&actual,
+		&windowc[0],
+		&paddingc[0],
+		&stridec[0],
+	)).error("GetPoolingDescriptor-nd")
+	window, padding, stride = cintToint32(windowc), cintToint32(paddingc), cintToint32(stridec)
+	return mode, nan, window, padding, stride, err
+}
+//GetOutputDim will return the forward output dims from the pooling desc, and the tensor passed
+func (p *PoolingD) GetOutputDim(
+	input *TensorD,
+) ([]int32, error) {
+	if p.dims > 2 {
+		outputdims := make([]C.int, p.dims)
+		err := Status(C.cudnnGetPoolingNdForwardOutputDim(
+			p.descriptor,
+			input.descriptor,
+			p.dims,
+			&outputdims[0],
+		)).error("GetPoolingForwardOutputDim-nd")
+		if setkeepalive {
+			keepsalivebuffer(p, input)
+		}
+		return cintToint32(outputdims), err
+	}
+	outputdims := make([]C.int, 4)
+	err := Status(C.cudnnGetPooling2dForwardOutputDim(
+		p.descriptor,
+		input.descriptor,
+		&outputdims[0],
+		&outputdims[1],
+		&outputdims[2],
+		&outputdims[3],
+	)).error("GetPoolingForwardOutputDim-2d")
+	if setkeepalive {
+		keepsalivebuffer(p, input)
+	}
+	return cintToint32(outputdims), err
+}
+
+*/

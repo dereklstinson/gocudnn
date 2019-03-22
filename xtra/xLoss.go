@@ -87,15 +87,15 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 	dy gocu.Mem, //input network output values
 	alpha, beta float64,
 ) (float32, error) {
-	_, dxdtype, dxdims, _, err := dxD.GetDescrptor()
+	_, dxdtype, dxdims, _, err := dxD.Get()
 	if err != nil {
 		return -1, err
 	}
-	_, ydtype, ydims, _, err := yD.GetDescrptor()
+	_, ydtype, ydims, _, err := yD.Get()
 	if err != nil {
 		return -1, err
 	}
-	_, dydtype, dydims, _, err := dyD.GetDescrptor()
+	_, dydtype, dydims, _, err := dyD.Get()
 	if err != nil {
 		return -1, err
 	}

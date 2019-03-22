@@ -7,26 +7,28 @@ package gocudnn
 */
 import "C"
 
-//LibraryPropertyType is basically values that are for the current library that you have
-type LibraryPropertyType C.libraryPropertyType
-
-//Will have to double check this
-const (
-	MajorVersion LibraryPropertyType = C.MAJOR_VERSION
-	MinorVersion LibraryPropertyType = C.MINOR_VERSION
-	PatchLevel   LibraryPropertyType = C.PATCH_LEVEL
-)
-const gocudnnversionmadefor = int32(71)
-const gocudaversionmadefor = int32(92)
-
-//GetProperty returns the library versions passed
-func GetProperty(property LibraryPropertyType) (int32, error) {
-	var value C.int
-	x := C.cudnnGetProperty(C.libraryPropertyType(property), &value)
-	return int32(value), Status(x).error("LibraryPropertyType")
+//GetLibraryVersion will return the library version you have installed
+func GetLibraryVersion() (major, minor, patch int32, err error) {
+	var ma, mi, pa C.int
+	err = Status(C.cudnnGetProperty(C.MAJOR_VERSION, &ma)).error("Major")
+	if err != nil {
+		return
+	}
+	err = Status(C.cudnnGetProperty(C.MINOR_VERSION, &mi)).error("Minor")
+	if err != nil {
+		return
+	}
+	err = Status(C.cudnnGetProperty(C.PATCH_LEVEL, &pa)).error("Patch")
+	if err != nil {
+		return
+	}
+	major = (int32)(ma)
+	minor = (int32)(mi)
+	patch = (int32)(pa)
+	return major, minor, patch, err
 }
 
-//GOCUversioning returns the versions of cuda and cudnn when the bindings were made
-func GOCUversioning() (int32, int32) {
-	return gocudaversionmadefor, gocudnnversionmadefor
+//GetBindingVersion will return the library version this binding was made for.
+func GetBindingVersion() (major, minor, patch int32) {
+	return 7, 5, 0
 }

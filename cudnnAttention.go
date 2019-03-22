@@ -195,7 +195,6 @@ func (a *AttentionD) GetMultiHeadAttnWeights(h *Handle, wkind MultiHeadAttnWeigh
 	if err != nil {
 		return nil, nil, err
 	}
-	wD.frmt, wD.dtype, wD.dimsarray, wD.stride, err = wD.GetDescrptor()
 	if err != nil {
 		return
 	}

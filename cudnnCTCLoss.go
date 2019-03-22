@@ -35,7 +35,8 @@ func CreateCTCLossDescriptor() (*CTCLossD, error) {
 	if err != nil {
 		return nil, err
 	}
-	if setfinalizer {
+	x.gogc = true
+	if setfinalizer || x.gogc {
 		runtime.SetFinalizer(x, cudnnDestroyCTCLossDescriptor)
 	}
 	return x, err
@@ -55,8 +56,12 @@ func (c *CTCLossD) Get() (DataType, error) {
 
 }
 
-//Destroy destroys the descriptor inside CTCLossD
+//Destroy destroys the descriptor inside CTCLossD if go's gc is not in use.
+//if gc is being used destroy will just return nil
 func (c *CTCLossD) Destroy() error {
+	if setfinalizer || c.gogc {
+		return nil
+	}
 	return cudnnDestroyCTCLossDescriptor(c)
 }
 func cudnnDestroyCTCLossDescriptor(c *CTCLossD) error {
