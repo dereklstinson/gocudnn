@@ -97,7 +97,7 @@ func destroypoolingdescriptor(p *PoolingD) error {
 
 /* Pooling functions: All of the form "output = alpha * Op(inputs) + beta * output" */
 
-//PoolingForward does the poolingForward operation
+//Forward does the poolingForward operation
 func (p *PoolingD) Forward(
 	handle *Handle,
 	alpha float64,
@@ -122,7 +122,7 @@ func (p *PoolingD) Forward(
 	)).error("PoolingForward")
 }
 
-//PoolingBackward does the backward pooling operation
+//Backward does the backward pooling operation
 func (p *PoolingD) Backward(
 	handle *Handle,
 	alpha float64,
