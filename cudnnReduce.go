@@ -74,20 +74,16 @@ func cudnnDestroyReduceTensorDescriptor(reduce *ReduceTensorD) error {
 	return err
 }
 
-/*IndiciesSize Helper function to return the minimum size in bytes of the index space to be passed to the reduction given the input and output tensors */
-/*
-func (reduce *ReduceTensorD) IndiciesSize(
+/*GetIndiciesSize Helper function to return the minimum size in bytes of the index space to be passed to the reduction given the input and output tensors */
+func (r *ReduceTensorD) GetIndiciesSize(
 	handle *Handle,
 	aDesc, cDesc *TensorD) (uint, error) {
 	var sizeinbytes C.size_t
-	x := C.cudnnGetReductionIndicesSize(handle.x, reduce.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
-	if setkeepalive == true {
-		keepsalivebuffer(reduce, handle, aDesc, cDesc)
-	}
+	x := C.cudnnGetReductionIndicesSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+
 	return uint(sizeinbytes), Status(x).error("GetReductionIndicesSize")
 
 }
-*/
 
 //GetWorkSpaceSize  Helper function to return the minimum size of the workspace to be passed to the reduction given the input and output tensors
 func (r *ReduceTensorD) GetWorkSpaceSize(

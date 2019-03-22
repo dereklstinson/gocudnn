@@ -42,6 +42,10 @@ func (t *TensorD) DataType() DataType {
 	return t.dtype
 }
 
+//Format returns the tensor format
+func (t *TensorD) Format() TensorFormat {
+	return t.frmt
+}
 func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 	descs := make([]C.cudnnTensorDescriptor_t, len(input))
 	for i := 0; i < len(input); i++ {

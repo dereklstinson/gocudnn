@@ -33,7 +33,7 @@ func CreateDropOutDescriptor() (*DropOutD, error) {
 }
 
 //Set sets the drop out descriptor
-func (d *DropOutD) Set(handle Handle, dropout float32, states gocu.Mem, bytes uint, seed uint64) error {
+func (d *DropOutD) Set(handle *Handle, dropout float32, states gocu.Mem, bytes uint, seed uint64) error {
 	return Status(C.cudnnSetDropoutDescriptor(
 		d.descriptor,
 		handle.x,

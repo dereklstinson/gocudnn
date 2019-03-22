@@ -506,8 +506,8 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithmMaxCount(han
 
 }
 
-//ConvolutionBackwardBias Function to compute the bias gradient for batch convolution db is returned
-func (cbf ConvolutionBwdFuncs) ConvolutionBackwardBias(
+//BackwardBias is used to compute the bias gradient for batch convolution db is returned
+func (c *ConvolutionD) BackwardBias(
 	handle *Handle,
 	alpha float64,
 	dyD *TensorD,
@@ -1154,8 +1154,8 @@ func (c *ConvBwdFilterPref) NoWorkSpace() ConvBwdFilterPref {
 	return *c
 }
 
-//PrefFastest sets c to  ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)  and returns value of c
-func (c *ConvBwdFilterPref) PrefFastest() ConvBwdFilterPref {
+//PreferFastest sets c to  ConvBwdFilterPref( C.CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST)  and returns value of c
+func (c *ConvBwdFilterPref) PreferFastest() ConvBwdFilterPref {
 	*c = ConvBwdFilterPref(C.CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE)
 	return *c
 }
