@@ -16,7 +16,7 @@ import (
 )
 
 //DimMax is the max dims for tensors
-const DimMax = int32(8)
+const DimMax = int32(C.CUDNN_DIM_MAX)
 
 //CScalarByDataType takes the DataType flag and puts num into a CScalar interface. The value of num will be bound by what is passed for DataType.
 //If a DataType isn't supported by the function it will return nil.

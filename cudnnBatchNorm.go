@@ -26,7 +26,7 @@ func CreateBatchNormDescriptor() *BatchNormD {
 func (b *BatchNormD) Set(mode BatchNormMode) error {
 	b.mode = mode.c()
 	b.set = true
-	b.gogc=true
+	b.gogc = true
 	return nil
 }
 
@@ -48,7 +48,7 @@ func (b *BatchNormD) DeriveBNTensorDescriptor(xDesc *TensorD) (bndesc *TensorD, 
 	if !b.set {
 		return nil, errors.New("BatchNormD not set")
 	}
-	return cudnnDeriveBNTensorDescriptor(xDesc, BatchNormMode(b.mode),b.gogc)
+	return cudnnDeriveBNTensorDescriptor(xDesc, BatchNormMode(b.mode), b.gogc)
 }
 
 /*ForwardInference info was pulled from cudnn documentation
@@ -432,7 +432,7 @@ func cudnnDeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode, gogc bool
 	if xDesc.dims > 5 || xDesc.dims < 4 {
 		return nil, errors.New("dims for descriptor must be 4 or 5")
 	}
-	if setfinalizer ||gogc {
+	if setfinalizer || gogc {
 		descriptor, err = createtensordescriptor(true, true)
 	} else {
 		descriptor, err = createtensordescriptor(true, false)
@@ -442,10 +442,15 @@ func cudnnDeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode, gogc bool
 		return nil, err
 	}
 	err = Status(C.cudnnDeriveBNTensorDescriptor(descriptor.descriptor, xDesc.descriptor, mode.c())).error("DeriveBNTensorDescriptor-Derive")
-
+	frmt, dtype, shape, stride, err := descriptor.Get()
 	if err != nil {
 		return nil, err
 	}
+
+	descriptor.frmt = frmt
+	descriptor.dtype = dtype
+	descriptor.shape = shape
+	descriptor.stride = stride
 
 	return descriptor, nil
 }

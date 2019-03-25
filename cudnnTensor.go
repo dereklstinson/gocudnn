@@ -56,16 +56,17 @@ func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 
 func createtensordescriptor(setbyotheroperations, gogc bool) (*TensorD, error) {
 	d := new(TensorD)
-	err := Status(C.cudnnCreateTensorDescriptor(&d.descriptor)).error("NewTensor4dDescriptor-create")
-	if setfinalizer || gogc {
-		d.gogc = true
-		runtime.SetFinalizer(d, destroytensordescriptor)
+	if setbyotheroperations {
+		d.frmt.Unknown()
 	}
+	err := Status(C.cudnnCreateTensorDescriptor(&d.descriptor)).error("NewTensor4dDescriptor-create")
 	if err != nil {
 		return nil, err
 	}
-	if setbyotheroperations {
-		d.frmt.Unknown()
+
+	if setfinalizer || gogc {
+		d.gogc = true
+		runtime.SetFinalizer(d, destroytensordescriptor)
 	}
 
 	return d, nil
@@ -99,6 +100,9 @@ func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) e
 	default:
 		t.stride = stridecalc(shape)
 		shapecint := int32Tocint(shape)
+		if len(shape) == 0 {
+			panic("format is: " + t.frmt.ToString() + " and len is zero")
+		}
 		return Status(C.cudnnSetTensorNdDescriptorEx(t.descriptor, t.frmt.c(), data.c(), t.dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
 
 	}
@@ -107,11 +111,27 @@ func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) e
 
 //Get returns Data Type the Dims for shape and stride and error.  for Descriptors without stride it will still return junk info. so be mindful when you code.
 func (t *TensorD) Get() (frmt TensorFormat, dtype DataType, shape []int32, stride []int32, err error) {
+	if t.dims == 0 {
+		t.dims = C.CUDNN_DIM_MAX
+		shapec := make([]C.int, t.dims)
+		stridec := make([]C.int, t.dims)
+		frmt = t.frmt
+		var actual C.int
+		err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+		t.dims = actual
+		shape = cintToint32(shapec[:t.dims])
+		stride = cintToint32(stridec[:t.dims])
+		return frmt, dtype, shape, stride, err
+	}
+
 	shapec := make([]C.int, t.dims)
 	stridec := make([]C.int, t.dims)
 	frmt = t.frmt
-	var holder C.int
-	err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &holder, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+	var actual C.int
+	err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+	if t.dims != actual {
+		panic("t.dims should be actual")
+	}
 	shape = cintToint32(shapec)
 	stride = cintToint32(stridec)
 	return frmt, dtype, shape, stride, err
