@@ -82,8 +82,46 @@ func CreateTensorDescriptor() (*TensorD, error) {
 }
 
 //Set sets the tensor accourding to the values passed.
+//	Basic 4D formats:
 //
-//Note stride is ignored if frmt is set to frmt.Strided()
+//	NCHW:
+//
+//		  shape[0] = # of batches
+//		  shape[1] = # of channels
+//		  shape[2] = height
+//		  shape[3] = width
+//
+//	NHWC:
+//
+//		  shape[0] = # of batches
+//		  shape[1] = height
+//		  shape[2] = width
+//		  shape[3] = # of channels
+//
+//	Strided:
+//
+//	Strided is kind of hard to explain.  So here is an example of how values would be placed.
+//	n, c, h, w := 3,3,256,256 //Here is a batch of 3 images using rgb the size of 256x256
+//	dims := []int{n, c, h, w}  // Here we have the dims set.
+//	chw := c * h * w
+//	hw := h * w
+//	stride := []int{chw, hw, w, 1}  //This is how stride is usually set.
+//  //One could make a tensor like so:
+//  //
+//
+//  //If you wanted to get or place a value at a certain location.
+//	//Such as:
+//	//func GetValue(tensor []float32, location [4]int, stride [4]int){
+//	//l,s:=location,stride
+//	//return tensor[(l[0]*s[0])+(l[1]*s[1])+(l[2]*s[2])+(l[3]*s[3])] //As you can see the stride changes where you look in the tensor.
+//	//}
+//
+//	Notes:
+//
+//	1) The total size of a tensor including the potential padding between dimensions is limited to 2 Giga-elements of type datatype.
+//	   Tensors are restricted to having at least 4 dimensions, and at most DimMax (a const with val of 8 at the time of writing this) dimensions.
+//     When working with lower dimensional data, it is recommended that the user create a 4D tensor, and set the size along unused dimensions to 1.
+//	2) Stride is ignored if frmt is set to frmt.Strided(). So it can be set to nil.
 func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) error {
 	t.frmt = frmt
 	t.shape = shape
@@ -139,9 +177,9 @@ func (t *TensorD) Get() (frmt TensorFormat, dtype DataType, shape []int32, strid
 
 /*
 
-n, c, h, w := int32(1), int32(3), int32(4), int32(2)
+	n, c, h, w := int32(1), int32(3), int32(4), int32(2)
 	sharedims := []int32{n, c, h, w}
-	//tensor dims a 1,4,4,2... slide is 32,8,2,1
+	//tensor dims a 1,4,4,2... stride is 32,8,2,1
 	chw := c * h * w
 	hw := h * w
 	ostride := []int32{chw, hw, w, 1}
@@ -289,6 +327,29 @@ func (d *DataType) Int8x32() DataType { *d = DataType(C.CUDNN_DATA_INT8x32); ret
 
 func (d DataType) c() C.cudnnDataType_t      { return C.cudnnDataType_t(d) }
 func (d *DataType) cptr() *C.cudnnDataType_t { return (*C.cudnnDataType_t)(d) }
+
+//ToString will return a human readable string that can be printed for debugging.
+func (t DataType) ToString() string {
+	var flg DataType
+	switch t {
+	case flg.Float():
+		return "Float"
+	case flg.Double():
+		return "Double"
+	case flg.Int8():
+		return "Int8"
+	case flg.Int32():
+		return "Int32"
+	case flg.Half():
+		return "Half"
+	case flg.Int8x32():
+		return "Int8x32"
+	case flg.UInt8():
+		return "UInt8"
+
+	}
+	return "ERROR no such flag"
+}
 
 /*
 *

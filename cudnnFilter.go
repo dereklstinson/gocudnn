@@ -27,12 +27,6 @@ func (f *FilterD) TensorD() *TensorD {
 */
 
 //CreateFilterDescriptor creates a filter distriptor
-/*
- The Basic 4d shape is shape[0] = # of output feature maps
-					   shape[1] = # of input feature maps
-					   shape[2] = height of each filter
-					   shape[3] = width of each input filter
-*/
 func CreateFilterDescriptor() (*FilterD, error) {
 	flt := new(FilterD)
 	err := Status(C.cudnnCreateFilterDescriptor(&flt.descriptor)).error("NewFilter4dDescriptor-create-Filter")
@@ -43,6 +37,29 @@ func CreateFilterDescriptor() (*FilterD, error) {
 }
 
 //Set sets the filter descriptor
+//
+//	Basic 4D filter
+//
+// The Basic NCHW shape is shape[0] = # of output feature maps
+//				     	   shape[1] = # of input feature maps
+//					       shape[2] = height of each filter
+//					       shape[3] = width of each input filter
+//
+// The Basic NHWC shape is shape[0] = # of output feature maps
+//						   shape[1] = height of each filter
+//						   shape[2] = width of each input filter
+//				     	   shape[3] = # of input feature maps
+//
+//  Basic ND filter
+//
+// The Basic NCHW shape is shape[0]   = # of output feature maps
+//				     	   shape[1]   = # of input feature maps
+//					       shape[.]   = feature dims
+//					       shape[N-1] = feature dims
+//
+// The Basic NHWC shape is shape[0]   = # of output feature maps
+//						   shape[.]   = feature dims
+//				     	   shape[N-1] = # of input feature maps
 func (f *FilterD) Set(dtype DataType, format TensorFormat, shape []int32) error {
 	cshape := int32Tocint(shape)
 	f.dims = (C.int)(len(shape))

@@ -55,21 +55,31 @@ func CreateConvolutionDescriptor() (*ConvolutionD, error) {
 //Set sets the convolution descriptor
 //Input.Type of the filter layout format. If this input is set to CUDNN_TENSOR_NCHW, which is one of the enumerated values allowed by cudnnTensorFormat_t descriptor, then the layout of the filter is as follows:
 //
-//For N=4, i.e., for a 4D filter descriptor, the filter layout is in the form of KCRS (K represents the number of output feature maps, C the number of input feature maps, R the number of rows per filter, and S the number of columns per filter.)
-//For N=3, i.e., for a 3D filter descriptor, the number S (number of columns per filter) is omitted.
-//For N=5 and greater, the layout of the higher dimensions immediately follow RS.
-//On the other hand, if this input is set to CUDNN_TENSOR_NHWC, then the layout of the filter is as follows:
-//for N=4, i.e., for a 4D filter descriptor, the filter layout is in the form of KRSC.
-//For N=3, i.e., for a 3D filter descriptor, the number S (number of columns per filter) is omitted, and the layout of C immediately follows R.
-//For N=5 and greater, the layout of the higher dimensions are inserted between S and C. See also the description for cudnnTensorFormat_t.
-func (c *ConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, dialation []int32) error {
+//	For N=4, i.e., for a 4D filter descriptor, the filter layout is in the form of KCRS (K represents the number of output feature maps, C the number of input feature maps, R the number of rows per filter, and S the number of columns per filter.)
+
+//	For N=3, i.e., for a 3D filter descriptor, the number S (number of columns per filter) is omitted.
+//
+//	For N=5 and greater, the layout of the higher dimensions immediately follow RS.
+//
+//	On the other hand, if this input is set to CUDNN_TENSOR_NHWC, then the layout of the filter is as follows:
+//
+//	for N=4, i.e., for a 4D filter descriptor, the filter layout is in the form of KRSC.
+//
+//	For N=3, i.e., for a 3D filter descriptor, the number S (number of columns per filter) is omitted, and the layout of C immediately follows R.
+//
+//	For N=5 and greater, the layout of the higher dimensions are inserted between S and C. See also the description for cudnnTensorFormat_t.
+//
+//	Note:
+//
+//  Length of stride, pad, and dilation need to be len(tensordims) -2.
+func (c *ConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, dilation []int32) error {
 	cdata := data.c()
 	cmode := mode.c()
 	cpad := int32Tocint(pad)
 	cstride := int32Tocint(stride)
-	cdialation := int32Tocint(dialation)
+	cdilation := int32Tocint(dilation)
 	dims := C.int(len(pad))
-	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdialation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
+	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdilation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
 
 }
 
