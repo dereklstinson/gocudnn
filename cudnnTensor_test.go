@@ -60,14 +60,31 @@ func TestCreateTensorDescriptor(t *testing.T) {
 	}
 	//dtype,frmt don't need their methods recalled since their methods also change their value.
 	//N = Number of Output Feature Maps, C= Number of Input Feature Maps (C needs to be 3 because of the previous tensor), H=Height ,W=Width
-	err = filter.Set(dtype, frmt, []int32{20, 3, 5, 5})
+	ofshape := []int32{20, 3, 5, 5}
+	err = filter.Set(dtype, frmt, ofshape)
 	if err != nil {
 		t.Error(err)
+	}
+	fdtype, ffrmt, fgshape, err := filter.Get()
+	if err != nil {
+		t.Error(err)
+	}
+	if !checkarrays(ofshape, fgshape) {
+		if !checkarrays(oshape, gshape) {
+			t.Error("Not Matching", ofshape, fgshape)
+		}
+	}
+	if ffrmt != frmt {
+		t.Error("Not Matching", ffrmt.ToString(), frmt.ToString())
+	}
+	if fdtype != dtype {
+		t.Error("Not Matching", fdtype.ToString(), dtype.ToString())
 	}
 	convolution, err := CreateConvolutionDescriptor()
 	if err != nil {
 		t.Error(err)
 	}
+
 	err = convolution.Set(cmode.CrossCorrelation(), dtype, []int32{0, 0}, []int32{3, 3}, []int32{1, 1})
 	if err != nil {
 		t.Error(err)
@@ -77,6 +94,6 @@ func TestCreateTensorDescriptor(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	t.Error(outdims)
+
 	fmt.Println(outdims)
 }
