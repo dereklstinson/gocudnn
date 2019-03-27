@@ -6,12 +6,11 @@
 Go Bindings for cuDNN 7.4  using Cuda 10.0 \(Just some Cuda 10.0\) 
 V0.1 is cudnn 7.1 with cuda 10.0
 
- V0.1_75_101 is currently broken while I fix things up
+V0.1_75_101 is compiling.  It is cudnn 7.5 w/ cuda 10.1, There might be bugs. Let me know.  
 
-In a few weeks I will add the 7.5 functions, and moving to cuda 10.1, because I think they added some functions
-to nvjpeg and npp.  
-7.5 is an api breaking update.  Flags are being used completely differently.  Now flags have methods that change value of the type, but also return that changed value.  Also, I am trimming out all non "ND" functions.
-This will make less under the hood things that I was adding to get this binding to work. I was using 4d tensors in GoCuNets.  If there is a significant hit to performance when I conform to the new bindings. I will add it back to the bindings.  
+This is an api breaking update.  Flags are being used completely differently.  Now flags have methods that change value of the type, but also return that changed value.  Also, I am trimming out all non "ND" functions.
+This will make less under the hood things that I was adding to get this binding to work. I noticed no performance hit when everything was switched to ND.
+
 That being said. It shouldn't be a much of a change since I was using arrays as inputs to the functions even if it was a 4D functions. 
 
 I got rid of New....Descriptor.  It is now Create...Descriptor.  The descriptors will now need to be set. with (type)Set(....flags). I tried to change every GetDescriptor() to Get(). So, that it will be streamlined.
