@@ -329,9 +329,9 @@ func (d DataType) c() C.cudnnDataType_t      { return C.cudnnDataType_t(d) }
 func (d *DataType) cptr() *C.cudnnDataType_t { return (*C.cudnnDataType_t)(d) }
 
 //ToString will return a human readable string that can be printed for debugging.
-func (t DataType) ToString() string {
+func (d DataType) ToString() string {
 	var flg DataType
-	switch t {
+	switch d {
 	case flg.Float():
 		return "Float"
 	case flg.Double():
@@ -411,9 +411,10 @@ func (d *Determinism) Non() Determinism { *d = Determinism(C.CUDNN_NON_DETERMINI
 //Deterministic sets d to Determinism(C.CUDNN_DETERMINISTIC) and returns the value
 func (d *Determinism) Deterministic() Determinism { *d = Determinism(C.CUDNN_DETERMINISTIC); return *d }
 
-func (d Determinism) string() string {
+//ToString outputs a string of the type
+func (d Determinism) ToString() string {
 	if d == Determinism(C.CUDNN_NON_DETERMINISTIC) {
-		return "Non Deterministic"
+		return "Non-Deterministic"
 	}
 	return "Deterministic "
 }

@@ -56,7 +56,7 @@ func CreateConvolutionDescriptor() (*ConvolutionD, error) {
 //Input.Type of the filter layout format. If this input is set to CUDNN_TENSOR_NCHW, which is one of the enumerated values allowed by cudnnTensorFormat_t descriptor, then the layout of the filter is as follows:
 //
 //	For N=4, i.e., for a 4D filter descriptor, the filter layout is in the form of KCRS (K represents the number of output feature maps, C the number of input feature maps, R the number of rows per filter, and S the number of columns per filter.)
-
+//
 //	For N=3, i.e., for a 3D filter descriptor, the number S (number of columns per filter) is omitted.
 //
 //	For N=5 and greater, the layout of the higher dimensions immediately follow RS.
