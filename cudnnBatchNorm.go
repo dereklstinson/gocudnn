@@ -60,7 +60,6 @@ func (b *BatchNormD) DeriveBNTensorDescriptor(xDesc *TensorD) (bndesc *TensorD, 
 //
 //1)Only 4D and 5D tensors are supported.
 //
-//
 //2)The input transformation performed by this function is defined as: y := alpha*y + beta *(bnScale * (x-estimatedMean)/sqrt(epsilon + estimatedVariance)+bnBias)
 //
 //3)The epsilon value has to be the same during training, backpropagation and inference.
