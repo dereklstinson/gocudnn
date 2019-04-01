@@ -68,6 +68,8 @@ func FindLength(s uint, dtype DataType) uint32 {
 		size = uint32(s / (1))
 	case dflg.UInt8():
 		size = uint32(s / (1))
+	case dflg.Half():
+		size = uint32(s / 2)
 	default:
 		size = 0
 	}
@@ -89,7 +91,7 @@ func FindSizeTfromVol(volume []int32, dtype DataType) uint {
 	case DataType(C.CUDNN_DATA_INT8):
 		return uint(vol)
 	case DataType(C.CUDNN_DATA_HALF):
-		return uint(vol * 4)
+		return uint(vol * 2)
 	case DataType(C.CUDNN_DATA_INT32):
 		return uint(vol * int32(4))
 	default:
