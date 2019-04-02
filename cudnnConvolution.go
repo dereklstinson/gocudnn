@@ -33,7 +33,6 @@ Descriptors
 type ConvolutionD struct {
 	descriptor C.cudnnConvolutionDescriptor_t
 	dims       C.int
-	isconv2d   bool
 	gogc       bool
 }
 
@@ -78,47 +77,23 @@ func (c *ConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, dil
 	cpad := int32Tocint(pad)
 	cstride := int32Tocint(stride)
 	cdilation := int32Tocint(dilation)
-	dims := C.int(len(pad))
-	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, dims, &cpad[0], &cstride[0], &cdilation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
+	c.dims = C.int(len(pad))
+	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, c.dims, &cpad[0], &cstride[0], &cdilation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
 
 }
 
 //Get gets returns the values used to make the convolution descriptor
-func (c *ConvolutionD) Get() (ConvolutionMode, DataType, []int32, []int32, []int32, error) {
-	if !convolutionnd2dtestflag {
-		var padh C.int
-		var padw C.int
-		var u C.int
-		var v C.int
-		var dh C.int
-		var dw C.int
-		var mode C.cudnnConvolutionMode_t
-		var dtype C.cudnnDataType_t
+func (c *ConvolutionD) Get() (mode ConvolutionMode, data DataType, pad []int32, stride []int32, dilation []int32, err error) {
 
-		err := Status(C.cudnnGetConvolution2dDescriptor(c.descriptor, &padh, &padw, &u, &v, &dh, &dw, &mode, &dtype)).error("Get2dDescripter")
-		pads := make([]int32, 2)
-		uv := make([]int32, 2)
-		dilat := make([]int32, 2)
-		pads[0] = int32(padh)
-		pads[1] = int32(padw)
-		uv[0] = int32(u)
-		uv[1] = int32(v)
-		dilat[0] = int32(dh)
-		dilat[1] = int32(dw)
-
-		return ConvolutionMode(mode), DataType(dtype), pads, uv, dilat, err
-
-	}
-
-	pad := make([]C.int, c.dims)
-	stride := make([]C.int, c.dims)
-	dilation := make([]C.int, c.dims)
+	padding := make([]C.int, c.dims)
+	striding := make([]C.int, c.dims)
+	dilationing := make([]C.int, c.dims)
 	var actual C.int
-	var mode C.cudnnConvolutionMode_t
+	var moded C.cudnnConvolutionMode_t
 	var dtype C.cudnnDataType_t
-	err := Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &pad[0], &stride[0], &dilation[0], &mode, &dtype)).error("GetndDescriptor")
+	err = Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &padding[0], &striding[0], &dilationing[0], &moded, &dtype)).error("GetndDescriptor")
 
-	return ConvolutionMode(mode), DataType(dtype), cintToint32(pad), cintToint32(stride), cintToint32(dilation), err
+	return ConvolutionMode(moded), DataType(dtype), cintToint32(padding), cintToint32(striding), cintToint32(dilationing), err
 
 }
 
@@ -229,8 +204,8 @@ func (cbd ConvBwdDataAlgoPerformance) Print() {
 	fmt.Println("MathType:", cbd.MathType)
 }
 
-//GetConvolutionBackwardDataAlgorithmMaxCount returns the max number of Algorithm
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
+//GetBackwardDataAlgorithmMaxCount returns the max number of Algorithm
+func (c *ConvolutionD) GetBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	x := Status(C.cudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionBackwardDataAlgorithmMaxCount")
 
@@ -238,13 +213,12 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmMaxCount(handl
 
 }
 
-//FindConvolutionBackwardDataAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
+//FindBackwardDataAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvolutionFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardDataAlgorithm(
+func (c *ConvolutionD) FindBackwardDataAlgorithm(
 	handle *Handle,
 	w *FilterD,
 	dy *TensorD,
-	c *ConvolutionD,
 	dx *TensorD,
 	requestedAlgoCount int32) ([]ConvBwdDataAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionBwdDataAlgoPerf_t, requestedAlgoCount)
@@ -268,12 +242,11 @@ func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardDataAlgorithm(
 	return results, err
 }
 
-//FindConvolutionBackwardDataAlgorithmEx finds some algorithms with memory
-func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardDataAlgorithmEx(
+//FindBackwardDataAlgorithmEx finds some algorithms with memory
+func (c *ConvolutionD) FindBackwardDataAlgorithmEx(
 	handle *Handle,
 	wD *FilterD, w gocu.Mem,
 	dyD *TensorD, dy gocu.Mem,
-	cD *ConvolutionD,
 	dxD *TensorD, dx gocu.Mem,
 	reqAlgoCount int32, wspace gocu.Mem, wspacesize uint) ([]ConvBwdDataAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionBwdDataAlgoPerf_t, reqAlgoCount)
@@ -282,7 +255,7 @@ func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardDataAlgorithmEx(
 		handle.x,
 		wD.descriptor, w.Ptr(),
 		dyD.descriptor, dy.Ptr(),
-		cD.descriptor,
+		c.descriptor,
 		dxD.descriptor, dx.Ptr(),
 		C.int(reqAlgoCount), &actualalgocount,
 		&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("cudnnFindConvolutionBackwardDataAlgorithmEx")
@@ -296,12 +269,11 @@ func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardDataAlgorithmEx(
 	return results, err
 }
 
-//GetConvolutionBackwardDataAlgorithm gives a good algo with the limits given to it
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithm(
+//GetBackwardDataAlgorithm gives a good algo with the limits given to it
+func (c *ConvolutionD) GetBackwardDataAlgorithm(
 	handle *Handle,
 	wD *FilterD,
 	dyD *TensorD,
-	cD *ConvolutionD,
 	dxD *TensorD,
 	pref ConvBwdDataPref, wsmemlimit uint) (ConvBwdDataAlgo, error) {
 	var algo C.cudnnConvolutionBwdDataAlgo_t
@@ -309,20 +281,19 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithm(
 		handle.x,
 		wD.descriptor,
 		dyD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		dxD.descriptor,
 		pref.c(), (C.size_t)(wsmemlimit), &algo)).error("GetConvolutionBackwardDataAlgorithm")
 
 	return ConvBwdDataAlgo(algo), err
 }
 
-//GetConvolutionBackwardDataAlgorithmV7 will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
+//GetBackwardDataAlgorithmV7 will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvolutionFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmV7(
+func (c *ConvolutionD) GetBackwardDataAlgorithmV7(
 	handle *Handle,
 	wD *FilterD,
 	dyD *TensorD,
-	cD *ConvolutionD,
 	dxD *TensorD,
 	requestedAlgoCount int32) ([]ConvBwdDataAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionBwdDataAlgoPerf_t, requestedAlgoCount)
@@ -331,7 +302,7 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmV7(
 		handle.x,
 		wD.descriptor,
 		dyD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		dxD.descriptor,
 		C.int(requestedAlgoCount),
 		&actualalgocount,
@@ -345,12 +316,11 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataAlgorithmV7(
 	return results, err
 }
 
-//GetConvolutionBackwardDataWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataWorkspaceSize(
+//GetBackwardDataWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
+func (c *ConvolutionD) GetBackwardDataWorkspaceSize(
 	handle *Handle,
 	wD *FilterD,
 	dyD *TensorD,
-	cD *ConvolutionD,
 	dxD *TensorD,
 	algo ConvBwdDataAlgo) (uint, error) {
 	var sizebytes C.size_t
@@ -358,7 +328,7 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardDataWorkspaceSize(
 		handle.x,
 		wD.descriptor,
 		dyD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		dxD.descriptor,
 		algo.c(),
 		&sizebytes)).error("GetConvolutionBackwardDataWorkspaceSize")
@@ -420,12 +390,11 @@ func (c *ConvolutionD) BackwardData(
 }
 
 //Im2Col transformes the multiDim tensors into 2d tensors for speed up in calculation at the cost of memory.
-func (cbf ConvolutionBwdFuncs) Im2Col(
+func (c *ConvolutionD) Im2Col(
 	handle *Handle,
 	xD *TensorD,
 	x gocu.Mem,
 	wD *FilterD,
-	cD *ConvolutionD,
 	buffer gocu.Mem,
 ) error {
 
@@ -434,7 +403,7 @@ func (cbf ConvolutionBwdFuncs) Im2Col(
 		xD.descriptor,
 		x.Ptr(),
 		wD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		buffer.Ptr(),
 	)).error("Im2Col")
 }
@@ -502,12 +471,8 @@ func (cb ConvBwdFiltAlgoPerformance) Print() {
 	fmt.Println("MathType:", cb.MathType)
 }
 
-//ConvolutionBwdFuncs is an empty struct that is used to organize and call backward convolution functions and helper functions
-type ConvolutionBwdFuncs struct {
-}
-
-//GetConvolutionBackwardFilterAlgorithmMaxCount returns the max number of Algorithm
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithmMaxCount(handle *Handle) (int32, error) {
+//GetBackwardFilterAlgorithmMaxCount returns the max number of Algorithm
+func (c *ConvolutionD) GetBackwardFilterAlgorithmMaxCount(handle *Handle) (int32, error) {
 
 	var count C.int
 	x := Status(C.cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionForwardAlgorithmMaxCount")
@@ -530,13 +495,12 @@ func (c *ConvolutionD) BackwardBias(
 	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
 }
 
-//FindConvolutionBackwardFilterAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
+//FindBackwardFilterAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvolutionFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardFilterAlgorithm(
+func (c *ConvolutionD) FindBackwardFilterAlgorithm(
 	handle *Handle,
 	xD *TensorD,
 	dyD *TensorD,
-	cD *ConvolutionD,
 	dwD *FilterD,
 	requestedAlgoCount int32,
 ) ([]ConvBwdFiltAlgoPerformance, error) {
@@ -546,7 +510,7 @@ func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardFilterAlgorithm(
 		handle.x,
 		xD.descriptor,
 		dyD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		dwD.descriptor,
 		C.int(requestedAlgoCount),
 		&actualalgocount,
@@ -561,12 +525,11 @@ func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardFilterAlgorithm(
 	return results, err
 }
 
-//FindConvolutionBackwardFilterAlgorithmEx finds some algorithms with memory
-func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardFilterAlgorithmEx(
+//FindBackwardFilterAlgorithmEx finds some algorithms with memory
+func (c *ConvolutionD) FindBackwardFilterAlgorithmEx(
 	handle *Handle,
 	xD *TensorD, x gocu.Mem,
 	dyD *TensorD, dy gocu.Mem,
-	cD *ConvolutionD,
 	dwD *FilterD, dw gocu.Mem,
 	reqAlgoCount int32,
 	wspace gocu.Mem, wspacesize uint) ([]ConvBwdFiltAlgoPerformance, error) {
@@ -576,7 +539,7 @@ func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardFilterAlgorithmEx(
 		handle.x,
 		xD.descriptor, x.Ptr(),
 		dyD.descriptor, dy.Ptr(),
-		cD.descriptor,
+		c.descriptor,
 		dwD.descriptor, dw.Ptr(),
 		C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("FindConvolutionBackwardFilterAlgorithmEx")
 
@@ -589,11 +552,10 @@ func (cbf ConvolutionBwdFuncs) FindConvolutionBackwardFilterAlgorithmEx(
 }
 
 //GetConvolutionBackwardFilterAlgorithm gives a good algo with the limits given to it
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithm(
+func (c *ConvolutionD) GetConvolutionBackwardFilterAlgorithm(
 	handle *Handle,
 	xD *TensorD,
 	dyD *TensorD,
-	cD *ConvolutionD,
 	dwD *FilterD,
 	pref ConvBwdFilterPref, wsmemlimit uint) (ConvBwdFiltAlgo, error) {
 	var algo C.cudnnConvolutionBwdFilterAlgo_t
@@ -601,7 +563,7 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithm(
 		handle.x,
 		xD.descriptor,
 		dyD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		dwD.descriptor,
 		pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionBackwardFilterAlgorithm")
 
@@ -610,11 +572,10 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithm(
 
 //GetConvolutionBackwardFilterAlgorithmV7 will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvolutionFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithmV7(
+func (c *ConvolutionD) GetConvolutionBackwardFilterAlgorithmV7(
 	handle *Handle,
 	xD *TensorD,
 	dyD *TensorD,
-	cD *ConvolutionD,
 	dwD *FilterD,
 	requestedAlgoCount int32) ([]ConvBwdFiltAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionBwdFilterAlgoPerf_t, requestedAlgoCount)
@@ -623,7 +584,7 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithmV7(
 		handle.x,
 		xD.descriptor,
 		dyD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		dwD.descriptor,
 		C.int(requestedAlgoCount),
 		&actualalgocount,
@@ -637,12 +598,11 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterAlgorithmV7(
 	return results, err
 }
 
-//GetConvolutionBackwardFilterWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
-func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterWorkspaceSize(
+//GetBackwardFilterWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
+func (c *ConvolutionD) GetBackwardFilterWorkspaceSize(
 	handle *Handle,
 	xD *TensorD,
 	dyD *TensorD,
-	cD *ConvolutionD,
 	dwD *FilterD,
 	algo ConvBwdFiltAlgo) (uint, error) {
 	var sizebytes C.size_t
@@ -650,7 +610,7 @@ func (cbf ConvolutionBwdFuncs) GetConvolutionBackwardFilterWorkspaceSize(
 		handle.x,
 		xD.descriptor,
 		dyD.descriptor,
-		cD.descriptor,
+		c.descriptor,
 		dwD.descriptor,
 		algo.c(),
 		&sizebytes)).error("GetConvolutionForwardWorkspaceSize")
@@ -782,12 +742,8 @@ func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFw
 	return x
 }
 
-//ConvolutionFwdFuncs is an empty struct that is used to call Convolution Functions either operations or helpers
-type ConvolutionFwdFuncs struct {
-}
-
-//GetConvolutionForwardAlgorithmMaxCount returns the max number of Algorithm
-func (cfo ConvolutionFwdFuncs) GetConvolutionForwardAlgorithmMaxCount(handle *Handle) (int32, error) {
+//GetForwardAlgorithmMaxCount returns the max number of Algorithm
+func (c *ConvolutionD) GetForwardAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
 	x := Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionForwardAlgorithmMaxCount")
 
@@ -795,18 +751,17 @@ func (cfo ConvolutionFwdFuncs) GetConvolutionForwardAlgorithmMaxCount(handle *Ha
 
 }
 
-//FindConvolutionForwardAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
+//FindForwardAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (cfo ConvolutionFwdFuncs) FindConvolutionForwardAlgorithm(
+func (c *ConvolutionD) FindForwardAlgorithm(
 	handle *Handle,
 	xD *TensorD,
 	wD *FilterD,
-	cD *ConvolutionD,
 	yD *TensorD,
 	requestedAlgoCount int32) ([]ConvFwdAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err := Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, cD.descriptor, yD.descriptor, C.int(requestedAlgoCount), &actualalgocount, &perfResults[0])).error("FindConvolutionForwardAlgorithm")
+	err := Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, C.int(requestedAlgoCount), &actualalgocount, &perfResults[0])).error("FindConvolutionForwardAlgorithm")
 
 	results := make([]ConvFwdAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -816,14 +771,13 @@ func (cfo ConvolutionFwdFuncs) FindConvolutionForwardAlgorithm(
 	return results, err
 }
 
-//FindConvolutionForwardAlgorithmEx finds some algorithms with memory
-func (cfo ConvolutionFwdFuncs) FindConvolutionForwardAlgorithmEx(
+//FindForwardAlgorithmEx finds some algorithms with memory
+func (c *ConvolutionD) FindForwardAlgorithmEx(
 	handle *Handle,
 	xD *TensorD,
 	x gocu.Mem,
 	wD *FilterD,
 	w gocu.Mem,
-	cD *ConvolutionD,
 	yD *TensorD,
 	y gocu.Mem,
 	reqAlgoCount int32,
@@ -833,10 +787,10 @@ func (cfo ConvolutionFwdFuncs) FindConvolutionForwardAlgorithmEx(
 	var actualalgocount C.int
 	var err error
 	if wspace == nil {
-		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(), cD.descriptor, yD.descriptor, y.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], nil, C.size_t(0))).error("FindConvolutionForwardAlgorithmEx")
+		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(), c.descriptor, yD.descriptor, y.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], nil, C.size_t(0))).error("FindConvolutionForwardAlgorithmEx")
 
 	} else {
-		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(), cD.descriptor, yD.descriptor, y.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("FindConvolutionForwardAlgorithmEx")
+		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(), c.descriptor, yD.descriptor, y.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("FindConvolutionForwardAlgorithmEx")
 
 	}
 
@@ -848,33 +802,31 @@ func (cfo ConvolutionFwdFuncs) FindConvolutionForwardAlgorithmEx(
 	return results, err
 }
 
-//GetConvolutionForwardAlgorithm gives a good algo with the limits given to it
-func (cfo ConvolutionFwdFuncs) GetConvolutionForwardAlgorithm(
+//GetForwardAlgorithm gives a good algo with the limits given to it
+func (c *ConvolutionD) GetForwardAlgorithm(
 	handle *Handle,
 	xD *TensorD,
 	wD *FilterD,
-	cD *ConvolutionD,
 	yD *TensorD,
 	pref ConvolutionForwardPref,
 	wsmemlimit uint) (ConvFwdAlgo, error) {
 	var algo C.cudnnConvolutionFwdAlgo_t
-	err := Status(C.cudnnGetConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, cD.descriptor, yD.descriptor, pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionForwardAlgorithm")
+	err := Status(C.cudnnGetConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionForwardAlgorithm")
 
 	return ConvFwdAlgo(algo), err
 }
 
-//GetConvolutionForwardAlgorithmV7 will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
+//GetForwardAlgorithmV7 will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
 //So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
-func (cfo ConvolutionFwdFuncs) GetConvolutionForwardAlgorithmV7(
+func (c *ConvolutionD) GetForwardAlgorithmV7(
 	handle *Handle,
 	xD *TensorD,
 	wD *FilterD,
-	cD *ConvolutionD,
 	yD *TensorD,
 	requestedAlgoCount int32) ([]ConvFwdAlgoPerformance, error) {
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err := Status(C.cudnnGetConvolutionForwardAlgorithm_v7(handle.x, xD.descriptor, wD.descriptor, cD.descriptor, yD.descriptor, C.int(requestedAlgoCount), &actualalgocount, &perfResults[0])).error("FindConvolutionForwardAlgorithm")
+	err := Status(C.cudnnGetConvolutionForwardAlgorithm_v7(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, C.int(requestedAlgoCount), &actualalgocount, &perfResults[0])).error("FindConvolutionForwardAlgorithm")
 
 	results := make([]ConvFwdAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -884,16 +836,15 @@ func (cfo ConvolutionFwdFuncs) GetConvolutionForwardAlgorithmV7(
 	return results, err
 }
 
-//GetConvolutionForwardWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
-func (cfo ConvolutionFwdFuncs) GetConvolutionForwardWorkspaceSize(
+//GetForwardWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
+func (c *ConvolutionD) GetForwardWorkspaceSize(
 	handle *Handle,
 	xD *TensorD,
 	wD *FilterD,
-	cD *ConvolutionD,
 	yD *TensorD,
 	algo ConvFwdAlgo) (uint, error) {
 	var sizebytes C.size_t
-	err := Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, xD.descriptor, wD.descriptor, cD.descriptor, yD.descriptor, algo.c(), &sizebytes)).error("GetConvolutionForwardWorkspaceSize")
+	err := Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, algo.c(), &sizebytes)).error("GetConvolutionForwardWorkspaceSize")
 
 	return uint(sizebytes), err
 }
@@ -925,7 +876,13 @@ func (c *ConvolutionD) Forward(
 	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
 		c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
 	if err != nil {
-		fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nDesc: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
+		fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
+		fdt, ftf, fdim, err1 := wD.Get()
+		fmt.Println("wD vals", fdt, ftf, fdim, err1)
+
+		cmode, cdtype, pad, stride, dilation, err1 := c.Get()
+		fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
+		fmt.Println("Algo Settings", algo.toString())
 
 		panic(err)
 	}
@@ -1010,7 +967,7 @@ Flags
 
 
 */
-
+/*
 //ConvolutionFlags is used to store the different Convolution Flags.  Hopefully it can make it easier when
 //Using something like VSCode.
 type ConvolutionFlags struct {
@@ -1032,7 +989,7 @@ type ConvolutionBwdFlags struct {
 	FltrPref ConvBwdFilterPref
 	FltrAlgo ConvBwdFiltAlgo
 }
-
+*/
 /*
 *
 *
