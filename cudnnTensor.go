@@ -106,9 +106,6 @@ func CreateTensorDescriptor() (*TensorD, error) {
 //	chw := c * h * w
 //	hw := h * w
 //	stride := []int{chw, hw, w, 1}  //This is how stride is usually set.
-//  //One could make a tensor like so:
-//  //
-//
 //  //If you wanted to get or place a value at a certain location.
 //	//Such as:
 //	//func GetValue(tensor []float32, location [4]int, stride [4]int){
@@ -210,8 +207,6 @@ func (t *TensorD) GetSizeInBytes() (uint, error) {
 
 	return uint(sizebytes), Status(x).error("GetSizeInBytes")
 }
-
-//IsDestroyed checks if the tensor is destroyed.  It will return a true if it is destroyed. If it is then this can be used again.
 
 //Destroy destroys the tensor.
 //In future I am going to add a GC setting that will enable or disable the GC.

@@ -53,37 +53,189 @@ func destroyactivationdescriptor(a *ActivationD) error {
 	return Status(C.cudnnDestroyActivationDescriptor(a.descriptor)).error("DestroyDescriptor")
 }
 
-//Forward does the forward activation function yrtn is returned and changed.
+//Forward does the forward activation function
+//
+//From deep learning sdk documentation (slightly modified for gocudnn):
+//
+//This routine applies a specified neuron activation function element-wise over each input value.
+//
+//Note: In-place operation is allowed for this routine; i.e., x and y gocu.Mem may be equal.
+//However, this requires xD and yD descriptors to be identical
+//(particularly, the strides of the input and output must match for in-place operation to be allowed).
+//
+//Note: All tensor formats are supported for 4 and 5 dimensions, however best performance is obtained
+//when the strides of xD and yD are equal and HW-packed. For more than 5 dimensions
+//the tensors must have their spatial dimensions packed.
+//
+//Parameters:
+//
+//	---
+//	handle(input):
+//
+//	previously created Handle
+//	---
+//	----
+//	alpha, beta(input):
+//
+//	Pointers to scaling factors (in host memory) used to blend the computation result with prior
+//	value in the output layer as follows: dstValue = alpha[0]*result + beta[0]*priorDstValue.
+//	----
+//	---
+//	xD(input):
+//
+//	Handle to the previously initialized input tensor descriptor.
+//	---
+//	----
+//	x(input):
+//
+//	Data pointer to GPU memory associated with the tensor descriptor xD.
+//
+//	----
+//	---
+//	yD(input):
+//
+//	Handle to the previously initialized output tensor descriptor.
+//	---
+//	----
+//	y(output):
+//
+//	Data pointer to GPU memory associated with the output tensor descriptor yDesc.
+//	----
+//
+//Possible Error Returns
+//
+//	nil:
+//
+//	The function launched successfully.
+//
+//	CUDNN_STATUS_NOT_SUPPORTED:
+//
+//	The function does not support the provided configuration.
+//
+//	CUDNN_STATUS_BAD_PARAM:
+//
+//	At least one of the following conditions are met:
+//
+//	1)The parameter mode has an invalid enumerant value.
+//	2)The dimensions n,c,h,w of the input tensor and output tensors differ.
+//	3)The datatype of the input tensor and output tensors differs.
+//	4)The strides nStride,cStride,hStride,wStride of the input tensor and output tensors differ and in-place operation is used (i.e., x and y pointers are equal).
+//
+//	CUDNN_STATUS_EXECUTION_FAILED:
+//
+//	The function failed to launch on the GPU.
+//
 func (a *ActivationD) Forward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD,
-	x gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	beta float64,
-	yD *TensorD,
-	y gocu.Mem) error {
-
+	yD *TensorD, y gocu.Mem) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
 }
 
 //Backward does the activation backward method
+//
+//From deep learning sdk documentation (slightly modified for gocudnn):
+//
+//This routine computes the gradient of a neuron activation function.
+//
+//Note: In-place operation is allowed for this routine; i.e., dx and dy gocu.Mem may be equal.
+//However, this requires dxD and dyD descriptors to be identical
+//(particularly, the strides of the input and output must match for in-place operation to be allowed).
+//
+//Note: All tensor formats are supported for 4 and 5 dimensions, however best performance is obtained
+//when the strides of dxD and dyD are equal and HW-packed. For more than 5 dimensions
+//the tensors must have their spatial dimensions packed.
+//
+//Parameters:
+//
+//	---
+//	handle(input):
+//
+//	previously created Handle
+//	---
+//	----
+//	alpha, beta(input):
+//
+//	Pointers to scaling factors (in host memory) used to blend the computation result with prior
+//	value in the output layer as follows: dstValue = alpha[0]*result + beta[0]*priorDstValue.
+//	----
+//	---
+//	xD(input):
+//
+//	Handle to the previously initialized input tensor descriptor.
+//	---
+//	----
+//	x(input):
+//
+//	Data pointer to GPU memory associated with the tensor descriptor xD.
+//	----
+//	---
+//	dxD(input):
+//
+//	Handle to the previously initialized input tensor descriptor.
+//	---
+//	----
+//	dx(output):
+//
+//	Data pointer to GPU memory associated with the tensor descriptor dxD.
+//	----
+//	---
+//	yD(input):
+//
+//	Handle to the previously initialized output tensor descriptor.
+//	---
+//	----
+//	y(input):
+//
+//	Data pointer to GPU memory associated with the output tensor descriptor yD.
+//	----
+//	---
+//	dyD(input):
+//
+//	Handle to the previously initialized output tensor descriptor.
+//	---
+//	----
+//	dy(input):
+//
+//	Data pointer to GPU memory associated with the output tensor descriptor dyD.
+//	----
+//
+//Possible Error Returns
+//
+//	nil:
+//
+//	The function launched successfully.
+//
+//	CUDNN_STATUS_NOT_SUPPORTED:
+//
+//	1) The dimensions n,c,h,w of the input tensor and output tensors differ.
+//  2) The datatype of the input tensor and output tensors differs.
+//  3) The strides nStride, cStride, hStride, wStride of the input tensor and the input differential tensor differ.
+//	4) The strides nStride, cStride, hStride, wStride of the output tensor and the output differential tensor differ.
+//
+//	CUDNN_STATUS_BAD_PARAM:
+//
+//	At least one of the following conditions are met:
+//
+//	The strides nStride, cStride, hStride, wStride of the input differential tensor and output
+//	differential tensors differ and in-place operation is used.
+//
+//	CUDNN_STATUS_EXECUTION_FAILED:
+//
+//	The function failed to launch on the GPU.
+//
 func (a *ActivationD) Backward(
 	handle *Handle,
 	alpha float64,
-	yD *TensorD,
-	y gocu.Mem,
-	dyD *TensorD,
-	dy gocu.Mem,
-	xD *TensorD,
-	x gocu.Mem,
+	yD *TensorD, y gocu.Mem,
+	dyD *TensorD, dy gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	beta float64,
-	dxD *TensorD,
-	dx gocu.Mem) error {
-	if setkeepalive {
-		keepsalivebuffer(a, handle, xD, x, yD, y, dyD, dy, dxD, dx)
-	}
+	dxD *TensorD, dx gocu.Mem) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
