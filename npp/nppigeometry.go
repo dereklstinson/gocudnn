@@ -213,7 +213,7 @@ func ResizeSqrPixel8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Re
 }
 
 //ResizeSqrPixel8uP3R are functions found in the nppi library for cuda if ctx is nil function will do regular operation if not nill  it will do Ctx version
-func ResizeSqrPixel8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
@@ -230,7 +230,7 @@ func ResizeSqrPixel8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI 
 }
 
 //ResizeSqrPixel8uP4R are functions found in the nppi library for cuda if ctx is nil function will do regular operation if not nill  it will do Ctx version
-func ResizeSqrPixel8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 4)
@@ -294,7 +294,7 @@ func ResizeSqrPixel16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSrcROI 
 }
 
 //ResizeSqrPixel16uP3R are functions found in the nppi library for cuda if ctx is nil function will do regular operation if not nill  it will do Ctx version
-func ResizeSqrPixel16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 3)
@@ -311,7 +311,7 @@ func ResizeSqrPixel16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcRO
 }
 
 //ResizeSqrPixel16uP4R are functions found in the nppi library for cuda if ctx is nil function will do regular operation if not nill  it will do Ctx version
-func ResizeSqrPixel16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 4)
@@ -375,7 +375,7 @@ func ResizeSqrPixel16sAC4R(pSrc *Int16, oSrcSize Size, nSrcStep int32, oSrcROI R
 }
 
 //ResizeSqrPixel16sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func ResizeSqrPixel16sP3R(pSrc [3]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel16sP3R(pSrc []*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int16, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16s, 3)
@@ -393,7 +393,7 @@ func ResizeSqrPixel16sP3R(pSrc [3]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //ResizeSqrPixel16sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func ResizeSqrPixel16sP4R(pSrc [4]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel16sP4R(pSrc []*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int16, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16s, 4)
@@ -458,7 +458,7 @@ func ResizeSqrPixel32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //ResizeSqrPixel32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func ResizeSqrPixel32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 3)
@@ -476,7 +476,7 @@ func ResizeSqrPixel32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcR
 }
 
 //ResizeSqrPixel32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func ResizeSqrPixel32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 4)
@@ -542,7 +542,7 @@ func ResizeSqrPixel64fAC4R(pSrc *Float64, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //ResizeSqrPixel64fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func ResizeSqrPixel64fP3R(pSrc [3]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel64fP3R(pSrc []*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float64, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp64f, 3)
@@ -560,7 +560,7 @@ func ResizeSqrPixel64fP3R(pSrc [3]*Float64, oSrcSize Size, nSrcStep int32, oSrcR
 }
 
 //ResizeSqrPixel64fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func ResizeSqrPixel64fP4R(pSrc [4]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func ResizeSqrPixel64fP4R(pSrc []*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float64, nDstStep int32, oDstROI Rect,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp64f, 4)
@@ -651,7 +651,7 @@ func Resize8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
 	destcptrs := make([]*C.Npp8u, 3)
@@ -667,7 +667,7 @@ func Resize8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 4)
 	destcptrs := make([]*C.Npp8u, 4)
@@ -725,7 +725,7 @@ func Resize16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 3)
 	destcptrs := make([]*C.Npp16u, 3)
@@ -741,7 +741,7 @@ func Resize16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 4)
 	destcptrs := make([]*C.Npp16u, 4)
@@ -797,7 +797,7 @@ func Resize16sAC4R(pSrc *Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize16sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize16sP3R(pSrc [3]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize16sP3R(pSrc []*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int16, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16s, 3)
 	destcptrs := make([]*C.Npp16s, 3)
@@ -813,7 +813,7 @@ func Resize16sP3R(pSrc [3]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize16sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize16sP4R(pSrc [4]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize16sP4R(pSrc []*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int16, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16s, 4)
 	destcptrs := make([]*C.Npp16s, 4)
@@ -869,7 +869,7 @@ func Resize32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
@@ -885,7 +885,7 @@ func Resize32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Resize32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Resize32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Resize32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, oDstSize Size, nDstStep int32, oDstROI Rect, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
@@ -1226,7 +1226,7 @@ func Remap8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, pXMap
 }
 
 //Remap8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Uint8, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1243,7 +1243,7 @@ func Remap8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Remap8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Uint8, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1293,7 +1293,7 @@ func Remap16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, pXM
 }
 
 //Remap16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Uint16, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1310,7 +1310,7 @@ func Remap16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Remap16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Uint16, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1359,7 +1359,7 @@ func Remap16sAC4R(pSrc *Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, pXMa
 }
 
 //Remap16sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap16sP3R(pSrc [3]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap16sP3R(pSrc []*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Int16, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1376,7 +1376,7 @@ func Remap16sP3R(pSrc [3]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Remap16sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap16sP4R(pSrc [4]*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap16sP4R(pSrc []*Int16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Int16, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1425,7 +1425,7 @@ func Remap32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, pX
 }
 
 //Remap32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Float32, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1442,7 +1442,7 @@ func Remap32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Remap32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float32, nXMapStep int32, pYMap *Float32, nYMapStep int32,
 	pDst []*Float32, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1491,7 +1491,7 @@ func Remap64fAC4R(pSrc *Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect, pX
 }
 
 //Remap64fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap64fP3R(pSrc [3]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap64fP3R(pSrc []*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float64, nXMapStep int32, pYMap *Float64, nYMapStep int32,
 	pDst []*Float64, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -1508,7 +1508,7 @@ func Remap64fP3R(pSrc [3]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //Remap64fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func Remap64fP4R(pSrc [4]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func Remap64fP4R(pSrc []*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pXMap *Float64, nXMapStep int32, pYMap *Float64, nYMapStep int32,
 	pDst []*Float64, nDstStep int32, oDstROI Size,
 	nXFactor, nYFactor, nXShift, nYShift float64, eInterpolation InterpolationMode, ctx *StreamContext) error {
@@ -2180,7 +2180,7 @@ func WarpAffine8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, 
 }
 
 //WarpAffine8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
@@ -2197,7 +2197,7 @@ func WarpAffine8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect
 }
 
 //WarpAffine8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 4)
@@ -2254,7 +2254,7 @@ func WarpAffine16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect
 }
 
 //WarpAffine16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 3)
@@ -2271,7 +2271,7 @@ func WarpAffine16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Re
 }
 
 //WarpAffine16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 4)
@@ -2328,7 +2328,7 @@ func WarpAffine32sAC4R(pSrc *Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 }
 
 //WarpAffine32sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine32sP3R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, 3)
@@ -2345,7 +2345,7 @@ func WarpAffine32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rec
 }
 
 //WarpAffine32sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine32sP4R(pSrc [4]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine32sP4R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, 4)
@@ -2402,7 +2402,7 @@ func WarpAffine32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rec
 }
 
 //WarpAffine32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 3)
@@ -2419,7 +2419,7 @@ func WarpAffine32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI R
 }
 
 //WarpAffine32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 4)
@@ -2476,7 +2476,7 @@ func WarpAffine64fAC4R(pSrc *Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rec
 }
 
 //WarpAffine64fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine64fP3R(pSrc [3]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine64fP3R(pSrc []*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float64, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp64f, 3)
@@ -2493,7 +2493,7 @@ func WarpAffine64fP3R(pSrc [3]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI R
 }
 
 //WarpAffine64fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffine64fP4R(pSrc [4]*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffine64fP4R(pSrc []*Float64, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float64, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp64f, 4)
@@ -2629,7 +2629,7 @@ func WarpAffineBack8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Re
 }
 
 //WarpAffineBack8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffineBack8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
@@ -2646,7 +2646,7 @@ func WarpAffineBack8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI 
 }
 
 //WarpAffineBack8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffineBack8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 4)
@@ -2700,7 +2700,7 @@ func WarpAffineBack16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSrcROI 
 }
 
 //WarpAffineBack16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffineBack16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 3)
@@ -2717,7 +2717,7 @@ func WarpAffineBack16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcRO
 }
 
 //WarpAffineBack16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffineBack16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 4)
@@ -2774,8 +2774,8 @@ func WarpAffineBack32sAC4R(pSrc *Int32, oSrcSize Size, nSrcStep int32, oSrcROI R
 }
 
 //WarpAffineBack32sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
-	pDst [3]*Int32, nDstStep int32, oDstROI Rect,
+func WarpAffineBack32sP3R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+	pDst []*Int32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, 3)
 	destcptrs := make([]*C.Npp32s, 3)
@@ -2791,8 +2791,8 @@ func WarpAffineBack32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //WarpAffineBack32sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack32sP4R(pSrc [4]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
-	pDst [4]*Int32, nDstStep int32, oDstROI Rect,
+func WarpAffineBack32sP4R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+	pDst []*Int32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, 4)
 	destcptrs := make([]*C.Npp32s, 4)
@@ -2848,7 +2848,7 @@ func WarpAffineBack32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //WarpAffineBack32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffineBack32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 3)
@@ -2865,7 +2865,7 @@ func WarpAffineBack32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcR
 }
 
 //WarpAffineBack32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineBack32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpAffineBack32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect,
 	aCoeffs Coeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 4)
@@ -2918,7 +2918,7 @@ func WarpAffineQuad8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Re
 }
 
 //WarpAffineQuad8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
 	destcptrs := make([]*C.Npp8u, 3)
@@ -2934,7 +2934,7 @@ func WarpAffineQuad8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI 
 }
 
 //WarpAffineQuad8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 4)
 	destcptrs := make([]*C.Npp8u, 4)
@@ -2986,7 +2986,7 @@ func WarpAffineQuad16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSrcROI 
 }
 
 //WarpAffineQuad16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 3)
 	destcptrs := make([]*C.Npp16u, 3)
@@ -3002,7 +3002,7 @@ func WarpAffineQuad16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcRO
 }
 
 //WarpAffineQuad16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, 4)
 	destcptrs := make([]*C.Npp16u, 4)
@@ -3054,7 +3054,7 @@ func WarpAffineQuad32sAC4R(pSrc *Int32, oSrcSize Size, nSrcStep int32, oSrcROI R
 }
 
 //WarpAffineQuad32sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad32sP3R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, 3)
 	destcptrs := make([]*C.Npp32s, 3)
@@ -3070,7 +3070,7 @@ func WarpAffineQuad32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //WarpAffineQuad32sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad32sP4R(pSrc [4]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad32sP4R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, 4)
 	destcptrs := make([]*C.Npp32s, 4)
@@ -3122,7 +3122,7 @@ func WarpAffineQuad32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //WarpAffineQuad32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 3)
 	destcptrs := make([]*C.Npp32f, 3)
@@ -3138,7 +3138,7 @@ func WarpAffineQuad32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcR
 }
 
 //WarpAffineQuad32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpAffineQuad32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
+func WarpAffineQuad32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, SrcQuad Quad,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, DstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, 4)
 	destcptrs := make([]*C.Npp32f, 4)
@@ -3208,7 +3208,7 @@ func WarpPerspective8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcROI R
 }
 
 //WarpPerspective8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
 	destcptrs := make([]*C.Npp8u, 3)
@@ -3224,7 +3224,7 @@ func WarpPerspective8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //WarpPerspective8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 4)
 	destcptrs := make([]*C.Npp8u, 4)
@@ -3276,7 +3276,7 @@ func WarpPerspective16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSrcROI
 }
 
 //WarpPerspective16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, len(pSrc))
 	destcptrs := make([]*C.Npp16u, len(pDst))
@@ -3292,7 +3292,7 @@ func WarpPerspective16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcR
 }
 
 //WarpPerspective16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, len(pSrc))
 	destcptrs := make([]*C.Npp16u, len(pDst))
@@ -3344,7 +3344,7 @@ func WarpPerspective32sAC4R(pSrc *Int32, oSrcSize Size, nSrcStep int32, oSrcROI 
 }
 
 //WarpPerspective32sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective32sP3R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, len(pSrc))
 	destcptrs := make([]*C.Npp32s, len(pDst))
@@ -3360,7 +3360,7 @@ func WarpPerspective32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcRO
 }
 
 //WarpPerspective32sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective32sP4R(pSrc [4]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective32sP4R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, len(pSrc))
 	destcptrs := make([]*C.Npp32s, len(pDst))
@@ -3412,7 +3412,7 @@ func WarpPerspective32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oSrcRO
 }
 
 //WarpPerspective32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
@@ -3428,7 +3428,7 @@ func WarpPerspective32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrc
 }
 
 //WarpPerspective32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspective32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspective32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
@@ -3561,7 +3561,7 @@ func WarpPerspectiveBack8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcR
 }
 
 //WarpPerspectiveBack8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
 	destcptrs := make([]*C.Npp8u, 3)
@@ -3577,7 +3577,7 @@ func WarpPerspectiveBack8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSr
 }
 
 //WarpPerspectiveBack8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack8uP4R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, 3)
 	destcptrs := make([]*C.Npp8u, 3)
@@ -3629,7 +3629,7 @@ func WarpPerspectiveBack16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSr
 }
 
 //WarpPerspectiveBack16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, len(pSrc))
 	destcptrs := make([]*C.Npp16u, len(pDst))
@@ -3645,7 +3645,7 @@ func WarpPerspectiveBack16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, o
 }
 
 //WarpPerspectiveBack16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, len(pSrc))
 	destcptrs := make([]*C.Npp16u, len(pDst))
@@ -3697,7 +3697,7 @@ func WarpPerspectiveBack32sAC4R(pSrc *Int32, oSrcSize Size, nSrcStep int32, oSrc
 }
 
 //WarpPerspectiveBack32sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack32sP3R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, len(pSrc))
 	destcptrs := make([]*C.Npp32s, len(pDst))
@@ -3713,7 +3713,7 @@ func WarpPerspectiveBack32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oS
 }
 
 //WarpPerspectiveBack32sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack32sP4R(pSrc [4]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack32sP4R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, len(pSrc))
 	destcptrs := make([]*C.Npp32s, len(pDst))
@@ -3765,7 +3765,7 @@ func WarpPerspectiveBack32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oS
 }
 
 //WarpPerspectiveBack32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
@@ -3781,7 +3781,7 @@ func WarpPerspectiveBack32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, 
 }
 
 //WarpPerspectiveBack32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveBack32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
+func WarpPerspectiveBack32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, p PerspectiveCoeffs, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
@@ -3833,7 +3833,7 @@ func WarpPerspectiveQuad8uAC4R(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSrcR
 }
 
 //WarpPerspectiveQuad8uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad8uP3R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, len(pSrc))
 	destcptrs := make([]*C.Npp8u, len(pDst))
@@ -3849,7 +3849,7 @@ func WarpPerspectiveQuad8uP3R(pSrc [3]*Uint8, oSrcSize Size, nSrcStep int32, oSr
 }
 
 //WarpPerspectiveQuad8uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad8uP4R(pSrc [4]*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad8uP4R(pSrc []*Uint8, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Uint8, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp8u, len(pSrc))
 	destcptrs := make([]*C.Npp8u, len(pDst))
@@ -3901,7 +3901,7 @@ func WarpPerspectiveQuad16uAC4R(pSrc *Uint16, oSrcSize Size, nSrcStep int32, oSr
 }
 
 //WarpPerspectiveQuad16uP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad16uP3R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, len(pSrc))
 	destcptrs := make([]*C.Npp16u, len(pDst))
@@ -3917,7 +3917,7 @@ func WarpPerspectiveQuad16uP3R(pSrc [3]*Uint16, oSrcSize Size, nSrcStep int32, o
 }
 
 //WarpPerspectiveQuad16uP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad16uP4R(pSrc [4]*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad16uP4R(pSrc []*Uint16, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Uint16, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp16u, len(pSrc))
 	destcptrs := make([]*C.Npp16u, len(pDst))
@@ -3969,7 +3969,7 @@ func WarpPerspectiveQuad32sAC4R(pSrc *Int32, oSrcSize Size, nSrcStep int32, oSrc
 }
 
 //WarpPerspectiveQuad32sP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad32sP3R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, len(pSrc))
 	destcptrs := make([]*C.Npp32s, len(pDst))
@@ -3985,7 +3985,7 @@ func WarpPerspectiveQuad32sP3R(pSrc [3]*Int32, oSrcSize Size, nSrcStep int32, oS
 }
 
 //WarpPerspectiveQuad32sP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad32sP4R(pSrc [4]*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad32sP4R(pSrc []*Int32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Int32, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32s, len(pSrc))
 	destcptrs := make([]*C.Npp32s, len(pDst))
@@ -4037,7 +4037,7 @@ func WarpPerspectiveQuad32fAC4R(pSrc *Float32, oSrcSize Size, nSrcStep int32, oS
 }
 
 //WarpPerspectiveQuad32fP3R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad32fP3R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
@@ -4053,7 +4053,7 @@ func WarpPerspectiveQuad32fP3R(pSrc [3]*Float32, oSrcSize Size, nSrcStep int32, 
 }
 
 //WarpPerspectiveQuad32fP4R are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
-func WarpPerspectiveQuad32fP4R(pSrc [4]*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
+func WarpPerspectiveQuad32fP4R(pSrc []*Float32, oSrcSize Size, nSrcStep int32, oSrcROI Rect, aSrcQuad Quad,
 	pDst []*Float32, nDstStep int32, oDstROI Rect, aDstQuad Quad, eInterpolation InterpolationMode, ctx *StreamContext) error {
 	srccptrs := make([]*C.Npp32f, len(pSrc))
 	destcptrs := make([]*C.Npp32f, len(pDst))
