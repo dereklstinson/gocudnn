@@ -55,15 +55,16 @@ func GetImageInfo(handle *Handle, data []byte) (nComponents int32, subsampling C
 }
 
 //Get gets the underlying values of image
+//
+//Get will return the channels that were decoded.
 func (im *Image) Get() (channel []*gocu.CudaPtr, pitch []uint32) {
 
 	for i := 0; i < int(C.NVJPEG_MAX_COMPONENT); i++ {
-		if im.channel[i] == nil {
-			return channel, pitch
-		}
-		channel = append(channel, gocu.WrapUnsafe((unsafe.Pointer)(im.channel[i])))
-		pitch = append(pitch, (uint32)(im.pitch[i]))
+		if im.channel[i] != nil || im.pitch[i] != 0 {
+			channel = append(channel, gocu.WrapUnsafe((unsafe.Pointer)(im.channel[i])))
+			pitch = append(pitch, (uint32)(im.pitch[i]))
 
+		}
 	}
 	return channel, pitch
 }
@@ -75,8 +76,11 @@ func (im *Image) c() C.nvjpegImage_t {
 }
 
 //CreateImageDest allocates cuda memory of an empty Image for Decode methods.
+//
 //The size of pitch needs to be at least the size of the width.
+//
 //BGRI and RGBI are not offically supported because didn't give a c I marked them in the table with a question mark
+//
 //This is not an official nvjpeg function.  I made this just for you. Maybe me too, but I didn't have to put it here with the bindings. So, I guess I could say I put it in here for you.
 //
 //	-FORMAT				|SIZE OF PITCH							|SIZE OF CHANNEL

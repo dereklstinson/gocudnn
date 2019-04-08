@@ -702,6 +702,9 @@ func (n *Float32Complex) DPtr() *unsafe.Pointer {
 func (n *Float32Complex) c() C.Npp32fc {
 	return C.Npp32fc(*n)
 }
+func (n *Float32Complex) cptr() *C.Npp32fc {
+	return (*C.Npp32fc)(n)
+}
 
 //Set sets the real and imaginary vals
 func (n *Float32Complex) Set(real, imaginary Float32) {
