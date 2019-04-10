@@ -564,6 +564,13 @@ func convertCNpp8utoNpp8uarray(x []C.Npp8u) []Uint8 {
  */
 type Uint8Complex C.Npp8uc
 
+func (n *Uint8Complex) c() C.Npp8uc {
+	return (C.Npp8uc)(*n)
+}
+func (n *Uint8Complex) cptr() *C.Npp8uc {
+	return (*C.Npp8uc)(n)
+}
+
 //Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
 func (n *Uint8Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
@@ -594,6 +601,24 @@ func (n *Uint8Complex) Get() (real, imaginary Uint8) {
  */
 type Uint16Complex C.Npp16uc
 
+func (n *Uint16Complex) c() C.Npp16uc {
+	return (C.Npp16uc)(*n)
+}
+func (n *Uint16Complex) cptr() *C.Npp16uc {
+	return (*C.Npp16uc)(n)
+}
+
+//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
+func (n *Uint16Complex) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(n)
+}
+
+//DPtr returns an *unsafe pointer to this variable location.
+func (n *Uint16Complex) DPtr() *unsafe.Pointer {
+	x := unsafe.Pointer(n)
+	return &x
+}
+
 //Set sets the real and imaginary vals
 func (n *Uint16Complex) Set(real, imaginary Uint16) {
 	n.re = real.c()
@@ -612,6 +637,13 @@ func (n *Uint16Complex) Get() (real, imaginary Uint16) {
  * This struct represents a short complex number.
  */
 type Int16Complex C.Npp16sc
+
+func (n *Int16Complex) c() C.Npp16sc {
+	return (C.Npp16sc)(*n)
+}
+func (n *Int16Complex) cptr() *C.Npp16sc {
+	return (*C.Npp16sc)(n)
+}
 
 //Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
 func (n *Int16Complex) Ptr() unsafe.Pointer {
@@ -660,6 +692,13 @@ func (n *Uint32Complex) Get() (real, imaginary Uint32) {
  * This struct represents a signed int complex number.
  */
 type Int32Complex C.Npp32sc
+
+func (n *Int32Complex) c() C.Npp32sc {
+	return (C.Npp32sc)(*n)
+}
+func (n *Int32Complex) cptr() *C.Npp32sc {
+	return (*C.Npp32sc)(n)
+}
 
 //Set sets the real and imaginary vals
 func (n *Int32Complex) Set(real, imaginary Int32) {
@@ -722,6 +761,13 @@ func (n *Float32Complex) Get() (real, imaginary Float32) {
 // Int64Complex struct represents a long long complex number.
 type Int64Complex C.Npp64sc
 
+func (n *Int64Complex) c() C.Npp64sc {
+	return (C.Npp64sc)(*n)
+}
+func (n *Int64Complex) cptr() *C.Npp64sc {
+	return (*C.Npp64sc)(n)
+}
+
 //Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
 func (n *Int64Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
@@ -771,6 +817,12 @@ func (n *Float64Complex) Get() (real, imaginary Float64) {
 	real = (Float64)(n.re)
 	imaginary = (Float64)(n.im)
 	return real, imaginary
+}
+func (n *Float64Complex) c() C.Npp64fc {
+	return (C.Npp64fc)(*n)
+}
+func (n *Float64Complex) cptr() *C.Npp64fc {
+	return (*C.Npp64fc)(n)
 }
 
 /*
