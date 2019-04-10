@@ -3,19 +3,17 @@ package npp
 //#include <nppi_compression_functions.h>
 //#include <nppdefs.h>
 import "C"
-import (
-	"runtime"
-)
 
+/*
 type DCTState struct {
 	state *C.NppiDCTState
 }
 
-//
 type DecodeHuffmanSpec C.NppiDecodeHuffmanSpec
 type EncodeHuffmanSpec C.NppiEncodeHuffmanSpec
 type JpegFrameDescr C.NppiJpegFrameDescr
 
+*/
 //typedef struct {
 //Npp8u nComponents; /**< Number of components in frame */
 //NppiSize oSizeInBlocks; /**< Size of component with 1x1 subsampling (usually luma) in DCT blocks. */
@@ -29,9 +27,8 @@ type JpegFrameDescr C.NppiJpegFrameDescr
 */
 //} NppiJpegFrameDescr;
 
-type JpegScanDescr C.struct_NppiJpegScanDescr
-
 /*
+type JpegScanDescr C.NppiJpegScanDescr
 /// JPEG scan descriptor
 typedef struct {
     Npp8u nComponents;  /// Number of components present in scan
@@ -54,9 +51,9 @@ typedef struct {
  *
  * The job describes piece of computation to be done.
  */
-type JpegDecodeJob C.struct_NppiJpegDecodeJob
 
 /*
+type JpegDecodeJob C.NppiJpegDecodeJob
 typedef struct {
     NppiJpegFrameDescr * pFrame; // This field and its contents are never written
     NppiJpegScanDescr * pScan;  //This field is never written. `*pScan` is written only by ...Create... functions
@@ -97,9 +94,8 @@ enum NppiJpegDecodeJobKind {
  * \sa nppiJpegDecodeJob
  */
 
-type JpegDecodeJobMemory C.struct_NppiJpegDecodeJobMemory
-
 /*
+type JpegDecodeJobMemory C.struct_NppiJpegDecodeJobMemory
 typedef struct {
    const Npp8u * pCpuScan;
    // < Pointer to host memory containing compressed scan data.
@@ -150,13 +146,15 @@ typedef struct {
  * \param nQualityFactor Quality factor for the table. Range is [1:100].
  * \return Error code:
  *      ::NPP_NULL_POINTER_ERROR is returned if hpQuantRawTable is 0.
- */
+
 func QuantFwdRawTableInitJPEG8u(hpQuantRawTable []Uint8, nQualityFactor int32) ([]Uint8, error) {
 	//x := convertNpp8utoCNpp8uarray(hpQuantRawTable)
 	err := status(C.nppiQuantFwdRawTableInit_JPEG_8u((*C.uchar)(&hpQuantRawTable[0]), (C.int)(nQualityFactor))).ToError()
 	//	y := convertCNpp8utoNpp8uarray(x)
 	return hpQuantRawTable, err
 }
+
+*/
 
 /* QuantFwdTableInitJPEG8u16u Initializes a quantization table for nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R().
  *    The method creates a 16-bit version of the raw table and converts the
@@ -184,7 +182,7 @@ func sizetoCNppiSize(oSizeROI NppiSize) C.NppiSize {
 	return x
 }
 */
-
+/*
 //QuantFwdTableInitJPEG8u16u initializes a table for uint8 to uint16
 func QuantFwdTableInitJPEG8u16u(hpQuantRawTable []Uint8) ([]Uint16, error) {
 	y := make([]Uint16, len(hpQuantRawTable))
@@ -218,7 +216,7 @@ func DCTInitAlloc() (*DCTState, error) {
 func freeNPPIDCTstate(x *DCTState) error {
 	return status(C.nppiDCTFree(x.state)).ToError()
 }
-
+*/
 /*
 func NPPIDCTQuantFwd8x8LS_JPEG_8u16s_C1R_NEW( Npp8u  * pSrc, int nSrcStep, Npp16s * pDst, int nDstStep,  Npp8u * pQuantizationTable, NppiSize oSizeROI, NppiDCTState* pState) error{
     return status(C.nppiDCTQuantFwd8x8LS_JPEG_8u16s_C1R_NEW()).ToError()
