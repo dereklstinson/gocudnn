@@ -5,12 +5,15 @@ package npp
 */
 import "C"
 
+//AddC8uISfs can be found in cuda npp documentation
 func AddC8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_8u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
 	}
 	return status(C.nppsAddC_8u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
+
+//AddC8uSfs can be found in cuda npp documentation
 func AddC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_8u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
@@ -18,6 +21,7 @@ func AddC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFact
 	return status(C.nppsAddC_8u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
+//AddC16uISfs can be found in cuda npp documentation
 func AddC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
@@ -25,6 +29,7 @@ func AddC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int
 	return status(C.nppsAddC_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
+//AddC16uSfs can be found in cuda npp documentation
 func AddC16uSfs(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_16u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
@@ -32,6 +37,7 @@ func AddC16uSfs(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScale
 	return status(C.nppsAddC_16u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
+//AddC16sISfs can be found in cuda npp documentation
 func AddC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
@@ -39,6 +45,7 @@ func AddC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32
 	return status(C.nppsAddC_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
+//AddC16sSfs can be found in cuda npp documentation
 func AddC16sSfs(pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
@@ -46,25 +53,23 @@ func AddC16sSfs(pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFac
 	return status(C.nppsAddC_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
-/*
-Complex
-
-
-func AddC16scISfsCtx(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_16sc_ISfs_Ctx(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func AddC16scISfs(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAddC_16sc_ISfs(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func AddC16scSfsCtx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func AddC16scSfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAddC_16sc_Sfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+//AddC16scISfs can be found in cuda npp documentation
+func AddC16scISfs(nValue Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_16sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAddC_16sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
-*/
+//AddC16scSfs can be found in cuda npp documentation
+func AddC16scSfs(pSrc *Int16Complex, nValue Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_16sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAddC_16sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
 
+//AddC32sISfs can be found in cuda npp documentation
 func AddC32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_32s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
@@ -72,6 +77,7 @@ func AddC32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32
 	return status(C.nppsAddC_32s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
+//AddC32sSfs can be found in cuda npp documentation
 func AddC32sSfs(pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsAddC_32s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
@@ -79,515 +85,680 @@ func AddC32sSfs(pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFac
 	return status(C.nppsAddC_32s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
 }
 
-/*
-Complex
-func AddC32scISfsCtx(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_32sc_ISfs_Ctx(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func AddC32scISfs(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAddC_32sc_ISfs(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func AddC32scSfsCtx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_32sc_Sfs_Ctx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func AddC32scSfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAddC_32sc_Sfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-*/
-/*
-func AddC32fICtx(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_32f_I_Ctx(nValue Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC32fI(nValue Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsAddC_32f_I(nValue Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func AddC32fCtx( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_32f_Ctx( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC32f( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsAddC_32f( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func AddC32fcICtx(nValue *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_32fc_I_Ctx(nValue *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC32fcI(nValue *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsAddC_32fc_I(nValue *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func AddC32fcCtx( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_32fc_Ctx( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC32fc( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsAddC_32fc( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func AddC64fICtx(Npp64f nValue, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_64f_I_Ctx(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC64fI(Npp64f nValue, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsAddC_64f_I(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func AddC64fCtx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_64f_Ctx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsAddC_64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func AddC64fcICtx(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_64fc_I_Ctx(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC64fcI(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsAddC_64fc_I(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength))).ToError()
-}
-func AddC64fcCtx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddC_64fc_Ctx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddC64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsAddC_64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func AddProductC32fCtx( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddProductC_32f_Ctx( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddProductC32f( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsAddProductC_32f( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func MulC8uISfsCtx(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_8u_ISfs_Ctx(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_8u_ISfs(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC8uSfsCtx(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_8u_Sfs_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_8u_Sfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC16uISfsCtx(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC16uSfsCtx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_16u_Sfs_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC16uSfs( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_16u_Sfs( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC16sISfsCtx(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC16sSfsCtx( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC16sSfs( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC16scISfsCtx(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_16sc_ISfs_Ctx(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC16scISfs(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_16sc_ISfs(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC16scSfsCtx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC16scSfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_16sc_Sfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC32sISfsCtx(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_32s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC32sSfsCtx( pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32s_Sfs_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC32sSfs( pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_32s_Sfs( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC32scISfsCtx(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32sc_ISfs_Ctx(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC32scISfs(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_32sc_ISfs(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC32scSfsCtx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32sc_Sfs_Ctx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC32scSfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_32sc_Sfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC32fICtx(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32f_I_Ctx(nValue Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC32fI(nValue Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsMulC_32f_I(nValue Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func MulC32fCtx( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32f_Ctx( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC32f( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsMulC_32f( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func MulCLow32f16sCtx( pSrc *Float32, nValue Float32, pDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_Low_32f16s_Ctx( pSrc *Float32, nValue Float32, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func MulCLow32f16s( pSrc *Float32, nValue Float32, pDst *Int16, nLength int32) error{
-  return status(C.nppsMulC_Low_32f16s( pSrc *Float32, nValue Float32, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func MulC32f16sSfsCtx( pSrc *Float32, nValue Float32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32f16s_Sfs_Ctx( pSrc *Float32, nValue Float32, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC32f16sSfs( pSrc *Float32, nValue Float32, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_32f16s_Sfs( pSrc *Float32, nValue Float32, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC32fcICtx(nValue *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32fc_I_Ctx(nValue *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC32fcI(nValue *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsMulC_32fc_I(nValue *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func MulC32fcCtx( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_32fc_Ctx( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC32fc( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsMulC_32fc( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func MulC64fICtx(Npp64f nValue, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_64f_I_Ctx(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC64fI(Npp64f nValue, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsMulC_64f_I(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func MulC64fCtx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_64f_Ctx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsMulC_64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func MulC64f64sISfsCtx(Npp64f nValue, Npp64s * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_64f64s_ISfs_Ctx(Npp64f nValue, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulC64f64sISfs(Npp64f nValue, Npp64s * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMulC_64f64s_ISfs(Npp64f nValue, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulC64fcICtx(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_64fc_I_Ctx(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC64fcI(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsMulC_64fc_I(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength))).ToError()
-}
-func MulC64fcCtx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMulC_64fc_Ctx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func MulC64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsMulC_64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func SubC8uISfsCtx(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_8u_ISfs_Ctx(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_8u_ISfs(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC8uSfsCtx(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_8u_Sfs_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_8u_Sfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC16uISfsCtx(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC16uSfsCtx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_16u_Sfs_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC16uSfs( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_16u_Sfs( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC16sISfsCtx(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC16sSfsCtx( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC16sSfs( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC16scISfsCtx(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_16sc_ISfs_Ctx(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC16scISfs(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_16sc_ISfs(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC16scSfsCtx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC16scSfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_16sc_Sfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC32sISfsCtx(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_32s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC32sSfsCtx( pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32s_Sfs_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC32sSfs( pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_32s_Sfs( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC32scISfsCtx(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32sc_ISfs_Ctx(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC32scISfs(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_32sc_ISfs(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC32scSfsCtx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32sc_Sfs_Ctx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubC32scSfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubC_32sc_Sfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubC32fICtx(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32f_I_Ctx(nValue Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC32fI(nValue Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSubC_32f_I(nValue Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func SubC32fCtx( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32f_Ctx( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC32f( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsSubC_32f( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func SubC32fcICtx(nValue *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32fc_I_Ctx(nValue *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC32fcI(nValue *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSubC_32fc_I(nValue *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func SubC32fcCtx( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_32fc_Ctx( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC32fc( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsSubC_32fc( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func SubC64fICtx(Npp64f nValue, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_64f_I_Ctx(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC64fI(Npp64f nValue, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsSubC_64f_I(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func SubC64fCtx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_64f_Ctx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsSubC_64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func SubC64fcICtx(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_64fc_I_Ctx(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC64fcI(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsSubC_64fc_I(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength))).ToError()
-}
-func SubC64fcCtx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubC_64fc_Ctx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubC64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsSubC_64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func SubCRev8uISfsCtx(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_8u_ISfs_Ctx(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_8u_ISfs(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev8uSfsCtx(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_8u_Sfs_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_8u_Sfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev16uISfsCtx(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev16uSfsCtx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_16u_Sfs_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev16uSfs( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_16u_Sfs( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev16sISfsCtx(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev16sSfsCtx( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev16sSfs( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev16scISfsCtx(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_16sc_ISfs_Ctx(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev16scISfs(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_16sc_ISfs(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev16scSfsCtx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev16scSfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_16sc_Sfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev32sISfsCtx(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_32s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev32sSfsCtx( pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32s_Sfs_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev32sSfs( pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_32s_Sfs( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev32scISfsCtx(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32sc_ISfs_Ctx(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev32scISfs(Npp32sc nValue, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_32sc_ISfs(Npp32sc nValue, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev32scSfsCtx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32sc_Sfs_Ctx( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func SubCRev32scSfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSubCRev_32sc_Sfs( Npp32sc * pSrc, Npp32sc nValue, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SubCRev32fICtx(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32f_I_Ctx(nValue Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev32fI(nValue Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSubCRev_32f_I(nValue Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func SubCRev32fCtx( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32f_Ctx( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev32f( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsSubCRev_32f( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func SubCRev32fcICtx(nValue *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32fc_I_Ctx(nValue *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev32fcI(nValue *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSubCRev_32fc_I(nValue *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func SubCRev32fcCtx( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_32fc_Ctx( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev32fc( pSrc *Float32Complex, nValue *Float32, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsSubCRev_32fc( pSrc *Float32Complex, nValue *Float32, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func SubCRev64fICtx(Npp64f nValue, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_64f_I_Ctx(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev64fI(Npp64f nValue, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsSubCRev_64f_I(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func SubCRev64fCtx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_64f_Ctx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsSubCRev_64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func SubCRev64fcICtx(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_64fc_I_Ctx(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev64fcI(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsSubCRev_64fc_I(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength))).ToError()
-}
-func SubCRev64fcCtx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSubCRev_64fc_Ctx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func SubCRev64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsSubCRev_64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func DivC8uISfsCtx(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_8u_ISfs_Ctx(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_8u_ISfs(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func DivC8uSfsCtx(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_8u_Sfs_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_8u_Sfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func DivC16uISfsCtx(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func DivC16uSfsCtx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_16u_Sfs_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC16uSfs( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_16u_Sfs( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func DivC16sISfsCtx(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func DivC16sSfsCtx( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC16sSfs( pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func DivC16scISfsCtx(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_16sc_ISfs_Ctx(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC16scISfs(Npp16sc nValue, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_16sc_ISfs(Npp16sc nValue, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func DivC16scSfsCtx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivC16scSfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDivC_16sc_Sfs( Npp16sc * pSrc, Npp16sc nValue, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-*/
+//AddC32scISfs can be found in cuda npp documentation
+func AddC32scISfs(nValue Int32Complex, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_32sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAddC_32sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//AddC32scSfs can be found in cuda npp documentation
+func AddC32scSfs(pSrc *Int32Complex, nValue Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_32sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAddC_32sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//AddC32fI can be found in cuda npp documentation
+func AddC32fI(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_32f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddC_32f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddC32f can be found in cuda npp documentation
+func AddC32f(pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_32f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddC_32f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddC32fcI can be found in cuda npp documentation
+func AddC32fcI(nValue Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_32fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddC_32fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddC32fc can be found in cuda npp documentation
+func AddC32fc(pSrc *Float32Complex, nValue Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_32fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddC_32fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddC64fI can be found in cuda npp documentation
+func AddC64fI(nValue Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_64f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddC_64f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddC64f can be found in cuda npp documentation
+func AddC64f(pSrc *Float64, nValue Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_64f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddC_64f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddC64fcI can be found in cuda npp documentation
+func AddC64fcI(nValue Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_64fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddC_64fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddC64fc can be found in cuda npp documentation
+func AddC64fc(pSrc *Float64Complex, nValue Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddC_64fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+
+	}
+	return status(C.nppsAddC_64fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddProductC32f can be found in cuda npp documentation
+func AddProductC32f(pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProductC_32f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddProductC_32f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC8uISfs can be found in cuda npp documentation
+func MulC8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_8u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_8u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC8uSfs can be found in cuda npp documentation
+func MulC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_8u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_8u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC16uISfs can be found in cuda npp documentation
+func MulC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC16uSfs can be found in cuda npp documentation
+func MulC16uSfs(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_16u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_16u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC16sISfs can be found in cuda npp documentation
+func MulC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC16sSfs can be found in cuda npp documentation
+func MulC16sSfs(pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC16scISfs can be found in cuda npp documentation
+func MulC16scISfs(nValue Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_16sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_16sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC16scSfs can be found in cuda npp documentation
+func MulC16scSfs(pSrc *Int16Complex, nValue Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_16sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_16sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC32sISfs can be found in cuda npp documentation
+func MulC32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_32s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC32sSfs can be found in cuda npp documentation
+func MulC32sSfs(pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_32s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC32scISfs can be found in cuda npp documentation
+func MulC32scISfs(nValue Int32Complex, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_32sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC32scSfs can be found in cuda npp documentation
+func MulC32scSfs(pSrc *Int32Complex, nValue Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_32sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC32fI can be found in cuda npp documentation
+func MulC32fI(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_32f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC32f can be found in cuda npp documentation
+func MulC32f(pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_32f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulCLow32f16s can be found in cuda npp documentation
+func MulCLow32f16s(pSrc *Float32, nValue Float32, pDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_Low_32f16s(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_Low_32f16s_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC32f16sSfs can be found in cuda npp documentation
+func MulC32f16sSfs(pSrc *Float32, nValue Float32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32f16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_32f16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC32fcI can be found in cuda npp documentation
+func MulC32fcI(nValue Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_32fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC32fc can be found in cuda npp documentation
+func MulC32fc(pSrc *Float32Complex, nValue Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_32fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_32fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC64fI can be found in cuda npp documentation
+func MulC64fI(nValue Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_64f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_64f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC64f can be found in cuda npp documentation
+func MulC64f(pSrc *Float64, nValue Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_64f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_64f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC64f64sISfs can be found in cuda npp documentation
+func MulC64f64sISfs(nValue Float64, pDst *Int64, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_64f64s_ISfs(nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMulC_64f64s_ISfs_Ctx(nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulC64fcI can be found in cuda npp documentation
+func MulC64fcI(nValue Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_64fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_64fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//MulC64fc can be found in cuda npp documentation
+func MulC64fc(pSrc *Float64Complex, nValue Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMulC_64fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMulC_64fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC8uISfs can be found in cuda npp documentation
+func SubC8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_8u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_8u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC8uSfs can be found in cuda npp documentation
+func SubC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_8u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_8u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC16uISfs can be found in cuda npp documentation
+func SubC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC16uSfs can be found in cuda npp documentation
+func SubC16uSfs(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_16u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_16u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC16sISfs can be found in cuda npp documentation
+func SubC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC16sSfs can be found in cuda npp documentation
+func SubC16sSfs(pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC16scISfs can be found in cuda npp documentation
+func SubC16scISfs(nValue Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_16sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_16sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC16scSfs can be found in cuda npp documentation
+func SubC16scSfs(pSrc *Int16Complex, nValue Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_16sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_16sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC32sISfs can be found in cuda npp documentation
+func SubC32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_32s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC32sSfs can be found in cuda npp documentation
+func SubC32sSfs(pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_32s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC32scISfs can be found in cuda npp documentation
+func SubC32scISfs(nValue Int32Complex, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_32sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC32scSfs can be found in cuda npp documentation
+func SubC32scSfs(pSrc *Int32Complex, nValue Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubC_32sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubC32fI can be found in cuda npp documentation
+func SubC32fI(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_32f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC32f can be found in cuda npp documentation
+func SubC32f(pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_32f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC32fcI can be found in cuda npp documentation
+func SubC32fcI(nValue Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_32fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC32fc can be found in cuda npp documentation
+func SubC32fc(pSrc *Float32Complex, nValue Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_32fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_32fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC64fI can be found in cuda npp documentation
+func SubC64fI(nValue Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_64f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_64f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC64f can be found in cuda npp documentation
+func SubC64f(pSrc *Float64, nValue Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_64f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_64f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC64fcI can be found in cuda npp documentation
+func SubC64fcI(nValue Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_64fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_64fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubC64fc can be found in cuda npp documentation
+func SubC64fc(pSrc *Float64Complex, nValue Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubC_64fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubC_64fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev8uISfs can be found in cuda npp documentation
+func SubCRev8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_8u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_8u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev8uSfs can be found in cuda npp documentation
+func SubCRev8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_8u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_8u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev16uISfs can be found in cuda npp documentation
+func SubCRev16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev16uSfs can be found in cuda npp documentation
+func SubCRev16uSfs(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_16u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_16u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev16sISfs can be found in cuda npp documentation
+func SubCRev16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev16sSfs can be found in cuda npp documentation
+func SubCRev16sSfs(pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev16scISfs can be found in cuda npp documentation
+func SubCRev16scISfs(nValue Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_16sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_16sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev16scSfs can be found in cuda npp documentation
+func SubCRev16scSfs(pSrc *Int16Complex, nValue Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_16sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_16sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev32sISfs can be found in cuda npp documentation
+func SubCRev32sISfs(nValue Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_32s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev32sSfs can be found in cuda npp documentation
+func SubCRev32sSfs(pSrc *Int32, nValue Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_32s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev32scISfs can be found in cuda npp documentation
+func SubCRev32scISfs(nValue Int32Complex, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_32sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev32scSfs can be found in cuda npp documentation
+func SubCRev32scSfs(pSrc *Int32Complex, nValue Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSubCRev_32sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SubCRev32fI can be found in cuda npp documentation
+func SubCRev32fI(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_32f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev32f can be found in cuda npp documentation
+func SubCRev32f(pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_32f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev32fcI can be found in cuda npp documentation
+func SubCRev32fcI(nValue Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_32fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev32fc can be found in cuda npp documentation
+func SubCRev32fc(pSrc *Float32Complex, nValue Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_32fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_32fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev64fI can be found in cuda npp documentation
+func SubCRev64fI(nValue Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_64f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_64f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev64f can be found in cuda npp documentation
+func SubCRev64f(pSrc *Float64, nValue Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_64f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_64f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev64fcI can be found in cuda npp documentation
+func SubCRev64fcI(nValue Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_64fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_64fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//SubCRev64fc can be found in cuda npp documentation
+func SubCRev64fc(pSrc *Float64Complex, nValue Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSubCRev_64fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSubCRev_64fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivC8uISfs can be found in cuda npp documentation
+func DivC8uISfs(nValue Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_8u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_8u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC8uSfs can be found in cuda npp documentation
+func DivC8uSfs(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_8u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_8u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC16uISfs can be found in cuda npp documentation
+func DivC16uISfs(nValue Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_16u_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_16u_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC16uSfs can be found in cuda npp documentation
+func DivC16uSfs(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_16u_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_16u_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC16sISfs can be found in cuda npp documentation
+func DivC16sISfs(nValue Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_16s_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_16s_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC16sSfs can be found in cuda npp documentation
+func DivC16sSfs(pSrc *Int16, nValue Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_16s_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_16s_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC16scISfs can be found in cuda npp documentation
+func DivC16scISfs(nValue Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_16sc_ISfs(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_16sc_ISfs_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC16scSfs can be found in cuda npp documentation
+func DivC16scSfs(pSrc *Int16Complex, nValue Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_16sc_Sfs(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDivC_16sc_Sfs_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivC32fI can be found in cuda npp documentation
 func DivC32fI(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsDivC_32f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
 	}
 	return status(C.nppsDivC_32f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
 }
+
+//DivC32f can be found in cuda npp documentation
 func DivC32f(pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsDivC_32f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
 	}
 	return status(C.nppsDivC_32f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
 }
+
+//DivC32fcI can be found in cuda npp documentation
 func DivC32fcI(nValue Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsDivC_32fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
@@ -595,6 +766,7 @@ func DivC32fcI(nValue Float32Complex, pSrcDst *Float32Complex, nLength int32, ct
 	return status(C.nppsDivC_32fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
 }
 
+//DivC32fc can be found in cuda npp documentation
 func DivC32fc(pSrc *Float32Complex, nValue Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
 	if ctx == nil {
 		return status(C.nppsDivC_32fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
@@ -602,1649 +774,2196 @@ func DivC32fc(pSrc *Float32Complex, nValue Float32Complex, pDst *Float32Complex,
 	return status(C.nppsDivC_32fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
 }
 
-/*
-func DivC64fICtx(Npp64f nValue, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_64f_I_Ctx(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
+//DivC64fI can be found in cuda npp documentation
+func DivC64fI(nValue Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_64f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivC_64f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivC64f can be found in cuda npp documentation
+func DivC64f(pSrc *Float64, nValue Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_64f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivC_64f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivC64fcI can be found in cuda npp documentation
+func DivC64fcI(nValue Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_64fc_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivC_64fc_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivC64fc can be found in cuda npp documentation
+func DivC64fc(pSrc *Float64Complex, nValue Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivC_64fc(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivC_64fc_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivCRev16uI can be found in cuda npp documentation
+func DivCRev16uI(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivCRev_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivCRev_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivCRev16u can be found in cuda npp documentation
+func DivCRev16u(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivCRev_16u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivCRev_16u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivCRev32fI can be found in cuda npp documentation
+func DivCRev32fI(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivCRev_32f_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivCRev_32f_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivCRev32f can be found in cuda npp documentation
+func DivCRev32f(pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDivCRev_32f(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDivCRev_32f_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add16s can be found in cuda npp documentation
+func Add16s(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16s(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_16s_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add16u can be found in cuda npp documentation
+func Add16u(pSrc1 *Uint16, pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_16u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add32u can be found in cuda npp documentation
+func Add32u(pSrc1, pSrc2 *Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_32u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add32f can be found in cuda npp documentation
+func Add32f(pSrc1, pSrc2 *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add64f can be found in cuda npp documentation
+func Add64f(pSrc1, pSrc2 *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_64f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_64f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add32fc can be found in cuda npp documentation
+func Add32fc(pSrc1 *Float32Complex, pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_32fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add64fc can be found in cuda npp documentation
+func Add64fc(pSrc1, pSrc2 *Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_64fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_64fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add8u16u can be found in cuda npp documentation
+func Add8u16u(pSrc1, pSrc2 *Uint8, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_8u16u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_8u16u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add16s32f can be found in cuda npp documentation
+func Add16s32f(pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16s32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_16s32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add8uSfs can be found in cuda npp documentation
+func Add8uSfs(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_8u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_8u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add16uSfs can be found in cuda npp documentation
+func Add16uSfs(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_16u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add16sSfs can be found in cuda npp documentation
+func Add16sSfs(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add32sSfs can be found in cuda npp documentation
+func Add32sSfs(pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add64sSfs can be found in cuda npp documentation
+func Add64sSfs(pSrc1, pSrc2 *Int64, pDst *Int64, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_64s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_64s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add16scSfs can be found in cuda npp documentation
+func Add16scSfs(pSrc1, pSrc2 *Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_16sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add32scSfs can be found in cuda npp documentation
+func Add32scSfs(pSrc1, pSrc2 *Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_32sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add16sI can be found in cuda npp documentation
+func Add16sI(pSrc *Int16, pSrcDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16s_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_16s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add32fI can be found in cuda npp documentation
+func Add32fI(pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_32f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add64fI can be found in cuda npp documentation
+func Add64fI(pSrc *Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_64f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_64f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add32fcI can be found in cuda npp documentation
+func Add32fcI(pSrc *Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_32fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add64fcI can be found in cuda npp documentation
+func Add64fcI(pSrc *Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_64fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_64fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add16s32sI can be found in cuda npp documentation
+func Add16s32sI(pSrc *Int16, pSrcDst *Int32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16s32s_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAdd_16s32s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Add8uISfs can be found in cuda npp documentation
+func Add8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_8u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_8u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add16uISfs can be found in cuda npp documentation
+func Add16uISfs(pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_16u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add16sISfs can be found in cuda npp documentation
+func Add16sISfs(pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add32sI can be found in cuda npp documentation
+func Add32sI(pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+
+	return status(C.nppsAdd_32s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+
+}
+
+//Add16scISfs can be found in cuda npp documentation
+func Add16scISfs(pSrc *Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_16sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_16sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Add32scISfs can be found in cuda npp documentation
+func Add32scISfs(pSrc *Int32Complex, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAdd_32sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAdd_32sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//AddProduct32f can be found in cuda npp documentation
+func AddProduct32f(pSrc1, pSrc2 *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProduct_32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddProduct_32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddProduct64f can be found in cuda npp documentation
+func AddProduct64f(pSrc1, pSrc2 *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProduct_64f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddProduct_64f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddProduct32fc can be found in cuda npp documentation
+func AddProduct32fc(pSrc1 *Float32Complex, pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProduct_32fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddProduct_32fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddProduct64fc can be found in cuda npp documentation
+func AddProduct64fc(pSrc1, pSrc2 *Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProduct_64fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAddProduct_64fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AddProduct16sSfs can be found in cuda npp documentation
+func AddProduct16sSfs(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProduct_16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAddProduct_16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//AddProduct32sSfs can be found in cuda npp documentation
+func AddProduct32sSfs(pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProduct_32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAddProduct_32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//AddProduct16s32sSfs can be found in cuda npp documentation
+func AddProduct16s32sSfs(pSrc1, pSrc2 *Int16, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAddProduct_16s32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsAddProduct_16s32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16s can be found in cuda npp documentation
+func Mul16s(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16s(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_16s_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul32f can be found in cuda npp documentation
+func Mul32f(pSrc1, pSrc2 *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul64f can be found in cuda npp documentation
+func Mul64f(pSrc1, pSrc2 *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_64f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_64f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul32fc can be found in cuda npp documentation
+func Mul32fc(pSrc1 *Float32Complex, pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_32fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul64fc can be found in cuda npp documentation
+func Mul64fc(pSrc1, pSrc2 *Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_64fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_64fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul8u16u can be found in cuda npp documentation
+func Mul8u16u(pSrc1, pSrc2 *Uint8, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_8u16u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_8u16u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul16s32f can be found in cuda npp documentation
+func Mul16s32f(pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16s32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_16s32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul32f32fc can be found in cuda npp documentation
+func Mul32f32fc(pSrc1 *Float32, pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32f32fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_32f32fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul8uSfs can be found in cuda npp documentation
+func Mul8uSfs(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_8u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_8u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16uSfs can be found in cuda npp documentation
+func Mul16uSfs(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16sSfs can be found in cuda npp documentation
+func Mul16sSfs(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul32sSfs can be found in cuda npp documentation
+func Mul32sSfs(pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16scSfs can be found in cuda npp documentation
+func Mul16scSfs(pSrc1, pSrc2 *Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul32scSfs can be found in cuda npp documentation
+func Mul32scSfs(pSrc1, pSrc2 *Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_32sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16u16sSfs can be found in cuda npp documentation
+func Mul16u16sSfs(pSrc1 *Uint16, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16u16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16u16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16s32sSfs can be found in cuda npp documentation
+func Mul16s32sSfs(pSrc1, pSrc2 *Int16, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16s32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16s32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul32s32scSfs can be found in cuda npp documentation
+func Mul32s32scSfs(pSrc1 *Int32, pSrc2 *Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32s32sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_32s32sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//MulLow32sSfs can be found in cuda npp documentation
+func MulLow32sSfs(pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_Low_32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_Low_32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16sI can be found in cuda npp documentation
+func Mul16sI(pSrc *Int16, pSrcDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16s_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_16s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul32fI can be found in cuda npp documentation
+func Mul32fI(pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_32f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul64fI can be found in cuda npp documentation
+func Mul64fI(pSrc *Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_64f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_64f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul32fcI can be found in cuda npp documentation
+func Mul32fcI(pSrc *Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_32fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul64fcI can be found in cuda npp documentation
+func Mul64fcI(pSrc *Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_64fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_64fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul32f32fcI can be found in cuda npp documentation
+func Mul32f32fcI(pSrc *Float32, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32f32fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsMul_32f32fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Mul8uISfs can be found in cuda npp documentation
+func Mul8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_8u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_8u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16uISfs can be found in cuda npp documentation
+func Mul16uISfs(pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16sISfs can be found in cuda npp documentation
+func Mul16sISfs(pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul32sISfs can be found in cuda npp documentation
+func Mul32sISfs(pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_32s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul16scISfs can be found in cuda npp documentation
+func Mul16scISfs(pSrc *Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_16sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_16sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul32scISfs can be found in cuda npp documentation
+func Mul32scISfs(pSrc, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_32sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Mul32s32scISfs can be found in cuda npp documentation
+func Mul32s32scISfs(pSrc *Int32, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsMul_32s32sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsMul_32s32sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16s can be found in cuda npp documentation
+func Sub16s(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16s(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_16s_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub32f can be found in cuda npp documentation
+func Sub32f(pSrc1, pSrc2 *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub64f can be found in cuda npp documentation
+func Sub64f(pSrc1, pSrc2 *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_64f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_64f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub32fc can be found in cuda npp documentation
+func Sub32fc(pSrc1 *Float32Complex, pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_32fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub64fc can be found in cuda npp documentation
+func Sub64fc(pSrc1, pSrc2 *Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_64fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_64fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub16s32f can be found in cuda npp documentation
+func Sub16s32f(pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16s32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_16s32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub8uSfs can be found in cuda npp documentation
+func Sub8uSfs(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_8u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_8u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16uSfs can be found in cuda npp documentation
+func Sub16uSfs(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_16u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16sSfs can be found in cuda npp documentation
+func Sub16sSfs(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub32sSfs can be found in cuda npp documentation
+func Sub32sSfs(pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16scSfs can be found in cuda npp documentation
+func Sub16scSfs(pSrc1, pSrc2 *Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_16sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub32scSfs can be found in cuda npp documentation
+func Sub32scSfs(pSrc1, pSrc2 *Int32Complex, pDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_32sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16sI can be found in cuda npp documentation
+func Sub16sI(pSrc *Int16, pSrcDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16s_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_16s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub32fI can be found in cuda npp documentation
+func Sub32fI(pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_32f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub64fI can be found in cuda npp documentation
+func Sub64fI(pSrc *Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_64f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_64f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub32fcI can be found in cuda npp documentation
+func Sub32fcI(pSrc *Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_32fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub64fcI can be found in cuda npp documentation
+func Sub64fcI(pSrc *Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_64fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSub_64fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sub8uISfs can be found in cuda npp documentation
+func Sub8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_8u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_8u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16uISfs can be found in cuda npp documentation
+func Sub16uISfs(pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_16u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16sISfs can be found in cuda npp documentation
+func Sub16sISfs(pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub32sISfs can be found in cuda npp documentation
+func Sub32sISfs(pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_32s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub16scISfs can be found in cuda npp documentation
+func Sub16scISfs(pSrc *Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_16sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_16sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sub32scISfs can be found in cuda npp documentation
+func Sub32scISfs(pSrc *Int32Complex, pSrcDst *Int32Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSub_32sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSub_32sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div8uSfs can be found in cuda npp documentation
+func Div8uSfs(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_8u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_8u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div16uSfs can be found in cuda npp documentation
+func Div16uSfs(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_16u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_16u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div16sSfs can be found in cuda npp documentation
+func Div16sSfs(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div32sSfs can be found in cuda npp documentation
+func Div32sSfs(pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_32s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_32s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div16scSfs can be found in cuda npp documentation
+func Div16scSfs(pSrc1, pSrc2 *Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_16sc_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_16sc_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div32s16sSfs can be found in cuda npp documentation
+func Div32s16sSfs(pSrc1 *Int16, pSrc2 *Int32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_32s16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_32s16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div32f can be found in cuda npp documentation
+func Div32f(pSrc1, pSrc2 *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_32f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_32f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Div64f can be found in cuda npp documentation
+func Div64f(pSrc1, pSrc2 *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_64f(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_64f_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Div32fc can be found in cuda npp documentation
+func Div32fc(pSrc1 *Float32Complex, pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_32fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_32fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Div64fc can be found in cuda npp documentation
+func Div64fc(pSrc1, pSrc2 *Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_64fc(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_64fc_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Div8uISfs can be found in cuda npp documentation
+func Div8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_8u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_8u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div16uISfs can be found in cuda npp documentation
+func Div16uISfs(pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_16u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_16u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div16sISfs can be found in cuda npp documentation
+func Div16sISfs(pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div16scISfs can be found in cuda npp documentation
+func Div16scISfs(pSrc *Int16Complex, pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_16sc_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_16sc_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div32sISfs can be found in cuda npp documentation
+func Div32sISfs(pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_32s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_32s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Div32fI can be found in cuda npp documentation
+func Div32fI(pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_32f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_32f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Div64fI can be found in cuda npp documentation
+func Div64fI(pSrc *Float64, pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_64f_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_64f_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Div32fcI can be found in cuda npp documentation
+func Div32fcI(pSrc *Float32Complex, pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_32fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_32fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Div64fcI can be found in cuda npp documentation
+func Div64fcI(pSrc *Float64Complex, pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_64fc_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsDiv_64fc_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//DivRound8uSfs can be found in cuda npp documentation
+func DivRound8uSfs(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, rmode RoundMode, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_Round_8u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_Round_8u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivRound16uSfs can be found in cuda npp documentation
+func DivRound16uSfs(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, rmode RoundMode, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_Round_16u_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_Round_16u_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivRound16sSfs can be found in cuda npp documentation
+func DivRound16sSfs(pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, rmode RoundMode, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_Round_16s_Sfs(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_Round_16s_Sfs_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivRound8uISfs can be found in cuda npp documentation
+func DivRound8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, rmode RoundMode, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_Round_8u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_Round_8u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivRound16uISfs can be found in cuda npp documentation
+func DivRound16uISfs(pSrc *Uint16, pSrcDst *Uint16, nLength int32, rmode RoundMode, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_Round_16u_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_Round_16u_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//DivRound16sISfs can be found in cuda npp documentation
+func DivRound16sISfs(pSrc *Int16, pSrcDst *Int16, nLength int32, rmode RoundMode, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsDiv_Round_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsDiv_Round_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), rmode.c(), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Abs16s can be found in cuda npp documentation
+func Abs16s(pSrc *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_16s(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_16s_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Abs32s can be found in cuda npp documentation
+func Abs32s(pSrc *Int32, pDst *Int32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_32s(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_32s_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Abs32f can be found in cuda npp documentation
+func Abs32f(pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Abs64f can be found in cuda npp documentation
+func Abs64f(pSrc *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Abs16sI can be found in cuda npp documentation
+func Abs16sI(pSrcDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_16s_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_16s_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Abs32sI can be found in cuda npp documentation
+func Abs32sI(pSrcDst *Int32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_32s_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_32s_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Abs32fI can be found in cuda npp documentation
+func Abs32fI(pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_32f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Abs64fI can be found in cuda npp documentation
+func Abs64fI(pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAbs_64f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAbs_64f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr32f can be found in cuda npp documentation
+func Sqr32f(pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr64f can be found in cuda npp documentation
+func Sqr64f(pSrc *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr32fc can be found in cuda npp documentation
+func Sqr32fc(pSrc *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_32fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_32fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr64fc can be found in cuda npp documentation
+func Sqr64fc(pSrc *Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_64fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_64fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr32fI can be found in cuda npp documentation
+func Sqr32fI(pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_32f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr64fI can be found in cuda npp documentation
+func Sqr64fI(pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_64f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_64f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr32fcI can be found in cuda npp documentation
+func Sqr32fcI(pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_32fc_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_32fc_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr64fcI can be found in cuda npp documentation
+func Sqr64fcI(pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_64fc_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqr_64fc_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqr8uSfs can be found in cuda npp documentation
+func Sqr8uSfs(pSrc *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_8u_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_8u_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqr16uSfs can be found in cuda npp documentation
+func Sqr16uSfs(pSrc *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_16u_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_16u_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqr16sSfs can be found in cuda npp documentation
+func Sqr16sSfs(pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqr16scSfs can be found in cuda npp documentation
+func Sqr16scSfs(pSrc *Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_16sc_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_16sc_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqr8uISfs can be found in cuda npp documentation
+func Sqr8uISfs(pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_8u_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_8u_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqr16uISfs can be found in cuda npp documentation
+func Sqr16uISfs(pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_16u_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_16u_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqr16sISfs can be found in cuda npp documentation
+func Sqr16sISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqr16scISfs can be found in cuda npp documentation
+func Sqr16scISfs(pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqr_16sc_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqr_16sc_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt32f can be found in cuda npp documentation
+func Sqrt32f(pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt64f can be found in cuda npp documentation
+func Sqrt64f(pSrc *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt32fc can be found in cuda npp documentation
+func Sqrt32fc(pSrc *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_32fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_32fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt64fc can be found in cuda npp documentation
+func Sqrt64fc(pSrc *Float64Complex, pDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_64fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_64fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt32fI can be found in cuda npp documentation
+func Sqrt32fI(pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_32f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt64fI can be found in cuda npp documentation
+func Sqrt64fI(pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_64f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_64f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt32fcI can be found in cuda npp documentation
+func Sqrt32fcI(pSrcDst *Float32Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_32fc_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_32fc_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt64fcI can be found in cuda npp documentation
+func Sqrt64fcI(pSrcDst *Float64Complex, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_64fc_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsSqrt_64fc_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Sqrt8uSfs can be found in cuda npp documentation
+func Sqrt8uSfs(pSrc *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_8u_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_8u_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt16uSfs can be found in cuda npp documentation
+func Sqrt16uSfs(pSrc *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_16u_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_16u_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt16sSfs can be found in cuda npp documentation
+func Sqrt16sSfs(pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt16scSfs can be found in cuda npp documentation
+func Sqrt16scSfs(pSrc *Int16Complex, pDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_16sc_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_16sc_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt64sSfs can be found in cuda npp documentation
+func Sqrt64sSfs(pSrc *Int64, pDst *Int64, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_64s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_64s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt32s16sSfs can be found in cuda npp documentation
+func Sqrt32s16sSfs(pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_32s16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_32s16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt64s16sSfs can be found in cuda npp documentation
+func Sqrt64s16sSfs(pSrc *Int64, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_64s16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_64s16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt8uISfs can be found in cuda npp documentation
+func Sqrt8uISfs(pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_8u_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_8u_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt16uISfs can be found in cuda npp documentation
+func Sqrt16uISfs(pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_16u_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_16u_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt16sISfs can be found in cuda npp documentation
+func Sqrt16sISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt16scISfs can be found in cuda npp documentation
+func Sqrt16scISfs(pSrcDst *Int16Complex, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_16sc_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_16sc_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Sqrt64sISfs can be found in cuda npp documentation
+func Sqrt64sISfs(pSrcDst *Int64, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSqrt_64s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsSqrt_64s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Cubrt32f can be found in cuda npp documentation
+func Cubrt32f(pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsCubrt_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsCubrt_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Cubrt32s16sSfs can be found in cuda npp documentation
+func Cubrt32s16sSfs(pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsCubrt_32s16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsCubrt_32s16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Exp32f can be found in cuda npp documentation
+func Exp32f(pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsExp_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Exp64f can be found in cuda npp documentation
+func Exp64f(pSrc *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsExp_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Exp32f64f can be found in cuda npp documentation
+func Exp32f64f(pSrc *Float32, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_32f64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsExp_32f64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Exp32fI can be found in cuda npp documentation
+func Exp32fI(pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_32f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsExp_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Exp64fI can be found in cuda npp documentation
+func Exp64fI(pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_64f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsExp_64f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Exp16sSfs can be found in cuda npp documentation
+func Exp16sSfs(pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsExp_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Exp32sSfs can be found in cuda npp documentation
+func Exp32sSfs(pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_32s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsExp_32s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Exp64sSfs can be found in cuda npp documentation
+func Exp64sSfs(pSrc *Int64, pDst *Int64, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_64s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsExp_64s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Exp16sISfs can be found in cuda npp documentation
+func Exp16sISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsExp_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Exp32sISfs can be found in cuda npp documentation
+func Exp32sISfs(pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_32s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsExp_32s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Exp64sISfs can be found in cuda npp documentation
+func Exp64sISfs(pSrcDst *Int64, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsExp_64s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsExp_64s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Ln32f can be found in cuda npp documentation
+func Ln32f(pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLn_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Ln64f can be found in cuda npp documentation
+func Ln64f(pSrc *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLn_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Ln64f32f can be found in cuda npp documentation
+func Ln64f32f(pSrc *Float64, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_64f32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLn_64f32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Ln32fI can be found in cuda npp documentation
+func Ln32fI(pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_32f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLn_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Ln64fI can be found in cuda npp documentation
+func Ln64fI(pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_64f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLn_64f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Ln16sSfs can be found in cuda npp documentation
+func Ln16sSfs(pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsLn_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Ln32sSfs can be found in cuda npp documentation
+func Ln32sSfs(pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_32s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsLn_32s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Ln32s16sSfs can be found in cuda npp documentation
+func Ln32s16sSfs(pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_32s16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsLn_32s16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Ln16sISfs can be found in cuda npp documentation
+func Ln16sISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsLn_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Ln32sISfs can be found in cuda npp documentation
+func Ln32sISfs(pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLn_32s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsLn_32s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//TenLogTen32sSfs can be found in cuda npp documentation
+func TenLogTen32sSfs(pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.npps10Log10_32s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.npps10Log10_32s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//TenLogTen32sISfs can be found in cuda npp documentation
+func TenLogTen32sISfs(pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.npps10Log10_32s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.npps10Log10_32s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//SumLnGetBufferSize32f can be found in cuda npp documentation
+func SumLnGetBufferSize32f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLnGetBufferSize_32f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+	}
+	return status(C.nppsSumLnGetBufferSize_32f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+}
+
+//SumLn32f can be found in cuda npp documentation
+func SumLn32f(pSrc *Float32, nLength int32, pDst *Float32, pDeviceBuffer *Uint8, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLn_32f(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr())).ToError()
+	}
+	return status(C.nppsSumLn_32f_Ctx(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr(), ctx.c())).ToError()
+}
+
+//SumLnGetBufferSize64f can be found in cuda npp documentation
+func SumLnGetBufferSize64f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLnGetBufferSize_64f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+	}
+	return status(C.nppsSumLnGetBufferSize_64f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+}
+
+//SumLn64f can be found in cuda npp documentation
+func SumLn64f(pSrc *Float64, nLength int32, pDst *Float64, pDeviceBuffer *Uint8, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLn_64f(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr())).ToError()
+	}
+	return status(C.nppsSumLn_64f_Ctx(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr(), ctx.c())).ToError()
+}
+
+//SumLnGetBufferSize32f64f can be found in cuda npp documentation
+func SumLnGetBufferSize32f64f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLnGetBufferSize_32f64f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+	}
+	return status(C.nppsSumLnGetBufferSize_32f64f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+}
+
+//SumLn32f64f can be found in cuda npp documentation
+func SumLn32f64f(pSrc *Float32, nLength int32, pDst *Float64, pDeviceBuffer *Uint8, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLn_32f64f(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr())).ToError()
+	}
+	return status(C.nppsSumLn_32f64f_Ctx(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr(), ctx.c())).ToError()
+}
+
+//SumLnGetBufferSize16s32f can be found in cuda npp documentation
+func SumLnGetBufferSize16s32f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLnGetBufferSize_16s32f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+	}
+	return status(C.nppsSumLnGetBufferSize_16s32f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+}
+
+//SumLn16s32f can be found in cuda npp documentation
+func SumLn16s32f(pSrc *Int16, nLength int32, pDst *Float32, pDeviceBuffer *Uint8, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsSumLn_16s32f(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr())).ToError()
+	}
+	return status(C.nppsSumLn_16s32f_Ctx(pSrc.cptr(), (C.int)(nLength), pDst.cptr(), pDeviceBuffer.cptr(), ctx.c())).ToError()
+}
+
+//Arctan32f can be found in cuda npp documentation
+func Arctan32f(pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsArctan_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsArctan_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Arctan64f can be found in cuda npp documentation
+func Arctan64f(pSrc *Float64, pDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsArctan_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsArctan_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Arctan32fI can be found in cuda npp documentation
+func Arctan32fI(pSrcDst *Float32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsArctan_32f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsArctan_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Arctan64fI can be found in cuda npp documentation
+func Arctan64fI(pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsArctan_64f_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsArctan_64f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Normalize32f can be found in cuda npp documentation
+func Normalize32f(pSrc *Float32, pDst *Float32, nLength int32, vSub Float32, vDiv Float32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNormalize_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+	}
+	return status(C.nppsNormalize_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+}
+
+//Normalize32fc can be found in cuda npp documentation
+func Normalize32fc(pSrc *Float32Complex, pDst *Float32Complex, nLength int32, vSub Float32Complex, vDiv Float32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNormalize_32fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+	}
+	return status(C.nppsNormalize_32fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+}
+
+//Normalize64f can be found in cuda npp documentation
+func Normalize64f(pSrc *Float64, pDst *Float64, nLength int32, vSub, vDiv Float64, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNormalize_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+	}
+	return status(C.nppsNormalize_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+}
+
+//Normalize64fc can be found in cuda npp documentation
+func Normalize64fc(pSrc *Float64Complex, pDst *Float64Complex, nLength int32, vSub Float64Complex, vDiv Float64, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNormalize_64fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+	}
+	return status(C.nppsNormalize_64fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+}
+
+//Normalize16sSfs can be found in cuda npp documentation
+func Normalize16sSfs(pSrc *Int16, pDst *Int16, nLength int32, vSub Int16, vDiv int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNormalize_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.int)(vDiv), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsNormalize_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.int)(vDiv), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Normalize16scSfs can be found in cuda npp documentation
+func Normalize16scSfs(pSrc *Int16Complex, pDst *Int16Complex, nLength int32, vSub Int16Complex, vDiv int32, nScaleFactor int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNormalize_16sc_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.int)(vDiv), (C.int)(nScaleFactor))).ToError()
+	}
+	return status(C.nppsNormalize_16sc_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.int)(vDiv), (C.int)(nScaleFactor), ctx.c())).ToError()
+}
+
+//Cauchy32fI can be found in cuda npp documentation
+func Cauchy32fI(pSrcDst *Float32, nLength int32, nParam Float32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsCauchy_32f_I(pSrcDst.cptr(), (C.int)(nLength), nParam.c())).ToError()
+	}
+	return status(C.nppsCauchy_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), nParam.c(), ctx.c())).ToError()
+}
+
+//CauchyD32fI can be found in cuda npp documentation
+func CauchyD32fI(pSrcDst *Float32, nLength int32, nParam Float32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsCauchyD_32f_I(pSrcDst.cptr(), (C.int)(nLength), nParam.c())).ToError()
+	}
+	return status(C.nppsCauchyD_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), nParam.c(), ctx.c())).ToError()
+}
+
+//CauchyDD232fI can be found in cuda npp documentation
+func CauchyDD232fI(pSrcDst *Float32, pD2FVal *Float32, nLength int32, nParam Float32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsCauchyDD2_32f_I(pSrcDst.cptr(), pD2FVal.cptr(), (C.int)(nLength), nParam.c())).ToError()
+	}
+	return status(C.nppsCauchyDD2_32f_I_Ctx(pSrcDst.cptr(), pD2FVal.cptr(), (C.int)(nLength), nParam.c(), ctx.c())).ToError()
+}
+
+//AndC8u can be found in cuda npp documentation
+func AndC8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAndC_8u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAndC_8u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AndC16u can be found in cuda npp documentation
+func AndC16u(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAndC_16u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAndC_16u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AndC32u can be found in cuda npp documentation
+func AndC32u(pSrc *Uint32, nValue Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAndC_32u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAndC_32u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AndC8uI can be found in cuda npp documentation
+func AndC8uI(nValue Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAndC_8u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAndC_8u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AndC16uI can be found in cuda npp documentation
+func AndC16uI(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAndC_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAndC_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//AndC32uI can be found in cuda npp documentation
+func AndC32uI(nValue Uint32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAndC_32u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAndC_32u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//And8u can be found in cuda npp documentation
+func And8u(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAnd_8u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAnd_8u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//And16u can be found in cuda npp documentation
+func And16u(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAnd_16u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAnd_16u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//And32u can be found in cuda npp documentation
+func And32u(pSrc1, pSrc2 *Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAnd_32u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAnd_32u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//And8uI can be found in cuda npp documentation
+func And8uI(pSrc *Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAnd_8u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAnd_8u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//And16uI can be found in cuda npp documentation
+func And16uI(pSrc *Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAnd_16u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAnd_16u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//And32uI can be found in cuda npp documentation
+func And32uI(pSrc *Uint32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsAnd_32u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsAnd_32u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//OrC8u can be found in cuda npp documentation
+func OrC8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOrC_8u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOrC_8u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//OrC16u can be found in cuda npp documentation
+func OrC16u(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOrC_16u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOrC_16u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//OrC32u can be found in cuda npp documentation
+func OrC32u(pSrc *Uint32, nValue Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOrC_32u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOrC_32u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//OrC8uI can be found in cuda npp documentation
+func OrC8uI(nValue Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOrC_8u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOrC_8u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//OrC16uI can be found in cuda npp documentation
+func OrC16uI(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOrC_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOrC_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//OrC32uI can be found in cuda npp documentation
+func OrC32uI(nValue Uint32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOrC_32u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOrC_32u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Or8u can be found in cuda npp documentation
+func Or8u(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOr_8u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOr_8u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Or16u can be found in cuda npp documentation
+func Or16u(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOr_16u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOr_16u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Or32u can be found in cuda npp documentation
+func Or32u(pSrc1, pSrc2 *Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOr_32u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOr_32u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Or8uI can be found in cuda npp documentation
+func Or8uI(pSrc *Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOr_8u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOr_8u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Or16uI can be found in cuda npp documentation
+func Or16uI(pSrc *Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOr_16u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOr_16u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Or32uI can be found in cuda npp documentation
+func Or32uI(pSrc *Uint32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsOr_32u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsOr_32u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//XorC8u can be found in cuda npp documentation
+func XorC8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXorC_8u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXorC_8u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//XorC16u can be found in cuda npp documentation
+func XorC16u(pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXorC_16u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXorC_16u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//XorC32u can be found in cuda npp documentation
+func XorC32u(pSrc *Uint32, nValue Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXorC_32u(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXorC_32u_Ctx(pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//XorC8uI can be found in cuda npp documentation
+func XorC8uI(nValue Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXorC_8u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXorC_8u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//XorC16uI can be found in cuda npp documentation
+func XorC16uI(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXorC_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXorC_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//XorC32uI can be found in cuda npp documentation
+func XorC32uI(nValue Uint32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXorC_32u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXorC_32u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Xor8u can be found in cuda npp documentation
+func Xor8u(pSrc1, pSrc2 *Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXor_8u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXor_8u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Xor16u can be found in cuda npp documentation
+func Xor16u(pSrc1, pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXor_16u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXor_16u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Xor32u can be found in cuda npp documentation
+func Xor32u(pSrc1, pSrc2 *Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXor_32u(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXor_32u_Ctx(pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Xor8uI can be found in cuda npp documentation
+func Xor8uI(pSrc *Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXor_8u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXor_8u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Xor16uI can be found in cuda npp documentation
+func Xor16uI(pSrc *Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXor_16u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXor_16u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Xor32uI can be found in cuda npp documentation
+func Xor32uI(pSrc *Uint32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsXor_32u_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsXor_32u_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Not8u can be found in cuda npp documentation
+func Not8u(pSrc *Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNot_8u(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsNot_8u_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Not16u can be found in cuda npp documentation
+func Not16u(pSrc *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNot_16u(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsNot_16u_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Not32u can be found in cuda npp documentation
+func Not32u(pSrc *Uint32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNot_32u(pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsNot_32u_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Not8uI can be found in cuda npp documentation
+func Not8uI(pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNot_8u_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsNot_8u_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Not16uI can be found in cuda npp documentation
+func Not16uI(pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNot_16u_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsNot_16u_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//Not32uI can be found in cuda npp documentation
+func Not32uI(pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsNot_32u_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsNot_32u_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC8u can be found in cuda npp documentation
+func LShiftC8u(pSrc *Uint8, nValue int32, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_8u(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_8u_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC16u can be found in cuda npp documentation
+func LShiftC16u(pSrc *Uint16, nValue int32, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_16u(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_16u_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC16s can be found in cuda npp documentation
+func LShiftC16s(pSrc *Int16, nValue int32, pDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_16s(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_16s_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC32u can be found in cuda npp documentation
+func LShiftC32u(pSrc *Uint32, nValue int32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_32u(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_32u_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC32s can be found in cuda npp documentation
+func LShiftC32s(pSrc *Int32, nValue int32, pDst *Int32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_32s(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_32s_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC8uI can be found in cuda npp documentation
+func LShiftC8uI(nValue int32, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_8u_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_8u_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC16uI can be found in cuda npp documentation
+func LShiftC16uI(nValue int32, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_16u_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_16u_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC16sI can be found in cuda npp documentation
+func LShiftC16sI(nValue int32, pSrcDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_16s_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_16s_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC32uI can be found in cuda npp documentation
+func LShiftC32uI(nValue int32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_32u_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_32u_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//LShiftC32sI can be found in cuda npp documentation
+func LShiftC32sI(nValue int32, pSrcDst *Int32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsLShiftC_32s_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsLShiftC_32s_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC8u can be found in cuda npp documentation
+func RShiftC8u(pSrc *Uint8, nValue int32, pDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_8u(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_8u_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC16u can be found in cuda npp documentation
+func RShiftC16u(pSrc *Uint16, nValue int32, pDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_16u(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_16u_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC16s can be found in cuda npp documentation
+func RShiftC16s(pSrc *Int16, nValue int32, pDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_16s(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_16s_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC32u can be found in cuda npp documentation
+func RShiftC32u(pSrc *Uint32, nValue int32, pDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_32u(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_32u_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC32s can be found in cuda npp documentation
+func RShiftC32s(pSrc *Int32, nValue int32, pDst *Int32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_32s(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_32s_Ctx(pSrc.cptr(), (C.int)(nValue), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC8uI can be found in cuda npp documentation
+func RShiftC8uI(nValue int32, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_8u_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_8u_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC16uI can be found in cuda npp documentation
+func RShiftC16uI(nValue int32, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_16u_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_16u_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC16sI can be found in cuda npp documentation
+func RShiftC16sI(nValue int32, pSrcDst *Int16, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_16s_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_16s_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC32uI can be found in cuda npp documentation
+func RShiftC32uI(nValue int32, pSrcDst *Uint32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_32u_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_32u_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
+}
+
+//RShiftC32sI can be found in cuda npp documentation
+func RShiftC32sI(nValue int32, pSrcDst *Int32, nLength int32, ctx *StreamContext) error {
+	if ctx == nil {
+		return status(C.nppsRShiftC_32s_I((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength))).ToError()
+	}
+	return status(C.nppsRShiftC_32s_I_Ctx((C.int)(nValue), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
 }
-func DivC64fI(Npp64f nValue, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsDivC_64f_I(Npp64f nValue, Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func DivC64fCtx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_64f_Ctx( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func DivC64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsDivC_64f( Npp64f * pSrc, Npp64f nValue, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func DivC64fcICtx(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_64fc_I_Ctx(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func DivC64fcI(Npp64fc nValue, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsDivC_64fc_I(Npp64fc nValue, Npp64fc * pSrcDst, (C.int)(nLength))).ToError()
-}
-func DivC64fcCtx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivC_64fc_Ctx( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func DivC64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsDivC_64fc( Npp64fc * pSrc, Npp64fc nValue, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func DivCRev16uICtx(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivCRev_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func DivCRev16uI(nValue Uint16, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsDivCRev_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func DivCRev16uCtx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivCRev_16u_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func DivCRev16u( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsDivCRev_16u( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func DivCRev32fICtx(nValue Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivCRev_32f_I_Ctx(nValue Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func DivCRev32fI(nValue Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsDivCRev_32f_I(nValue Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func DivCRev32fCtx( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDivCRev_32f_Ctx( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func DivCRev32f( pSrc *Float32, nValue Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsDivCRev_32f( pSrc *Float32, nValue Float32, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Add16sCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16s_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Add16s( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32) error{
-  return status(C.nppsAdd_16s( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Add16uCtx( pSrc1 *Uint16,pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16u_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Add16u( pSrc1 *Uint16,pSrc2 *Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsAdd_16u( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Add32uCtx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32u_Ctx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Add32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsAdd_32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func Add32fCtx( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32f_Ctx( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Add32f( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32) error{
-  return status(C.nppsAdd_32f( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Add64fCtx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_64f_Ctx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Add64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsAdd_64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func Add32fcCtx( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32fc_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Add32fc( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsAdd_32fc( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Add64fcCtx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_64fc_Ctx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Add64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsAdd_64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func Add8u16uCtx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_8u16u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Add8u16u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint16, nLength int32) error{
-  return status(C.nppsAdd_8u16u(pSrc *Uint81,Npp8u * pSrc2, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Add16s32fCtx( pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16s32f_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Add16s32f( pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32) error{
-  return status(C.nppsAdd_16s32f( pSrc1.cptr(), pSrc2.cptr(), pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Add8uSfsCtx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_8u_Sfs_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add8uSfs(pSrc, pSrc2 *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_8u_Sfs(pSrc1.cptr(),pSrc2.cptr(), pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Add16uSfsCtx( pSrc1 ,pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16u_Sfs_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add16uSfs( pSrc1 *Uint161,pSrc2 *Uint162, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_16u_Sfs( pSrc.cptr()1,pSrc.cptr()2, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Add16sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add16sSfs( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_16s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Add32sSfsCtx( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add32sSfs( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_32s_Sfs( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Add64sSfsCtx( Npp64s * pSrc1,Npp64s * pSrc2, Npp64s * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_64s_Sfs_Ctx( Npp64s * pSrc1,Npp64s * pSrc2, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add64sSfs( Npp64s * pSrc1,Npp64s * pSrc2, Npp64s * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_64s_Sfs( Npp64s * pSrc1,Npp64s * pSrc2, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Add16scSfsCtx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16sc_Sfs_Ctx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add16scSfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_16sc_Sfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Add32scSfsCtx( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32sc_Sfs_Ctx( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add32scSfs( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_32sc_Sfs( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Add16sICtx( pSrc *Int16, pSrcDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Add16sI( pSrc *Int16, pSrcDst *Int16, nLength int32) error{
-  return status(C.nppsAdd_16s_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Add32fICtx( pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32f_I_Ctx( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Add32fI( pSrc *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsAdd_32f_I( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func Add64fICtx( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_64f_I_Ctx( Npp64f * pSrc, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Add64fI( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsAdd_64f_I( Npp64f * pSrc, Npp64f * pSrcDst, C)).ToError()
-}
-func Add32fcICtx( pSrc *Float32Complex, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32fc_I_Ctx( pSrc *Float32Complex, pSrcDst *Float32, C, ctx.c())).ToError()
-}
-func Add32fcI( pSrc *Float32Complex, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsAdd_32fc_I( pSrc *Float32Complex, pSrcDst *Float32, C)).ToError()
-}
-func Add64fcICtx( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_64fc_I_Ctx( Npp64fc * pSrc, Npp64fc * pSrcDst, C, ctx.c())).ToError()
-}
-func Add64fcI( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsAdd_64fc_I( Npp64fc * pSrc, Npp64fc * pSrcDst, C)).ToError()
-}
-func Add16s32sICtx( pSrc *Int16, pSrcDst *Int32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16s32s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), C, ctx.c())).ToError()
-}
-func Add16s32sI( pSrc *Int16, pSrcDst *Int32, nLength int32) error{
-  return status(C.nppsAdd_16s32s_I(pSrc.cptr(), pSrcDst.cptr(), C)).ToError()
-}
-func Add8uISfsCtx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_8u_ISfs_Ctx(pSrc *Uint8, pSrcDst *Uint8, C, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_8u_ISfs(pSrc *Uint8, pSrcDst *Uint8, C, (C.int)(nScaleFactor))).ToError()
-}
-func Add16uISfsCtx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16u_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), C, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add16uISfs( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_16u_ISfs( pSrc.cptr(), pSrcDst.cptr(), C, (C.int)(nScaleFactor))).ToError()
-}
-func Add16sISfsCtx( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), C, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add16sISfs( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), C, (C.int)(nScaleFactor))).ToError()
-}
-func Add32sISfsCtx( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32s_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), C, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add32sISfs( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_32s_ISfs( pSrc.cptr(), pSrcDst.cptr(), C, (C.int)(nScaleFactor))).ToError()
-}
-func Add16scISfsCtx( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_16sc_ISfs_Ctx( Npp16sc * pSrc, Npp16sc * pSrcDst, C, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add16scISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_16sc_ISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, C, (C.int)(nScaleFactor))).ToError()
-}
-func Add32scISfsCtx( Npp32sc * pSrc, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAdd_32sc_ISfs_Ctx( Npp32sc * pSrc, Npp32sc * pSrcDst, C, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Add32scISfs( Npp32sc * pSrc, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAdd_32sc_ISfs( Npp32sc * pSrc, Npp32sc * pSrcDst, C, (C.int)(nScaleFactor))).ToError()
-}
-func AddProduct32fCtx( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddProduct_32f_Ctx( pSrc *Float321,pSrc *Float322, pDst *Float32, C, ctx.c())).ToError()
-}
-func AddProduct32f( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32) error{
-  return status(C.nppsAddProduct_32f( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func AddProduct64fCtx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddProduct_64f_Ctx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddProduct64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsAddProduct_64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func AddProduct32fcCtx( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddProduct_32fc_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func AddProduct32fc( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsAddProduct_32fc( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func AddProduct64fcCtx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAddProduct_64fc_Ctx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AddProduct64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsAddProduct_64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func AddProduct16sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAddProduct_16s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func AddProduct16sSfs( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAddProduct_16s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func AddProduct32sSfsCtx( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAddProduct_32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func AddProduct32sSfs( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAddProduct_32s_Sfs( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func AddProduct16s32sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsAddProduct_16s32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func AddProduct16s32sSfs( pSrc1, pSrc2 *Int16, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsAddProduct_16s32s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16sCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16s_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul16s( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32) error{
-  return status(C.nppsMul_16s( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Mul32fCtx( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32f_Ctx( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul32f( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32) error{
-  return status(C.nppsMul_32f( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Mul64fCtx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_64f_Ctx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsMul_64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func Mul32fcCtx( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32fc_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul32fc( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsMul_32fc( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Mul64fcCtx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_64fc_Ctx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsMul_64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func Mul8u16uCtx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_8u16u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul8u16u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint16, nLength int32) error{
-  return status(C.nppsMul_8u16u(pSrc *Uint81,Npp8u * pSrc2, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Mul16s32fCtx( pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16s32f_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul16s32f( pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32) error{
-  return status(C.nppsMul_16s32f( pSrc1.cptr(), pSrc2.cptr(), pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Mul32f32fcCtx( pSrc *Float321,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32f32fc_Ctx( pSrc *Float321,pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul32f32fc( pSrc *Float321,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsMul_32f32fc( pSrc *Float321,pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Mul8uSfsCtx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_8u_Sfs_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul8uSfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_8u_Sfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16uSfsCtx( pSrc1 ,pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16u_Sfs_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16uSfs( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16u_Sfs( pSrc1.cptr()pSrc2.cpr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16sSfs( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul32sSfsCtx( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul32sSfs( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_32s_Sfs( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16scSfsCtx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16sc_Sfs_Ctx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16scSfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16sc_Sfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul32scSfsCtx( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32sc_Sfs_Ctx( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul32scSfs( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_32sc_Sfs( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16u16sSfsCtx( pSrc1 *Uint16,pSrc *Int162, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16u16s_Sfs_Ctx( pSrc1.cptr(),pSrc *Int162, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16u16sSfs( pSrc1 *Uint16,pSrc *Int162, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16u16s_Sfs( pSrc1.cptr(),pSrc *Int162, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16s32sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16s32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16s32sSfs( pSrc1, pSrc2 *Int16, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16s32s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul32s32scSfsCtx( pSrc *Int321,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32s32sc_Sfs_Ctx( pSrc.cptr()1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul32s32scSfs( pSrc *Int321,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_32s32sc_Sfs( pSrc.cptr()1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func MulLow32sSfsCtx( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_Low_32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func MulLow32sSfs( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_Low_32s_Sfs( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16sICtx( pSrc *Int16, pSrcDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul16sI( pSrc *Int16, pSrcDst *Int16, nLength int32) error{
-  return status(C.nppsMul_16s_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Mul32fICtx( pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32f_I_Ctx( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul32fI( pSrc *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsMul_32f_I( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func Mul64fICtx( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_64f_I_Ctx( Npp64f * pSrc, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul64fI( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsMul_64f_I( Npp64f * pSrc, Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Mul32fcICtx( pSrc *Float32Complex, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32fc_I_Ctx( pSrc *Float32Complex, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul32fcI( pSrc *Float32Complex, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsMul_32fc_I( pSrc *Float32Complex, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func Mul64fcICtx( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_64fc_I_Ctx( Npp64fc * pSrc, Npp64fc * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul64fcI( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsMul_64fc_I( Npp64fc * pSrc, Npp64fc * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Mul32f32fcICtx( pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32f32fc_I_Ctx( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Mul32f32fcI( pSrc *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsMul_32f32fc_I( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func Mul8uISfsCtx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_8u_ISfs_Ctx(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_8u_ISfs(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16uISfsCtx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16u_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16uISfs( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16u_ISfs( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16sISfsCtx( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16sISfs( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul32sISfsCtx( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32s_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul32sISfs( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_32s_ISfs( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul16scISfsCtx( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_16sc_ISfs_Ctx( Npp16sc * pSrc, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul16scISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_16sc_ISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul32scISfsCtx( Npp32sc * pSrc, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32sc_ISfs_Ctx( Npp32sc * pSrc, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul32scISfs( Npp32sc * pSrc, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_32sc_ISfs( Npp32sc * pSrc, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Mul32s32scISfsCtx( pSrc *Int32, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsMul_32s32sc_ISfs_Ctx( pSrc.cptr(), Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Mul32s32scISfs( pSrc *Int32, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsMul_32s32sc_ISfs( pSrc.cptr(), Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16sCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16s_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub16s( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32) error{
-  return status(C.nppsSub_16s( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Sub32fCtx( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32f_Ctx( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub32f( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32) error{
-  return status(C.nppsSub_32f( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Sub64fCtx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_64f_Ctx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsSub_64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func Sub32fcCtx( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32fc_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub32fc( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsSub_32fc( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Sub64fcCtx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_64fc_Ctx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsSub_64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func Sub16s32fCtx( pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16s32f_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub16s32f( pSrc1, pSrc2 *Int16, pDst *Float32, nLength int32) error{
-  return status(C.nppsSub_16s32f( pSrc1.cptr(), pSrc2.cptr(), pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Sub8uSfsCtx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_8u_Sfs_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub8uSfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_8u_Sfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16uSfsCtx( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16u_Sfs_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub16uSfs( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_16u_Sfs( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub16sSfs( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_16s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub32sSfsCtx( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub32sSfs( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_32s_Sfs( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16scSfsCtx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16sc_Sfs_Ctx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub16scSfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_16sc_Sfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub32scSfsCtx( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32sc_Sfs_Ctx( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub32scSfs( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_32sc_Sfs( Npp32sc * pSrc1,Npp32sc * pSrc2, Npp32sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16sICtx( pSrc *Int16, pSrcDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16s_I_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub16sI( pSrc *Int16, pSrcDst *Int16, nLength int32) error{
-  return status(C.nppsSub_16s_I(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Sub32fICtx( pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32f_I_Ctx( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub32fI( pSrc *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSub_32f_I( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func Sub64fICtx( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_64f_I_Ctx( Npp64f * pSrc, Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub64fI( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsSub_64f_I( Npp64f * pSrc, Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Sub32fcICtx( pSrc *Float32Complex, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32fc_I_Ctx( pSrc *Float32Complex, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub32fcI( pSrc *Float32Complex, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSub_32fc_I( pSrc *Float32Complex, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func Sub64fcICtx( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSub_64fc_I_Ctx( Npp64fc * pSrc, Npp64fc * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Sub64fcI( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsSub_64fc_I( Npp64fc * pSrc, Npp64fc * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Sub8uISfsCtx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_8u_ISfs_Ctx(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_8u_ISfs(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16uISfsCtx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16u_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub16uISfs( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_16u_ISfs( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16sISfsCtx( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub16sISfs( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub32sISfsCtx( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32s_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub32sISfs( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_32s_ISfs( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub16scISfsCtx( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_16sc_ISfs_Ctx( Npp16sc * pSrc, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub16scISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_16sc_ISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sub32scISfsCtx( Npp32sc * pSrc, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSub_32sc_ISfs_Ctx( Npp32sc * pSrc, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sub32scISfs( Npp32sc * pSrc, Npp32sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSub_32sc_ISfs( Npp32sc * pSrc, Npp32sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div8uSfsCtx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_8u_Sfs_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div8uSfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_8u_Sfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div16uSfsCtx( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_16u_Sfs_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div16uSfs( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_16u_Sfs( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div16sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_16s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div16sSfs( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_16s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div32sSfsCtx( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_32s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div32sSfs( pSrc1, pSrc2 *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_32s_Sfs( pSrc1.cptr(), pSrc2.cptr() , pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div16scSfsCtx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_16sc_Sfs_Ctx( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div16scSfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_16sc_Sfs( Npp16sc * pSrc1,Npp16sc * pSrc2, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div32s16sSfsCtx( pSrc *Int161,pSrc *Int322, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_32s16s_Sfs_Ctx(pSrc.cptr()1,pSrc.cptr()2, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div32s16sSfs( pSrc *Int161,pSrc *Int322, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_32s16s_Sfs(pSrc.cptr()1,pSrc.cptr()2, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div32fCtx( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_32f_Ctx( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Div32f( pSrc *Float321,pSrc *Float322, pDst *Float32, nLength int32) error{
-  return status(C.nppsDiv_32f( pSrc *Float321,pSrc *Float322, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func Div64fCtx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_64f_Ctx( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Div64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsDiv_64f( Npp64f * pSrc1,Npp64f * pSrc2, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func Div32fcCtx( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_32fc_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Div32fc( pSrc1 *Float32Complex,pSrc2 *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsDiv_32fc( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Div64fcCtx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_64fc_Ctx( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Div64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsDiv_64fc( Npp64fc * pSrc1,Npp64fc * pSrc2, Npp64fc * pDst, (C.int)(nLength))).ToError()
-}
-func Div8uISfsCtx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_8u_ISfs_Ctx(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_8u_ISfs(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div16uISfsCtx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_16u_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div16uISfs( pSrc *Uint16, pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_16u_ISfs( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div16sISfsCtx( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div16sISfs( pSrc *Int16, pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div16scISfsCtx( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_16sc_ISfs_Ctx( Npp16sc * pSrc, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div16scISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_16sc_ISfs( Npp16sc * pSrc, Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div32sISfsCtx( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_32s_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Div32sISfs( pSrc *Int32, pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsDiv_32s_ISfs( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Div32fICtx( pSrc *Float32, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_32f_I_Ctx( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func Div32fI( pSrc *Float32, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsDiv_32f_I( pSrc *Float32, pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func Div64fICtx( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_64f_I_Ctx( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Div64fI( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsDiv_64f_I( Npp64f * pSrc, Npp64f * pSrcDst, nLength int32)).ToError()
-}
-func Div32fcICtx( pSrc *Float32Complex, pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_32fc_I_Ctx( pSrc *Float32Complex, pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Div32fcI( pSrc *Float32Complex, pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsDiv_32fc_I( pSrc *Float32Complex, pSrcDst *Float32, nLength int32)).ToError()
-}
-func Div64fcICtx( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_64fc_I_Ctx( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Div64fcI( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsDiv_64fc_I( Npp64fc * pSrc, Npp64fc * pSrcDst, nLength int32)).ToError()
-}
-func DivRound8uSfsCtx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, NppRoundMode nRndMode, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_Round_8u_Sfs_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivRound8uSfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, NppRoundMode nRndMode, nScaleFactor int32) error{
-  return status(C.nppsDiv_Round_8u_Sfs(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor))).ToError()
-}
-func DivRound16uSfsCtx( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_Round_16u_Sfs_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivRound16uSfs( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32) error{
-  return status(C.nppsDiv_Round_16u_Sfs( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor))).ToError()
-}
-func DivRound16sSfsCtx( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_Round_16s_Sfs_Ctx( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivRound16sSfs( pSrc1, pSrc2 *Int16, pDst *Int16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32) error{
-  return status(C.nppsDiv_Round_16s_Sfs( pSrc1.cptr(), pSrc2.cptr(), pDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor))).ToError()
-}
-func DivRound8uISfsCtx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, NppRoundMode nRndMode, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_Round_8u_ISfs_Ctx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivRound8uISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, NppRoundMode nRndMode, nScaleFactor int32) error{
-  return status(C.nppsDiv_Round_8u_ISfs(pSrc *Uint8, pSrcDst *Uint8, nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor))).ToError()
-}
-func DivRound16uISfsCtx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_Round_16u_ISfs_Ctx( pSrc.cptr(), pSrcDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivRound16uISfs( pSrc *Uint16, pSrcDst *Uint16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32) error{
-  return status(C.nppsDiv_Round_16u_ISfs( pSrc.cptr(), pSrcDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor))).ToError()
-}
-func DivRound16sISfsCtx( pSrc *Int16, pSrcDst *Int16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsDiv_Round_16s_ISfs_Ctx(pSrc.cptr(), pSrcDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func DivRound16sISfs( pSrc *Int16, pSrcDst *Int16, nLength int32, NppRoundMode nRndMode, nScaleFactor int32) error{
-  return status(C.nppsDiv_Round_16s_ISfs(pSrc.cptr(), pSrcDst.cptr(), nLength int32, NppRoundMode nRndMode, (C.int)(nScaleFactor))).ToError()
-}
-func Abs16sCtx( pSrc *Int16, pDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_16s_Ctx(pSrc.cptr(), pDst.cptr(), nLength int32, ctx.c())).ToError()
-}
-func Abs16s( pSrc *Int16, pDst *Int16, nLength int32) error{
-  return status(C.nppsAbs_16s(pSrc.cptr(), pDst.cptr(), nLength int32)).ToError()
-}
-func Abs32s_Ctx( pSrc *Int32, pDst *Int32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_32s_Ctx( pSrc.cptr(), pDst.cptr(), nLength int32, ctx.c())).ToError()
-}
-func Abs32s( pSrc *Int32, pDst *Int32, nLength int32) error{
-  return status(C.nppsAbs_32s( pSrc.cptr(), pDst.cptr(), nLength int32)).ToError()
-}
-func Abs32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Abs32f( pSrc *Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsAbs_32f( pSrc *Float32, pDst *Float32, nLength int32)).ToError()
-}
-func Abs64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx.c())).ToError()
-}
-func Abs64f( Npp64f * pSrc, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsAbs_64f( Npp64f * pSrc, Npp64f * pDst, nLength int32)).ToError()
-}
-func Abs16s_I_Ctx(pSrcDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_16s_I_Ctx(pSrcDst.cptr(), nLength int32, ctx.c())).ToError()
-}
-func Abs16s_I(pSrcDst *Int16, nLength int32) error{
-  return status(C.nppsAbs_16s_I(pSrcDst.cptr(), nLength int32)).ToError()
-}
-func Abs32s_I_Ctx(pSrcDst *Int32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_32s_I_Ctx(pSrcDst.cptr(), nLength int32, ctx.c())).ToError()
-}
-func Abs32s_I(pSrcDst *Int32, nLength int32) error{
-  return status(C.nppsAbs_32s_I(pSrcDst.cptr(), nLength int32)).ToError()
-}
-func Abs32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Abs32f_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsAbs_32f_I(pSrcDst *Float32, nLength int32)).ToError()
-}
-func Abs64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAbs_64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Abs64f_I(Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsAbs_64f_I(Npp64f * pSrcDst, nLength int32)).ToError()
-}
-func Sqr32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Sqr32f( pSrc *Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsSqr_32f( pSrc *Float32, pDst *Float32, nLength int32)).ToError()
-}
-func Sqr64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx.c())).ToError()
-}
-func Sqr64f( Npp64f * pSrc, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsSqr_64f( Npp64f * pSrc, Npp64f * pDst, nLength int32)).ToError()
-}
-func Sqr32fc_Ctx( pSrc *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_32fc_Ctx( pSrc *Float32Complex, pDst.cptr(), nLength int32, ctx.c())).ToError()
-}
-func Sqr32fc( pSrc *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsSqr_32fc( pSrc *Float32Complex, pDst.cptr(), nLength int32)).ToError()
-}
-func Sqr64fc_Ctx( Npp64fc * pSrc, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_64fc_Ctx( Npp64fc * pSrc, Npp64fc * pDst, nLength int32, ctx.c())).ToError()
-}
-func Sqr64fc( Npp64fc * pSrc, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsSqr_64fc( Npp64fc * pSrc, Npp64fc * pDst, nLength int32)).ToError()
-}
-func Sqr32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Sqr32f_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSqr_32f_I(pSrcDst *Float32, nLength int32)).ToError()
-}
-func Sqr64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Sqr64f_I(Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsSqr_64f_I(Npp64f * pSrcDst, nLength int32)).ToError()
-}
-func Sqr32fc_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_32fc_I_Ctx(pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Sqr32fc_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSqr_32fc_I(pSrcDst *Float32, nLength int32)).ToError()
-}
-func Sqr64fc_I_Ctx(Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_64fc_I_Ctx(Npp64fc * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Sqr64fc_I(Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsSqr_64fc_I(Npp64fc * pSrcDst, nLength int32)).ToError()
-}
-func Sqr8u_Sfs_Ctx(pSrc *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_8u_Sfs_Ctx(pSrc *Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr8u_Sfs(pSrc *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_8u_Sfs(pSrc *Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqr16u_Sfs_Ctx( pSrc *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_16u_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr16u_Sfs( pSrc *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_16u_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqr16s_Sfs_Ctx( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr16s_Sfs( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqr16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr16sc_Sfs( Npp16sc * pSrc, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_16sc_Sfs( Npp16sc * pSrc, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqr8u_ISfs_Ctx(pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_8u_ISfs_Ctx(pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr8u_ISfs(pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_8u_ISfs(pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqr16u_ISfs_Ctx(pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_16u_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr16u_ISfs(pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_16u_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqr16s_ISfs_Ctx(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr16s_ISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqr16sc_ISfs_Ctx(Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqr_16sc_ISfs_Ctx(Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqr16sc_ISfs(Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqr_16sc_ISfs(Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Sqrt32f( pSrc *Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsSqrt_32f( pSrc *Float32, pDst *Float32, nLength int32)).ToError()
-}
-func Sqrt64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx.c())).ToError()
-}
-func Sqrt64f( Npp64f * pSrc, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsSqrt_64f( Npp64f * pSrc, Npp64f * pDst, nLength int32)).ToError()
-}
-func Sqrt32fc_Ctx( pSrc *Float32Complex, pDst *Float32Complex, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_32fc_Ctx( pSrc *Float32Complex, pDst.cptr(), nLength int32, ctx.c())).ToError()
-}
-func Sqrt32fc( pSrc *Float32Complex, pDst *Float32Complex, nLength int32) error{
-  return status(C.nppsSqrt_32fc( pSrc *Float32Complex, pDst.cptr(), nLength int32)).ToError()
-}
-func Sqrt64fc_Ctx( Npp64fc * pSrc, Npp64fc * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_64fc_Ctx( Npp64fc * pSrc, Npp64fc * pDst, nLength int32, ctx.c())).ToError()
-}
-func Sqrt64fc( Npp64fc * pSrc, Npp64fc * pDst, nLength int32) error{
-  return status(C.nppsSqrt_64fc( Npp64fc * pSrc, Npp64fc * pDst, nLength int32)).ToError()
-}
-func Sqrt32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Sqrt32f_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSqrt_32f_I(pSrcDst *Float32, nLength int32)).ToError()
-}
-func Sqrt64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Sqrt64f_I(Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsSqrt_64f_I(Npp64f * pSrcDst, nLength int32)).ToError()
-}
-func Sqrt32fc_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_32fc_I_Ctx(pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Sqrt32fc_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsSqrt_32fc_I(pSrcDst *Float32, nLength int32)).ToError()
-}
-func Sqrt64fc_I_Ctx(Npp64fc * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_64fc_I_Ctx(Npp64fc * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Sqrt64fc_I(Npp64fc * pSrcDst, nLength int32) error{
-  return status(C.nppsSqrt_64fc_I(Npp64fc * pSrcDst, nLength int32)).ToError()
-}
-func Sqrt8u_Sfs_Ctx(pSrc *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_8u_Sfs_Ctx(pSrc *Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt8u_Sfs(pSrc *Uint8, pDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_8u_Sfs(pSrc *Uint8, pDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt16u_Sfs_Ctx( pSrc *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_16u_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt16u_Sfs( pSrc *Uint16, pDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_16u_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt16s_Sfs_Ctx( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt16s_Sfs( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt16sc_Sfs( Npp16sc * pSrc, Npp16sc * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_16sc_Sfs( Npp16sc * pSrc, Npp16sc * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt64s_Sfs_Ctx( Npp64s * pSrc, Npp64s * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_64s_Sfs_Ctx( Npp64s * pSrc, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt64s_Sfs( Npp64s * pSrc, Npp64s * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_64s_Sfs( Npp64s * pSrc, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt32s16s_Sfs_Ctx( pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_32s16s_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt32s16s_Sfs( pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_32s16s_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt64s16s_Sfs_Ctx( Npp64s * pSrc, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_64s16s_Sfs_Ctx( Npp64s * pSrc, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt64s16s_Sfs( Npp64s * pSrc, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_64s16s_Sfs( Npp64s * pSrc, pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt8u_ISfs_Ctx(pSrcDst *Uint8, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_8u_ISfs_Ctx(pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt8u_ISfs(pSrcDst *Uint8, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_8u_ISfs(pSrcDst *Uint8, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt16u_ISfs_Ctx(pSrcDst *Uint16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_16u_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt16u_ISfs(pSrcDst *Uint16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_16u_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt16s_ISfs_Ctx(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt16s_ISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt16sc_ISfs_Ctx(Npp16sc * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_16sc_ISfs_Ctx(Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt16sc_ISfs(Npp16sc * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_16sc_ISfs(Npp16sc * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Sqrt64s_ISfs_Ctx(Npp64s * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsSqrt_64s_ISfs_Ctx(Npp64s * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Sqrt64s_ISfs(Npp64s * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsSqrt_64s_ISfs(Npp64s * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Cubrt32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsCubrt_32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Cubrt32f( pSrc *Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsCubrt_32f( pSrc *Float32, pDst *Float32, nLength int32)).ToError()
-}
-func Cubrt32s16s_Sfs_Ctx( pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsCubrt_32s16s_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Cubrt32s16s_Sfs( pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsCubrt_32s16s_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Exp32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsExp_32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Exp32f( pSrc *Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsExp_32f( pSrc *Float32, pDst *Float32, nLength int32)).ToError()
-}
-func Exp64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsExp_64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx.c())).ToError()
-}
-func Exp64f( Npp64f * pSrc, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsExp_64f( Npp64f * pSrc, Npp64f * pDst, nLength int32)).ToError()
-}
-func Exp32f64f_Ctx( pSrc *Float32, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsExp_32f64f_Ctx( pSrc *Float32, Npp64f * pDst, nLength int32, ctx.c())).ToError()
-}
-func Exp32f64f( pSrc *Float32, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsExp_32f64f( pSrc *Float32, Npp64f * pDst, nLength int32)).ToError()
-}
-func Exp32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsExp_32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Exp32f_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsExp_32f_I(pSrcDst *Float32, nLength int32)).ToError()
-}
-func Exp64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsExp_64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Exp64f_I(Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsExp_64f_I(Npp64f * pSrcDst, nLength int32)).ToError()
-}
-func Exp16s_Sfs_Ctx( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsExp_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Exp16s_Sfs( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsExp_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Exp32s_Sfs_Ctx( pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsExp_32s_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Exp32s_Sfs( pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsExp_32s_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Exp64s_Sfs_Ctx( Npp64s * pSrc, Npp64s * pDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsExp_64s_Sfs_Ctx( Npp64s * pSrc, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Exp64s_Sfs( Npp64s * pSrc, Npp64s * pDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsExp_64s_Sfs( Npp64s * pSrc, Npp64s * pDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Exp16s_ISfs_Ctx(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsExp_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Exp16s_ISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsExp_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Exp32s_ISfs_Ctx(pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsExp_32s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Exp32s_ISfs(pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsExp_32s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Exp64s_ISfs_Ctx(Npp64s * pSrcDst, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsExp_64s_ISfs_Ctx(Npp64s * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Exp64s_ISfs(Npp64s * pSrcDst, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsExp_64s_ISfs(Npp64s * pSrcDst, (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Ln32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLn_32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Ln32f( pSrc *Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsLn_32f( pSrc *Float32, pDst *Float32, nLength int32)).ToError()
-}
-func Ln64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLn_64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx.c())).ToError()
-}
-func Ln64f( Npp64f * pSrc, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsLn_64f( Npp64f * pSrc, Npp64f * pDst, nLength int32)).ToError()
-}
-func Ln64f32f_Ctx( Npp64f * pSrc, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLn_64f32f_Ctx( Npp64f * pSrc, pDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Ln64f32f( Npp64f * pSrc, pDst *Float32, nLength int32) error{
-  return status(C.nppsLn_64f32f( Npp64f * pSrc, pDst *Float32, nLength int32)).ToError()
-}
-func Ln32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLn_32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx.c())).ToError()
-}
-func Ln32f_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsLn_32f_I(pSrcDst *Float32, nLength int32)).ToError()
-}
-func Ln64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLn_64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx.c())).ToError()
-}
-func Ln64f_I(Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsLn_64f_I(Npp64f * pSrcDst, nLength int32)).ToError()
-}
-func Ln16s_Sfs_Ctx( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsLn_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Ln16s_Sfs( pSrc *Int16, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsLn_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Ln32s_Sfs_Ctx( pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsLn_32s_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Ln32s_Sfs( pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsLn_32s_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Ln32s16s_Sfs_Ctx( pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsLn_32s16s_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Ln32s16s_Sfs( pSrc *Int32, pDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsLn_32s16s_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Ln16s_ISfs_Ctx(pSrcDst *Int16, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsLn_16s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Ln16s_ISfs(pSrcDst *Int16, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsLn_16s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func Ln32s_ISfs_Ctx(pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsLn_32s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Ln32s_ISfs(pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.nppsLn_32s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func TenLogTen32sSfs_Ctx( pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.npps10Log10_32s_Sfs_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func TenLogTen32sSfs( pSrc *Int32, pDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.npps10Log10_32s_Sfs( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func TenLogTen32sISfs_Ctx(pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.npps10Log10_32s_ISfs_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func TenLogTen32sISfs(pSrcDst *Int32, nLength int32, nScaleFactor int32) error{
-  return status(C.npps10Log10_32s_ISfs(pSrcDst.cptr(), (C.int)(nLength), (C.int)(nScaleFactor))).ToError()
-}
-func SumLnGetBufferSize32fCtx(nLength int32, int * hpBufferSize, ctx *StreamContext) error{
-  return status(C.nppsSumLnGetBufferSize_32f_Ctx((C.int)(nLength), int * hpBufferSize, ctx.c())).ToError()
-}
-func SumLnGetBufferSize32f(nLength int32, int * hpBufferSize) error{
-  return status(C.nppsSumLnGetBufferSize_32f((C.int)(nLength), int * hpBufferSize)).ToError()
-}
-func  SumLn32f_Ctx( pSrc *Float32, nLength int32, pDst *Float32, Npp8u * pDeviceBuffer, ctx *StreamContext) error{
-  return status(C.nppsSumLn_32f_Ctx( pSrc *Float32, (C.int)(nLength), pDst *Float32, Npp8u * pDeviceBuffer, ctx.c())).ToError()
-}
-func  SumLn32f( pSrc *Float32, nLength int32, pDst *Float32, Npp8u * pDeviceBuffer) error{
-  return status(C.nppsSumLn_32f( pSrc *Float32, (C.int)(nLength), pDst *Float32, Npp8u * pDeviceBuffer)).ToError()
-}
-func SumLnGetBufferSize_64f_Ctx(nLength int32, int * hpBufferSize, ctx *StreamContext) error{
-  return status(C.nppsSumLnGetBufferSize_64f_Ctx((C.int)(nLength), int * hpBufferSize, ctx.c())).ToError()
-}
-func SumLnGetBufferSize_64f(nLength int32, int * hpBufferSize) error{
-  return status(C.nppsSumLnGetBufferSize_64f((C.int)(nLength), int * hpBufferSize)).ToError()
-}
-func  SumLn64f_Ctx( Npp64f * pSrc, nLength int32, Npp64f * pDst, Npp8u * pDeviceBuffer, ctx *StreamContext) error{
-  return status(C.nppsSumLn_64f_Ctx( Npp64f * pSrc, (C.int)(nLength), Npp64f * pDst, Npp8u * pDeviceBuffer, ctx.c())).ToError()
-}
-func  SumLn64f( Npp64f * pSrc, nLength int32, Npp64f * pDst, Npp8u * pDeviceBuffer) error{
-  return status(C.nppsSumLn_64f( Npp64f * pSrc, (C.int)(nLength), Npp64f * pDst, Npp8u * pDeviceBuffer)).ToError()
-}
-func SumLnGetBufferSize_32f64f_Ctx(nLength int32, int * hpBufferSize, ctx *StreamContext) error{
-  return status(C.nppsSumLnGetBufferSize_32f64f_Ctx((C.int)(nLength), int * hpBufferSize, ctx.c())).ToError()
-}
-func SumLnGetBufferSize_32f64f(nLength int32, int * hpBufferSize) error{
-  return status(C.nppsSumLnGetBufferSize_32f64f((C.int)(nLength), int * hpBufferSize)).ToError()
-}
-func  SumLn32f64f_Ctx( pSrc *Float32, nLength int32, Npp64f * pDst, Npp8u * pDeviceBuffer, ctx *StreamContext) error{
-  return status(C.nppsSumLn_32f64f_Ctx( pSrc *Float32, (C.int)(nLength), Npp64f * pDst, Npp8u * pDeviceBuffer, ctx.c())).ToError()
-}
-func SumLn32f64f( pSrc *Float32, nLength int32, Npp64f * pDst, Npp8u * pDeviceBuffer) error{
-  return status(C.nppsSumLn_32f64f( pSrc *Float32, (C.int)(nLength), Npp64f * pDst, Npp8u * pDeviceBuffer)).ToError()
-}
-func SumLnGetBufferSize_16s32f_Ctx(nLength int32, int * hpBufferSize, ctx *StreamContext) error{
-  return status(C.nppsSumLnGetBufferSize_16s32f_Ctx((C.int)(nLength), int * hpBufferSize, ctx.c())).ToError()
-}
-func SumLnGetBufferSize_16s32f(nLength int32, int * hpBufferSize) error{
-  return status(C.nppsSumLnGetBufferSize_16s32f((C.int)(nLength), int * hpBufferSize)).ToError()
-}
-func SumLn16s32f_Ctx( pSrc *Int16, nLength int32, pDst *Float32, Npp8u * pDeviceBuffer, ctx *StreamContext) error{
-  return status(C.nppsSumLn_16s32f_Ctx(pSrc.cptr(), (C.int)(nLength), pDst *Float32, Npp8u * pDeviceBuffer, ctx.c())).ToError()
-}
-func SumLn16s32f( pSrc *Int16, nLength int32, pDst *Float32, Npp8u * pDeviceBuffer) error{
-  return status(C.nppsSumLn_16s32f(pSrc.cptr(), (C.int)(nLength), pDst *Float32, Npp8u * pDeviceBuffer)).ToError()
-}
-func  Arctan32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsArctan_32f_Ctx( pSrc *Float32, pDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func  Arctan32f( pSrc *Float32, pDst *Float32, nLength int32) error{
-  return status(C.nppsArctan_32f( pSrc *Float32, pDst *Float32, (C.int)(nLength))).ToError()
-}
-func  Arctan64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsArctan_64f_Ctx( Npp64f * pSrc, Npp64f * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func  Arctan64f( Npp64f * pSrc, Npp64f * pDst, nLength int32) error{
-  return status(C.nppsArctan_64f( Npp64f * pSrc, Npp64f * pDst, (C.int)(nLength))).ToError()
-}
-func  Arctan32f_I_Ctx(pSrcDst *Float32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsArctan_32f_I_Ctx(pSrcDst *Float32, (C.int)(nLength), ctx.c())).ToError()
-}
-func  Arctan32f_I(pSrcDst *Float32, nLength int32) error{
-  return status(C.nppsArctan_32f_I(pSrcDst *Float32, (C.int)(nLength))).ToError()
-}
-func  Arctan64f_I_Ctx(Npp64f * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsArctan_64f_I_Ctx(Npp64f * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func  Arctan64f_I(Npp64f * pSrcDst, nLength int32) error{
-  return status(C.nppsArctan_64f_I(Npp64f * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Normalize32f_Ctx( pSrc *Float32, pDst *Float32, nLength int32, Npp32f vSub, Npp32f vDiv, ctx *StreamContext) error{
-  return status(C.nppsNormalize_32f_Ctx( pSrc *Float32, pDst *Float32, (C.int)(nLength), Npp32f vSub, Npp32f vDiv, ctx.c())).ToError()
-}
-func Normalize32f( pSrc *Float32, pDst *Float32, nLength int32, Npp32f vSub, Npp32f vDiv) error{
-  return status(C.nppsNormalize_32f( pSrc *Float32, pDst *Float32, (C.int)(nLength), Npp32f vSub, Npp32f vDiv)).ToError()
-}
-func Normalize32fc_Ctx( pSrc *Float32Complex, pDst *Float32Complex, nLength int32, Npp32fc vSub, Npp32f vDiv, ctx *StreamContext) error{
-  return status(C.nppsNormalize_32fc_Ctx( pSrc *Float32Complex, pDst.cptr(), (C.int)(nLength), Npp32fc vSub, Npp32f vDiv, ctx.c())).ToError()
-}
-func Normalize32fc( pSrc *Float32Complex, pDst *Float32Complex, nLength int32, Npp32fc vSub, Npp32f vDiv) error{
-  return status(C.nppsNormalize_32fc( pSrc *Float32Complex, pDst.cptr(), (C.int)(nLength), Npp32fc vSub, Npp32f vDiv)).ToError()
-}
-func Normalize64f_Ctx( Npp64f * pSrc, Npp64f * pDst, nLength int32, Npp64f vSub, Npp64f vDiv, ctx *StreamContext) error{
-  return status(C.nppsNormalize_64f_Ctx( Npp64f * pSrc, Npp64f * pDst, (C.int)(nLength), Npp64f vSub, Npp64f vDiv, ctx.c())).ToError()
-}
-func Normalize64f( Npp64f * pSrc, Npp64f * pDst, nLength int32, Npp64f vSub, Npp64f vDiv) error{
-  return status(C.nppsNormalize_64f( Npp64f * pSrc, Npp64f * pDst, (C.int)(nLength), Npp64f vSub, Npp64f vDiv)).ToError()
-}
-func Normalize64fc_Ctx( Npp64fc * pSrc, Npp64fc * pDst, nLength int32, Npp64fc vSub, Npp64f vDiv, ctx *StreamContext) error{
-  return status(C.nppsNormalize_64fc_Ctx( Npp64fc * pSrc, Npp64fc * pDst, (C.int)(nLength), Npp64fc vSub, Npp64f vDiv, ctx.c())).ToError()
-}
-func Normalize64fc( Npp64fc * pSrc, Npp64fc * pDst, nLength int32, Npp64fc vSub, Npp64f vDiv) error{
-  return status(C.nppsNormalize_64fc( Npp64fc * pSrc, Npp64fc * pDst, (C.int)(nLength), Npp64fc vSub, Npp64f vDiv)).ToError()
-}
-func Normalize16s_Sfs_Ctx( pSrc *Int16, pDst *Int16, nLength int32, Npp16s vSub, int vDiv, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsNormalize_16s_Sfs_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), Npp16s vSub, int vDiv, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Normalize16s_Sfs( pSrc *Int16, pDst *Int16, nLength int32, Npp16s vSub, int vDiv, nScaleFactor int32) error{
-  return status(C.nppsNormalize_16s_Sfs(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), Npp16s vSub, int vDiv, (C.int)(nScaleFactor))).ToError()
-}
-func Normalize16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc * pDst, nLength int32, Npp16sc vSub, int vDiv, nScaleFactor int32, ctx *StreamContext) error{
-  return status(C.nppsNormalize_16sc_Sfs_Ctx( Npp16sc * pSrc, Npp16sc * pDst, (C.int)(nLength), Npp16sc vSub, int vDiv, (C.int)(nScaleFactor), ctx.c())).ToError()
-}
-func Normalize16sc_Sfs( Npp16sc * pSrc, Npp16sc * pDst, nLength int32, Npp16sc vSub, int vDiv, nScaleFactor int32) error{
-  return status(C.nppsNormalize_16sc_Sfs( Npp16sc * pSrc, Npp16sc * pDst, (C.int)(nLength), Npp16sc vSub, int vDiv, (C.int)(nScaleFactor))).ToError()
-}
-func Cauchy32fI_Ctx(pSrcDst *Float32, nLength int32, Npp32f nParam, ctx *StreamContext) error{
-  return status(C.nppsCauchy_32f_I_Ctx(pSrcDst *Float32, (C.int)(nLength), Npp32f nParam, ctx.c())).ToError()
-}
-func Cauchy32fI(pSrcDst *Float32, nLength int32, Npp32f nParam) error{
-  return status(C.nppsCauchy_32f_I(pSrcDst *Float32, (C.int)(nLength), Npp32f nParam)).ToError()
-}
-func CauchyD32fI_Ctx(pSrcDst *Float32, nLength int32, Npp32f nParam, ctx *StreamContext) error{
-  return status(C.nppsCauchyD_32f_I_Ctx(pSrcDst *Float32, (C.int)(nLength), Npp32f nParam, ctx.c())).ToError()
-}
-func CauchyD32fI(pSrcDst *Float32, nLength int32, Npp32f nParam) error{
-  return status(C.nppsCauchyD_32f_I(pSrcDst *Float32, (C.int)(nLength), Npp32f nParam)).ToError()
-}
-func CauchyDD232fICtx(pSrcDst *Float32, Npp32f * pD2FVal, nLength int32, Npp32f nParam, ctx *StreamContext) error{
-  return status(C.nppsCauchyDD2_32f_I_Ctx(pSrcDst *Float32, Npp32f * pD2FVal, (C.int)(nLength), Npp32f nParam, ctx.c())).ToError()
-}
-func CauchyDD232fI(pSrcDst *Float32, Npp32f * pD2FVal, nLength int32, Npp32f nParam) error{
-  return status(C.nppsCauchyDD2_32f_I(pSrcDst *Float32, Npp32f * pD2FVal, (C.int)(nLength), Npp32f nParam)).ToError()
-}
-func AndC8uCtx(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAndC_8u_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func AndC8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32) error{
-  return status(C.nppsAndC_8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func AndC16u_Ctx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAndC_16u_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func AndC16u( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsAndC_16u( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func AndC32u_Ctx( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAndC_32u_Ctx( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AndC32u( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsAndC_32u( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func AndC8u_I_Ctx(nValue Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAndC_8u_I_Ctx(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func AndC8u_I(nValue Uint8, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsAndC_8u_I(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func AndC16u_I_Ctx(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAndC_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func AndC16u_I(nValue Uint16, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsAndC_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func AndC32u_I_Ctx(Npp32u nValue, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAndC_32u_I_Ctx(Npp32u nValue, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func AndC32u_I(Npp32u nValue, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsAndC_32u_I(Npp32u nValue, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func And8u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAnd_8u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func And8u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32) error{
-  return status(C.nppsAnd_8u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func And16u_Ctx( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAnd_16u_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func And16u( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsAnd_16u( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func And32u_Ctx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAnd_32u_Ctx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func And32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsAnd_32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func And8u_I_Ctx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAnd_8u_I_Ctx(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func And8u_I(pSrc *Uint8, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsAnd_8u_I(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func And16u_I_Ctx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAnd_16u_I_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func And16u_I( pSrc *Uint16, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsAnd_16u_I( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func And32u_I_Ctx( Npp32u * pSrc, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsAnd_32u_I_Ctx( Npp32u * pSrc, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func And32u_I( Npp32u * pSrc, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsAnd_32u_I( Npp32u * pSrc, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func OrC8u_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOrC_8u_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func OrC8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32) error{
-  return status(C.nppsOrC_8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func OrC16u_Ctx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOrC_16u_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func OrC16u( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsOrC_16u( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func OrC32u_Ctx( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOrC_32u_Ctx( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func OrC32u( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsOrC_32u( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func OrC8u_I_Ctx(nValue Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOrC_8u_I_Ctx(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func OrC8u_I(nValue Uint8, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsOrC_8u_I(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func OrC16u_I_Ctx(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOrC_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func OrC16u_I(nValue Uint16, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsOrC_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func OrC32u_I_Ctx(Npp32u nValue, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOrC_32u_I_Ctx(Npp32u nValue, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func OrC32u_I(Npp32u nValue, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsOrC_32u_I(Npp32u nValue, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Or8u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOr_8u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func Or8u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32) error{
-  return status(C.nppsOr_8u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func Or16u_Ctx( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOr_16u_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Or16u( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsOr_16u( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Or32u_Ctx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOr_32u_Ctx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Or32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsOr_32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func Or8u_I_Ctx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOr_8u_I_Ctx(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func Or8u_I(pSrc *Uint8, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsOr_8u_I(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func Or16u_I_Ctx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOr_16u_I_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Or16u_I( pSrc *Uint16, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsOr_16u_I( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Or32u_I_Ctx( Npp32u * pSrc, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsOr_32u_I_Ctx( Npp32u * pSrc, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Or32u_I( Npp32u * pSrc, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsOr_32u_I( Npp32u * pSrc, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func XorC8u_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXorC_8u_Ctx(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func XorC8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, nLength int32) error{
-  return status(C.nppsXorC_8u(pSrc *Uint8, nValue Uint8, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func XorC16u_Ctx( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXorC_16u_Ctx( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func XorC16u( pSrc *Uint16, nValue Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsXorC_16u( pSrc.cptr(), nValue.c(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func XorC32u_Ctx( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXorC_32u_Ctx( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func XorC32u( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsXorC_32u( Npp32u * pSrc, Npp32u nValue, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func XorC8u_I_Ctx(nValue Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXorC_8u_I_Ctx(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func XorC8u_I(nValue Uint8, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsXorC_8u_I(nValue Uint8, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func XorC16u_I_Ctx(nValue Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXorC_16u_I_Ctx(nValue.c(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func XorC16u_I(nValue Uint16, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsXorC_16u_I(nValue.c(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func XorC32u_I_Ctx(Npp32u nValue, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXorC_32u_I_Ctx(Npp32u nValue, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func XorC32u_I(Npp32u nValue, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsXorC_32u_I(Npp32u nValue, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Xor8u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXor_8u_Ctx(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func Xor8u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, nLength int32) error{
-  return status(C.nppsXor_8u(pSrc *Uint81,Npp8u * pSrc2, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func Xor16u_Ctx( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXor_16u_Ctx( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Xor16u( pSrc1,pSrc2 *Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsXor_16u( pSrc1.cptr(),pSrc2.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Xor32u_Ctx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXor_32u_Ctx( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Xor32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsXor_32u( Npp32u * pSrc1,Npp32u * pSrc2, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func Xor8u_I_Ctx(pSrc *Uint8, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXor_8u_I_Ctx(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func Xor8u_I(pSrc *Uint8, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsXor_8u_I(pSrc *Uint8, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func Xor16u_I_Ctx( pSrc *Uint16, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXor_16u_I_Ctx( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Xor16u_I( pSrc *Uint16, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsXor_16u_I( pSrc.cptr(), pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Xor32u_I_Ctx( Npp32u * pSrc, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsXor_32u_I_Ctx( Npp32u * pSrc, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Xor32u_I( Npp32u * pSrc, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsXor_32u_I( Npp32u * pSrc, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func Not8u_Ctx(pSrc *Uint8, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsNot_8u_Ctx(pSrc *Uint8, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func Not8u(pSrc *Uint8, pDst *Uint8, nLength int32) error{
-  return status(C.nppsNot_8u(pSrc *Uint8, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func Not16u_Ctx( pSrc *Uint16, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsNot_16u_Ctx( pSrc.cptr(), pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Not16u( pSrc *Uint16, pDst *Uint16, nLength int32) error{
-  return status(C.nppsNot_16u( pSrc.cptr(), pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Not32u_Ctx( Npp32u * pSrc, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsNot_32u_Ctx( Npp32u * pSrc, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Not32u( Npp32u * pSrc, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsNot_32u( Npp32u * pSrc, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func Not8u_I_Ctx(pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsNot_8u_I_Ctx(pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func Not8u_I(pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsNot_8u_I(pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func Not16u_I_Ctx(pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsNot_16u_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func Not16u_I(pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsNot_16u_I(pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func Not32u_I_Ctx(Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsNot_32u_I_Ctx(Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func Not32u_I(Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsNot_32u_I(Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func LShiftC8u_Ctx(pSrc *Uint8, int nValue, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_8u_Ctx(pSrc *Uint8, int nValue, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC8u(pSrc *Uint8, int nValue, pDst *Uint8, nLength int32) error{
-  return status(C.nppsLShiftC_8u(pSrc *Uint8, int nValue, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func LShiftC16u_Ctx( pSrc *Uint16, int nValue, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_16u_Ctx( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC16u( pSrc *Uint16, int nValue, pDst *Uint16, nLength int32) error{
-  return status(C.nppsLShiftC_16u( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func LShiftC16s_Ctx( pSrc *Int16, int nValue, pDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_16s_Ctx(pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC16s( pSrc *Int16, int nValue, pDst *Int16, nLength int32) error{
-  return status(C.nppsLShiftC_16s(pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func LShiftC32u_Ctx( Npp32u * pSrc, int nValue, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_32u_Ctx( Npp32u * pSrc, int nValue, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC32u( Npp32u * pSrc, int nValue, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsLShiftC_32u( Npp32u * pSrc, int nValue, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func LShiftC32s_Ctx( pSrc *Int32, int nValue, pDst *Int32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_32s_Ctx( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC32s( pSrc *Int32, int nValue, pDst *Int32, nLength int32) error{
-  return status(C.nppsLShiftC_32s( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func LShiftC8u_I_Ctx(int nValue, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_8u_I_Ctx(int nValue, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC8u_I(int nValue, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsLShiftC_8u_I(int nValue, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func LShiftC16u_I_Ctx(int nValue, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_16u_I_Ctx(int nValue, pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC16u_I(int nValue, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsLShiftC_16u_I(int nValue, pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func LShiftC16s_I_Ctx(int nValue, pSrcDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_16s_I_Ctx(int nValue, pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC16s_I(int nValue, pSrcDst *Int16, nLength int32) error{
-  return status(C.nppsLShiftC_16s_I(int nValue, pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func LShiftC32u_I_Ctx(int nValue, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_32u_I_Ctx(int nValue, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC32u_I(int nValue, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsLShiftC_32u_I(int nValue, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func LShiftC32s_I_Ctx(int nValue, pSrcDst *Int32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsLShiftC_32s_I_Ctx(int nValue, pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func LShiftC32s_I(int nValue, pSrcDst *Int32, nLength int32) error{
-  return status(C.nppsLShiftC_32s_I(int nValue, pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func RShiftC8u_Ctx(pSrc *Uint8, int nValue, pDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_8u_Ctx(pSrc *Uint8, int nValue, pDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC8u(pSrc *Uint8, int nValue, pDst *Uint8, nLength int32) error{
-  return status(C.nppsRShiftC_8u(pSrc *Uint8, int nValue, pDst *Uint8, (C.int)(nLength))).ToError()
-}
-func RShiftC16u_Ctx( pSrc *Uint16, int nValue, pDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_16u_Ctx( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC16u( pSrc *Uint16, int nValue, pDst *Uint16, nLength int32) error{
-  return status(C.nppsRShiftC_16u( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func RShiftC16s_Ctx( pSrc *Int16, int nValue, pDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_16s_Ctx(pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC16s( pSrc *Int16, int nValue, pDst *Int16, nLength int32) error{
-  return status(C.nppsRShiftC_16s(pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func RShiftC32u_Ctx( Npp32u * pSrc, int nValue, Npp32u * pDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_32u_Ctx( Npp32u * pSrc, int nValue, Npp32u * pDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC32u( Npp32u * pSrc, int nValue, Npp32u * pDst, nLength int32) error{
-  return status(C.nppsRShiftC_32u( Npp32u * pSrc, int nValue, Npp32u * pDst, (C.int)(nLength))).ToError()
-}
-func RShiftC32s_Ctx( pSrc *Int32, int nValue, pDst *Int32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_32s_Ctx( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC32s( pSrc *Int32, int nValue, pDst *Int32, nLength int32) error{
-  return status(C.nppsRShiftC_32s( pSrc.cptr(), int nValue, pDst.cptr(), (C.int)(nLength))).ToError()
-}
-func RShiftC8u_I_Ctx(int nValue, pSrcDst *Uint8, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_8u_I_Ctx(int nValue, pSrcDst *Uint8, (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC8u_I(int nValue, pSrcDst *Uint8, nLength int32) error{
-  return status(C.nppsRShiftC_8u_I(int nValue, pSrcDst *Uint8, (C.int)(nLength))).ToError()
-}
-func RShiftC16u_I_Ctx(int nValue, pSrcDst *Uint16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_16u_I_Ctx(int nValue, pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC16u_I(int nValue, pSrcDst *Uint16, nLength int32) error{
-  return status(C.nppsRShiftC_16u_I(int nValue, pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func RShiftC16s_I_Ctx(int nValue, pSrcDst *Int16, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_16s_I_Ctx(int nValue, pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC16s_I(int nValue, pSrcDst *Int16, nLength int32) error{
-  return status(C.nppsRShiftC_16s_I(int nValue, pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-func RShiftC32u_I_Ctx(int nValue, Npp32u * pSrcDst, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_32u_I_Ctx(int nValue, Npp32u * pSrcDst, (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC32u_I(int nValue, Npp32u * pSrcDst, nLength int32) error{
-  return status(C.nppsRShiftC_32u_I(int nValue, Npp32u * pSrcDst, (C.int)(nLength))).ToError()
-}
-func RShiftC32s_I_Ctx(int nValue, pSrcDst *Int32, nLength int32, ctx *StreamContext) error{
-  return status(C.nppsRShiftC_32s_I_Ctx(int nValue, pSrcDst.cptr(), (C.int)(nLength), ctx.c())).ToError()
-}
-func RShiftC32s_I(int nValue, pSrcDst *Int32, nLength int32) error{
-  return status(C.nppsRShiftC_32s_I(int nValue, pSrcDst.cptr(), (C.int)(nLength))).ToError()
-}
-*/
