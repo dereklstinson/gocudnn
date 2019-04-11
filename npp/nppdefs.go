@@ -859,6 +859,8 @@ typedef struct NPP_ALIGN_16
 //Point is a 2d point
 type Point C.NppiPoint
 
+func (p Point) c() C.NppiPoint { return (C.NppiPoint)(p) }
+
 //Set sets the Point
 func (n *Point) Set(x, y int32) {
 	n.x = (C.int)(x)
@@ -880,6 +882,8 @@ typedef struct
 
 //PolarPoint is a 2D Polar Point
 type PolarPoint C.NppPointPolar
+
+func (p PolarPoint) c() C.NppPointPolar { return (C.NppPointPolar)(p) }
 
 //Set sets the polar cordinates
 func (n *PolarPoint) Set(rho, theta Float32) {
@@ -1308,11 +1312,13 @@ func (h *HuffmanTableType) ACTable() HuffmanTableType { *h = HuffmanTableType(C.
 //Norm is used for norm flags where needed Norm will return flags through methods
 type Norm C.NppiNorm
 
+func (n Norm) c() C.NppiNorm { return C.NppiNorm(n) }
+
 //Inf maximum
-func (n Norm) Inf() Norm { return Norm(C.nppiNormInf) }
+func (n *Norm) Inf() Norm { *n = Norm(C.nppiNormInf); return *n }
 
 //L1 sum
-func (n Norm) L1() Norm { return Norm(C.nppiNormL1) }
+func (n *Norm) L1() Norm { *n = Norm(C.nppiNormL1); return *n }
 
 //L2 square root of sum of squares
-func (n Norm) L2() Norm { return Norm(C.nppiNormL2) }
+func (n *Norm) L2() Norm { *n = Norm(C.nppiNormL2); return *n }
