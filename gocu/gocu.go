@@ -1,7 +1,9 @@
 //Package gocu contains common interfaces to allow the different cuda packages/libraries to intermix with each other and with go.
 package gocu
 
-//#include <cuda.h>
+/*
+#include <cuda.h>
+*/
 import "C"
 import (
 	"unsafe"

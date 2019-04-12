@@ -75,6 +75,17 @@ func (c *ConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, dil
 	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, c.dims, &cpad[0], &cstride[0], &cdilation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
 
 }
+func Dostuff(s Setter, g Getter) error {
+	a, b, c, d, e, _ := g.Get()
+	return s.Set(a, b, c, d, e)
+}
+
+type Setter interface {
+	Set(mod ConvolutionMode, data DataType, pad, stride, dilation []int32) error
+}
+type Getter interface {
+	Get() (mode ConvolutionMode, data DataType, pad []int32, stride []int32, dilation []int32, err error)
+}
 
 //Get gets returns the values used to make the convolution descriptor
 func (c *ConvolutionD) Get() (mode ConvolutionMode, data DataType, pad []int32, stride []int32, dilation []int32, err error) {
