@@ -859,7 +859,10 @@ typedef struct NPP_ALIGN_16
 //Point is a 2d point
 type Point C.NppiPoint
 
-func (p Point) c() C.NppiPoint { return (C.NppiPoint)(p) }
+func (n Point) c() C.NppiPoint { return (C.NppiPoint)(n) }
+func (n *Point) cptr() *C.NppiPoint {
+	return (*C.NppiPoint)(n)
+}
 
 //Set sets the Point
 func (n *Point) Set(x, y int32) {
@@ -883,7 +886,8 @@ typedef struct
 //PolarPoint is a 2D Polar Point
 type PolarPoint C.NppPointPolar
 
-func (p PolarPoint) c() C.NppPointPolar { return (C.NppPointPolar)(p) }
+func (n PolarPoint) c() C.NppPointPolar      { return (C.NppPointPolar)(n) }
+func (n *PolarPoint) cptr() *C.NppPointPolar { return (*C.NppPointPolar)(n) }
 
 //Set sets the polar cordinates
 func (n *PolarPoint) Set(rho, theta Float32) {
