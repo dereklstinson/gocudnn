@@ -14,16 +14,14 @@ import (
 //Since nvjpeg contains a function that requires a gocu.Allocator
 type MemManager struct {
 	s      *Stream
-	d      *Device
+	d      Device
 	flg    MemcpyKind
 	onhost bool
 }
 
 //CreateAllocator creates an allocator that is bounded to cudas unified memory management.
-func CreateAllocator(s *Stream, d *Device) (*MemManager, error) {
-	if d == nil || s == nil {
-		return nil, errors.New("Device || Streamer cannot cannot be nil")
-	}
+func CreateAllocator(s *Stream, d Device) (*MemManager, error) {
+
 	major, err := d.Major()
 	if err != nil {
 		return nil, err

@@ -86,7 +86,9 @@ func CreateBlockingPriorityStream(priority int32) (*Stream, error) {
 
 //Sync Syncronizes the stream
 func (s *Stream) Sync() error {
-
+	if s == nil {
+		return newErrorRuntime("Sync", C.cudaStreamSynchronize(nil))
+	}
 	return newErrorRuntime("Sync", C.cudaStreamSynchronize(s.stream))
 }
 
