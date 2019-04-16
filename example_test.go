@@ -1,6 +1,7 @@
 package gocudnn_test
 
 import (
+	"fmt"
 	"runtime"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
@@ -18,6 +19,7 @@ func ExampleActivationD() {
 			panic(e)
 		}
 	}
+
 	h := gocudnn.CreateHandle(true) //Using go garbage collector
 
 	ActOp, err := gocudnn.CreateActivationDescriptor()
@@ -51,12 +53,15 @@ func ExampleTensorD() {
 			panic(e)
 		}
 	}
+	//Creating a blocking stream
+	cs, err := cudart.CreateBlockingStream()
+	check(err)
 	//Create Device
 	dev, err := cudart.CreateDevice(1)
 	check(err)
 
 	//Make an Allocator
-	allocator, err := cudart.CreateAllocator(nil, dev) //Using nil stream.  Check out cudart package on more about streams
+	allocator, err := cudart.CreateAllocator(cs, dev) //cs could be nil .  Check out cudart package on more about streams
 	check(err)
 
 	//Tensor
@@ -66,14 +71,14 @@ func ExampleTensorD() {
 	xD, err := gocudnn.CreateTensorDescriptor()
 
 	// Setting Tensor
-	err = xD.Set(tflg.NCHW(), dtflg.Float(), []int32{20, 3, 256, 256}, nil)
+	err = xD.Set(tflg.NCHW(), dtflg.Float(), []int32{20, 1, 1, 1}, nil)
 	check(err)
 
 	//Gets SIB for tensor memory on device
 	xSIB, err := xD.GetSizeInBytes()
 	check(err)
 
-	//Allocating memory to device and returning pointers
+	//Allocating memory to device and returning pointer to device memory
 	x, err := allocator.Malloc(xSIB)
 
 	//Create some host mem to copy to cuda memory
@@ -86,9 +91,25 @@ func ExampleTensorD() {
 	hostptr, err := gocu.MakeGoMem(hostmem)
 
 	//Copy hostmem to x
-	allocator.Copy(x, hostptr, xSIB)
+	allocator.Copy(x, hostptr, xSIB) // This allocotor syncs the cuda stream after every copy.
+	// You can make your own custom one. This was a default one
+	// to help others get going. Some "extra" functions beyond the api
+	// require an allocator.
+
+	//if not using an allocator sync the stream before changing the host mem right after a mem copy.  It could cause problems.
+	err = cs.Sync()
+	check(err)
+
+	//Zero out the golang host mem.
+	for i := range hostmem {
+		hostmem[i] = float32(0)
+	}
 
 	//do some tensor stuff can return vals to host mem by doing another copy
 	allocator.Copy(hostptr, x, xSIB)
+
 	check(err)
+	fmt.Println(hostmem)
+	//Output: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+
 }
