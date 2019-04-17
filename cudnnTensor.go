@@ -8,6 +8,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -223,8 +224,6 @@ func destroytensordescriptor(t *TensorD) error {
 
 }
 
-//TensorFuncs is used to call functions for tensors usually the are functions that pass the Handle Type
-
 //TransformTensor see below
 /*
 From the SDK Documentation:
@@ -245,12 +244,27 @@ cudnnStatus_t cudnnTransformTensor(
 y = Transfomr((alpha *x),(beta * y))
 This will change the layout of a tensor stride wise
 */
-func TransformTensor(h *Handle, alpha float64, tx *TensorD, x gocu.Mem, beta float64, ty *TensorD, y gocu.Mem) error {
+func TransformTensor(h *Handle,
+	alpha float64,
+	xD *TensorD, x gocu.Mem,
+	beta float64,
+	yD *TensorD, y gocu.Mem) error {
 
 	var s Status
-	a := cscalarbydatatype(ty.dtype, alpha)
-	b := cscalarbydatatype(ty.dtype, beta)
-	s = Status(C.cudnnTransformTensor(h.x, a.CPtr(), tx.descriptor, x.Ptr(), b.CPtr(), ty.descriptor, y.Ptr()))
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	s = Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr()))
+
+	return s.error("TransformTensor")
+}
+
+//TransformTensorUS is like TransformTensor but it uses unsafe.Pointer instead of gocu.Mem
+func TransformTensorUS(h *Handle, alpha float64, xD *TensorD, x unsafe.Pointer, beta float64, yD *TensorD, y unsafe.Pointer) error {
+
+	var s Status
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	s = Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y))
 
 	return s.error("TransformTensor")
 }
@@ -271,19 +285,41 @@ func AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, beta float64, 
 	return s.error("AddTensor")
 }
 
+//AddTensorUS is like AddTensor but uses unsafe.Pointer instead of gocu.Mem
+func AddTensorUS(h *Handle, alpha float64, aD *TensorD, A unsafe.Pointer, beta float64, cD *TensorD, c unsafe.Pointer) error {
+	a := cscalarbydatatype(aD.dtype, alpha)
+	b := cscalarbydatatype(aD.dtype, beta)
+	s := Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A, b.CPtr(), cD.descriptor, c))
+
+	return s.error("AddTensor")
+}
+
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-//
 func ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha float64) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), a.CPtr())).error("ScaleTensor")
 }
 
+//ScaleTensorUS is like ScaleTensor but it uses unsafe.Pointer instead of gocu.Mem
+func ScaleTensorUS(h *Handle, yD *TensorD, y unsafe.Pointer, alpha float64) error {
+	a := cscalarbydatatype(yD.dtype, alpha)
+	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y, a.CPtr())).error("ScaleTensor")
+}
+
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-//v is type casted to the correct type within function
 func SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
 
 	vc := cscalarbydatatypeforsettensor(yD.dtype, v)
 	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), vc.CPtr())
+
+	return Status(x).error("SetTensor")
+}
+
+//SetTensorUS is like SetTensor but it uses unsafe.Pointer instead of gocu.Mem
+func SetTensorUS(h *Handle, yD *TensorD, y unsafe.Pointer, v float64) error {
+
+	vc := cscalarbydatatypeforsettensor(yD.dtype, v)
+	x := C.cudnnSetTensor(h.x, yD.descriptor, y, vc.CPtr())
 
 	return Status(x).error("SetTensor")
 }

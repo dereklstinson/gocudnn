@@ -8,6 +8,7 @@ import (
 	"errors"
 	"runtime"
 	"strconv"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -115,11 +116,9 @@ func (l *LRND) LRNCrossChannelForward(
 	handle *Handle,
 	mode LRNmode,
 	alpha float64,
-	xD *TensorD,
-	x gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	beta float64,
-	yD *TensorD,
-	y gocu.Mem,
+	yD *TensorD, y gocu.Mem,
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
@@ -128,11 +127,31 @@ func (l *LRND) LRNCrossChannelForward(
 		l.descriptor,
 		mode.c(),
 		a.CPtr(),
-		xD.descriptor,
-		x.Ptr(),
+		xD.descriptor, x.Ptr(),
 		b.CPtr(),
-		yD.descriptor,
-		y.Ptr(),
+		yD.descriptor, y.Ptr(),
+	)).error("LRNCrossChannelForward")
+}
+
+//LRNCrossChannelForwardUS is like LRNCrossChannelForward but using unsafe.Pointer instead of gocu.Mem
+func (l *LRND) LRNCrossChannelForwardUS(
+	handle *Handle,
+	mode LRNmode,
+	alpha float64,
+	xD *TensorD, x unsafe.Pointer,
+	beta float64,
+	yD *TensorD, y unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnLRNCrossChannelForward(
+		handle.x,
+		l.descriptor,
+		mode.c(),
+		a.CPtr(),
+		xD.descriptor, x,
+		b.CPtr(),
+		yD.descriptor, y,
 	)).error("LRNCrossChannelForward")
 }
 
@@ -141,15 +160,11 @@ func (l *LRND) LRNCrossChannelBackward(
 	handle *Handle,
 	mode LRNmode,
 	alpha float64,
-	yD *TensorD,
-	y gocu.Mem,
-	dyD *TensorD,
-	dy gocu.Mem,
-	xD *TensorD,
-	x gocu.Mem,
+	yD *TensorD, y gocu.Mem,
+	dyD *TensorD, dy gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	beta float64,
-	dxD *TensorD,
-	dx gocu.Mem,
+	dxD *TensorD, dx gocu.Mem,
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
@@ -158,15 +173,37 @@ func (l *LRND) LRNCrossChannelBackward(
 		l.descriptor,
 		mode.c(),
 		a.CPtr(),
-		yD.descriptor,
-		y.Ptr(),
-		dyD.descriptor,
-		dy.Ptr(),
-		xD.descriptor,
-		x.Ptr(),
+		yD.descriptor, y.Ptr(),
+		dyD.descriptor, dy.Ptr(),
+		xD.descriptor, x.Ptr(),
 		b.CPtr(),
-		dxD.descriptor,
-		dx.Ptr(),
+		dxD.descriptor, dx.Ptr(),
+	)).error("LRNCrossChannelForward")
+}
+
+//LRNCrossChannelBackwardUS is like LRNCrossChannelBackward but using unsafe.Pointer instead of gocu.Mem
+func (l *LRND) LRNCrossChannelBackwardUS(
+	handle *Handle,
+	mode LRNmode,
+	alpha float64,
+	yD *TensorD, y unsafe.Pointer,
+	dyD *TensorD, dy unsafe.Pointer,
+	xD *TensorD, x unsafe.Pointer,
+	beta float64,
+	dxD *TensorD, dx unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(dyD.dtype, alpha)
+	b := cscalarbydatatype(dyD.dtype, beta)
+	return Status(C.cudnnLRNCrossChannelBackward(
+		handle.x,
+		l.descriptor,
+		mode.c(),
+		a.CPtr(),
+		yD.descriptor, y,
+		dyD.descriptor, dy,
+		xD.descriptor, x,
+		b.CPtr(),
+		dxD.descriptor, dx,
 	)).error("LRNCrossChannelForward")
 }
 
@@ -175,14 +212,9 @@ func (l *LRND) DivisiveNormalizationForward(
 	handle *Handle,
 	mode DivNormMode,
 	alpha float64,
-	xD TensorD, /* same desc for means, temp, temp2 */
-	x gocu.Mem,
-	means gocu.Mem, /* if NULL, means are assumed to be zero */
-	temp gocu.Mem,
-	temp2 gocu.Mem,
+	xD TensorD, x, means, temp, temp2 gocu.Mem,
 	beta float64,
-	yD TensorD,
-	y gocu.Mem,
+	yD TensorD, y gocu.Mem,
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
@@ -202,21 +234,36 @@ func (l *LRND) DivisiveNormalizationForward(
 	)).error("DivisiveNormalizationForward")
 }
 
+//DivisiveNormalizationForwardUS is like DivisiveNormalizationForward but using unsafe.Pointer instead of gocu.Mem
+func (l *LRND) DivisiveNormalizationForwardUS(
+	handle *Handle,
+	mode DivNormMode,
+	alpha float64,
+	xD TensorD, x, means, temp, temp2 unsafe.Pointer,
+	beta float64,
+	yD TensorD, y unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnDivisiveNormalizationForward(
+		handle.x,
+		l.descriptor,
+		mode.c(),
+		a.CPtr(),
+		xD.descriptor, x, means, temp, temp2,
+		b.CPtr(),
+		yD.descriptor, y,
+	)).error("DivisiveNormalizationForward")
+}
+
 //DivisiveNormalizationBackward  LRN cross-channel backward computation. Double parameters cast to tensor data type
 func (l *LRND) DivisiveNormalizationBackward(
 	handle *Handle,
 	mode DivNormMode,
 	alpha float64,
-	xD *TensorD, /* same desc for x, means, dy, temp, temp2 */
-	x gocu.Mem,
-	means gocu.Mem, /* if NULL, means are assumed to be zero */
-	dy gocu.Mem,
-	temp gocu.Mem,
-	temp2 gocu.Mem,
+	xD *TensorD, x, means, dy, temp, temp2 gocu.Mem,
 	beta float64,
-	dXdMeansDesc *TensorD, /* same desc for dx, dMeans */
-	dx gocu.Mem, /* output x differential */
-	dMeans gocu.Mem, /* output means differential, can be NULL */
+	dXdMeansDesc *TensorD, dx, dMeans gocu.Mem,
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(xD.dtype, beta)
@@ -225,16 +272,31 @@ func (l *LRND) DivisiveNormalizationBackward(
 		l.descriptor,
 		mode.c(),
 		a.CPtr(),
-		xD.descriptor,
-		x.Ptr(),
-		means.Ptr(),
-		dy.Ptr(),
-		temp.Ptr(),
-		temp2.Ptr(),
+		xD.descriptor, x.Ptr(), means.Ptr(), dy.Ptr(), temp.Ptr(), temp2.Ptr(),
 		b.CPtr(),
-		dXdMeansDesc.descriptor,
-		dx.Ptr(),
-		dMeans.Ptr(),
+		dXdMeansDesc.descriptor, dx.Ptr(), dMeans.Ptr(),
+	)).error("DivisiveNormalizationBackward")
+}
+
+//DivisiveNormalizationBackwardUS is like DivisiveNormalizationBackward but using unsafe.Pointer instead of gocu.Mem
+func (l *LRND) DivisiveNormalizationBackwardUS(
+	handle *Handle,
+	mode DivNormMode,
+	alpha float64,
+	xD *TensorD, x, means, dy, temp, temp2 unsafe.Pointer,
+	beta float64,
+	dXdMeansDesc *TensorD, dx, dMeans unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(xD.dtype, beta)
+	return Status(C.cudnnDivisiveNormalizationBackward(
+		handle.x,
+		l.descriptor,
+		mode.c(),
+		a.CPtr(),
+		xD.descriptor, x, means, dy, temp, temp2,
+		b.CPtr(),
+		dXdMeansDesc.descriptor, dx, dMeans,
 	)).error("DivisiveNormalizationBackward")
 }
 

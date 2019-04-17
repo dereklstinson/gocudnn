@@ -11,6 +11,7 @@ void MakeAlgorithmforFWD(cudnnAlgorithm_t *input,cudnnConvolutionFwdAlgo_t algo 
 import "C"
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -80,6 +81,34 @@ func (c *ConvolutionD) FindForwardAlgorithmEx(
 		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(), c.descriptor, yD.descriptor, y.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("FindConvolutionForwardAlgorithmEx")
 
 	}
+
+	results := make([]ConvFwdAlgoPerformance, int32(actualalgocount))
+	for i := int32(0); i < int32(actualalgocount); i++ {
+		results[i] = convertConvFwdAlgoPerformance(perfResults[i])
+
+	}
+	return results, err
+}
+
+//FindForwardAlgorithmExUS is like FindForwardAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) FindForwardAlgorithmExUS(
+	handle *Handle,
+	xD *TensorD,
+	x unsafe.Pointer,
+	wD *FilterD,
+	w unsafe.Pointer,
+	yD *TensorD,
+	y unsafe.Pointer,
+	wspace unsafe.Pointer,
+	wspacesize uint) ([]ConvFwdAlgoPerformance, error) {
+	reqAlgoCount, err := c.getForwardAlgorithmMaxCount(handle)
+	if err != nil {
+		return nil, err
+	}
+	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, reqAlgoCount)
+	var actualalgocount C.int
+
+	err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x, wD.descriptor, w, c.descriptor, yD.descriptor, y, C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace, C.size_t(wspacesize))).error("FindConvolutionForwardAlgorithmEx")
 
 	results := make([]ConvFwdAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {

@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -35,6 +36,24 @@ func (s *SpatialTransformerD) GridGeneratorForward(
 	)).error("SpatialTfGridGeneratorForward")
 }
 
+//GridGeneratorForwardUS is like GridGeneratorForward but uses unsafe.Pointer instead of gocu.Mem
+func (s *SpatialTransformerD) GridGeneratorForwardUS(
+	handle *Handle,
+	theta unsafe.Pointer, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
+	grid unsafe.Pointer, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
+	h, w is specified in stDesc . In the 4th dimension, the first coordinate is x, and the
+	second coordinate is y*/
+
+) error {
+
+	return Status(C.cudnnSpatialTfGridGeneratorForward(
+		handle.x,
+		s.descriptor,
+		theta,
+		grid,
+	)).error("SpatialTfGridGeneratorForward")
+}
+
 //GridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
 func (s *SpatialTransformerD) GridGeneratorBackward(
 	handle *Handle,
@@ -50,16 +69,29 @@ func (s *SpatialTransformerD) GridGeneratorBackward(
 	)).error("SpatialTfGridGeneratorBackward")
 }
 
+//GridGeneratorBackwardUS is like GridGeneratorBackward but uses unsafe.Pointer instead of gocu.Mem
+func (s *SpatialTransformerD) GridGeneratorBackwardUS(
+	handle *Handle,
+	grid unsafe.Pointer,
+	theta unsafe.Pointer,
+) error {
+
+	return Status(C.cudnnSpatialTfGridGeneratorBackward(
+		handle.x,
+		s.descriptor,
+		grid,
+		theta,
+	)).error("SpatialTfGridGeneratorBackward")
+}
+
 //SamplerForward performs the spatialtfsampleforward
 func (s *SpatialTransformerD) SamplerForward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD,
-	x gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	grid gocu.Mem,
 	beta float64,
-	yD *TensorD,
-	y gocu.Mem,
+	yD *TensorD, y gocu.Mem,
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
@@ -77,22 +109,41 @@ func (s *SpatialTransformerD) SamplerForward(
 	)).error("SpatialTfSamplerForward")
 }
 
+//SamplerForwardUS is like SamplerForward but uses unsafe.Pointer instead of gocu.Mem
+func (s *SpatialTransformerD) SamplerForwardUS(
+	handle *Handle,
+	alpha float64,
+	xD *TensorD, x unsafe.Pointer,
+	grid unsafe.Pointer,
+	beta float64,
+	yD *TensorD, y unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+
+	return Status(C.cudnnSpatialTfSamplerForward(
+		handle.x,
+		s.descriptor,
+		a.CPtr(),
+		xD.descriptor, x,
+		grid,
+		b.CPtr(),
+		yD.descriptor, y,
+	)).error("SpatialTfSamplerForward")
+}
+
 //SamplerBackward does the spatial Tranform Sample Backward
 func (s *SpatialTransformerD) SamplerBackward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD,
-	x gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	beta float64,
-	dxD *TensorD,
-	dx gocu.Mem,
+	dxD *TensorD, dx gocu.Mem,
 	alphaDgrid float64,
-	dyD *TensorD,
-	dy gocu.Mem,
+	dyD *TensorD, dy gocu.Mem,
 	grid gocu.Mem,
 	betaDgrid float64,
 	dGrid gocu.Mem,
-
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dxD.dtype, beta)
@@ -102,17 +153,46 @@ func (s *SpatialTransformerD) SamplerBackward(
 		handle.x,
 		s.descriptor,
 		a.CPtr(),
-		xD.descriptor,
-		x.Ptr(),
+		xD.descriptor, x.Ptr(),
 		b.CPtr(),
-		dxD.descriptor,
-		dx.Ptr(),
+		dxD.descriptor, dx.Ptr(),
 		ad.CPtr(),
-		dyD.descriptor,
-		dy.Ptr(),
+		dyD.descriptor, dy.Ptr(),
 		grid.Ptr(),
 		bd.CPtr(),
 		dGrid.Ptr(),
+	)).error("SpatialTfSamplerBackward")
+}
+
+//SamplerBackwardUS is like SamplerBackward but uses unsafe.Pointer instead of gocu.Mem
+func (s *SpatialTransformerD) SamplerBackwardUS(
+	handle *Handle,
+	alpha float64,
+	xD *TensorD, x unsafe.Pointer,
+	beta float64,
+	dxD *TensorD, dx unsafe.Pointer,
+	alphaDgrid float64,
+	dyD *TensorD, dy unsafe.Pointer,
+	grid unsafe.Pointer,
+	betaDgrid float64,
+	dGrid unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(dyD.dtype, alpha)
+	b := cscalarbydatatype(dxD.dtype, beta)
+	ad := cscalarbydatatype(xD.dtype, alphaDgrid)
+	bd := cscalarbydatatype(dxD.dtype, betaDgrid)
+	return Status(C.cudnnSpatialTfSamplerBackward(
+		handle.x,
+		s.descriptor,
+		a.CPtr(),
+		xD.descriptor, x,
+		b.CPtr(),
+		dxD.descriptor, dx,
+		ad.CPtr(),
+		dyD.descriptor, dy,
+		grid,
+		bd.CPtr(),
+		dGrid,
 	)).error("SpatialTfSamplerBackward")
 }
 

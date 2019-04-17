@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -21,7 +22,7 @@ func CreateOpTensorDescriptor() (*OPTensorD, error) {
 	desc := new(OPTensorD)
 	err := Status(C.cudnnCreateOpTensorDescriptor(&desc.descriptor)).error("NewOpTensorDescriptor-Create")
 	if setfinalizer {
-		desc.gogc=true
+		desc.gogc = true
 		runtime.SetFinalizer(desc, destroyopdesc)
 	}
 
@@ -58,14 +59,11 @@ func (t *OPTensorD) Destroy() error {
 func (t *OPTensorD) OpTensor(
 	handle *Handle,
 	alpha1 float64,
-	aD *TensorD,
-	A gocu.Mem,
+	aD *TensorD, A gocu.Mem,
 	alpha2 float64,
-	bD *TensorD,
-	B gocu.Mem,
+	bD *TensorD, B gocu.Mem,
 	beta float64,
-	cD *TensorD,
-	cmem gocu.Mem) error {
+	cD *TensorD, cmem gocu.Mem) error {
 	a1 := cscalarbydatatype(aD.dtype, alpha1)
 	a2 := cscalarbydatatype(bD.dtype, alpha2)
 	b := cscalarbydatatype(cD.dtype, beta)
@@ -73,14 +71,36 @@ func (t *OPTensorD) OpTensor(
 		handle.x,
 		t.descriptor,
 		a1.CPtr(),
-		aD.descriptor,
-		A.Ptr(),
+		aD.descriptor, A.Ptr(),
 		a2.CPtr(),
-		bD.descriptor,
-		B.Ptr(),
+		bD.descriptor, B.Ptr(),
 		b.CPtr(),
-		cD.descriptor,
-		cmem.Ptr())
+		cD.descriptor, cmem.Ptr())
+
+	return Status(x).error("OpTensor")
+}
+
+//OpTensorUS is like OpTensor but uses unsafe.Pointer instead of gocu.Mem
+func (t *OPTensorD) OpTensorUS(
+	handle *Handle,
+	alpha1 float64,
+	aD *TensorD, A unsafe.Pointer,
+	alpha2 float64,
+	bD *TensorD, B unsafe.Pointer,
+	beta float64,
+	cD *TensorD, cmem unsafe.Pointer) error {
+	a1 := cscalarbydatatype(aD.dtype, alpha1)
+	a2 := cscalarbydatatype(bD.dtype, alpha2)
+	b := cscalarbydatatype(cD.dtype, beta)
+	x := C.cudnnOpTensor(
+		handle.x,
+		t.descriptor,
+		a1.CPtr(),
+		aD.descriptor, A,
+		a2.CPtr(),
+		bD.descriptor, B,
+		b.CPtr(),
+		cD.descriptor, cmem)
 
 	return Status(x).error("OpTensor")
 }

@@ -11,6 +11,7 @@ void MakeAlgorithmforCTCL(cudnnAlgorithm_t *input,cudnnCTCLossAlgo_t Algo ){
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -137,6 +138,40 @@ func (c *CTCLossD) CTCLoss(
 		algo.c(),
 		c.descriptor,
 		wspace.Ptr(),
+		C.size_t(wspacesize),
+	)).error("CTCLoss")
+
+	return err
+}
+
+//CTCLossUS is like CTCLoss but uses unsafe.Pointer instead of gocu.Mem
+func (c *CTCLossD) CTCLossUS(
+	handle *Handle,
+	probsD *TensorD, probs unsafe.Pointer, /* probabilities after softmax, in GPU memory */
+	labels []int32, /* labels, in CPU memory */
+	labelLengths []int32, /* the length of each label, in CPU memory */
+	inputLengths []int32, /* the lengths of timing steps in each batch, in CPU memory */
+	costs unsafe.Pointer, //output /* the returned costs of CTC, in GPU memory */
+	gradientsD *TensorD, gradients unsafe.Pointer, //output  /* the returned CTC gradients, in GPU memory, to compute costs only, set it to NULL */
+	algo CTCLossAlgo, /* algorithm selected, supported now 0 and 1 */
+	wspace unsafe.Pointer, wspacesize uint,
+) error {
+	toclabels := int32Tocint(labels)
+	toclablen := int32Tocint(labelLengths)
+	tocinlen := int32Tocint(inputLengths)
+	err := Status(C.cudnnCTCLoss(
+		handle.x,
+		probsD.descriptor,
+		probs,
+		&toclabels[0],
+		&toclablen[0],
+		&tocinlen[0],
+		costs,
+		gradientsD.descriptor,
+		gradients,
+		algo.c(),
+		c.descriptor,
+		wspace,
 		C.size_t(wspacesize),
 	)).error("CTCLoss")
 

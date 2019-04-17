@@ -188,8 +188,8 @@ func (r *RNND) GetRNNMatrixMathType() (MathType, error) {
 /* dataType in the RNN descriptor is used to determine math precision */
 /* dataType in weight descriptors and input descriptors is used to describe storage */
 
-//GetRNNWorkspaceSize gets the RNN workspace size (WOW!)
-func (r *RNND) GetRNNWorkspaceSize(
+//GetWorkspaceSIB gets the RNN workspace size (WOW!)
+func (r *RNND) GetWorkspaceSIB(
 	handle *Handle,
 	seqLength int32,
 	xD []*TensorD,
@@ -207,8 +207,8 @@ func (r *RNND) GetRNNWorkspaceSize(
 	return uint(sizeinbytes), err
 }
 
-//GetRNNTrainingReserveSize gets the training reserve size
-func (r *RNND) GetRNNTrainingReserveSize(
+//GetReserveSIB gets the training reserve size
+func (r *RNND) GetReserveSIB(
 	handle *Handle,
 	seqLength int32,
 	xD []*TensorD,
@@ -226,8 +226,8 @@ func (r *RNND) GetRNNTrainingReserveSize(
 	return uint(sizeinbytes), err
 }
 
-//GetRNNParamsSize gets the training reserve size
-func (r *RNND) GetRNNParamsSize(
+//GetParamsSIB gets the training reserve size
+func (r *RNND) GetParamsSIB(
 	handle *Handle,
 	xD *TensorD,
 	data DataType,
@@ -244,8 +244,8 @@ func (r *RNND) GetRNNParamsSize(
 	return uint(sizeinbytes), err
 }
 
-//GetRNNLinLayerMatrixParams gets the parameters of the layer matrix
-func (r *RNND) GetRNNLinLayerMatrixParams(
+//GetLinLayerMatrixParams gets the parameters of the layer matrix
+func (r *RNND) GetLinLayerMatrixParams(
 	handle *Handle,
 	pseudoLayer int32,
 	/*
@@ -260,8 +260,7 @@ func (r *RNND) GetRNNLinLayerMatrixParams(
 
 	*/
 	xD *TensorD,
-	wD *FilterD,
-	w gocu.Mem,
+	wD *FilterD, w gocu.Mem,
 	linlayerID int32,
 	/*
 	   Input. The linear layer to obtain information about:
@@ -299,6 +298,61 @@ func (r *RNND) GetRNNLinLayerMatrixParams(
 	)).error("GetRNNLinLayerMatrixParams")
 
 	return linLayerMatDesc, linLayerMat, err
+}
+
+//GetLinLayerMatrixParamsUS is like GetLinLayerMatrixParamsUS but uses unsafe.Pointer instead of gocu.Mem
+func (r *RNND) GetLinLayerMatrixParamsUS(
+	handle *Handle,
+	pseudoLayer int32,
+	/*
+	   The pseudo-layer to query.
+	   In uni-directional RNN-s, a pseudo-layer is the same as a "physical" layer
+	   (pseudoLayer=0 is the RNN input layer, pseudoLayer=1 is the first hidden layer).
+
+	   In bi-directional RNN-s there are twice as many pseudo-layers in comparison to "physical" layers
+	   (pseudoLayer=0 and pseudoLayer=1 are both input layers;
+	   pseudoLayer=0 refers to the forward part and pseudoLayer=1 refers to the backward part
+	    of the "physical" input layer; pseudoLayer=2 is the forward part of the first hidden layer, and so on).
+
+	*/
+	xD *TensorD,
+	wD *FilterD, w unsafe.Pointer,
+	linlayerID int32,
+	/*
+	   Input. The linear layer to obtain information about:
+
+	   If mode in rnnDesc was set to CUDNN_RNN_RELU or CUDNN_RNN_TANH a value of 0 references the matrix multiplication applied to the input from the previous layer,
+	   a value of 1 references the matrix multiplication applied to the recurrent input.
+
+	   If mode in rnnDesc was set to CUDNN_LSTM values of 0-3 reference matrix multiplications applied to the input from the previous layer, value of 4-7 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 4 reference the input gate.
+	       Values 1 and 5 reference the forget gate.
+	       Values 2 and 6 reference the new memory gate.
+	       Values 3 and 7 reference the output gate.
+	       Value 8 references the "recurrent" projection matrix when enabled by the cudnnSetRNNProjectionLayers() function.
+
+	   If mode in rnnDesc was set to CUDNN_GRU values of 0-2 reference matrix multiplications applied to the input from the previous layer, value of 3-5 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 3 reference the reset gate.
+	       Values 1 and 4 reference the update gate.
+	       Values 2 and 5 reference the new memory gate.
+
+	*/
+
+) (FilterD, gocu.Mem, error) {
+	var linLayerMatDesc FilterD
+	var linLayerMat unsafe.Pointer
+	err := Status(C.cudnnGetRNNLinLayerMatrixParams(
+		handle.x,
+		r.descriptor,
+		C.int(pseudoLayer),
+		xD.descriptor,
+		wD.descriptor, w,
+		C.int(linlayerID),
+		linLayerMatDesc.descriptor,
+		&linLayerMat,
+	)).error("GetRNNLinLayerMatrixParams")
+
+	return linLayerMatDesc, gocu.WrapUnsafe(linLayerMat), err
 }
 
 //GetRNNLinLayerBiasParams gets the parameters of the layer bias
@@ -361,6 +415,64 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 	return BiasD, Bias, err
 }
 
+//GetRNNLinLayerBiasParamsUS is like GetRNNLinLayerBiasParams but uses unsafe.Pointer instead of gocu.Mem
+func (r *RNND) GetRNNLinLayerBiasParamsUS(
+	handle *Handle,
+	pseudoLayer int32,
+	/*
+	   The pseudo-layer to query.
+	   In uni-directional RNN-s, a pseudo-layer is the same as a "physical" layer
+	   (pseudoLayer=0 is the RNN input layer, pseudoLayer=1 is the first hidden layer).
+
+	   In bi-directional RNN-s there are twice as many pseudo-layers in comparison to "physical" layers
+	   (pseudoLayer=0 and pseudoLayer=1 are both input layers;
+	   pseudoLayer=0 refers to the forward part and pseudoLayer=1 refers to the backward part
+	    of the "physical" input layer; pseudoLayer=2 is the forward part of the first hidden layer, and so on).
+
+	*/
+	xD *TensorD,
+	wD *FilterD,
+	w unsafe.Pointer,
+	linlayerID int32,
+	/*
+	   Input. The linear layer to obtain information about:
+
+	   If mode in rnnDesc was set to CUDNN_RNN_RELU or CUDNN_RNN_TANH a value of 0 references the matrix multiplication applied to the input from the previous layer,
+	   a value of 1 references the matrix multiplication applied to the recurrent input.
+
+	   If mode in rnnDesc was set to CUDNN_LSTM values of 0-3 reference matrix multiplications applied to the input from the previous layer, value of 4-7 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 4 reference the input gate.
+	       Values 1 and 5 reference the forget gate.
+	       Values 2 and 6 reference the new memory gate.
+	       Values 3 and 7 reference the output gate.
+	       Value 8 references the "recurrent" projection matrix when enabled by the cudnnSetRNNProjectionLayers() function.
+
+	   If mode in rnnDesc was set to CUDNN_GRU values of 0-2 reference matrix multiplications applied to the input from the previous layer, value of 3-5 reference matrix multiplications applied to the recurrent input.
+	       Values 0 and 3 reference the reset gate.
+	       Values 1 and 4 reference the update gate.
+	       Values 2 and 5 reference the new memory gate.
+
+	*/
+
+) (BiasD *FilterD, Bias unsafe.Pointer, err error) {
+	BiasD, err = CreateFilterDescriptor()
+	if err != nil {
+		return nil, nil, err
+	}
+	err = Status(C.cudnnGetRNNLinLayerBiasParams(
+		handle.x,
+		r.descriptor,
+		C.int(pseudoLayer),
+		xD.descriptor,
+		wD.descriptor, w,
+		C.int(linlayerID),
+		BiasD.descriptor,
+		&Bias,
+	)).error("GetRNNLinLayerBiasParams")
+
+	return BiasD, Bias, err
+}
+
 //PersistentRNNPlan holds  C.cudnnPersistentRNNPlan_t
 type PersistentRNNPlan struct {
 	plan C.cudnnPersistentRNNPlan_t
@@ -401,456 +513,20 @@ RNN Fluncs
 
 */
 
-//GetRNNForwardInferenceAlgorithmMaxCount returns the maxcount and error
-func (r *RNND) GetRNNForwardInferenceAlgorithmMaxCount(
-	handle *Handle,
-) (int32, error) {
-	var count C.int
-	err := Status(C.cudnnGetRNNForwardInferenceAlgorithmMaxCount(
-		handle.x,
-		r.descriptor,
-		&count,
-	)).error("GetRNNForwardInferenceAlgorithmMaxCount")
-
-	return int32(count), err
-}
-
-//FindRNNForwardInferenceAlgorithmEx finds the inference algorithmEx
-func (r *RNND) FindRNNForwardInferenceAlgorithmEx(
-	handle *Handle,
-	seqlength int32,
-	xD []*TensorD, //Input. An array of fully packed tensor descriptors describing the input to each recurrent iteration (one descriptor per iteration).
-	x gocu.Mem, //input
-	hxD *TensorD, //Input. A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx gocu.Mem, //input
-	cxD *TensorD, //Input. A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx gocu.Mem, //input
-	wD *FilterD, //Input. Handle to a previously initialized filter descriptor describing the weights for the RNN.
-	w gocu.Mem, //Input
-	yD []*TensorD, //input An array of fully packed tensor descriptors.
-	y gocu.Mem, //Output Data pointer to GPU memory associated with the output tensor descriptor yDesc
-	hyD *TensorD, //input  A fully packed tensor descriptor describing the final hidden state of the RNN.
-	hy gocu.Mem, //Output. Data pointer to GPU memory associated with the tensor descriptor hyDesc. If
-	cyD *TensorD, //Input. A fully packed tensor descriptor describing the final cell state for LSTM networks.
-	cy gocu.Mem, //output
-	findIntensity float32,
-	algocount int32,
-	wspace gocu.Mem,
-	wspacesize uint,
-) ([]AlgorithmPerformance, error) {
-	tocxD := tensorDArrayToC(xD)
-	tocyD := tensorDArrayToC(yD)
-	var retactAlgoCount C.int
-	perfResults := make([]C.cudnnAlgorithmPerformance_t, algocount)
-	reqcount := C.int(algocount)
-	err := Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		C.int(seqlength),
-		&tocxD[0],
-		x.Ptr(),
-		hxD.descriptor,
-		hx.Ptr(),
-		cxD.descriptor,
-		cx.Ptr(),
-		wD.descriptor,
-		w.Ptr(),
-		&tocyD[0],
-		y.Ptr(),
-		hyD.descriptor,
-		hy.Ptr(),
-		cyD.descriptor,
-		cy.Ptr(),
-		C.float(findIntensity),
-		reqcount,
-		&retactAlgoCount,
-		&perfResults[0],
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-	)).error("FindRNNForwardInferenceAlgorithmEx")
-
-	return calgoperftogoarray(perfResults, setfinalizer), err
-}
-
-//GetRNNForwardTrainingAlgorithmMaxCount gets the max number of algorithms for rnnforward training algo
-func (r *RNND) GetRNNForwardTrainingAlgorithmMaxCount(handle *Handle) (int32, error) {
-	var count C.int
-	stat := C.cudnnGetRNNForwardTrainingAlgorithmMaxCount(
-		handle.x,
-		r.descriptor,
-		&count)
-
-	return int32(count), Status(stat).error("GetRNNForwardTrainingAlgorithmMaxCount")
-}
-
-//FindRNNForwardTrainingAlgorithmEx finds and orders the performance of rnn Algorithm for training returns that list with an error
-func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
-	handle *Handle,
-	seqLen int32, //input
-	xD []*TensorD, //input
-	x gocu.Mem, //input
-	hxD *TensorD, //input: A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx gocu.Mem, //input
-	cxD *TensorD, // :input A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx gocu.Mem, //input
-	wD *FilterD, //input
-	w gocu.Mem, //input
-	yD []*TensorD, //Input. An array of fully packed tensor descriptors describing the output from each recurrent iteration (one descriptor per iteration).
-	y gocu.Mem, //output
-	hyD *TensorD, //input
-	hy gocu.Mem, //output
-	cyD *TensorD,
-	cy gocu.Mem, //output
-	findIntensity float32, //input
-	reqAlgocount int32, //input
-	wspace gocu.Mem, ///input
-	wspacesize uint,
-	rspace gocu.Mem, //input/output
-	rspacesize uint,
-
-) ([]AlgorithmPerformance, error) {
-	tocxD := tensorDArrayToC(xD)
-	tocyD := tensorDArrayToC(yD)
-
-	var actualcount C.int
-	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
-	if wspace == nil {
-		err := Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
-			handle.x,
-			r.descriptor,
-			C.int(seqLen),
-			&tocxD[0],
-			x.Ptr(),
-			hxD.descriptor,
-			hx.Ptr(),
-			cxD.descriptor,
-			cx.Ptr(),
-			wD.descriptor,
-			w.Ptr(),
-			&tocyD[0],
-			y.Ptr(),
-			hyD.descriptor,
-			hy.Ptr(),
-			cyD.descriptor,
-			cy.Ptr(),
-			C.float(findIntensity),
-			C.int(reqAlgocount),
-			&actualcount,
-			&perfresults[0],
-			nil,
-			C.size_t(0),
-			rspace.Ptr(),
-			C.size_t(rspacesize),
-		)).error("FindRNNForwardTrainingAlgorithmEx")
-
-		return calgoperftogoarray(perfresults, handle.gogc), err
-	}
-	err := Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		C.int(seqLen),
-		&tocxD[0],
-		x.Ptr(),
-		hxD.descriptor,
-		hx.Ptr(),
-		cxD.descriptor,
-		cx.Ptr(),
-		wD.descriptor,
-		w.Ptr(),
-		&tocyD[0],
-		y.Ptr(),
-		hyD.descriptor,
-		hy.Ptr(),
-		cyD.descriptor,
-		cy.Ptr(),
-		C.float(findIntensity),
-		C.int(reqAlgocount),
-		&actualcount,
-		&perfresults[0],
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-		rspace.Ptr(),
-		C.size_t(rspacesize),
-	)).error("FindRNNForwardTrainingAlgorithmEx")
-
-	return calgoperftogoarray(perfresults, handle.gogc), err
-}
-
-//GetRNNBackwardDataAlgorithmMaxCount gets the max number of algorithms for the back prop rnn
-func (r *RNND) GetRNNBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
-	var count C.int
-	err := Status(C.cudnnGetRNNBackwardDataAlgorithmMaxCount(
-		handle.x,
-		r.descriptor,
-		&count,
-	)).error("GetRNNBackwardDataAlgorithmMaxCount")
-
-	return int32(count), err
-}
-
-//FindRNNBackwardDataAlgorithmEx finds a list of Algorithm for backprop this passes like 26 parameters and pointers and stuff so watch out.
-func (r *RNND) FindRNNBackwardDataAlgorithmEx(
-	handle *Handle,
-
-	seqLen int32,
-
-	yD []*TensorD, //an array of fully packed tensor descriptors
-	y gocu.Mem,
-
-	dyD []*TensorD, //an array of fully packed tensor descriptors
-	dy gocu.Mem,
-
-	dhyD *TensorD, //fully packed tensor descriptor describing the gradients at the final hidden state of the RNN
-	dhy gocu.Mem,
-
-	dcyD *TensorD, // fully packed tensor descriptor describing the gradients at the final cell state of the RNN.
-	dcy gocu.Mem,
-
-	wD *FilterD,
-	w gocu.Mem,
-
-	hxD *TensorD, // A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx gocu.Mem,
-
-	cxD *TensorD, //A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx gocu.Mem,
-
-	dxD []*TensorD, //
-	dx gocu.Mem,
-
-	dhxD *TensorD, //A fully packed tensor descriptor describing the gradient at the initial hidden state of the RNN.
-	dhx gocu.Mem,
-
-	dcxD *TensorD, // A fully packed tensor descriptor describing the gradient at the initial cell state of the RNN.
-	dcx gocu.Mem,
-
-	findIntensity float32,
-	reqAlgocount int32,
-	wspace gocu.Mem, ///input
-	wspacesize uint,
-	rspace gocu.Mem, //input/output
-	rspacesize uint,
-
-) ([]AlgorithmPerformance, error) {
-	cyD := tensorDArrayToC(yD)
-	cdyD := tensorDArrayToC(dyD)
-	cdxD := tensorDArrayToC(dxD)
-	var actualcount C.int
-	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
-	if wspace == nil {
-		err := Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
-			handle.x,
-			r.descriptor,
-			C.int(seqLen),
-
-			&cyD[0],
-			y.Ptr(),
-
-			&cdyD[0],
-			dy.Ptr(),
-
-			dhyD.descriptor,
-			dhy.Ptr(),
-
-			dcyD.descriptor,
-			dcy.Ptr(),
-
-			wD.descriptor,
-			w.Ptr(),
-
-			hxD.descriptor,
-			hx.Ptr(),
-
-			cxD.descriptor,
-			cx.Ptr(),
-
-			&cdxD[0],
-			dx.Ptr(),
-
-			dhxD.descriptor,
-			dhx.Ptr(),
-
-			dcxD.descriptor,
-			dcx.Ptr(),
-
-			C.float(findIntensity),
-			C.int(reqAlgocount),
-			&actualcount,
-			&perfresults[0],
-
-			nil,
-			C.size_t(0),
-			rspace.Ptr(),
-			C.size_t(rspacesize),
-			//31 total?
-		)).error("FindRNNBackwardDataAlgorithmEx")
-		return calgoperftogoarray(perfresults, handle.gogc), err
-	}
-	err := Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		C.int(seqLen),
-
-		&cyD[0],
-		y.Ptr(),
-
-		&cdyD[0],
-		dy.Ptr(),
-
-		dhyD.descriptor,
-		dhy.Ptr(),
-
-		dcyD.descriptor,
-		dcy.Ptr(),
-
-		wD.descriptor,
-		w.Ptr(),
-
-		hxD.descriptor,
-		hx.Ptr(),
-
-		cxD.descriptor,
-		cx.Ptr(),
-
-		&cdxD[0],
-		dx.Ptr(),
-
-		dhxD.descriptor,
-		dhx.Ptr(),
-
-		dcxD.descriptor,
-		dcx.Ptr(),
-
-		C.float(findIntensity),
-		C.int(reqAlgocount),
-		&actualcount,
-		&perfresults[0],
-
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-		rspace.Ptr(),
-		C.size_t(rspacesize),
-		//31 total?
-	)).error("FindRNNBackwardDataAlgorithmEx")
-	return calgoperftogoarray(perfresults, handle.gogc), err
-}
-
-//GetRNNBackwardWeightsAlgorithmMaxCount gets the max number of Algorithm for weights
-func (r *RNND) GetRNNBackwardWeightsAlgorithmMaxCount(handle *Handle) (int32, error) {
-	var count C.int
-	err := Status(C.cudnnGetRNNBackwardWeightsAlgorithmMaxCount(
-		handle.x,
-		r.descriptor,
-		&count,
-	)).error("GetRNNBackwardWeightsAlgorithmMaxCount")
-
-	return int32(count), err
-}
-
-//FindRNNBackwardWeightsAlgorithmEx returns some Algorithm and their performance and stuff
-func (r *RNND) FindRNNBackwardWeightsAlgorithmEx(
-	handle *Handle,
-	seqLen int32,
-	xD []*TensorD,
-	x gocu.Mem,
-	hxD *TensorD, //Initial Hidden State
-	hx gocu.Mem,
-	yD []*TensorD,
-	y gocu.Mem,
-	findIntensity float32, //unused for future use
-	reqAlgocount int32, //the max number of elements
-	wspace gocu.Mem,
-	wspacesize uint,
-	dwD *FilterD,
-	dw gocu.Mem,
-	rspace gocu.Mem,
-	rspacesize uint,
-
-) ([]AlgorithmPerformance, error) {
-	var actualcount C.int
-	inCxD := tensorDArrayToC(xD)
-	inCyD := tensorDArrayToC(yD)
-	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
-	if wspace == nil {
-		err := Status(C.cudnnFindRNNBackwardWeightsAlgorithmEx(
-			handle.x,
-			r.descriptor,
-			C.int(seqLen),
-			&inCxD[0], //input array
-			x.Ptr(),
-			hxD.descriptor,
-			hx.Ptr(),
-			&inCyD[0], //input array
-			y.Ptr(),
-
-			C.float(findIntensity),
-			C.int(reqAlgocount),
-			&actualcount,
-			&perfresults[0],
-
-			nil,
-			C.size_t(0),
-
-			dwD.descriptor,
-			dw.Ptr(),
-
-			rspace.Ptr(),
-			C.size_t(rspacesize),
-		)).error("FindRNNBackwardWeightsAlgorithmEx")
-
-		return calgoperftogoarray(perfresults, handle.gogc), err
-	}
-	err := Status(C.cudnnFindRNNBackwardWeightsAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		C.int(seqLen),
-		&inCxD[0], //input array
-		x.Ptr(),
-		hxD.descriptor,
-		hx.Ptr(),
-		&inCyD[0], //input array
-		y.Ptr(),
-
-		C.float(findIntensity),
-		C.int(reqAlgocount),
-		&actualcount,
-		&perfresults[0],
-
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-
-		dwD.descriptor,
-		dw.Ptr(),
-
-		rspace.Ptr(),
-		C.size_t(rspacesize),
-	)).error("FindRNNBackwardWeightsAlgorithmEx")
-
-	return calgoperftogoarray(perfresults, handle.gogc), err
-}
-
 //RNNForwardInference is the forward inference
 func (r *RNND) RNNForwardInference(
 	handle *Handle,
-	seqLength int32,
-	xD []*TensorD,
-	x gocu.Mem,
-	hxD *TensorD,
-	hx gocu.Mem,
-	cxD *TensorD,
-	cx gocu.Mem,
-	wD *FilterD,
-	w gocu.Mem,
-	yD []*TensorD,
-	y gocu.Mem,
-	hyD TensorD,
-	hy gocu.Mem,
-	cyD TensorD,
-	cy gocu.Mem,
-	wspace gocu.Mem,
-	wspacesize uint,
+	xD []*TensorD, x gocu.Mem,
+	hxD *TensorD, hx gocu.Mem,
+	cxD *TensorD, cx gocu.Mem,
+	wD *FilterD, w gocu.Mem,
+	yD []*TensorD, y gocu.Mem,
+	hyD TensorD, hy gocu.Mem,
+	cyD TensorD, cy gocu.Mem,
+	wspace gocu.Mem, wspacesize uint,
 
 ) error {
+	seqLength := len(xD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
 
@@ -859,20 +535,13 @@ func (r *RNND) RNNForwardInference(
 			handle.x,
 			r.descriptor,
 			C.int(seqLength),
-			&tocxD[0],
-			x.Ptr(),
-			hxD.descriptor,
-			hx.Ptr(),
-			cxD.descriptor,
-			cx.Ptr(),
-			wD.descriptor,
-			w.Ptr(),
-			&tocyD[0],
-			y.Ptr(),
-			hyD.descriptor,
-			hy.Ptr(),
-			cyD.descriptor,
-			cy.Ptr(),
+			&tocxD[0], x.Ptr(),
+			hxD.descriptor, hx.Ptr(),
+			cxD.descriptor, cx.Ptr(),
+			wD.descriptor, w.Ptr(),
+			&tocyD[0], y.Ptr(),
+			hyD.descriptor, hy.Ptr(),
+			cyD.descriptor, cy.Ptr(),
 			nil,
 			C.size_t(0),
 		)).error("RNNForwardInference")
@@ -881,48 +550,63 @@ func (r *RNND) RNNForwardInference(
 		handle.x,
 		r.descriptor,
 		C.int(seqLength),
-		&tocxD[0],
-		x.Ptr(),
-		hxD.descriptor,
-		hx.Ptr(),
-		cxD.descriptor,
-		cx.Ptr(),
-		wD.descriptor,
-		w.Ptr(),
-		&tocyD[0],
-		y.Ptr(),
-		hyD.descriptor,
-		hy.Ptr(),
-		cyD.descriptor,
-		cy.Ptr(),
-		wspace.Ptr(),
-		C.size_t(wspacesize),
+		&tocxD[0], x.Ptr(),
+		hxD.descriptor, hx.Ptr(),
+		cxD.descriptor, cx.Ptr(),
+		wD.descriptor, w.Ptr(),
+		&tocyD[0], y.Ptr(),
+		hyD.descriptor, hy.Ptr(),
+		cyD.descriptor, cy.Ptr(),
+		wspace.Ptr(), C.size_t(wspacesize),
+	)).error("RNNForwardInference")
+}
+
+//RNNForwardInferenceUS is like RNNForwardInference but uses unsafe.Pointer instead of gocu.Mem
+func (r *RNND) RNNForwardInferenceUS(
+	handle *Handle,
+	xD []*TensorD, x unsafe.Pointer,
+	hxD *TensorD, hx unsafe.Pointer,
+	cxD *TensorD, cx unsafe.Pointer,
+	wD *FilterD, w unsafe.Pointer,
+	yD []*TensorD, y unsafe.Pointer,
+	hyD TensorD, hy unsafe.Pointer,
+	cyD TensorD, cy unsafe.Pointer,
+	wspace unsafe.Pointer, wspacesize uint,
+
+) error {
+	seqLength := len(xD)
+	tocxD := tensorDArrayToC(xD)
+	tocyD := tensorDArrayToC(yD)
+
+	return Status(C.cudnnRNNForwardInference(
+		handle.x,
+		r.descriptor,
+		C.int(seqLength),
+		&tocxD[0], x,
+		hxD.descriptor, hx,
+		cxD.descriptor, cx,
+		wD.descriptor, w,
+		&tocyD[0], y,
+		hyD.descriptor, hy,
+		cyD.descriptor, cy,
+		wspace, C.size_t(wspacesize),
 	)).error("RNNForwardInference")
 }
 
 //RNNForwardTraining is the forward algo for an RNN
 func (r *RNND) RNNForwardTraining(
 	handle *Handle,
-	seqLen int32,
-	xD []*TensorD,
-	x gocu.Mem,
-	hxD *TensorD,
-	hx gocu.Mem,
-	cxD *TensorD,
-	cx gocu.Mem,
-	wD *FilterD,
-	w gocu.Mem,
-	yD []*TensorD,
-	y gocu.Mem,
-	hyD *TensorD,
-	hy gocu.Mem,
-	cyD *TensorD,
-	cy gocu.Mem,
-	wspace gocu.Mem,
-	wspacesize uint,
-	rspace gocu.Mem,
-	rspacesize uint,
+	xD []*TensorD, x gocu.Mem,
+	hxD *TensorD, hx gocu.Mem,
+	cxD *TensorD, cx gocu.Mem,
+	wD *FilterD, w gocu.Mem,
+	yD []*TensorD, y gocu.Mem,
+	hyD *TensorD, hy gocu.Mem,
+	cyD *TensorD, cy gocu.Mem,
+	wspace gocu.Mem, wspacesize uint,
+	rspace gocu.Mem, rspacesize uint,
 ) error {
+	seqLen := len(xD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
 	if wspace == nil {
@@ -930,48 +614,64 @@ func (r *RNND) RNNForwardTraining(
 			handle.x,
 			r.descriptor,
 			C.int(seqLen),
-			&tocxD[0],
-			x.Ptr(),
-			hxD.descriptor,
-			hx.Ptr(),
-			cxD.descriptor,
-			cx.Ptr(),
-			wD.descriptor,
-			w.Ptr(),
-			&tocyD[0],
-			y.Ptr(),
-			hyD.descriptor,
-			hy.Ptr(),
-			cyD.descriptor,
-			cy.Ptr(),
-			nil,
-			C.size_t(0),
-			rspace.Ptr(),
-			C.size_t(rspacesize),
+			&tocxD[0], x.Ptr(),
+			hxD.descriptor, hx.Ptr(),
+			cxD.descriptor, cx.Ptr(),
+			wD.descriptor, w.Ptr(),
+			&tocyD[0], y.Ptr(),
+			hyD.descriptor, hy.Ptr(),
+			cyD.descriptor, cy.Ptr(),
+			nil, C.size_t(0),
+			rspace.Ptr(), C.size_t(rspacesize),
 		)).error("RNNForwardTraining")
 	}
 	return Status(C.cudnnRNNForwardTraining(
 		handle.x,
 		r.descriptor,
 		C.int(seqLen),
-		&tocxD[0],
-		x.Ptr(),
-		hxD.descriptor,
-		hx.Ptr(),
-		cxD.descriptor,
-		cx.Ptr(),
-		wD.descriptor,
-		w.Ptr(),
-		&tocyD[0],
-		y.Ptr(),
-		hyD.descriptor,
-		hy.Ptr(),
-		cyD.descriptor,
-		cy.Ptr(),
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-		rspace.Ptr(),
-		C.size_t(rspacesize),
+		&tocxD[0], x.Ptr(),
+		hxD.descriptor, hx.Ptr(),
+		cxD.descriptor, cx.Ptr(),
+		wD.descriptor, w.Ptr(),
+		&tocyD[0], y.Ptr(),
+		hyD.descriptor, hy.Ptr(),
+		cyD.descriptor, cy.Ptr(),
+		wspace.Ptr(), C.size_t(wspacesize),
+		rspace.Ptr(), C.size_t(rspacesize),
+	)).error("RNNForwardTraining")
+
+}
+
+//RNNForwardTrainingUS is like RNNForwardTraining but using unsafe.Pointer instead of gocu.Mem
+func (r *RNND) RNNForwardTrainingUS(
+	handle *Handle,
+	xD []*TensorD, x unsafe.Pointer,
+	hxD *TensorD, hx unsafe.Pointer,
+	cxD *TensorD, cx unsafe.Pointer,
+	wD *FilterD, w unsafe.Pointer,
+	yD []*TensorD, y unsafe.Pointer,
+	hyD *TensorD, hy unsafe.Pointer,
+	cyD *TensorD, cy unsafe.Pointer,
+	wspace unsafe.Pointer, wspacesize uint,
+	rspace unsafe.Pointer, rspacesize uint,
+) error {
+	seqLen := len(xD)
+	tocxD := tensorDArrayToC(xD)
+	tocyD := tensorDArrayToC(yD)
+
+	return Status(C.cudnnRNNForwardTraining(
+		handle.x,
+		r.descriptor,
+		C.int(seqLen),
+		&tocxD[0], x,
+		hxD.descriptor, hx,
+		cxD.descriptor, cx,
+		wD.descriptor, w,
+		&tocyD[0], y,
+		hyD.descriptor, hy,
+		cyD.descriptor, cy,
+		wspace, C.size_t(wspacesize),
+		rspace, C.size_t(rspacesize),
 	)).error("RNNForwardTraining")
 
 }
@@ -979,43 +679,20 @@ func (r *RNND) RNNForwardTraining(
 //RNNBackwardData is the backward algo for an RNN
 func (r *RNND) RNNBackwardData(
 	handle *Handle,
-	seqLen int32,
-
-	yD []*TensorD,
-	y gocu.Mem,
-
-	dyD []*TensorD,
-	dy gocu.Mem,
-
-	dhyD *TensorD,
-	dhy gocu.Mem,
-
-	dcyD *TensorD,
-	dcy gocu.Mem,
-
-	wD *FilterD,
-	w gocu.Mem,
-
-	hxD *TensorD,
-	hx gocu.Mem,
-
-	cxD *TensorD,
-	cx gocu.Mem,
-
-	dxD []*TensorD,
-	dx gocu.Mem,
-
-	dhxD *TensorD,
-	dhx gocu.Mem,
-
-	dcxD *TensorD,
-	dcx gocu.Mem,
-
-	wspace gocu.Mem,
-	wspacesize uint,
-	rspace gocu.Mem,
-	rspacesize uint,
+	yD []*TensorD, y gocu.Mem,
+	dyD []*TensorD, dy gocu.Mem,
+	dhyD *TensorD, dhy gocu.Mem,
+	dcyD *TensorD, dcy gocu.Mem,
+	wD *FilterD, w gocu.Mem,
+	hxD *TensorD, hx gocu.Mem,
+	cxD *TensorD, cx gocu.Mem,
+	dxD []*TensorD, dx gocu.Mem,
+	dhxD *TensorD, dhx gocu.Mem,
+	dcxD *TensorD, dcx gocu.Mem,
+	wspace gocu.Mem, wspacesize uint,
+	rspace gocu.Mem, rspacesize uint,
 ) error {
+	seqLen := len(yD)
 	tocdxD := tensorDArrayToC(dxD)
 	tocdyD := tensorDArrayToC(dyD)
 	tocyD := tensorDArrayToC(yD)
@@ -1024,30 +701,18 @@ func (r *RNND) RNNBackwardData(
 			handle.x,
 			r.descriptor,
 			C.int(seqLen),
-			&tocyD[0],
-			y.Ptr(),
-			&tocdyD[0],
-			dy.Ptr(),
-			dhyD.descriptor,
-			dhy.Ptr(),
-			dcyD.descriptor,
-			dcy.Ptr(),
-			wD.descriptor,
-			w.Ptr(),
-			hxD.descriptor,
-			hx.Ptr(),
-			cxD.descriptor,
-			cx.Ptr(),
-			&tocdxD[0],
-			dx.Ptr(),
-			dhxD.descriptor,
-			dhx.Ptr(),
-			dcxD.descriptor,
-			dcx.Ptr(),
-			nil,
-			C.size_t(wspacesize),
-			rspace.Ptr(),
-			C.size_t(rspacesize),
+			&tocyD[0], y.Ptr(),
+			&tocdyD[0], dy.Ptr(),
+			dhyD.descriptor, dhy.Ptr(),
+			dcyD.descriptor, dcy.Ptr(),
+			wD.descriptor, w.Ptr(),
+			hxD.descriptor, hx.Ptr(),
+			cxD.descriptor, cx.Ptr(),
+			&tocdxD[0], dx.Ptr(),
+			dhxD.descriptor, dhx.Ptr(),
+			dcxD.descriptor, dcx.Ptr(),
+			nil, C.size_t(wspacesize),
+			rspace.Ptr(), C.size_t(rspacesize),
 		)).error("RNNBackwardData")
 
 	}
@@ -1055,30 +720,59 @@ func (r *RNND) RNNBackwardData(
 		handle.x,
 		r.descriptor,
 		C.int(seqLen),
-		&tocyD[0],
-		y.Ptr(),
-		&tocdyD[0],
-		dy.Ptr(),
-		dhyD.descriptor,
-		dhy.Ptr(),
-		dcyD.descriptor,
-		dcy.Ptr(),
-		wD.descriptor,
-		w.Ptr(),
-		hxD.descriptor,
-		hx.Ptr(),
-		cxD.descriptor,
-		cx.Ptr(),
-		&tocdxD[0],
-		dx.Ptr(),
-		dhxD.descriptor,
-		dhx.Ptr(),
-		dcxD.descriptor,
-		dcx.Ptr(),
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-		rspace.Ptr(),
-		C.size_t(rspacesize),
+		&tocyD[0], y.Ptr(),
+		&tocdyD[0], dy.Ptr(),
+		dhyD.descriptor, dhy.Ptr(),
+		dcyD.descriptor, dcy.Ptr(),
+		wD.descriptor, w.Ptr(),
+		hxD.descriptor, hx.Ptr(),
+		cxD.descriptor, cx.Ptr(),
+		&tocdxD[0], dx.Ptr(),
+		dhxD.descriptor, dhx.Ptr(),
+		dcxD.descriptor, dcx.Ptr(),
+		wspace.Ptr(), C.size_t(wspacesize),
+		rspace.Ptr(), C.size_t(rspacesize),
+	)).error("RNNBackwardData")
+
+}
+
+//RNNBackwardDataUS is like RNNBackwardData but uses unsafe.Pointer instead of gocu.Mem
+func (r *RNND) RNNBackwardDataUS(
+	handle *Handle,
+	yD []*TensorD, y unsafe.Pointer,
+	dyD []*TensorD, dy unsafe.Pointer,
+	dhyD *TensorD, dhy unsafe.Pointer,
+	dcyD *TensorD, dcy unsafe.Pointer,
+	wD *FilterD, w unsafe.Pointer,
+	hxD *TensorD, hx unsafe.Pointer,
+	cxD *TensorD, cx unsafe.Pointer,
+	dxD []*TensorD, dx unsafe.Pointer,
+	dhxD *TensorD, dhx unsafe.Pointer,
+	dcxD *TensorD, dcx unsafe.Pointer,
+	wspace unsafe.Pointer, wspacesize uint,
+	rspace unsafe.Pointer, rspacesize uint,
+) error {
+	seqLen := len(yD)
+	tocdxD := tensorDArrayToC(dxD)
+	tocdyD := tensorDArrayToC(dyD)
+	tocyD := tensorDArrayToC(yD)
+
+	return Status(C.cudnnRNNBackwardData(
+		handle.x,
+		r.descriptor,
+		C.int(seqLen),
+		&tocyD[0], y,
+		&tocdyD[0], dy,
+		dhyD.descriptor, dhy,
+		dcyD.descriptor, dcy,
+		wD.descriptor, w,
+		hxD.descriptor, hx,
+		cxD.descriptor, cx,
+		&tocdxD[0], dx,
+		dhxD.descriptor, dhx,
+		dcxD.descriptor, dcx,
+		wspace, C.size_t(wspacesize),
+		rspace, C.size_t(rspacesize),
 	)).error("RNNBackwardData")
 
 }
@@ -1086,20 +780,14 @@ func (r *RNND) RNNBackwardData(
 //BackwardWeights does the backward weight function
 func (r *RNND) BackwardWeights(
 	handle *Handle,
-	seqLen int32,
-	xD []*TensorD,
-	x gocu.Mem,
-	hxD *TensorD,
-	hx gocu.Mem,
-	yD []*TensorD,
-	y gocu.Mem,
-	wspace gocu.Mem,
-	wspacesize uint,
-	dwD *FilterD,
-	dw gocu.Mem,
-	rspace gocu.Mem,
-	rspacesize uint,
+	xD []*TensorD, x gocu.Mem,
+	hxD *TensorD, hx gocu.Mem,
+	yD []*TensorD, y gocu.Mem,
+	wspace gocu.Mem, wspacesize uint,
+	dwD *FilterD, dw gocu.Mem,
+	rspace gocu.Mem, rspacesize uint,
 ) error {
+	seqLen := len(yD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
 	if wspace == nil {
@@ -1108,18 +796,12 @@ func (r *RNND) BackwardWeights(
 			handle.x,
 			r.descriptor,
 			C.int(seqLen),
-			&tocxD[0],
-			x.Ptr(),
-			hxD.descriptor,
-			hx.Ptr(),
-			&tocyD[0],
-			y.Ptr(),
-			nil,
-			C.size_t(0),
-			dwD.descriptor,
-			dw.Ptr(),
-			rspace.Ptr(),
-			C.size_t(rspacesize),
+			&tocxD[0], x.Ptr(),
+			hxD.descriptor, hx.Ptr(),
+			&tocyD[0], y.Ptr(),
+			nil, C.size_t(0),
+			dwD.descriptor, dw.Ptr(),
+			rspace.Ptr(), C.size_t(rspacesize),
 		)).error("BackwardWeights")
 
 	}
@@ -1127,18 +809,40 @@ func (r *RNND) BackwardWeights(
 		handle.x,
 		r.descriptor,
 		C.int(seqLen),
-		&tocxD[0],
-		x.Ptr(),
-		hxD.descriptor,
-		hx.Ptr(),
-		&tocyD[0],
-		y.Ptr(),
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-		dwD.descriptor,
-		dw.Ptr(),
-		rspace.Ptr(),
-		C.size_t(rspacesize),
+		&tocxD[0], x.Ptr(),
+		hxD.descriptor, hx.Ptr(),
+		&tocyD[0], y.Ptr(),
+		wspace.Ptr(), C.size_t(wspacesize),
+		dwD.descriptor, dw.Ptr(),
+		rspace.Ptr(), C.size_t(rspacesize),
+	)).error("BackwardWeights")
+
+}
+
+//BackwardWeightsUS is like BackwardWeights but uses unsafe.Pointer instead of gocu.Mem
+func (r *RNND) BackwardWeightsUS(
+	handle *Handle,
+	xD []*TensorD, x unsafe.Pointer,
+	hxD *TensorD, hx unsafe.Pointer,
+	yD []*TensorD, y unsafe.Pointer,
+	wspace unsafe.Pointer, wspacesize uint,
+	dwD *FilterD, dw unsafe.Pointer,
+	rspace unsafe.Pointer, rspacesize uint,
+) error {
+	seqLen := len(yD)
+	tocxD := tensorDArrayToC(xD)
+	tocyD := tensorDArrayToC(yD)
+
+	return Status(C.cudnnRNNBackwardWeights(
+		handle.x,
+		r.descriptor,
+		C.int(seqLen),
+		&tocxD[0], x,
+		hxD.descriptor, hx,
+		&tocyD[0], y,
+		wspace, C.size_t(wspacesize),
+		dwD.descriptor, dw,
+		rspace, C.size_t(rspacesize),
 	)).error("BackwardWeights")
 
 }

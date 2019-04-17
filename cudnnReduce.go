@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -134,6 +135,30 @@ func (r *ReduceTensorD) ReduceTensorOp(
 			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
 	}
+
+	return Status(x).error("ReduceTensor")
+}
+
+//ReduceTensorOpUS is like ReduceTensorOp but uses unsafe.Pointer instead of gocu.Mem
+func (r *ReduceTensorD) ReduceTensorOpUS(
+	handle *Handle,
+	indices unsafe.Pointer, indiciessize uint,
+	wspace unsafe.Pointer, wspacesize uint,
+	alpha float64,
+	aDesc *TensorD, A unsafe.Pointer,
+	beta float64,
+	cDesc *TensorD, Ce unsafe.Pointer) error {
+	a := cscalarbydatatype(aDesc.dtype, alpha)
+	b := cscalarbydatatype(cDesc.dtype, beta)
+	var x C.cudnnStatus_t
+
+	x = C.cudnnReduceTensor(handle.x, r.tensorDesc,
+		indices, C.size_t(indiciessize),
+		wspace, C.size_t(wspacesize),
+		a.CPtr(),
+		aDesc.descriptor, A,
+		b.CPtr(),
+		cDesc.descriptor, Ce)
 
 	return Status(x).error("ReduceTensor")
 }

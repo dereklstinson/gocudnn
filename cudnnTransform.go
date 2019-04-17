@@ -8,6 +8,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -100,6 +101,13 @@ func (t *TransformD) TransformTensor(h *Handle, alpha float64, srcD *TensorD, sr
 	a := cscalarbydatatype(srcD.dtype, alpha)
 	b := cscalarbydatatype(destD.dtype, beta)
 	return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformTensorEx")
+}
+
+//TransformTensorUS is like TransformTensor but uses unsafe.Pointer instead of gocu.Mem
+func (t *TransformD) TransformTensorUS(h *Handle, alpha float64, srcD *TensorD, src unsafe.Pointer, beta float64, destD *TensorD, dest unsafe.Pointer) error {
+	a := cscalarbydatatype(srcD.dtype, alpha)
+	b := cscalarbydatatype(destD.dtype, beta)
+	return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src, b.CPtr(), destD.descriptor, dest)).error("TransformTensorEx")
 }
 
 //Destroy will destroy tensor if not using GC, but if GC is used then it will do nothing

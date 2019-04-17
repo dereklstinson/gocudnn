@@ -11,6 +11,7 @@ import "C"
 import (
 	"fmt"
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -173,16 +174,12 @@ func (c *ConvolutionD) GetBackwardDataWorkspaceSize(
 func (c *ConvolutionD) BackwardData(
 	handle *Handle,
 	alpha float64,
-	wD *FilterD,
-	w gocu.Mem,
-	dyD *TensorD,
-	dy gocu.Mem,
+	wD *FilterD, w gocu.Mem,
+	dyD *TensorD, dy gocu.Mem,
 	algo ConvBwdDataAlgo,
-	wspace gocu.Mem,
-	wspacesize uint,
+	wspace gocu.Mem, wspacesize uint,
 	beta float64,
-	dxD *TensorD,
-	dx gocu.Mem,
+	dxD *TensorD, dx gocu.Mem,
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
@@ -222,6 +219,33 @@ func (c *ConvolutionD) BackwardData(
 	)).error("ConvolutionBackwardData")
 }
 
+//BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) BackwardDataUS(
+	handle *Handle,
+	alpha float64,
+	wD *FilterD, w unsafe.Pointer,
+	dyD *TensorD, dy unsafe.Pointer,
+	algo ConvBwdDataAlgo,
+	wspace unsafe.Pointer, wspacesize uint,
+	beta float64,
+	dxD *TensorD, dx unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(dyD.dtype, alpha)
+	b := cscalarbydatatype(dyD.dtype, beta)
+
+	return Status(C.cudnnConvolutionBackwardData(
+		handle.x,
+		a.CPtr(),
+		wD.descriptor, w,
+		dyD.descriptor, dy,
+		c.descriptor,
+		algo.c(),
+		wspace, (C.size_t)(wspacesize),
+		b.CPtr(),
+		dxD.descriptor, dx,
+	)).error("ConvolutionBackwardData")
+}
+
 //Im2Col transformes the multiDim tensors into 2d tensors for speed up in calculation at the cost of memory.
 func (c *ConvolutionD) Im2Col(
 	handle *Handle,
@@ -241,6 +265,23 @@ func (c *ConvolutionD) Im2Col(
 	)).error("Im2Col")
 }
 
+//Im2ColUS is like IN2Col but using unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) Im2ColUS(
+	handle *Handle,
+	xD *TensorD, x unsafe.Pointer,
+	wD *FilterD,
+	buffer unsafe.Pointer,
+) error {
+
+	return Status(C.cudnnIm2Col(
+		handle.x,
+		xD.descriptor, x,
+		wD.descriptor,
+		c.descriptor,
+		buffer,
+	)).error("Im2Col")
+}
+
 //BackwardBias is used to compute the bias gradient for batch convolution db is returned
 func (c *ConvolutionD) BackwardBias(
 	handle *Handle,
@@ -253,6 +294,18 @@ func (c *ConvolutionD) BackwardBias(
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
 	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
+}
+
+//BackwardBiasUS is like BackwardBias but using unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) BackwardBiasUS(
+	handle *Handle,
+	alpha float64,
+	dyD *TensorD, dy unsafe.Pointer,
+	beta float64,
+	dbD *TensorD, db unsafe.Pointer) error {
+	a := cscalarbydatatype(dyD.dtype, alpha)
+	b := cscalarbydatatype(dyD.dtype, beta)
+	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy, b.CPtr(), dbD.descriptor, db)).error("ConvolutionBackwardBias")
 }
 
 //GetBackwardFilterWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
@@ -279,17 +332,12 @@ func (c *ConvolutionD) GetBackwardFilterWorkspaceSize(
 func (c *ConvolutionD) BackwardFilter(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD,
-	x gocu.Mem,
-	dyD *TensorD,
-	dy gocu.Mem,
-
+	xD *TensorD, x gocu.Mem,
+	dyD *TensorD, dy gocu.Mem,
 	algo ConvBwdFiltAlgo,
-	wspace gocu.Mem,
-	wspacesize uint,
+	wspace gocu.Mem, wspacesize uint,
 	beta float64,
-	dwD *FilterD,
-	dw gocu.Mem,
+	dwD *FilterD, dw gocu.Mem,
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
@@ -330,6 +378,33 @@ func (c *ConvolutionD) BackwardFilter(
 	)).error("cudnnConvolutionBackwardFilter")
 }
 
+//BackwardFilterUS is like BackwardFilter but using unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) BackwardFilterUS(
+	handle *Handle,
+	alpha float64,
+	xD *TensorD, x unsafe.Pointer,
+	dyD *TensorD, dy unsafe.Pointer,
+	algo ConvBwdFiltAlgo,
+	wspace unsafe.Pointer, wspacesize uint,
+	beta float64,
+	dwD *FilterD, dw unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(dyD.dtype, alpha)
+	b := cscalarbydatatype(dyD.dtype, beta)
+
+	return Status(C.cudnnConvolutionBackwardFilter(
+		handle.x,
+		a.CPtr(),
+		xD.descriptor, x,
+		dyD.descriptor, dy,
+		c.descriptor,
+		algo.c(),
+		wspace, C.size_t(wspacesize),
+		b.CPtr(),
+		dwD.descriptor, dw,
+	)).error("cudnnConvolutionBackwardFilter")
+}
+
 //GetForwardWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
 func (c *ConvolutionD) GetForwardWorkspaceSize(
 	handle *Handle,
@@ -349,16 +424,12 @@ func (c *ConvolutionD) GetForwardWorkspaceSize(
 func (c *ConvolutionD) Forward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD,
-	x gocu.Mem,
-	wD *FilterD,
-	w gocu.Mem,
+	xD *TensorD, x gocu.Mem,
+	wD *FilterD, w gocu.Mem,
 	algo ConvFwdAlgo,
-	wspace gocu.Mem,
-	wspacesize uint,
+	wspace gocu.Mem, wspacesize uint,
 	beta float64,
-	yD *TensorD,
-	y gocu.Mem) error {
+	yD *TensorD, y gocu.Mem) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	if wspace == nil {
@@ -385,26 +456,52 @@ func (c *ConvolutionD) Forward(
 	return err
 }
 
+//ForwardUS is like Forward but using unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) ForwardUS(
+	handle *Handle,
+	alpha float64,
+	xD *TensorD, x unsafe.Pointer,
+	wD *FilterD, w unsafe.Pointer,
+	algo ConvFwdAlgo,
+	wspace unsafe.Pointer, wspacesize uint,
+	beta float64,
+	yD *TensorD, y unsafe.Pointer) error {
+	a := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+
+	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x, wD.descriptor, w,
+		c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y)).error("ConvolutionForward")
+	if err != nil {
+		fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
+		fdt, ftf, fdim, err1 := wD.Get()
+		fmt.Println("wD vals", fdt, ftf, fdim, err1)
+
+		cmode, cdtype, pad, stride, dilation, err1 := c.Get()
+		fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
+		fmt.Println("Algo Settings", algo.toString())
+		actualwspacesize, err := c.GetForwardWorkspaceSize(handle, xD, wD, yD, algo)
+
+		fmt.Println("Workspace Size Compare passed/wanted:", wspacesize, actualwspacesize, err)
+		panic(err)
+	}
+	return err
+}
+
 //BiasActivationForward passes a lot of stuff so be carefull
 /* Fused conv/bias/activation operation : y = Act( alpha1 * conv(x) + alpha2 * z + bias ) */
 func (c *ConvolutionD) BiasActivationForward(
 	handle *Handle,
 	alpha1 float64,
-	xD *TensorD,
-	x gocu.Mem,
-	wD *FilterD,
-	w gocu.Mem,
+	xD *TensorD, x gocu.Mem,
+	wD *FilterD, w gocu.Mem,
 	algo ConvFwdAlgo,
 	wspace gocu.Mem,
 	wspacesize uint,
 	alpha2 float64,
-	zD *TensorD,
-	z gocu.Mem,
-	biasD *TensorD,
-	bias gocu.Mem,
+	zD *TensorD, z gocu.Mem,
+	biasD *TensorD, bias gocu.Mem,
 	aD *ActivationD,
-	yD *TensorD,
-	y gocu.Mem,
+	yD *TensorD, y gocu.Mem,
 ) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha1)
 	a2 := cscalarbydatatype(yD.dtype, alpha2)
@@ -454,6 +551,40 @@ func (c *ConvolutionD) BiasActivationForward(
 			aD.descriptor,
 			yD.descriptor,
 			y.Ptr(),
+		)).error("ConvolutionBiasActivationForward")
+}
+
+//BiasActivationForwardUS is like BiasActivationForward but using unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) BiasActivationForwardUS(
+	handle *Handle,
+	alpha1 float64,
+	xD *TensorD, x unsafe.Pointer,
+	wD *FilterD, w unsafe.Pointer,
+	algo ConvFwdAlgo,
+	wspace unsafe.Pointer, wspacesize uint,
+	alpha2 float64,
+	zD *TensorD, z unsafe.Pointer,
+	biasD *TensorD, bias unsafe.Pointer,
+	aD *ActivationD,
+	yD *TensorD, y unsafe.Pointer,
+) error {
+	a1 := cscalarbydatatype(yD.dtype, alpha1)
+	a2 := cscalarbydatatype(yD.dtype, alpha2)
+
+	return Status(
+		C.cudnnConvolutionBiasActivationForward(
+			handle.x,
+			a1.CPtr(),
+			xD.descriptor, x,
+			wD.descriptor, w,
+			c.descriptor,
+			algo.c(),
+			wspace, C.size_t(wspacesize),
+			a2.CPtr(),
+			zD.descriptor, z,
+			biasD.descriptor, bias,
+			aD.descriptor,
+			yD.descriptor, y,
 		)).error("ConvolutionBiasActivationForward")
 }
 

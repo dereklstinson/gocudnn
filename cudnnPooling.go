@@ -7,6 +7,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -101,11 +102,9 @@ func destroypoolingdescriptor(p *PoolingD) error {
 func (p *PoolingD) Forward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD,
-	x gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	beta float64,
-	yD *TensorD,
-	y gocu.Mem,
+	yD *TensorD, y gocu.Mem,
 ) error {
 
 	a := cscalarbydatatype(xD.dtype, alpha)
@@ -122,23 +121,62 @@ func (p *PoolingD) Forward(
 	)).error("PoolingForward")
 }
 
+//ForwardUS is like Forward but uses unsafe.Pointer instead of gocu.Mem
+func (p *PoolingD) ForwardUS(
+	handle *Handle,
+	alpha float64,
+	xD *TensorD, x unsafe.Pointer,
+	beta float64,
+	yD *TensorD, y unsafe.Pointer,
+) error {
+
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnPoolingForward(
+		handle.x,
+		p.descriptor,
+		a.CPtr(),
+		xD.descriptor, x,
+		b.CPtr(),
+		yD.descriptor, y,
+	)).error("PoolingForward")
+}
+
 //Backward does the backward pooling operation
 func (p *PoolingD) Backward(
 	handle *Handle,
 	alpha float64,
-	yD *TensorD,
-	y gocu.Mem,
-	dyD *TensorD,
-	dy gocu.Mem,
-	xD *TensorD,
-	x gocu.Mem,
+	yD *TensorD, y gocu.Mem,
+	dyD *TensorD, dy gocu.Mem,
+	xD *TensorD, x gocu.Mem,
 	beta float64,
-	dxD *TensorD,
-	dx gocu.Mem,
+	dxD *TensorD, dx gocu.Mem,
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnPoolingBackward(handle.x, p.descriptor, a.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("PoolingBackward")
+}
+
+//BackwardUS is like Backward but uses unsafe.Pointer instead of gocu.Mem
+func (p *PoolingD) BackwardUS(
+	handle *Handle,
+	alpha float64,
+	yD *TensorD, y unsafe.Pointer,
+	dyD *TensorD, dy unsafe.Pointer,
+	xD *TensorD, x unsafe.Pointer,
+	beta float64,
+	dxD *TensorD, dx unsafe.Pointer,
+) error {
+	a := cscalarbydatatype(xD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnPoolingBackward(handle.x,
+		p.descriptor,
+		a.CPtr(),
+		yD.descriptor, y,
+		dyD.descriptor, dy,
+		xD.descriptor, x,
+		b.CPtr(),
+		dxD.descriptor, dx)).error("PoolingBackward")
 }
 
 /*
