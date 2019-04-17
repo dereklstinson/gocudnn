@@ -31,9 +31,9 @@ Any subpackage library bindings I include will most likely only be made to suppl
 
 ## Setup
 
-cuDNN found at or around [https://developer.nvidia.com/cudnn](https://developer.nvidia.com/cudnn)
+cuDNN 7.5.0 found at or around [https://developer.nvidia.com/cudnn](https://developer.nvidia.com/cudnn)
 
-CUDA Toolkit found at or around [https://developer.nvidia.com/cuda-downloads](https://developer.nvidia.com/cuda-downloads)
+CUDA 10.1 Toolkit found at or around [https://developer.nvidia.com/cuda-downloads](https://developer.nvidia.com/cuda-downloads)
 
 Golang V1.12 found at or around [https://golang.org/dl/](https://golang.org/dl/)
 
