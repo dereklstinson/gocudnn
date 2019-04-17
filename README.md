@@ -1,5 +1,5 @@
 # GoCudnn [![Coverage Status](https://coveralls.io/repos/github/dereklstinson/GoCudnn/badge.svg?branch=master)](https://coveralls.io/github/dereklstinson/GoCudnn?branch=master)
-<p><img alt="Gopher" title="GoCu" src="GoCu.png" width="50"/></p>
+<p><img alt="Gopher" title="GoCu" src="GoCu.png" width="500"/></p>
 
 
 V0.1_75_101 is compiling.  It is cudnn 7.5 w/ cuda 10.1, There might be bugs. Let me know.  
