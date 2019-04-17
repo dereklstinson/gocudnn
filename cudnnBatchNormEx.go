@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -188,6 +189,60 @@ func (b *BatchNormDEx) ForwardTraining(
 	)).error("ForwardTrainingEx")
 }
 
+//ForwardTrainingUS is loke ForwardTraining but using unsafe.Pointers instead of gocu.Mems
+func (b *BatchNormDEx) ForwardTrainingUS(
+	h *Handle,
+	alpha, beta float64, //alpha -result blend factor, beta - dest blend factor
+	xD *TensorD,
+	x unsafe.Pointer,
+	zD *TensorD,
+	z unsafe.Pointer,
+	yD *TensorD,
+	y unsafe.Pointer, //output
+	bnScaleBiasMeanVarDesc *TensorD,
+	scale unsafe.Pointer,
+	bias unsafe.Pointer,
+	expoAverageFactor float64,
+	resultRunningMean unsafe.Pointer,
+	resultRunningVariance unsafe.Pointer,
+	epsilon float64,
+	resultSaveMean unsafe.Pointer, //optional can be null this and reslutSaveInVariance either both have to be null or not // output
+	reslutSaveInVariance unsafe.Pointer, //optional can be null this and resultSaveMean either both have to be null or not. //output
+	actD *ActivationD,
+	wspace unsafe.Pointer,
+	wspacesib uint,
+	rspace unsafe.Pointer,
+	rspacesib uint,
+) error {
+	if !b.set {
+		return errors.New("BatchNormD not set")
+	}
+	a := cscalarbydatatype(yD.dtype, alpha)
+	be := cscalarbydatatype(yD.dtype, beta)
+
+	return Status(C.cudnnBatchNormalizationForwardTrainingEx(
+		h.x,
+		b.mode,
+		b.op,
+		a.CPtr(), be.CPtr(),
+		xD.descriptor, x,
+		zD.descriptor, z,
+		yD.descriptor, y,
+		bnScaleBiasMeanVarDesc.descriptor, scale, bias,
+		C.double(expoAverageFactor),
+		resultRunningMean,
+		resultRunningVariance,
+		C.double(epsilon),
+		resultSaveMean,
+		reslutSaveInVariance,
+		actD.descriptor,
+		wspace,
+		C.size_t(wspacesib),
+		rspace,
+		C.size_t(rspacesib),
+	)).error("ForwardTrainingEx")
+}
+
 //Backward does the backward ex algorithm.
 func (b *BatchNormDEx) Backward(
 	h *Handle,
@@ -285,6 +340,64 @@ func (b *BatchNormDEx) Backward(
 	)).error("BackwardEx")
 }
 
+//BackwardUS is just like Backward but uses unsafe.Pointers instead of gocu.Mem.
+func (b *BatchNormDEx) BackwardUS(
+	h *Handle,
+	alphadata, betadata, alphaparam, betaparam float64, //alpha -result blend factor, beta - dest blend factor
+	xD *TensorD,
+	x unsafe.Pointer,
+	yD *TensorD,
+	y unsafe.Pointer,
+	dyD *TensorD,
+	dy unsafe.Pointer,
+	dzD *TensorD,
+	dz unsafe.Pointer,
+	dxD *TensorD,
+	dx unsafe.Pointer,
+	dbnScaleBiasMeanVarDesc *TensorD,
+	scale unsafe.Pointer,
+	bias unsafe.Pointer,
+	dscale unsafe.Pointer, //output - for training scale and bias
+	dbias unsafe.Pointer, //output - for training scale and bias
+	epsilon float64, //input - use the same as forward pass
+	fromresultSaveMean unsafe.Pointer, //optional can be null this and reslutSaveInVariance either both have to be null or not // input
+	fromreslutSaveInVariance unsafe.Pointer, //optional can be null this and resultSaveMean either both have to be null or not. //input
+	actD *ActivationD,
+	wspace unsafe.Pointer,
+	wspacesib uint,
+	rspace unsafe.Pointer,
+	rspacesib uint,
+) error {
+	if !b.set {
+		return errors.New("BatchNormDEx not set")
+	}
+	ad := cscalarbydatatype(yD.dtype, alphadata)
+	bd := cscalarbydatatype(yD.dtype, betadata)
+	ap := cscalarbydatatype(yD.dtype, alphaparam)
+	bp := cscalarbydatatype(yD.dtype, betaparam)
+
+	return Status(C.cudnnBatchNormalizationBackwardEx(
+		h.x,
+		b.mode,
+		b.op,
+		ad.CPtr(), bd.CPtr(), ap.CPtr(), bp.CPtr(),
+		xD.descriptor, x,
+		yD.descriptor, y,
+		dyD.descriptor, dy,
+		dzD.descriptor, dz,
+		dxD.descriptor, dx,
+		dbnScaleBiasMeanVarDesc.descriptor, scale, bias, dscale, dbias,
+		C.double(epsilon),
+		fromresultSaveMean,
+		fromreslutSaveInVariance,
+		actD.descriptor,
+		wspace,
+		C.size_t(wspacesib),
+		rspace,
+		C.size_t(rspacesib),
+	)).error("BackwardEx")
+}
+
 /*ForwardInference info was pulled from cudnn documentation
 
 This function performs the forward BatchNormalization layer computation for inference phase.
@@ -375,6 +488,37 @@ func (b *BatchNormDEx) ForwardInference(
 		y.Ptr(),
 		ScaleBiasMeanVarDesc.descriptor,
 		scale.Ptr(), bias.Ptr(), estimatedMean.Ptr(), estimatedVariance.Ptr(),
+		C.double(epsilon),
+	)).error("BatchNormalizationForwardInference")
+}
+
+//ForwardInferenceUS is just like ForwardInference but uses unsafe.Pointers instead of gocu.Mem
+func (b *BatchNormDEx) ForwardInferenceUS(
+	handle *Handle,
+	alpha, beta float64, /* alpha[0] = result blend factor, beta[0] = dest layer blend factor */
+	xD *TensorD,
+	x unsafe.Pointer, /* NxCxHxW */
+	yD *TensorD,
+	y unsafe.Pointer, /* NxCxHxW */
+	ScaleBiasMeanVarDesc *TensorD,
+	scale, bias, estimatedMean, estimatedVariance unsafe.Pointer, //all share the ScaleBiasMeanVarDesc descriptor
+	epsilon float64,
+
+) error {
+	if !b.set {
+		return errors.New("BatchNormDEx not set")
+	}
+	a := cscalarbydatatype(yD.dtype, alpha)
+	be := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnBatchNormalizationForwardInference(
+		handle.x,
+		b.mode,
+		a.CPtr(),
+		be.CPtr(),
+		xD.descriptor, x,
+		yD.descriptor, y,
+		ScaleBiasMeanVarDesc.descriptor,
+		scale, bias, estimatedMean, estimatedVariance,
 		C.double(epsilon),
 	)).error("BatchNormalizationForwardInference")
 }

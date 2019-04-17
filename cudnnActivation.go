@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -136,6 +137,18 @@ func (a *ActivationD) Forward(
 	return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
 }
 
+//ForwardUS is just like Forward but it takes unsafe.Pointers instead of gocu.Mem
+func (a *ActivationD) ForwardUS(
+	handle *Handle,
+	alpha float64,
+	xD *TensorD, x unsafe.Pointer,
+	beta float64,
+	yD *TensorD, y unsafe.Pointer) error {
+	a1 := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y)).error("ActivationForward")
+}
+
 //Backward does the activation backward method
 //
 //From deep learning sdk documentation (slightly modified for gocudnn):
@@ -239,6 +252,20 @@ func (a *ActivationD) Backward(
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
+}
+
+//BackwardUS is just like Backward but it takes unsafe.Pointers instead of gocu.Mem
+func (a *ActivationD) BackwardUS(
+	handle *Handle,
+	alpha float64,
+	yD *TensorD, y unsafe.Pointer,
+	dyD *TensorD, dy unsafe.Pointer,
+	xD *TensorD, x unsafe.Pointer,
+	beta float64,
+	dxD *TensorD, dx unsafe.Pointer) error {
+	a1 := cscalarbydatatype(yD.dtype, alpha)
+	b := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y, dyD.descriptor, dy, xD.descriptor, x, b.CPtr(), dxD.descriptor, dx)).error("ActivationBackward")
 }
 
 //ActivationMode is used for activation discriptor flags flags are obtained through type's methods

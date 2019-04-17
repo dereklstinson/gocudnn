@@ -31,3 +31,12 @@ func (d *CudaPtr) DPtr() *unsafe.Pointer {
 type Allocator interface {
 	Malloc(size uint) (*CudaPtr, error)
 }
+
+/*
+//Copier interface copies data from src to dest.
+//Copy function needs to be able to able to copy contents of src to dest no matter where
+//the src and dest are.
+type Copier interface {
+	Copy(dest, src Mem, SIB int32) error
+}
+*/

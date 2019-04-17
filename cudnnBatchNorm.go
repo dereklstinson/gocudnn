@@ -153,6 +153,34 @@ func (b *BatchNormD) ForwardInference(
 	)).error("BatchNormalizationForwardInference")
 }
 
+//ForwardInferenceUS is like ForwardInference but uses unsafe.Pointers instead of gocu.Mems
+func (b *BatchNormD) ForwardInferenceUS(
+	handle *Handle,
+	alpha, beta float64, /* alpha[0] = result blend factor, beta[0] = dest layer blend factor */
+	xD *TensorD, x unsafe.Pointer, /* NxCxHxW */
+	yD *TensorD, y unsafe.Pointer, /* NxCxHxW */
+	ScaleBiasMeanVarDesc *TensorD, scale, bias, estimatedMean, estimatedVariance unsafe.Pointer, //all share the ScaleBiasMeanVarDesc descriptor
+	epsilon float64,
+
+) error {
+	if !b.set {
+		return errors.New("BatchNormD not set")
+	}
+	a := cscalarbydatatype(yD.dtype, alpha)
+	be := cscalarbydatatype(yD.dtype, beta)
+	return Status(C.cudnnBatchNormalizationForwardInference(
+		handle.x,
+		b.mode,
+		a.CPtr(),
+		be.CPtr(),
+		xD.descriptor, x,
+		yD.descriptor, y,
+		ScaleBiasMeanVarDesc.descriptor,
+		scale, bias, estimatedMean, estimatedVariance,
+		C.double(epsilon),
+	)).error("BatchNormalizationForwardInference")
+}
+
 //Backward - Performs backward pass of Batch Normalization layer.
 //
 //  Outputs: dx (backprop data), dscale (training scale), dbias (training bias)
@@ -207,6 +235,43 @@ func (b *BatchNormD) Backward(
 		C.double(epsilon),
 		smptr,
 		sinvptr,
+	)).error("BatchNormalizationBackward")
+}
+
+//BackwardUS is like Backward but uses unsafe.Pointers instead of gocu.Mem
+func (b *BatchNormD) BackwardUS(
+	handle *Handle,
+	alphadata, betadata, alphaparam, betaparam float64,
+	xD *TensorD, x unsafe.Pointer, /* same desc for x, dx, dy */
+	dyD *TensorD, dy unsafe.Pointer,
+	dxD *TensorD, dx unsafe.Pointer,
+	dBnScaleBiasDesc *TensorD, scale, dscale, dbias unsafe.Pointer, /* Shared tensor desc for the 4 tensors below */
+	epsilon float64, /* Same epsilon as forward pass */
+	/* Optionally cached intermediate results from forward pass */
+	savedMean, savedInvVariance unsafe.Pointer,
+) error {
+	if !b.set {
+		return errors.New("BatchNormD not set")
+	}
+	a := cscalarbydatatype(xD.dtype, alphadata)
+	be := cscalarbydatatype(xD.dtype, betadata)
+	ap := cscalarbydatatype(xD.dtype, alphaparam)
+	bp := cscalarbydatatype(xD.dtype, betaparam)
+
+	return Status(C.cudnnBatchNormalizationBackward(
+		handle.x,
+		b.mode,
+		a.CPtr(), be.CPtr(), ap.CPtr(), bp.CPtr(),
+		xD.descriptor, x,
+		dyD.descriptor, dy,
+		dxD.descriptor, dx,
+		dBnScaleBiasDesc.descriptor,
+		scale,
+		dscale,
+		dbias,
+		C.double(epsilon),
+		savedMean,
+		savedInvVariance,
 	)).error("BatchNormalizationBackward")
 }
 
@@ -384,6 +449,69 @@ func (b *BatchNormD) ForwardTraining(
 		resultrunningmean.Ptr(), resultRunningVariance.Ptr(),
 		C.double(epsilon),
 		resultSaveMean.Ptr(), resultSaveInvVariance.Ptr(),
+	)).error("BatchNormalizationForwardTraining")
+}
+
+//ForwardTrainingUS is just like ForwardTraining but uses unsafe.Pointers.
+func (b *BatchNormD) ForwardTrainingUS(
+	handle *Handle,
+	alpha float64, /* alpha[0] = result blend factor */
+	beta float64, /* beta[0] = dest layer blend factor */
+	xD *TensorD,
+	x unsafe.Pointer,
+	yD *TensorD,
+	y unsafe.Pointer,
+	/* Shared desc for the next 6 tensors in the argument list.
+	   Data type to be set as follows:
+	   type = (typeOf(x) == double) ? double : float
+	   Dimensions for this descriptor depend on normalization mode
+	   - Spatial Normalization : tensors are expected to have dims 1xCx1x1
+		(normalization is performed across NxHxW)
+	   - Per-Activation Normalization : tensors are expected to have dims of 1xCxHxW
+		(normalization is performed across N) */
+	bnScaleBiasMeanVar *TensorD,
+	/* 'Gamma' and 'Beta' respectively in Ioffe and Szegedy's paper's notation */
+	scale unsafe.Pointer,
+	bias unsafe.Pointer,
+	/* MUST use factor=1 in the very first call of a complete training cycle.
+	        Use a factor=1/(1+n) at N-th call to the function to get
+	        Cumulative Moving Average (CMA) behavior
+	        CMA[n] = (x[1]+...+x[n])/n
+	        Since CMA[n+1] = (n*CMA[n]+x[n+1])/(n+1) =
+	        ((n+1)*CMA[n]-CMA[n])/(n+1) + x[n+1]/(n+1) =
+			CMA[n]*(1-1/(n+1)) + x[n+1]*1/(n+1) */
+	expAveFactor float64,
+	/* Used in Training phase only.
+	   runningMean = newMean*factor + runningMean*(1-factor) */
+	resultrunningmean unsafe.Pointer, //output
+	/* Output in training mode, input in inference. Is the moving average
+	   of  variance[x] (factor is applied in the same way as for runningMean) */
+	resultRunningVariance unsafe.Pointer, //output
+	epsilon float64, /* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
+	resultSaveMean unsafe.Pointer, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveInvVariance unsafe.Pointer, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+
+) error {
+	if !b.set {
+		return errors.New("BatchNormD not set")
+	}
+	a := cscalarbydatatype(yD.dtype, alpha)
+	be := cscalarbydatatype(yD.dtype, beta)
+
+	return Status(C.cudnnBatchNormalizationForwardTraining(
+		handle.x,
+		b.mode,
+		a.CPtr(),
+		be.CPtr(),
+		xD.descriptor, x,
+		yD.descriptor, y,
+		bnScaleBiasMeanVar.descriptor,
+		scale,
+		bias,
+		C.double(expAveFactor),
+		resultrunningmean, resultRunningVariance,
+		C.double(epsilon),
+		resultSaveMean, resultSaveInvVariance,
 	)).error("BatchNormalizationForwardTraining")
 }
 

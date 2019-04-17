@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"runtime"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -227,6 +228,31 @@ func (a *AttentionD) Forward(
 
 }
 
+//ForwardUS is like Forward but takes unsafe.Pointer's instead of gocu.Mem
+func (a *AttentionD) ForwardUS(
+	h *Handle,
+	currIdx int32, //if currIdx <0  trainingmode, currIdx >=0 inference mode
+	loWinIdx []int32, // array of lower (inclusive) key and value time step windows
+	hiWinIdx []int32, // array of upper (exclusive) key and value time step windows
+	seqLengthArrayQRO []int32, // array of lengths for for queries,residuals,and out
+	seqLengthArrayKV []int32, // array of lengths for keys and values
+	qrDesc *SeqDataD, queries, residuals unsafe.Pointer,
+	keyDesc *SeqDataD, keys unsafe.Pointer,
+	vDesc *SeqDataD, values unsafe.Pointer,
+	oDesc *SeqDataD, out unsafe.Pointer,
+	wbuffSIB uint, wbuff unsafe.Pointer,
+	wspaceSIB uint, wspace unsafe.Pointer,
+	rspaceSIB uint, rspace unsafe.Pointer) error {
+	lo := int32Tocint(loWinIdx)
+	hi := int32Tocint(hiWinIdx)
+	QRO := int32Tocint(seqLengthArrayQRO)
+	KV := int32Tocint(seqLengthArrayKV)
+	return Status(C.cudnnMultiHeadAttnForward(h.x, a.descriptor, (C.int)(currIdx), &lo[0], &hi[0], &QRO[0], &KV[0],
+		qrDesc.descriptor, queries, residuals, keyDesc.descriptor, keys, vDesc.descriptor, values, oDesc.descriptor, out,
+		(C.size_t)(wbuffSIB), wbuff, (C.size_t)(wspaceSIB), wspace, (C.size_t)(rspaceSIB), rspace)).error("Forward")
+
+}
+
 //BackwardData does the backward propigation for data.
 func (a *AttentionD) BackwardData(
 	h *Handle,
@@ -251,6 +277,32 @@ func (a *AttentionD) BackwardData(
 		(C.size_t)(wbuffSIB), wbuff.Ptr(),
 		(C.size_t)(wspaceSIB), wspace.Ptr(),
 		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
+}
+
+//BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of gocu.Mem
+func (a *AttentionD) BackwardDataUS(
+	h *Handle,
+	loWinIdx []int32, // array of lower (inclusive) key and value time step windows
+	hiWinIdx []int32, // array of upper (exclusive) key and value time step windows
+	seqLengthArrayDQDO []int32, //array of lengths for dqueries and dout
+	seqLengthArrayDKDV []int32, //array of lengths for dkeys and dvalues
+	doDesc *SeqDataD, dout unsafe.Pointer,
+	dqDesc *SeqDataD, dqueries, queries unsafe.Pointer, //dqueries is output
+	dkDesc *SeqDataD, dkeys, keys unsafe.Pointer, //dkeys is output
+	dvDesc *SeqDataD, dvalues, values unsafe.Pointer, //dvalues is output
+	wbuffSIB uint, wbuff unsafe.Pointer, wspaceSIB uint, wspace unsafe.Pointer, rspaceSIB uint, rspace unsafe.Pointer) error {
+	lo := int32Tocint(loWinIdx)
+	hi := int32Tocint(hiWinIdx)
+	DQDO := int32Tocint(seqLengthArrayDQDO)
+	DKDV := int32Tocint(seqLengthArrayDKDV)
+	return Status(C.cudnnMultiHeadAttnBackwardData(h.x, a.descriptor, &lo[0], &hi[0], &DQDO[0], &DKDV[0],
+		doDesc.descriptor, dout,
+		dqDesc.descriptor, dqueries, queries,
+		dkDesc.descriptor, dkeys, keys,
+		dvDesc.descriptor, dvalues, values,
+		(C.size_t)(wbuffSIB), wbuff,
+		(C.size_t)(wspaceSIB), wspace,
+		(C.size_t)(rspaceSIB), rspace)).error("BackwardData")
 }
 
 //WgradMode is used for flags and can be changed through methods
@@ -291,4 +343,25 @@ func (a *AttentionD) BackwardWeights(
 		(C.size_t)(wbuffSIB), wbuff.Ptr(), dwbuff.Ptr(),
 		(C.size_t)(wspaceSIB), wspace.Ptr(),
 		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
+}
+
+//BackwardWeightsUS is like BackwardWeightsUS but uses unsafe.Pointer instead of gocu.Mem
+func (a *AttentionD) BackwardWeightsUS(
+	h *Handle,
+	wgmode WgradMode,
+	qDesc *SeqDataD, queries unsafe.Pointer,
+	keyDesc *SeqDataD, keys unsafe.Pointer,
+	vDesc *SeqDataD, values unsafe.Pointer,
+	doDesc *SeqDataD, dout unsafe.Pointer,
+	wbuffSIB uint, wbuff, dwbuff unsafe.Pointer,
+	wspaceSIB uint, wspace unsafe.Pointer, rspaceSIB uint, rspace unsafe.Pointer) error {
+
+	return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
+		qDesc.descriptor, queries,
+		keyDesc.descriptor, keys,
+		vDesc.descriptor, values,
+		doDesc.descriptor, dout,
+		(C.size_t)(wbuffSIB), wbuff, dwbuff,
+		(C.size_t)(wspaceSIB), wspace,
+		(C.size_t)(rspaceSIB), rspace)).error("BackwardData")
 }

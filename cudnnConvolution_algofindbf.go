@@ -12,6 +12,7 @@ void MakeAlgorithmforBWDFilter(cudnnAlgorithm_t *input,cudnnConvolutionBwdFilter
 import "C"
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
@@ -86,6 +87,35 @@ func (c *ConvolutionD) FindBackwardFilterAlgorithmEx(
 		c.descriptor,
 		dwD.descriptor, dw.Ptr(),
 		C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("FindConvolutionBackwardFilterAlgorithmEx")
+
+	results := make([]ConvBwdFiltAlgoPerformance, int32(actualalgocount))
+	for i := int32(0); i < int32(actualalgocount); i++ {
+		results[i] = convertConvBwdFiltAlgoPerformance(perfResults[i])
+
+	}
+	return results, err
+}
+
+//FindBackwardFilterAlgorithmExUS is just like FindBackwardFilterAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+func (c *ConvolutionD) FindBackwardFilterAlgorithmExUS(
+	handle *Handle,
+	xD *TensorD, x unsafe.Pointer,
+	dyD *TensorD, dy unsafe.Pointer,
+	dwD *FilterD, dw unsafe.Pointer,
+	wspace unsafe.Pointer, wspacesize uint) ([]ConvBwdFiltAlgoPerformance, error) {
+	reqAlgoCount, err := c.getBackwardFilterAlgorithmMaxCount(handle)
+	if err != nil {
+		return nil, err
+	}
+	perfResults := make([]C.cudnnConvolutionBwdFilterAlgoPerf_t, reqAlgoCount)
+	var actualalgocount C.int
+	err = Status(C.cudnnFindConvolutionBackwardFilterAlgorithmEx(
+		handle.x,
+		xD.descriptor, x,
+		dyD.descriptor, dy,
+		c.descriptor,
+		dwD.descriptor, dw,
+		C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace, C.size_t(wspacesize))).error("FindConvolutionBackwardFilterAlgorithmEx")
 
 	results := make([]ConvBwdFiltAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {

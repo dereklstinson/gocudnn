@@ -61,7 +61,7 @@ func ExampleTensorD() {
 	check(err)
 
 	//Make an Allocator
-	allocator, err := cudart.CreateAllocator(cs, dev) //cs could be nil .  Check out cudart package on more about streams
+	CudaMemManager, err := cudart.CreateMemManager(cs, dev) //cs could be nil .  Check out cudart package on more about streams
 	check(err)
 
 	//Tensor
@@ -79,7 +79,7 @@ func ExampleTensorD() {
 	check(err)
 
 	//Allocating memory to device and returning pointer to device memory
-	x, err := allocator.Malloc(xSIB)
+	x, err := CudaMemManager.Malloc(xSIB)
 
 	//Create some host mem to copy to cuda memory
 	hostmem := make([]float32, xSIB/4)
@@ -91,7 +91,7 @@ func ExampleTensorD() {
 	hostptr, err := gocu.MakeGoMem(hostmem)
 
 	//Copy hostmem to x
-	allocator.Copy(x, hostptr, xSIB) // This allocotor syncs the cuda stream after every copy.
+	CudaMemManager.Copy(x, hostptr, xSIB) // This allocotor syncs the cuda stream after every copy.
 	// You can make your own custom one. This was a default one
 	// to help others get going. Some "extra" functions beyond the api
 	// require an allocator.
@@ -106,7 +106,7 @@ func ExampleTensorD() {
 	}
 
 	//do some tensor stuff can return vals to host mem by doing another copy
-	allocator.Copy(hostptr, x, xSIB)
+	CudaMemManager.Copy(hostptr, x, xSIB)
 
 	check(err)
 	fmt.Println(hostmem)

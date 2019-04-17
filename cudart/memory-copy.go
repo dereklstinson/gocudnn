@@ -47,8 +47,8 @@ func MemCpy(dest gocu.Mem, src gocu.Mem, sizet uint, kind MemcpyKind) error {
 	return newErrorRuntime("cudaMemcpy", err)
 }
 
-//MemcpyUnsafe will do a memcopy using unsafe pointers. It's a little lower level than the regular MemCpy
-func MemcpyUnsafe(dest, src unsafe.Pointer, sizet uint, kind MemcpyKind) error {
+//MemCpyUS will do a memcopy using unsafe pointers. It's a little lower level than the regular MemCpy
+func MemcpyUS(dest, src unsafe.Pointer, sizet uint, kind MemcpyKind) error {
 	err := C.cudaMemcpy(dest, src, C.size_t(sizet), kind.c())
 
 	return newErrorRuntime("cudaMemcpy-MemcpyUnsafe", err)

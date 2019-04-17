@@ -19,8 +19,8 @@ type MemManager struct {
 	onhost bool
 }
 
-//CreateAllocator creates an allocator that is bounded to cudas unified memory management.
-func CreateAllocator(s *Stream, d Device) (*MemManager, error) {
+//CreateMemManager creates an allocator that is bounded to cudas unified memory management.
+func CreateMemManager(s *Stream, d Device) (*MemManager, error) {
 
 	major, err := d.Major()
 	if err != nil {
