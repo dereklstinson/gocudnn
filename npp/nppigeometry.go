@@ -599,7 +599,7 @@ func ResizeSqrPixel8uC1RAdvanced(pSrc *Uint8, oSrcSize Size, nSrcStep int32, oSr
 
 }
 
-//GetResizeTiledSourceOffset are functions found in the nppi library for cuda. If ctx is nil function will do regular operation. If not nill  it will do Ctx version
+//GetResizeTiledSourceOffset are functions found in the nppi library for cuda.
 func GetResizeTiledSourceOffset(oSrcRectROI, oDstRectROI Rect) (SrcRectOffset Point, err error) {
 	var pnt C.NppiPoint
 	err = status(C.nppiGetResizeTiledSourceOffset(oSrcRectROI.c(), oDstRectROI.c(), &pnt)).ToError()
