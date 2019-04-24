@@ -33,13 +33,15 @@ type Image C.nvjpegImage_t
 //
 //-Return     h  		   : pointer to NVJPEG_MAX_COMPONENT of ints, returns height of each channel
 //
-func GetImageInfo(handle *Handle, data []byte) (nComponents int32, subsampling ChromaSubsampling, w []int32, h []int32, err error) {
+func GetImageInfo(handle *Handle, data []byte) (subsampling ChromaSubsampling, w []int32, h []int32, err error) {
 	length := len(data)
 	var ncomp C.int
 	var sub C.nvjpegChromaSubsampling_t
 	w = make([]int32, C.NVJPEG_MAX_COMPONENT)
 	h = make([]int32, C.NVJPEG_MAX_COMPONENT)
-
+	if len(data) < 1 || data == nil {
+		return 0, nil, nil, errors.New("data len is 0 or nil")
+	}
 	err = status(C.nvjpegGetImageInfo(
 		handle.h,
 		(*C.uchar)(&data[0]),
@@ -50,8 +52,7 @@ func GetImageInfo(handle *Handle, data []byte) (nComponents int32, subsampling C
 		(*C.int)(&h[0]))).error()
 	subsampling = ChromaSubsampling(sub)
 
-	nComponents = int32(ncomp)
-	return nComponents, subsampling, w, h, err
+	return subsampling, w[:ncomp], h[:ncomp], err
 }
 
 //Get gets the underlying values of image
@@ -75,6 +76,77 @@ func (im *Image) c() C.nvjpegImage_t {
 	return (C.nvjpegImage_t)(*im)
 }
 
+//ChannelDimHelper will return the dims for each channel depending on the ouputformat
+func ChannelDimHelper(o OutputFormat, pitch, height []int32) (w, h []int32) {
+	var flg OutputFormat
+	switch o {
+	case flg.Y():
+		h := make([]int32, 1)
+		w = make([]int32, 1)
+		w[0] = pitch[0]
+		h[0] = height[0]
+		return w, h
+
+	case flg.YUV():
+		h := make([]int32, 3)
+		w = make([]int32, 3)
+		for i := 0; i < 3; i++ {
+
+			w[i] = pitch[i]
+			h[i] = height[i]
+
+		}
+		return w, h
+	case flg.RGB():
+
+		h := make([]int32, 3)
+		w = make([]int32, 3)
+		for i := 0; i < 3; i++ {
+
+			w[i] = pitch[0]
+			h[i] = height[0]
+
+		}
+		return w, h
+	case flg.BGR():
+
+		h := make([]int32, 3)
+		w = make([]int32, 3)
+		for i := 0; i < 3; i++ {
+
+			w[i] = pitch[0]
+			h[i] = height[0]
+
+		}
+		return w, h
+	case flg.RGBI():
+		h := make([]int32, 1)
+		w = make([]int32, 1)
+		w[0] = pitch[0] * 3
+		h[0] = height[0]
+		return w, h
+
+	case flg.BGRI():
+		h := make([]int32, 1)
+		w = make([]int32, 1)
+		w[0] = pitch[0] * 3
+		h[0] = height[0]
+		return w, h
+
+	case flg.Unchanged():
+
+		cmp := (int)(len(pitch))
+		h := make([]int32, cmp)
+		w = make([]int32, cmp)
+		for i := 0; i < cmp; i++ {
+			h[i] = height[i]
+			w[i] = pitch[i]
+		}
+		return h, w
+	}
+	return nil, nil
+}
+
 //CreateImageDest allocates cuda memory of an empty Image for Decode methods.
 //
 //The size of pitch needs to be at least the size of the width.
@@ -92,7 +164,8 @@ func (im *Image) c() C.nvjpegImage_t {
 //	-BGRI  				|width[0]*3	  c=?         					|pitch[0]*height[0] c=?
 //	-Unchanged			|width[c] for c = [ 0, nComponents - 1 ]			|pitch[c]*height[c] for c = [ 0, nComponents - 1]
 //
-func CreateImageDest(o OutputFormat, nComponents int32, pitch, height []int32, allocator gocu.Allocator) (*Image, error) {
+func CreateImageDest(o OutputFormat, pitch, height []int32, allocator gocu.Allocator) (*Image, error) {
+	nComponents := int32(len(pitch))
 	var flg OutputFormat
 	img := new(Image)
 	switch o {
