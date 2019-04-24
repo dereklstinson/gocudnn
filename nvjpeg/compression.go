@@ -20,7 +20,7 @@ type EncoderParams struct {
 //CreateEncoderParams creates an EncoderParams
 func CreateEncoderParams(h *Handle, s gocu.Streamer) (*EncoderParams, error) {
 	ep := new(EncoderParams)
-	err := status(C.nvjpegEncoderParamsCreate(h.h, &ep.ep, stream(s)))
+	err := status(C.nvjpegEncoderParamsCreate(h.h, &ep.ep, stream(s))).error()
 	runtime.SetFinalizer(ep, nvjpegEncoderParamsDestroy)
 	return ep, err
 }
@@ -37,7 +37,7 @@ func nvjpegEncoderParamsDestroy(ep *EncoderParams) error {
 //SetQuality sets the quality of the encoder params
 //Quality should be a number between 1 and 100. The default is set to 70
 func (ep *EncoderParams) SetQuality(quality int32, s gocu.Streamer) error {
-	return status(C.nvjpegEncoderParamsSetQuality(ep.ep, C.int(quality), stream(s)))
+	return status(C.nvjpegEncoderParamsSetQuality(ep.ep, C.int(quality), stream(s))).error()
 }
 
 //SetOptimizedHuffman - Sets whether or not to use optimized Huffman.
@@ -49,7 +49,7 @@ func (ep *EncoderParams) SetOptimizedHuffman(optimized bool, s gocu.Streamer) er
 	if optimized {
 		opt = 1
 	}
-	return status(C.nvjpegEncoderParamsSetOptimizedHuffman(ep.ep, opt, stream(s)))
+	return status(C.nvjpegEncoderParamsSetOptimizedHuffman(ep.ep, opt, stream(s))).error()
 }
 
 //SetSamplingFactors -Sets which chroma subsampling will be used for JPEG compression.
@@ -58,14 +58,14 @@ func (ep *EncoderParams) SetOptimizedHuffman(optimized bool, s gocu.Streamer) er
 //of source image, then the NVJPEG library will convert subsampling to the value of chroma_subsampling.
 // Default value is 4:4:4.
 func (ep *EncoderParams) SetSamplingFactors(ssfactor ChromaSubsampling, s gocu.Streamer) error {
-	return status(C.nvjpegEncoderParamsSetSamplingFactors(ep.ep, ssfactor.c(), stream(s)))
+	return status(C.nvjpegEncoderParamsSetSamplingFactors(ep.ep, ssfactor.c(), stream(s))).error()
 }
 
 //GetBufferSize - Returns the maximum possible buffer size that is needed to store the
 //compressed JPEG stream, for the given input parameters.
 func (ep *EncoderParams) GetBufferSize(h *Handle, width, height int32) (maxStreamLength uint, err error) {
 	var msl C.size_t
-	err = status(C.nvjpegEncodeGetBufferSize(h.h, ep.ep, (C.int)(width), (C.int)(height), &msl))
+	err = status(C.nvjpegEncodeGetBufferSize(h.h, ep.ep, (C.int)(width), (C.int)(height), &msl)).error()
 	maxStreamLength = (uint)(msl)
 	return maxStreamLength, err
 }
@@ -78,7 +78,7 @@ type EncoderState struct {
 //CreateEncoderState creates an EncoderState
 func CreateEncoderState(h *Handle, s gocu.Streamer) (*EncoderState, error) {
 	es := new(EncoderState)
-	err := status(C.nvjpegEncoderStateCreate(h.h, &es.es, stream(s)))
+	err := status(C.nvjpegEncoderStateCreate(h.h, &es.es, stream(s))).error()
 	runtime.SetFinalizer(es, nvjpegEncoderStateDestroy)
 	return es, err
 }
@@ -111,7 +111,7 @@ func (es *EncoderState) EncodeYUV(
 		(C.int)(swidth),
 		(C.int)(sheight),
 		stream(s),
-	))
+	)).error()
 }
 
 //EncodeImage - Compresses the image in the provided format to the JPEG stream
@@ -133,7 +133,7 @@ func (es *EncoderState) EncodeImage(
 		(C.int)(swidth),
 		(C.int)(sheight),
 		stream(s),
-	))
+	)).error()
 }
 
 //
@@ -168,7 +168,7 @@ func (es *EncoderState) GetCompressedBufferSize(h *Handle, s gocu.Streamer) (uin
 //nothing will be written and an error will be returned.
 func (es *EncoderState) ReadBitStream(h *Handle, p []byte, s gocu.Streamer) (n int, err error) {
 	length := C.size_t(len(p))
-	err = status(C.nvjpegEncodeRetrieveBitstream(h.h, es.es, (*C.uchar)(&p[0]), &length, stream(s)))
+	err = status(C.nvjpegEncodeRetrieveBitstream(h.h, es.es, (*C.uchar)(&p[0]), &length, stream(s))).error()
 	if err != nil {
 		msg := err.Error()
 		lenact, err2 := es.GetCompressedBufferSize(h, s)
