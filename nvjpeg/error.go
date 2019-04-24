@@ -5,9 +5,7 @@ package nvjpeg
 #include <cuda_runtime_api.h>
 */
 import "C"
-import (
-	"errors"
-)
+import "fmt"
 
 type status C.nvjpegStatus_t
 
@@ -32,7 +30,7 @@ func (n status) error() error {
 	case status(C.NVJPEG_STATUS_INTERNAL_ERROR):
 		return n
 	default:
-		return errors.New("Unsupported Error")
+		return fmt.Errorf("Unsupported Error- %d", n)
 	}
 
 }
@@ -55,7 +53,7 @@ func (n status) Error() string {
 	case status(C.NVJPEG_STATUS_INTERNAL_ERROR):
 		return "NVJPEG_STATUS_INTERNAL_ERROR"
 	default:
-		return "Unsupported Error"
+		return fmt.Sprintf("Unsupported Error, %d", n)
 
 	}
 
