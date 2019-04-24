@@ -36,32 +36,32 @@ func CreateSimple() (*Handle, error) {
 		return nil, err
 	}
 	runtime.SetFinalizer(h, nvjpegDestroy)
-	return h, err
+	return h, nil
 }
 
 //SetDeviceMemoryPadding -Use the provided padding for all device memory allocations with specified library handle.
 // A large number will help to amortize the need for device memory reallocations when needed.
 func (h *Handle) SetDeviceMemoryPadding(padding uint) error {
-	return status(C.nvjpegSetDeviceMemoryPadding(C.size_t(padding), h.h))
+	return status(C.nvjpegSetDeviceMemoryPadding(C.size_t(padding), h.h)).error()
 }
 
 //GetDeviceMemoryPadding - Retrieve the device memory padding that is currently used for the specified library handle.
 func (h *Handle) GetDeviceMemoryPadding() (uint, error) {
 	var size C.size_t
-	err := status(C.nvjpegGetDeviceMemoryPadding(&size, h.h))
+	err := status(C.nvjpegGetDeviceMemoryPadding(&size, h.h)).error()
 	return (uint)(size), err
 }
 
 //SetPinnedMemoryPadding -Use the provided padding for all pinned host memory allocations with specified library handle.
 //A large number will help to amortize the need for pinned host memory reallocations when needed.
 func (h *Handle) SetPinnedMemoryPadding(padding uint) error {
-	return status(C.nvjpegSetPinnedMemoryPadding(C.size_t(padding), h.h))
+	return status(C.nvjpegSetPinnedMemoryPadding(C.size_t(padding), h.h)).error()
 }
 
 //GetPinnedMemoryPadding -Retrieve the pinned host memory padding that is currently used for specified library handle.
 func (h *Handle) GetPinnedMemoryPadding() (uint, error) {
 	var size C.size_t
-	err := status(C.nvjpegGetPinnedMemoryPadding(&size, h.h))
+	err := status(C.nvjpegGetPinnedMemoryPadding(&size, h.h)).error()
 	return (uint)(size), err
 }
 
