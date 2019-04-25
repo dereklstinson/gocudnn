@@ -222,12 +222,13 @@ func (n *Float16) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Float16) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
-
+*/
 /*
  *
  * Float32
@@ -246,11 +247,13 @@ func (n *Float32) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Float32) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Float32) c() C.Npp32f {
 	return C.Npp32f(n)
 }
@@ -276,11 +279,13 @@ func (n *Float64) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Float64) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Float64) c() C.Npp64f {
 	return C.Npp64f(n)
 }
@@ -290,9 +295,33 @@ func (n Float64) c() C.Npp64f {
  * Uint8
  *
  */
+//Uint8 is a testcase is a struct that holds an unsafe pointer to convert to Uint8
+type Uint8 struct {
+	p unsafe.Pointer
+}
 
+func (n *Uint8) c() C.Npp8u {
+	x := (*C.Npp8u)(n.p)
+	return *x
+}
+func (n *Uint8) cptr() *C.Npp8u {
+	return (*C.Npp8u)(n.p)
+
+}
+func (n *Uint8) DPtr() *unsafe.Pointer {
+	return &n.p
+}
+func (n *Uint8) Ptr() unsafe.Pointer {
+	return (n.p)
+
+}
+func (n *Uint8) wrap(p *C.Npp8u) {
+	n.p = unsafe.Pointer(p)
+}
+
+/*
 //Uint8 is an uint8 for npp. A pointer of this type could be in cuda memory.
-type Uint8 C.Npp8u /**<  8-bit unsigned chars */
+type Uint8 C.Npp8u
 func (n *Uint8) cptr() *C.Npp8u {
 	return (*C.Npp8u)(n)
 }
@@ -302,15 +331,13 @@ func (n *Uint8) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
-//DPtr returns an double pointer used for allocating memory on device
-func (n *Uint8) DPtr() *unsafe.Pointer {
-	x := unsafe.Pointer(n)
-	return (*unsafe.Pointer)(&x)
-}
+
+
+
 func (n Uint8) c() C.Npp8u {
 	return C.Npp8u(n)
 }
-
+*/
 /*
  *
  * Int8
@@ -329,11 +356,13 @@ func (n *Int8) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Int8) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Int8) c() C.Npp8s {
 	return C.Npp8s(n)
 }
@@ -356,11 +385,13 @@ func (n *Uint16) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Uint16) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Uint16) c() C.Npp16u {
 	return C.Npp16u(n)
 }
@@ -383,11 +414,13 @@ func (n *Int16) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Int16) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Int16) c() C.Npp16s {
 	return C.Npp16s(n)
 }
@@ -410,11 +443,13 @@ func (n *Uint32) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Uint32) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Uint32) c() C.Npp32u {
 	return C.Npp32u(n)
 }
@@ -437,11 +472,13 @@ func (n *Int32) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Int32) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Int32) c() C.Npp32s {
 	return C.Npp32s(n)
 }
@@ -464,11 +501,13 @@ func (n *Uint64) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Uint64) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Uint64) c() C.Npp64u {
 	return C.Npp64u(n)
 }
@@ -491,15 +530,18 @@ func (n *Int64) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an double pointer used for allocating memory on device
 func (n *Int64) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return (*unsafe.Pointer)(&x)
 }
+*/
 func (n Int64) c() C.Npp64s {
 	return C.Npp64s(n)
 }
 
+/*
 func convertUint64toCNpp64uarray(x []Uint64) []C.Npp64u {
 	y := make([]C.Npp64u, len(x))
 	for i := range x {
@@ -547,17 +589,18 @@ func convertCNpp16utoUint16array(x []C.Npp16u) []Uint16 {
 func convertNpp8utoCNpp8uarray(x []Uint8) []C.Npp8u {
 	y := make([]C.Npp8u, len(x))
 	for i := range x {
-		y[i] = C.Npp8u(x[i])
+		y[i] = C.Npp8u(x[i].c())
 	}
 	return y
 }
 func convertCNpp8utoNpp8uarray(x []C.Npp8u) []Uint8 {
 	y := make([]Uint8, len(x))
 	for i := range x {
-		y[i] = Uint8(x[i])
+		y[i].wrap(&x[i])
 	}
 	return y
 }
+*/
 
 /*Uint8Complex  Complex Number
  * This struct represents an unsigned char complex number.
@@ -576,12 +619,13 @@ func (n *Uint8Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an *unsafe pointer to this variable location.
 func (n *Uint8Complex) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return &x
 }
-
+*/
 //Set sets the real and imaginary vals
 func (n *Uint8Complex) Set(real, imaginary Uint8) {
 	n.re = real.c()
@@ -589,9 +633,9 @@ func (n *Uint8Complex) Set(real, imaginary Uint8) {
 }
 
 //Get gets the real and imaginary vals
-func (n *Uint8Complex) Get() (real, imaginary Uint8) {
-	real = (Uint8)(n.re)
-	imaginary = (Uint8)(n.im)
+func (n *Uint8Complex) Get() (real, imaginary uint8) {
+	real = (uint8)(n.re)
+	imaginary = (uint8)(n.im)
 	return real, imaginary
 }
 
@@ -613,12 +657,13 @@ func (n *Uint16Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an *unsafe pointer to this variable location.
 func (n *Uint16Complex) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return &x
 }
-
+*/
 //Set sets the real and imaginary vals
 func (n *Uint16Complex) Set(real, imaginary Uint16) {
 	n.re = real.c()
@@ -650,12 +695,13 @@ func (n *Int16Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an *unsafe pointer to this variable location.
 func (n *Int16Complex) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return &x
 }
-
+*/
 //Set sets the real and imaginary vals
 func (n *Int16Complex) Set(real, imaginary Int16) {
 	n.re = real.c()
@@ -711,12 +757,13 @@ func (n *Int32Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an *unsafe pointer to this variable location.
 func (n *Int32Complex) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return &x
 }
-
+*/
 //Get gets the real and imaginary vals
 func (n *Int32Complex) Get() (real, imaginary Int32) {
 	real = (Int32)(n.re)
@@ -732,12 +779,13 @@ func (n *Float32Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an *unsafe pointer to this variable location.
 func (n *Float32Complex) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return &x
 }
-
+*/
 func (n *Float32Complex) c() C.Npp32fc {
 	return C.Npp32fc(*n)
 }
@@ -773,12 +821,13 @@ func (n *Int64Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an *unsafe pointer to this variable location.
 func (n *Int64Complex) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return &x
 }
-
+*/
 //Set sets the real and imaginary vals
 func (n *Int64Complex) Set(real, imaginary Int64) {
 	n.re = real.c()
@@ -800,12 +849,13 @@ func (n *Float64Complex) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(n)
 }
 
+/*
 //DPtr returns an *unsafe pointer to this variable location.
 func (n *Float64Complex) DPtr() *unsafe.Pointer {
 	x := unsafe.Pointer(n)
 	return &x
 }
-
+*/
 //Set sets the real and imaginary vals
 func (n *Float64Complex) Set(real, imaginary Float64) {
 	n.re = real.c()

@@ -17,9 +17,27 @@ import (
 //It will also set a finalizer on the memory for GC
 func MallocManagedHost(mem gocu.Mem, size uint) error {
 	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.uint(2)))
+	if err != nil {
+		return err
+	}
+	err = Memset(mem, 0, (size))
+	if err != nil {
+		return err
+	}
 	runtime.SetFinalizer(mem, hostfreemem)
-	return err
+
+	return nil
 }
+
+/*
+//MallocManagedHostUS is like MallocManaged but using unsafe.Pointer
+func MallocManagedHostUS(mem unsafe.Pointer, size uint) error {
+	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(&mem, C.size_t(size), C.uint(2)))
+	runtime.SetFinalizer(mem, hostfreememUS)
+	return err
+
+}
+*/
 
 //MallocManagedGlobal uses the Unified memory mangement system and starts it off in the Device
 //It will also set a finalizer on the memory for GC
@@ -29,6 +47,14 @@ func MallocManagedGlobal(mem gocu.Mem, size uint) error {
 	return err
 }
 
+/*
+//MallocManagedGlobalUS is like MallocManagedGlobal but uses unsafe.Pointer
+func MallocManagedGlobalUS(mem unsafe.Pointer, size uint) error {
+	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(&mem, C.size_t(size), C.uint(1)))
+	runtime.SetFinalizer(mem, devicefreememUS)
+	return err
+}
+*/
 //Malloc will allocate memory to the device the size that was passed.
 //It will also set the finalizer for GC
 func Malloc(mem gocu.Mem, sizet uint) error {
@@ -80,6 +106,11 @@ func PointerGetAttributes(mem gocu.Mem) (Atribs, error) {
 		Managed: managed,
 	}, nil
 }
+func MemsetUS(mem unsafe.Pointer, value int32, count uint) error {
+	err := C.cudaMemset(mem, C.int(value), C.size_t(count))
+
+	return newErrorRuntime("cudaMemset", err)
+}
 
 //Memset sets the value for each byte in device memory
 func Memset(mem gocu.Mem, value int32, count uint) error {
@@ -115,7 +146,23 @@ func devicefreemem(mem gocu.Mem) error {
 	mem = nil
 	return nil
 }
+func devicefreememUS(mem unsafe.Pointer) error {
 
+	err := newErrorRuntime("devicefree", C.cudaFree(mem))
+	if err != nil {
+		return nil
+	}
+	mem = nil
+	return nil
+}
+func hostfreememUS(mem unsafe.Pointer) error {
+	err := newErrorRuntime("hostfree", C.cudaFreeHost(mem))
+	if err != nil {
+		return err
+	}
+	mem = nil
+	return nil
+}
 func hostfreemem(mem gocu.Mem) error {
 	err := newErrorRuntime("hostfree", C.cudaFreeHost(mem.Ptr()))
 	if err != nil {

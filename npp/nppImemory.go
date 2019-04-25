@@ -25,9 +25,10 @@ Uint8
  */
 func Malloc8uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Uint8)(C.nppiMalloc_8u_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = new(Uint8)
+	ptr.wrap(C.nppiMalloc_8u_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc8uC2 - 2 channel 8-bit unsigned image memory allocator.
@@ -37,9 +38,10 @@ func Malloc8uC1(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingSte
  */
 func Malloc8uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Uint8)(C.nppiMalloc_8u_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = new(Uint8)
+	ptr.wrap(C.nppiMalloc_8u_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc8uC3 - 3 channel 8-bit unsigned image memory allocator.
@@ -49,9 +51,10 @@ func Malloc8uC2(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingSte
  */
 func Malloc8uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Uint8)(C.nppiMalloc_8u_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = new(Uint8)
+	ptr.wrap(C.nppiMalloc_8u_C3((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc8uC4 - 4 channel 8-bit unsigned image memory allocator.
@@ -61,9 +64,11 @@ func Malloc8uC3(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingSte
  */
 func Malloc8uC4(nWidthPixels int32, nHeightPixels int32) (ptr *Uint8, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Uint8)(C.nppiMalloc_8u_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = new(Uint8)
+	ptr.wrap(C.nppiMalloc_8u_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+
+	return ptr, int32(pStepBytes)
 }
 
 /*

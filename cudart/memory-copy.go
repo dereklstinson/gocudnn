@@ -41,13 +41,13 @@ func (m MemcpyKind) Default() MemcpyKind {
 func (m MemcpyKind) c() C.enum_cudaMemcpyKind { return C.enum_cudaMemcpyKind(m) }
 
 //MemCpy copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
-func MemCpy(dest gocu.Mem, src gocu.Mem, sizet uint, kind MemcpyKind) error {
+func MemCpy(dest, src gocu.Pointer, sizet uint, kind MemcpyKind) error {
 	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), C.size_t(sizet), kind.c())
 
 	return newErrorRuntime("cudaMemcpy", err)
 }
 
-//MemCpyUS will do a memcopy using unsafe pointers. It's a little lower level than the regular MemCpy
+//MemcpyUS will do a memcopy using unsafe pointers. It's a little lower level than the regular MemCpy
 func MemcpyUS(dest, src unsafe.Pointer, sizet uint, kind MemcpyKind) error {
 	err := C.cudaMemcpy(dest, src, C.size_t(sizet), kind.c())
 
@@ -55,21 +55,21 @@ func MemcpyUS(dest, src unsafe.Pointer, sizet uint, kind MemcpyKind) error {
 }
 
 //MemcpyAsync Copies data between host and device.
-func MemcpyAsync(dest gocu.Mem, src gocu.Mem, sizet uint, kind MemcpyKind, stream gocu.Streamer) error {
+func MemcpyAsync(dest, src gocu.Pointer, sizet uint, kind MemcpyKind, stream gocu.Streamer) error {
 	err := C.cudaMemcpyAsync(dest.Ptr(), src.Ptr(), C.size_t(sizet), kind.c(), C.cudaStream_t(stream.Ptr()))
 
 	return newErrorRuntime("cudaMemcpy", err)
 }
 
 //Memcpy2D copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
-func Memcpy2D(dest gocu.Mem, dpitch uint, src gocu.Mem, spitch uint, width, height uint, kind MemcpyKind) error {
+func Memcpy2D(dest gocu.Pointer, dpitch uint, src gocu.Pointer, spitch uint, width, height uint, kind MemcpyKind) error {
 	err := C.cudaMemcpy2D(dest.Ptr(), C.size_t(dpitch), src.Ptr(), C.size_t(spitch), C.size_t(width), C.size_t(height), kind.c())
 
 	return newErrorRuntime("cudaMemcpy", err)
 }
 
 //MemcpyPeer Copies memory between two devices.
-func MemcpyPeer(dest gocu.Mem, ddev Device, src gocu.Mem, sdev Device, sizet uint) error {
+func MemcpyPeer(dest gocu.Pointer, ddev Device, src gocu.Pointer, sdev Device, sizet uint) error {
 	err := C.cudaMemcpyPeer(dest.Ptr(), ddev.c(), src.Ptr(), sdev.c(), C.size_t(sizet))
 	return newErrorRuntime("cudaMemcpyPeer", err)
 }

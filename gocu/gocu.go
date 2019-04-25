@@ -17,13 +17,23 @@ type Streamer interface {
 
 //Mem is mem that is shared betweek cuda packages
 type Mem interface {
+	Ptr() unsafe.Pointer
 	DPtr() *unsafe.Pointer
+}
+
+//Pointer interface returns an unsafe.Pointer
+type Pointer interface {
 	Ptr() unsafe.Pointer
 }
 
+//DPointer interface returns an *unsafe.Pointer
+type DPointer interface {
+	DPtr() *unsafe.Pointer
+}
+
 //Offset returns a gocu.Mem with the unsafe.Pointer stored in it at the offset bybytes
-func Offset(mem Mem, bybytes uint) Mem {
-	return WrapUnsafe(unsafe.Pointer(uintptr(mem.Ptr()) + uintptr(bybytes)))
+func Offset(p Pointer, bybytes uint) Pointer {
+	return WrapUnsafe(unsafe.Pointer(uintptr(p.Ptr()) + uintptr(bybytes)))
 }
 
 func init() {
@@ -32,10 +42,4 @@ func init() {
 		panic(x)
 	}
 
-}
-
-//Filler fills a slice passed as an empty interface from the mem passed.
-//The interface{} needs to be some sort of pointer type.  Either
-type Filler interface {
-	Fill(interface{}, Mem) error
 }

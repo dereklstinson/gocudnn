@@ -31,11 +31,11 @@ func Convert8u32f(src *Uint8, dst *Float32, length int32, s *StreamContext) erro
 }
 
 //Convert16s8sSfs is in cuda npp documentation
-func Convert16s8sSfs(src *Int16, dst *Int8, nLength Uint32, rmode RoundMode, scalefactor int32, s *StreamContext) error {
+func Convert16s8sSfs(src *Int16, dst *Int8, length int32, rmode RoundMode, scalefactor int32, s *StreamContext) error {
 	if s == nil {
-		return status(C.nppsConvert_16s8s_Sfs(src.cptr(), dst.cptr(), nLength.c(), rmode.c(), (C.int)(scalefactor))).ToError()
+		return status(C.nppsConvert_16s8s_Sfs(src.cptr(), dst.cptr(), (C.Npp32u)(length), rmode.c(), (C.int)(scalefactor))).ToError()
 	}
-	return status(C.nppsConvert_16s8s_Sfs_Ctx(src.cptr(), dst.cptr(), nLength.c(), rmode.c(), (C.int)(scalefactor), s.c())).ToError()
+	return status(C.nppsConvert_16s8s_Sfs_Ctx(src.cptr(), dst.cptr(), (C.Npp32u)(length), rmode.c(), (C.int)(scalefactor), s.c())).ToError()
 }
 
 //Convert16s32s is in cuda npp documentation

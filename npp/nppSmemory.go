@@ -3,6 +3,8 @@ package npp
 /*
 #include <npps_support_functions.h>
 #include <nppdefs.h>
+
+
 */
 import "C"
 import (
@@ -12,15 +14,17 @@ import (
 )
 
 //Malloc8u is an allocator of *Uint8
-func Malloc8u(nSize int32) *Uint8 {
-	x := (*Uint8)(C.nppsMalloc_8u((C.int)(nSize)))
+func Malloc8u(nSize int32) (x *Uint8) {
+	x = new(Uint8)
+	y := (C.nppsMalloc_8u((C.int)(nSize)))
+	x.wrap(y)
 	runtime.SetFinalizer(x, nppsFree)
 	return x
 }
 
 //Malloc8s is an allocator of *Int8
-func Malloc8s(nSize int32) *Int8 {
-	x := (*Int8)(C.nppsMalloc_8s((C.int)(nSize)))
+func Malloc8s(nSize int32) (x *Int8) {
+	x = (*Int8)(C.nppsMalloc_8s((C.int)(nSize)))
 	runtime.SetFinalizer(x, nppsFree)
 	return x
 }
@@ -112,7 +116,8 @@ func Malloc64fc(nSize int32) *Float64Complex {
 func nppsFree(x interface{}) error {
 	switch y := x.(type) {
 	case *Uint8:
-		C.nppsFree(unsafe.Pointer(y))
+		C.nppsFree(y.p)
+		y = nil
 		return nil
 	case *Int8:
 		C.nppsFree(unsafe.Pointer(y))
