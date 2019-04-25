@@ -2,7 +2,10 @@ package npp
 
 //#include <nppdefs.h>
 import "C"
-import "unsafe"
+import (
+	"github.com/dereklstinson/GoCudnn/gocu"
+	"unsafe"
+)
 
 //Flags is a special struct that contains all the flag types npp uses.
 //Even though these types are flags themselves.
@@ -317,6 +320,13 @@ func (n *Uint8) Ptr() unsafe.Pointer {
 }
 func (n *Uint8) wrap(p *C.Npp8u) {
 	n.p = unsafe.Pointer(p)
+}
+func (n *Uint8) Offset(elements int32) *Uint8 {
+
+	mem := gocu.Offset(n, (elements))
+	return &Uint8{
+		p: mem.Ptr(),
+	}
 }
 
 /*
