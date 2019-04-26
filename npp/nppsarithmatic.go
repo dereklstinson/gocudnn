@@ -2305,11 +2305,14 @@ func TenLogTen32sISfs(pSrcDst *Int32, nLength int32, nScaleFactor int32, ctx *St
 }
 
 //SumLnGetBufferSize32f can be found in cuda npp documentation
-func SumLnGetBufferSize32f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+func SumLnGetBufferSize32f(nLength int32, ctx *StreamContext) (hpBufferSize int32, err error) {
 	if ctx == nil {
-		return status(C.nppsSumLnGetBufferSize_32f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+		err = status(C.nppsSumLnGetBufferSize_32f((C.int)(nLength), (*C.int)(&hpBufferSize))).ToError()
+		return hpBufferSize, err
 	}
-	return status(C.nppsSumLnGetBufferSize_32f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+	err = status(C.nppsSumLnGetBufferSize_32f_Ctx((C.int)(nLength), (*C.int)(&hpBufferSize), ctx.c())).ToError()
+	return hpBufferSize, err
+
 }
 
 //SumLn32f can be found in cuda npp documentation
@@ -2321,11 +2324,14 @@ func SumLn32f(pSrc *Float32, nLength int32, pDst *Float32, pDeviceBuffer *Uint8,
 }
 
 //SumLnGetBufferSize64f can be found in cuda npp documentation
-func SumLnGetBufferSize64f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+func SumLnGetBufferSize64f(nLength int32, ctx *StreamContext) (hpBufferSize int32, err error) {
 	if ctx == nil {
-		return status(C.nppsSumLnGetBufferSize_64f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+		err = status(C.nppsSumLnGetBufferSize_64f((C.int)(nLength), (*C.int)(&hpBufferSize))).ToError()
+		return hpBufferSize, err
 	}
-	return status(C.nppsSumLnGetBufferSize_64f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+	err = status(C.nppsSumLnGetBufferSize_64f_Ctx((C.int)(nLength), (*C.int)(&hpBufferSize), ctx.c())).ToError()
+	return hpBufferSize, err
+
 }
 
 //SumLn64f can be found in cuda npp documentation
@@ -2337,11 +2343,13 @@ func SumLn64f(pSrc *Float64, nLength int32, pDst *Float64, pDeviceBuffer *Uint8,
 }
 
 //SumLnGetBufferSize32f64f can be found in cuda npp documentation
-func SumLnGetBufferSize32f64f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+func SumLnGetBufferSize32f64f(nLength int32, ctx *StreamContext) (hpBufferSize int32, err error) {
 	if ctx == nil {
-		return status(C.nppsSumLnGetBufferSize_32f64f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+		err = status(C.nppsSumLnGetBufferSize_32f64f((C.int)(nLength), (*C.int)(&hpBufferSize))).ToError()
+		return hpBufferSize, err
 	}
-	return status(C.nppsSumLnGetBufferSize_32f64f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+	err = status(C.nppsSumLnGetBufferSize_32f64f_Ctx((C.int)(nLength), (*C.int)(&hpBufferSize), ctx.c())).ToError()
+	return hpBufferSize, err
 }
 
 //SumLn32f64f can be found in cuda npp documentation
@@ -2353,11 +2361,13 @@ func SumLn32f64f(pSrc *Float32, nLength int32, pDst *Float64, pDeviceBuffer *Uin
 }
 
 //SumLnGetBufferSize16s32f can be found in cuda npp documentation
-func SumLnGetBufferSize16s32f(nLength int32, hpBufferSize *Int32, ctx *StreamContext) error {
+func SumLnGetBufferSize16s32f(nLength int32, ctx *StreamContext) (hpBufferSize int32, err error) {
 	if ctx == nil {
-		return status(C.nppsSumLnGetBufferSize_16s32f((C.int)(nLength), (*C.int)(hpBufferSize))).ToError()
+		err = status(C.nppsSumLnGetBufferSize_16s32f((C.int)(nLength), (*C.int)(&hpBufferSize))).ToError()
+		return hpBufferSize, err
 	}
-	return status(C.nppsSumLnGetBufferSize_16s32f_Ctx((C.int)(nLength), (*C.int)(hpBufferSize), ctx.c())).ToError()
+	err = status(C.nppsSumLnGetBufferSize_16s32f_Ctx((C.int)(nLength), (*C.int)(&hpBufferSize), ctx.c())).ToError()
+	return hpBufferSize, err
 }
 
 //SumLn16s32f can be found in cuda npp documentation
@@ -2401,35 +2411,35 @@ func Arctan64fI(pSrcDst *Float64, nLength int32, ctx *StreamContext) error {
 }
 
 //Normalize32f can be found in cuda npp documentation
-func Normalize32f(pSrc *Float32, pDst *Float32, nLength int32, vSub Float32, vDiv Float32, ctx *StreamContext) error {
+func Normalize32f(pSrc *Float32, pDst *Float32, nLength int32, vSub, vDiv float32, ctx *StreamContext) error {
 	if ctx == nil {
-		return status(C.nppsNormalize_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+		return status(C.nppsNormalize_32f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.Npp32f)(vSub), (C.Npp32f)(vDiv))).ToError()
 	}
-	return status(C.nppsNormalize_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+	return status(C.nppsNormalize_32f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.Npp32f)(vSub), (C.Npp32f)(vDiv), ctx.c())).ToError()
 }
 
 //Normalize32fc can be found in cuda npp documentation
-func Normalize32fc(pSrc *Float32Complex, pDst *Float32Complex, nLength int32, vSub Float32Complex, vDiv Float32, ctx *StreamContext) error {
+func Normalize32fc(pSrc *Float32Complex, pDst *Float32Complex, nLength int32, vSub Float32Complex, vDiv float32, ctx *StreamContext) error {
 	if ctx == nil {
-		return status(C.nppsNormalize_32fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+		return status(C.nppsNormalize_32fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.Npp32f)(vDiv))).ToError()
 	}
-	return status(C.nppsNormalize_32fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+	return status(C.nppsNormalize_32fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.Npp32f)(vDiv), ctx.c())).ToError()
 }
 
 //Normalize64f can be found in cuda npp documentation
-func Normalize64f(pSrc *Float64, pDst *Float64, nLength int32, vSub, vDiv Float64, ctx *StreamContext) error {
+func Normalize64f(pSrc *Float64, pDst *Float64, nLength int32, vSub, vDiv float64, ctx *StreamContext) error {
 	if ctx == nil {
-		return status(C.nppsNormalize_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+		return status(C.nppsNormalize_64f(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.Npp64f)(vSub), (C.Npp64f)(vDiv))).ToError()
 	}
-	return status(C.nppsNormalize_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+	return status(C.nppsNormalize_64f_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), (C.Npp64f)(vSub), (C.Npp64f)(vDiv), ctx.c())).ToError()
 }
 
 //Normalize64fc can be found in cuda npp documentation
-func Normalize64fc(pSrc *Float64Complex, pDst *Float64Complex, nLength int32, vSub Float64Complex, vDiv Float64, ctx *StreamContext) error {
+func Normalize64fc(pSrc *Float64Complex, pDst *Float64Complex, nLength int32, vSub Float64Complex, vDiv float64, ctx *StreamContext) error {
 	if ctx == nil {
-		return status(C.nppsNormalize_64fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c())).ToError()
+		return status(C.nppsNormalize_64fc(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.Npp64f)(vDiv))).ToError()
 	}
-	return status(C.nppsNormalize_64fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), vDiv.c(), ctx.c())).ToError()
+	return status(C.nppsNormalize_64fc_Ctx(pSrc.cptr(), pDst.cptr(), (C.int)(nLength), vSub.c(), (C.Npp64f)(vDiv), ctx.c())).ToError()
 }
 
 //Normalize16sSfs can be found in cuda npp documentation
@@ -2449,27 +2459,27 @@ func Normalize16scSfs(pSrc *Int16Complex, pDst *Int16Complex, nLength int32, vSu
 }
 
 //Cauchy32fI can be found in cuda npp documentation
-func Cauchy32fI(pSrcDst *Float32, nLength int32, nParam Float32, ctx *StreamContext) error {
+func Cauchy32fI(pSrcDst *Float32, nLength int32, nParam float32, ctx *StreamContext) error {
 	if ctx == nil {
-		return status(C.nppsCauchy_32f_I(pSrcDst.cptr(), (C.int)(nLength), nParam.c())).ToError()
+		return status(C.nppsCauchy_32f_I(pSrcDst.cptr(), (C.int)(nLength), (C.Npp32f)(nParam))).ToError()
 	}
-	return status(C.nppsCauchy_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), nParam.c(), ctx.c())).ToError()
+	return status(C.nppsCauchy_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.Npp32f)(nParam), ctx.c())).ToError()
 }
 
 //CauchyD32fI can be found in cuda npp documentation
-func CauchyD32fI(pSrcDst *Float32, nLength int32, nParam Float32, ctx *StreamContext) error {
+func CauchyD32fI(pSrcDst *Float32, nLength int32, nParam float32, ctx *StreamContext) error {
 	if ctx == nil {
-		return status(C.nppsCauchyD_32f_I(pSrcDst.cptr(), (C.int)(nLength), nParam.c())).ToError()
+		return status(C.nppsCauchyD_32f_I(pSrcDst.cptr(), (C.int)(nLength), (C.Npp32f)(nParam))).ToError()
 	}
-	return status(C.nppsCauchyD_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), nParam.c(), ctx.c())).ToError()
+	return status(C.nppsCauchyD_32f_I_Ctx(pSrcDst.cptr(), (C.int)(nLength), (C.Npp32f)(nParam), ctx.c())).ToError()
 }
 
 //CauchyDD232fI can be found in cuda npp documentation
-func CauchyDD232fI(pSrcDst *Float32, pD2FVal *Float32, nLength int32, nParam Float32, ctx *StreamContext) error {
+func CauchyDD232fI(pSrcDst *Float32, pD2FVal *Float32, nLength int32, nParam float32, ctx *StreamContext) error {
 	if ctx == nil {
-		return status(C.nppsCauchyDD2_32f_I(pSrcDst.cptr(), pD2FVal.cptr(), (C.int)(nLength), nParam.c())).ToError()
+		return status(C.nppsCauchyDD2_32f_I(pSrcDst.cptr(), pD2FVal.cptr(), (C.int)(nLength), (C.Npp32f)(nParam))).ToError()
 	}
-	return status(C.nppsCauchyDD2_32f_I_Ctx(pSrcDst.cptr(), pD2FVal.cptr(), (C.int)(nLength), nParam.c(), ctx.c())).ToError()
+	return status(C.nppsCauchyDD2_32f_I_Ctx(pSrcDst.cptr(), pD2FVal.cptr(), (C.int)(nLength), (C.Npp32f)(nParam), ctx.c())).ToError()
 }
 
 //AndC8u can be found in cuda npp documentation

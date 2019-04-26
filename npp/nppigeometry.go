@@ -2524,7 +2524,8 @@ type NppiWarpAffineBatchCXR C.NppiWarpAffineBatchCXR
 
 //Get gets the values stored int the NppiWarpAffineBatchCXR struct
 func (n *NppiWarpAffineBatchCXR) Get() (pSrc unsafe.Pointer, nSrcStep int32, pDst unsafe.Pointer, nDstStep int32, pCoeffs *Float64) {
-	return n.pSrc, (int32)(n.nSrcStep), n.pDst, (int32)(n.nDstStep), (*Float64)(n.pCoeffs)
+	pCoeffs.wrap(n.pCoeffs)
+	return n.pSrc, (int32)(n.nSrcStep), n.pDst, (int32)(n.nDstStep), pCoeffs
 }
 
 //Set sets the values of an NppiWarpAffineBatchCXR
@@ -3458,7 +3459,8 @@ type NppiWarpPerspectiveBatchCXR C.NppiWarpPerspectiveBatchCXR
 
 //Get gets the values stored int the NppiWarpAffineBatchCXR struct
 func (n *NppiWarpPerspectiveBatchCXR) Get() (pSrc unsafe.Pointer, nSrcStep int32, pDst unsafe.Pointer, nDstStep int32, pCoeffs *Float64) {
-	return n.pSrc, (int32)(n.nSrcStep), n.pDst, (int32)(n.nDstStep), (*Float64)(n.pCoeffs)
+	pCoeffs.wrap(n.pCoeffs)
+	return n.pSrc, (int32)(n.nSrcStep), n.pDst, (int32)(n.nDstStep), pCoeffs
 }
 
 //Set sets the values of an NppiWarpAffineBatchCXR
