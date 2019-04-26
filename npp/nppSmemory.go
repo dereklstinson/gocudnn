@@ -16,17 +16,20 @@ import (
 //Malloc8u is an allocator of *Uint8
 func Malloc8u(nSize int32) (x *Uint8) {
 	x = new(Uint8)
-	y := (C.nppsMalloc_8u((C.int)(nSize)))
-	x.wrap(y)
+	//y := ()
+	x.wrap(C.nppsMalloc_8u((C.int)(nSize)))
 	runtime.SetFinalizer(x, nppsFree)
 	return x
 }
 
 //Malloc8s is an allocator of *Int8
 func Malloc8s(nSize int32) (x *Int8) {
-	x = (*Int8)(C.nppsMalloc_8s((C.int)(nSize)))
+	x = new(Int8)
+	y := (C.nppsMalloc_8s((C.int)(nSize)))
+	x.wrap(y)
 	runtime.SetFinalizer(x, nppsFree)
 	return x
+
 }
 
 //Malloc16u is an allocator of *Uint16
@@ -37,8 +40,10 @@ func Malloc16u(nSize int32) *Uint16 {
 }
 
 //Malloc16s is an allocator of *Int16
-func Malloc16s(nSize int32) *Int16 {
-	x := (*Int16)(C.nppsMalloc_16s((C.int)(nSize)))
+func Malloc16s(nSize int32) (x *Int16) {
+	x = new(Int16)
+	y := (C.nppsMalloc_16s((C.int)(nSize)))
+	x.wrap(y)
 	runtime.SetFinalizer(x, nppsFree)
 	return x
 }

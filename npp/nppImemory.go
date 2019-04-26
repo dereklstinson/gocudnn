@@ -142,9 +142,10 @@ Npp16s
  */
 func Malloc16sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Int16)(C.nppiMalloc_16s_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = new(Int16)
+	ptr.wrap(C.nppiMalloc_16s_C1((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
 }
 
 /*Malloc16sC2 - 2 channel 16-bit signed image memory allocator.
@@ -154,9 +155,11 @@ func Malloc16sC1(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingSt
  */
 func Malloc16sC2(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Int16)(C.nppiMalloc_16s_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = new(Int16)
+	ptr.wrap(C.nppiMalloc_16s_C2((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
+
 }
 
 /*Malloc16sC4 - 4 channel 16-bit signed image memory allocator.
@@ -166,9 +169,11 @@ func Malloc16sC2(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingSt
  */
 func Malloc16sC4(nWidthPixels int32, nHeightPixels int32) (ptr *Int16, PaddingStepBytes int32) {
 	var pStepBytes C.int
-	x := (*Int16)(C.nppiMalloc_16s_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
-	runtime.SetFinalizer(x, nppiallocfree)
-	return x, int32(pStepBytes)
+	ptr = new(Int16)
+	ptr.wrap(C.nppiMalloc_16s_C4((C.int)(nWidthPixels), (C.int)(nHeightPixels), &pStepBytes))
+	runtime.SetFinalizer(ptr, nppiallocfree)
+	return ptr, int32(pStepBytes)
+
 }
 
 /*
