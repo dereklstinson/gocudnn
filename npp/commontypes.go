@@ -23,6 +23,12 @@ type Uint8 struct {
 	p unsafe.Pointer
 }
 
+func MakeUint8Unsafe(p unsafe.Pointer) *Uint8 {
+	return &Uint8{
+		p: p,
+	}
+}
+
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
 func (n *Uint8) Set(val uint8, length int32, ctx *StreamContext) (err error) {
 	if ctx != nil {
