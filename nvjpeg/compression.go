@@ -76,9 +76,9 @@ type EncoderState struct {
 }
 
 //CreateEncoderState creates an EncoderState
-func CreateEncoderState(h *Handle, s gocu.Streamer) (*EncoderState, error) {
-	es := new(EncoderState)
-	err := status(C.nvjpegEncoderStateCreate(h.h, &es.es, stream(s))).error()
+func CreateEncoderState(h *Handle, s gocu.Streamer) (es *EncoderState, err error) {
+	es = new(EncoderState)
+	err = status(C.nvjpegEncoderStateCreate(h.h, &es.es, stream(s))).error()
 	runtime.SetFinalizer(es, nvjpegEncoderStateDestroy)
 	return es, err
 }

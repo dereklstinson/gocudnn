@@ -16,7 +16,7 @@ import (
 //MallocManagedHost uses the Unified memory mangement system and starts it off in the host
 //It will also set a finalizer on the memory for GC
 func MallocManagedHost(mem gocu.Mem, size uint) error {
-	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.uint(2)))
+	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachHost))
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func MallocManagedHostUS(mem unsafe.Pointer, size uint) error {
 //MallocManagedGlobal uses the Unified memory mangement system and starts it off in the Device
 //It will also set a finalizer on the memory for GC
 func MallocManagedGlobal(mem gocu.Mem, size uint) error {
-	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.uint(1)))
+	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachGlobal))
 	runtime.SetFinalizer(mem, devicefreemem)
 	return err
 }
@@ -55,6 +55,7 @@ func MallocManagedGlobalUS(mem unsafe.Pointer, size uint) error {
 	return err
 }
 */
+
 //Malloc will allocate memory to the device the size that was passed.
 //It will also set the finalizer for GC
 func Malloc(mem gocu.Mem, sizet uint) error {
