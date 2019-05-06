@@ -37,6 +37,15 @@ func GetDevice() (Device, error) {
 	return (Device)(d), err
 }
 
+//GetDeviceCount returns the number of devices.
+func GetDeviceCount() (n int32, err error) {
+	var num C.int
+	err = newErrorRuntime("Cudart-GetDeviceCount", C.cudaGetDeviceCount(&num))
+	n = (int32)(num)
+	return n, err
+
+}
+
 //MemGetInfo returns the free and total memory for device called
 //Will Set Device
 func (d Device) MemGetInfo() (free, total int, err error) {
