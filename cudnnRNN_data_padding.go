@@ -16,17 +16,20 @@ type RNNDataD struct {
 	d          C.cudnnRNNDataDescriptor_t
 	dtype      DataType
 	seqlensize int32
+	gogc       bool
 }
 
 //CreateRNNDataD creates an RNNDataD through cudnn's cudnnCreateRNNDataDescriptor
 //This is put into the runtime for GC
-func (rn RNN) CreateRNNDataD() (*RNNDataD, error) {
+func CreateRNNDataD() (*RNNDataD, error) {
 	d := new(RNNDataD)
 	err := Status(C.cudnnCreateRNNDataDescriptor(&d.d)).error("CreateRNNDataD")
 	if err != nil {
 		return nil, err
 	}
-	runtime.SetFinalizer(d, destroyrnndatadescriptor)
+	if setfinalizer {
+		runtime.SetFinalizer(d, destroyrnndatadescriptor)
+	}
 
 	return d, nil
 }
@@ -82,6 +85,19 @@ func (r *RNNDataD) Get() (dtype DataType, layout RNNDataLayout, maxSeqLength, ve
 
 	return dtype, layout, maxSeqLength, vectorsize, seqLengthArray, paddingsymbol, err
 
+}
+
+//Destroy destorys descriptor unless gogc is being used in which it will just return nil
+func (r *RNNDataD) Destroy() error {
+	if setfinalizer || r.gogc {
+		return nil
+	}
+	err := destroyrnndatadescriptor(r)
+	if err != nil {
+		return err
+	}
+	r = nil
+	return nil
 }
 func destroyrnndatadescriptor(d *RNNDataD) error {
 	err := Status(C.cudnnDestroyRNNDataDescriptor(d.d)).error("destroyrnndatadescriptor")

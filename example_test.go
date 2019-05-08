@@ -106,10 +106,10 @@ func ExampleTensorD() {
 	}
 
 	//do some tensor stuff can return vals to host mem by doing another copy
-	CudaMemManager.Copy(hostptr, x, xSIB)
+	err = CudaMemManager.Copy(hostptr, x, xSIB)
 
 	check(err)
 	fmt.Println(hostmem)
-	//Output: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+	//Output: [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19]
 
 }

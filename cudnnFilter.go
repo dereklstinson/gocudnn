@@ -75,6 +75,15 @@ func (f *FilterD) Get() (dtype DataType, frmt TensorFormat, shape []int32, err e
 	return dtype, frmt, shape, err
 }
 
+//GetSizeInBytes returns the size in bytes for the filter
+func (f *FilterD) GetSizeInBytes() (uint, error) {
+	dtype, _, shape, err := f.Get()
+	if err != nil {
+		return 0, err
+	}
+	return FindSizeTfromVol(shape, dtype), nil
+}
+
 //Destroy Destroys Filter Descriptor if GC is not set. if GC is set then it won't do anything
 func (f *FilterD) Destroy() error {
 	if f.gogc || setfinalizer {

@@ -77,23 +77,6 @@ func (c *ConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, dil
 
 }
 
-/*
-func Dostuff(s Setter, g Getter) error {
-	a, b, c, d, e, err := g.Get()
-	if err != nil {
-		return err
-	}
-	return s.Set(a, b, c, d, e)
-}
-
-type Setter interface {
-	Set(mod ConvolutionMode, data DataType, pad, stride, dilation []int32) error
-}
-type Getter interface {
-	Get() (mode ConvolutionMode, data DataType, pad []int32, stride []int32, dilation []int32, err error)
-}
-*/
-
 //Get gets returns the values used to make the convolution descriptor
 func (c *ConvolutionD) Get() (mode ConvolutionMode, data DataType, pad []int32, stride []int32, dilation []int32, err error) {
 
@@ -471,19 +454,21 @@ func (c *ConvolutionD) ForwardUS(
 
 	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x, wD.descriptor, w,
 		c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y)).error("ConvolutionForward")
-	if err != nil {
-		fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
-		fdt, ftf, fdim, err1 := wD.Get()
-		fmt.Println("wD vals", fdt, ftf, fdim, err1)
+	/*
+		if err != nil {
+			fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
+			fdt, ftf, fdim, err1 := wD.Get()
+			fmt.Println("wD vals", fdt, ftf, fdim, err1)
 
-		cmode, cdtype, pad, stride, dilation, err1 := c.Get()
-		fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
-		fmt.Println("Algo Settings", algo.toString())
-		actualwspacesize, err := c.GetForwardWorkspaceSize(handle, xD, wD, yD, algo)
+			cmode, cdtype, pad, stride, dilation, err1 := c.Get()
+			fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
+			fmt.Println("Algo Settings", algo.toString())
+			actualwspacesize, err := c.GetForwardWorkspaceSize(handle, xD, wD, yD, algo)
 
-		fmt.Println("Workspace Size Compare passed/wanted:", wspacesize, actualwspacesize, err)
-		panic(err)
-	}
+			fmt.Println("Workspace Size Compare passed/wanted:", wspacesize, actualwspacesize, err)
+			panic(err)
+		}
+	*/
 	return err
 }
 

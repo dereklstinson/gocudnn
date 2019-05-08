@@ -38,6 +38,7 @@ func CreateAlgorithmDescriptor() (*AlgorithmD, error) {
 	return x, nil
 
 }
+
 //Set sets the algorthm into the algorithmd
 func (a *AlgorithmD) Set(algo Algorithm) error {
 	return Status(C.cudnnSetAlgorithmDescriptor(
@@ -73,7 +74,7 @@ func (a *AlgorithmD) Copy() (*AlgorithmD, error) {
 
 //Destroy destroys descriptor. Right now since gocudnn is on go's gc this won't do anything
 func (a *AlgorithmD) Destroy() error {
-	if a.gogc||setfinalizer {
+	if a.gogc || setfinalizer {
 		return nil
 	}
 	return destroyalgorithmdescriptor(a)
@@ -100,11 +101,9 @@ func CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, e
 	return calgoperftogoarray(algoperf, setfinalizer), err
 }
 
-//SetAlgorithmPerformance sets the algo performance
-func (a *AlgorithmPerformance) SetAlgorithmPerformance(aD *AlgorithmD, s Status, time float32, memory uint) error {
-	if setkeepalive {
-		keepsalivebuffer(a, aD)
-	}
+//Set sets the algo performance
+func (a *AlgorithmPerformance) Set(aD *AlgorithmD, s Status, time float32, memory uint) error {
+
 	return Status(C.cudnnSetAlgorithmPerformance(a.descriptor, aD.descriptor, s.c(), C.float(time), C.size_t(memory))).error("SetAlgorithmPerformance")
 }
 
@@ -112,9 +111,9 @@ func (a *AlgorithmPerformance) keepsalive() {
 	runtime.KeepAlive(a)
 }
 
-//GetAlgorithmPerformance gets algorithm performance. it returns AlgorithmD, Status, float32(time), SizeT(memorysize in bytes)
+//Get gets algorithm performance. it returns AlgorithmD, Status, float32(time), SizeT(memorysize in bytes)
 //I didn't include the setalgorithmperformance func, but it might need to be made.
-func (a *AlgorithmPerformance) GetAlgorithmPerformance() (AlgorithmD, Status, float32, uint, error) {
+func (a *AlgorithmPerformance) Get() (AlgorithmD, Status, float32, uint, error) {
 	var algoD AlgorithmD
 	var status C.cudnnStatus_t
 	var time C.float

@@ -1,11 +1,10 @@
 package gocudnn
 
-import "log"
-
 //for debugging purposes
-const setkeepalive = false
+//const setkeepalive = false
 const setfinalizer = true
 
+/*
 type keeper interface {
 	keepsalive()
 }
@@ -32,3 +31,4 @@ func keepsalivebuffer(args ...interface{}) {
 	}
 	keepsalivecheck(keepers)
 }
+*/

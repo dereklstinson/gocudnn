@@ -178,8 +178,8 @@ func (c *CTCLossD) CTCLossUS(
 	return err
 }
 
-//GetCTCLossWorkspaceSize calculates workspace size
-func (c *CTCLossD) GetCTCLossWorkspaceSize(
+//GetWorkspaceSize calculates workspace size
+func (c *CTCLossD) GetWorkspaceSize(
 	handle *Handle,
 	probsD *TensorD, /* Tensor descriptor for probabilities, the dimensions are T,N,A (T is the timing steps, N is the mini batch size, A is the alphabet size)  */
 	gradientsD *TensorD, /* Tensor descriptor for gradients, the dimensions are T,N,A */
@@ -203,8 +203,6 @@ func (c *CTCLossD) GetCTCLossWorkspaceSize(
 		c.descriptor,
 		&bsize,
 	)).error("GetCTCLossWorkspaceSize")
-	if setkeepalive {
-		keepsalivebuffer(handle, probsD, gradientsD, c)
-	}
+
 	return uint(bsize), err
 }

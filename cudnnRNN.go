@@ -15,11 +15,6 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-//RNN holds the funcs and flags that are used for RNN stuff it is also used for the creation of an RNND
-type RNN struct {
-	Flgs RNNFlags
-}
-
 //Algo returns an Algorithm used for
 func (r RNNAlgo) Algo() Algorithm {
 	var algorithm C.cudnnAlgorithm_t
@@ -49,7 +44,7 @@ func rrndArrayToCarray(input []RNND) []C.cudnnRNNDescriptor_t {
 }
 
 //CreateRNNDescriptor creates an RNND descriptor
-func (rn RNN) CreateRNNDescriptor() (desc *RNND, err error) {
+func CreateRNNDescriptor() (desc *RNND, err error) {
 	desc = new(RNND)
 	err = Status(C.cudnnCreateRNNDescriptor(&desc.descriptor)).error("CreateRNNDescriptor")
 	if err != nil {
@@ -59,7 +54,7 @@ func (rn RNN) CreateRNNDescriptor() (desc *RNND, err error) {
 	if setfinalizer == true {
 		runtime.SetFinalizer(desc, destroyrnnddescriptor)
 	}
-
+	desc.gogc = true
 	return desc, err
 }
 
@@ -476,6 +471,7 @@ func (r *RNND) GetRNNLinLayerBiasParamsUS(
 //PersistentRNNPlan holds  C.cudnnPersistentRNNPlan_t
 type PersistentRNNPlan struct {
 	plan C.cudnnPersistentRNNPlan_t
+	gogc bool
 }
 
 //NewPersistentRNNPlan creates and sets a PersistentRNNPlan
@@ -499,6 +495,9 @@ func (r *RNND) NewPersistentRNNPlan(minibatch int32, data DataType) (plan *Persi
 
 //DestroyPersistentRNNPlan destroys the C.cudnnPersistentRNNPlan_t in the PersistentRNNPlan struct
 func (p *PersistentRNNPlan) DestroyPersistentRNNPlan() error {
+	if setfinalizer || p.gogc {
+		return nil
+	}
 	return destroypersistantrnnplan(p)
 }
 func destroypersistantrnnplan(p *PersistentRNNPlan) error {
