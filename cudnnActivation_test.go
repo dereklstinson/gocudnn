@@ -1,14 +1,16 @@
-package gocudnn
+package gocudnn_test
 
 import (
 	"testing"
+
+	gocudnn "github.com/dereklstinson/GoCudnn"
 )
 
 func TestCreateActivationDescriptor(t *testing.T) {
-	var amflg ActivationMode
-	var nanflg NANProp
+	var amflg gocudnn.ActivationMode
+	var nanflg gocudnn.NANProp
 	coef := 5.0
-	ad, err := CreateActivationDescriptor()
+	ad, err := gocudnn.CreateActivationDescriptor()
 	if err != nil {
 		t.Error(err)
 	}

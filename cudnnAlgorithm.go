@@ -89,7 +89,12 @@ func destroyalgorithmdescriptor(a *AlgorithmD) error {
 
 }
 
-//CreateAlgorithmPerformance creates and returns an AlgorithmPerformance //This might have to return an array be an array
+//CreateAlgorithmPerformance creates and returns an AlgorithmPerformance
+//
+//returns
+//
+//	nil = Sucess
+//	CUDNN_STATUS_ALLOC_FAILED - The resources could not be allocated
 func CreateAlgorithmPerformance(numberToCreate int32) ([]AlgorithmPerformance, error) {
 	//var algoperf C.cudnnAlgorithmPerformance_t
 	algoperf := make([]C.cudnnAlgorithmPerformance_t, numberToCreate)

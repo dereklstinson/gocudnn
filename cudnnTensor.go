@@ -353,8 +353,14 @@ func (d *DataType) Half() DataType { *d = DataType(C.CUDNN_DATA_HALF); return *d
 // UInt8 sets d to DataType(C.CUDNN_DATA_INT8) and returns the changed value
 func (d *DataType) UInt8() DataType { *d = DataType(C.CUDNN_DATA_INT8); return *d }
 
-//Int8x32 sets d to  DataType(C.CUDNN_DATA_INT8x32) and returns the changed value -- only supported by sm_72.
+//Int8x32 sets d to  DataType(C.CUDNN_DATA_INT8x32) and returns the changed value -- only supported by sm_72?.
 func (d *DataType) Int8x32() DataType { *d = DataType(C.CUDNN_DATA_INT8x32); return *d }
+
+//Int8x4 sets d to  DataType(C.CUDNN_DATA_INT8x4) and returns the changed value -- only supported by sm_72?.
+func (d *DataType) Int8x4() DataType { *d = DataType(C.CUDNN_DATA_INT8x4); return *d }
+
+//UInt8x4 sets d to  DataType(C.CUDNN_DATA_UINT8x4) and returns the changed value -- only supported by sm_72?.
+func (d *DataType) UInt8x4() DataType { *d = DataType(C.CUDNN_DATA_UINT8x4); return *d }
 
 func (d DataType) c() C.cudnnDataType_t      { return C.cudnnDataType_t(d) }
 func (d *DataType) cptr() *C.cudnnDataType_t { return (*C.cudnnDataType_t)(d) }
@@ -377,6 +383,10 @@ func (d DataType) ToString() string {
 		return "Int8x32"
 	case flg.UInt8():
 		return "UInt8"
+	case flg.Int8x4():
+		return "Int8x4"
+	case flg.UInt8x4():
+		return "UInt8x4"
 
 	}
 	return "ERROR no such flag"

@@ -23,7 +23,8 @@ type Uint8 struct {
 	p unsafe.Pointer
 }
 
-func MakeUint8Unsafe(p unsafe.Pointer) *Uint8 {
+//MakeUint8FromUnsafe will make a *Uint8 from an unsafe.Pointer
+func MakeUint8FromUnsafe(p unsafe.Pointer) *Uint8 {
 	return &Uint8{
 		p: p,
 	}
@@ -73,6 +74,13 @@ type Uint16 struct {
 	p unsafe.Pointer
 }
 
+//MakeUint16FromUnsafe will make a *Uint16 from an unsafe.Pointer
+func MakeUint16FromUnsafe(p unsafe.Pointer) *Uint16 {
+	return &Uint16{
+		p: p,
+	}
+}
+
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
 func (n *Uint16) Set(val uint16, length int32, ctx *StreamContext) (err error) {
 	if ctx != nil {
@@ -116,6 +124,13 @@ func (n *Uint16) Offset(elements int32) *Uint16 {
 //Uint32 holds an unsafe pointer to convert to Uint32
 type Uint32 struct {
 	p unsafe.Pointer
+}
+
+//MakeUint32FromUnsafe will make a *Uint32 from an unsafe.Pointer
+func MakeUint32FromUnsafe(p unsafe.Pointer) *Uint32 {
+	return &Uint32{
+		p: p,
+	}
 }
 
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
@@ -162,6 +177,12 @@ type Uint64 struct {
 	p unsafe.Pointer
 }
 
+//MakeUint64FromUnsafe will make a *Uint64 from an unsafe.Pointer
+func MakeUint64FromUnsafe(p unsafe.Pointer) *Uint64 {
+	return &Uint64{
+		p: p,
+	}
+}
 func (n *Uint64) c() C.Npp64u {
 	x := (*C.Npp64u)(n.p)
 	return *x
@@ -207,6 +228,13 @@ type Int8 struct {
 	p unsafe.Pointer
 }
 
+//MakeInt8FromUnsafe will make a *Int8 from an unsafe.Pointer
+func MakeInt8FromUnsafe(p unsafe.Pointer) *Int8 {
+	return &Int8{
+		p: p,
+	}
+}
+
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
 func (n *Int8) Set(val int8, length int32, ctx *StreamContext) (err error) {
 	if ctx != nil {
@@ -248,6 +276,13 @@ func (n *Int8) Offset(elements int32) *Int8 {
 //Int16 wraps an unsafe pointer for an Int16
 type Int16 struct {
 	p unsafe.Pointer
+}
+
+//MakeInt16FromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeInt16FromUnsafe(p unsafe.Pointer) *Int16 {
+	return &Int16{
+		p: p,
+	}
 }
 
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
@@ -293,6 +328,13 @@ type Int32 struct {
 	p unsafe.Pointer
 }
 
+//MakeInt32FromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeInt32FromUnsafe(p unsafe.Pointer) *Int32 {
+	return &Int32{
+		p: p,
+	}
+}
+
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
 func (n *Int32) Set(val int32, length int32, ctx *StreamContext) (err error) {
 	if ctx != nil {
@@ -334,6 +376,13 @@ func (n *Int32) Offset(elements int32) *Int32 {
 //Int64 wraps an unsafe pointer for an Int64
 type Int64 struct {
 	p unsafe.Pointer
+}
+
+//MakeInt64FromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeInt64FromUnsafe(p unsafe.Pointer) *Int64 {
+	return &Int64{
+		p: p,
+	}
 }
 
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
@@ -385,6 +434,13 @@ type Float32 struct {
 	p unsafe.Pointer
 }
 
+//MakeFloat32FromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeFloat32FromUnsafe(p unsafe.Pointer) *Float32 {
+	return &Float32{
+		p: p,
+	}
+}
+
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
 func (n *Float32) Set(val float32, length int32, ctx *StreamContext) (err error) {
 	if ctx != nil {
@@ -426,6 +482,13 @@ func (n *Float32) Offset(elements int32) *Float32 {
 //Float64 wraps an unsafe pointer for an Float32
 type Float64 struct {
 	p unsafe.Pointer
+}
+
+//MakeFloat64FromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeFloat64FromUnsafe(p unsafe.Pointer) *Float64 {
+	return &Float64{
+		p: p,
+	}
 }
 
 //Set sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
@@ -477,6 +540,12 @@ type Uint8Complex struct {
 	p unsafe.Pointer
 }
 
+//MakeUint8ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeUint8ComplexFromUnsafe(p unsafe.Pointer) *Uint8Complex {
+	return &Uint8Complex{
+		p: p,
+	}
+}
 func (n *Uint8Complex) c() C.Npp8uc {
 	x := (*C.Npp8uc)(n.p)
 	return *x
@@ -532,6 +601,12 @@ type Uint16Complex struct {
 	p unsafe.Pointer
 }
 
+//MakeUint16ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeUint16ComplexFromUnsafe(p unsafe.Pointer) *Uint16Complex {
+	return &Uint16Complex{
+		p: p,
+	}
+}
 func (n *Uint16Complex) c() C.Npp16uc {
 	x := (*C.Npp16uc)(n.p)
 	return *x
@@ -586,6 +661,12 @@ type Uint32Complex struct {
 	p unsafe.Pointer
 }
 
+//MakeUint32ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeUint32ComplexFromUnsafe(p unsafe.Pointer) *Uint32Complex {
+	return &Uint32Complex{
+		p: p,
+	}
+}
 func (n *Uint32Complex) c() C.Npp32uc {
 	x := (*C.Npp32uc)(n.p)
 	return *x
@@ -644,6 +725,13 @@ func (n *Uint32Complex) Offset(elements int32) *Uint32Complex {
  */
 type Int16Complex struct {
 	p unsafe.Pointer
+}
+
+//MakeInt16ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeInt16ComplexFromUnsafe(p unsafe.Pointer) *Int16Complex {
+	return &Int16Complex{
+		p: p,
+	}
 }
 
 //SetGPU sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
@@ -708,6 +796,13 @@ type Int32Complex struct {
 	p unsafe.Pointer
 }
 
+//MakeInt32ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeInt32ComplexFromUnsafe(p unsafe.Pointer) *Int32Complex {
+	return &Int32Complex{
+		p: p,
+	}
+}
+
 //SetGPU sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
 func (n *Int32Complex) SetGPU(val Int32Complex, length int32, ctx *StreamContext) (err error) {
 	if ctx != nil {
@@ -768,6 +863,13 @@ func (n *Int32Complex) Offset(elements int32) *Int32Complex {
  */
 type Int64Complex struct {
 	p unsafe.Pointer
+}
+
+//MakeInt64ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeInt64ComplexFromUnsafe(p unsafe.Pointer) *Int64Complex {
+	return &Int64Complex{
+		p: p,
+	}
 }
 
 //SetGPU sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
@@ -837,6 +939,13 @@ type Float32Complex struct {
 	p unsafe.Pointer
 }
 
+//MakeFloat32ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeFloat32ComplexFromUnsafe(p unsafe.Pointer) *Float32Complex {
+	return &Float32Complex{
+		p: p,
+	}
+}
+
 //SetGPU sets the value passed to the number of elements defined in length. n needs to be pre allocated already.
 func (n *Float32Complex) SetGPU(val Float32Complex, length int32, ctx *StreamContext) (err error) {
 	if ctx != nil {
@@ -897,6 +1006,13 @@ func (n *Float32Complex) Offset(elements int32) *Float32Complex {
  */
 type Float64Complex struct {
 	p unsafe.Pointer
+}
+
+//MakeFloat64ComplexFromUnsafe will make a *Int16 from an unsafe.Pointer
+func MakeFloat64ComplexFromUnsafe(p unsafe.Pointer) *Float64Complex {
+	return &Float64Complex{
+		p: p,
+	}
 }
 
 //SetGPU sets the value passed to the number of elements defined in length. n needs to be pre allocated already.

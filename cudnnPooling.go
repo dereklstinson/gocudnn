@@ -187,21 +187,34 @@ func (p *PoolingD) BackwardUS(
 type PoolingMode C.cudnnPoolingMode_t
 
 //Max returns PoolingMode(C.CUDNN_POOLING_MAX) flag
+//
+//The maximum value inside the pooling window is used.
 func (p *PoolingMode) Max() PoolingMode { *p = PoolingMode(C.CUDNN_POOLING_MAX); return *p }
 
 //AverageCountIncludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING) flag
+//
+//Values inside the pooling window are averaged.
+//The number of elements used to calculate the average
+//includes spatial locations falling in the padding region.
 func (p *PoolingMode) AverageCountIncludePadding() PoolingMode {
 	*p = PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING)
 	return *p
 }
 
 //AverageCountExcludePadding returns PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING) flag
+//
+//Values inside the pooling window are averaged.
+//The number of elements used to calculate the average
+//excludes spatial locations falling in the padding region.
 func (p *PoolingMode) AverageCountExcludePadding() PoolingMode {
 	*p = PoolingMode(C.CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING)
 	return *p
 }
 
 //MaxDeterministic returns PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC) flag
+//
+//The maximum value inside the pooling window is used.
+//The algorithm used is deterministic.
 func (p *PoolingMode) MaxDeterministic() PoolingMode {
 	*p = PoolingMode(C.CUDNN_POOLING_MAX_DETERMINISTIC)
 	return *p

@@ -154,13 +154,132 @@ func (c *ConvolutionD) GetBackwardDataWorkspaceSize(
 }
 
 //BackwardData does the backwards convolution on data
+//
+//This function computes the convolution data gradient of the tensor dy,
+//where y is the output of the forward convolution in (*ConvolutionD)Forward().
+//It uses the specified algo, and returns the results in the output tensor dx.
+//Scaling factors alpha and beta can be used to scale the computed result or accumulate with the current dx.
+//
+//Parameters:
+//
+//	---
+//	handle(input):
+//
+//	previously created Handle
+//	---
+//	----
+//	alpha, beta(input):
+//
+//	Pointers to scaling factors (in host memory) used to blend the computation result with prior
+//	value in the output layer as follows: dstValue = alpha[0]*result + beta[0]*priorDstValue.
+//	----
+//	---
+//	wD(input):
+//
+//	For previously set input tensor descriptor.
+//	---
+//	----
+//	w(input):
+//
+//	Data pointer to GPU memory associated with the tensor descriptor xD.
+//
+//	----
+//	---
+//	dyD(input):
+//
+//	For previously set input tensor descriptor of dy.
+//	---
+//	----
+//	dy(input):
+//
+//	Data pointer to GPU memory associated with the input tensor desctiptor.(Holds back propigation errors)
+//	----
+//	---
+//	algo(input):
+//
+//	Enumerant that specifies which backward data convolution algorithm shoud be used to compute the results.
+//	---
+//	----
+//	wspace, wspaceSIB(inputs):
+//
+//	Data pointer and size in bytes of workspace needed for algo passed. If no wspace is need nil can be passed.
+//	----
+//	---
+//	dxD(input):
+//	For previously set output tensor descriptor of dx.
+//	---
+//	----
+//	dx(input/output):
+//	Data pointer to GPU memory associated with the output tensor desctiptor.(Holds back propigation errors for layer it received its forward inputs.)
+//	----
+//
+//Supported Configurations
+//	----
+//	Config: "TRUE_HALF_CONFIG (only compute capability 5.3 and later)."
+//	TensorD (wD,dyD,dxD): (*DataType)Half()
+//	ConvolutionD: (*DataType)Half()
+//	----
+//	---
+//	Config: "PSEUDO_HALF_CONFIG"
+//	TensorD (wD,dyD,dxD): (*DataType)Half()
+//	ConvolutionD: (*DataType)Float()
+//	---
+//	----
+//	Config: "FLOAT_CONFIG"
+//	TensorD (wD,dyD,dxD): (*DataType)Float()
+//	ConvolutionD: (*DataType)Float()
+//	----
+//	---
+//	Config: "DOUBLE_CONFIG"
+//	TensorD (wD,dyD,dxD): (*DataType)Double()
+//	ConvolutionD: (*DataType)Double()
+//	---
+//
+//Note:
+//Specifying a separate algorithm can cause changes in performance, support and computation determinism.
+//
+//Table of algorithm with configs can be found at.  (gocudnn flag names are similar to cudnn)
+//	https://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html#cudnnConvolutionBackwardData
+//
+//Possible Error Returns:
+//	nil:
+//
+//	The function launched successfully.
+//
+//	CUDNN_STATUS_NOT_SUPPORTED:
+//
+//	At least one of the following conditions are met:
+//	1)	dyD or dxD have negative tensor striding
+//	2)	dyD, wD or dxD has a number of dimensions that is not 4 or 5
+//	3)	The chosen algo does not support the parameters provided; see above for exhaustive list of parameter support for each algo
+//	4)	dyD or wD indicate an output channel count that isn't a multiple of group count (if group count has been set in ConvolutionD).
+//
+//	CUDNN_STATUS_BAD_PARAM:
+//
+//	At least one of the following conditions are met:
+//	1)	At least one of the following is NULL: handle, dyD, wD, ConvolutionD, dxD, dy, w, dx, alpha, beta
+//	2)	wD and dyD have a non-matching number of dimensions
+//	3)	wD and dxD have a non-matching number of dimensions
+//	4)	wD has fewer than three number of dimensions
+//	5)	wD, dxD and dyD have a non-matching data type.
+//	6)	wD and dxD have a non-matching number of input feature maps per image (or group in case of Grouped Convolutions).
+//	7)	dyD's spatial sizes do not match with the expected size as determined by (*ConvolutionD)GetOutputDims().
+//
+//	CUDNN_STATUS_MAPPING_ERROR:
+//
+//	An error occurs during the texture binding of the filter data or the input differential tensor data
+//
+//	CUDNN_STATUS_EXECUTION_FAILED:
+//
+//	The function failed to launch on the GPU.
+//
 func (c *ConvolutionD) BackwardData(
 	handle *Handle,
 	alpha float64,
 	wD *FilterD, w gocu.Mem,
 	dyD *TensorD, dy gocu.Mem,
 	algo ConvBwdDataAlgo,
-	wspace gocu.Mem, wspacesize uint,
+	wspace gocu.Mem, wspaceSIB uint,
 	beta float64,
 	dxD *TensorD, dx gocu.Mem,
 ) error {
@@ -178,7 +297,7 @@ func (c *ConvolutionD) BackwardData(
 			c.descriptor,
 			algo.c(),
 			nil,
-			(C.size_t)(wspacesize),
+			(C.size_t)(wspaceSIB),
 			b.CPtr(),
 			dxD.descriptor,
 			dx.Ptr(),
@@ -195,7 +314,7 @@ func (c *ConvolutionD) BackwardData(
 		c.descriptor,
 		algo.c(),
 		wspace.Ptr(),
-		(C.size_t)(wspacesize),
+		(C.size_t)(wspaceSIB),
 		b.CPtr(),
 		dxD.descriptor,
 		dx.Ptr(),
@@ -472,8 +591,11 @@ func (c *ConvolutionD) ForwardUS(
 	return err
 }
 
-//BiasActivationForward passes a lot of stuff so be carefull
-/* Fused conv/bias/activation operation : y = Act( alpha1 * conv(x) + alpha2 * z + bias ) */
+//BiasActivationForward info can be found at:
+//
+//https://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html#cudnnConvolutionBiasActivationForward
+//
+//Fused conv/bias/activation operation : y = Act( alpha1 * conv(x) + alpha2 * z + bias )
 func (c *ConvolutionD) BiasActivationForward(
 	handle *Handle,
 	alpha1 float64,

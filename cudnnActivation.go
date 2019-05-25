@@ -272,33 +272,47 @@ func (a *ActivationD) BackwardUS(
 type ActivationMode C.cudnnActivationMode_t
 
 //Sigmoid sets a to ActivationMode(C.CUDNN_ACTIVATION_SIGMOID)and returns that value.
+//
+//Selects the sigmoid function.
 func (a *ActivationMode) Sigmoid() ActivationMode {
 	*a = ActivationMode(C.CUDNN_ACTIVATION_SIGMOID)
 	return *a
 }
 
 //Relu sets a to ActivationMode(C.CUDNN_ACTIVATION_RELU)and returns that value.
+//
+//Selects the rectified linear function.
 func (a *ActivationMode) Relu() ActivationMode {
 	*a = ActivationMode(C.CUDNN_ACTIVATION_RELU)
 	return *a
 }
 
 //Tanh sets a to ActivationMode(C.CUDNN_ACTIVATION_TANH)and returns that value.
+//
+//Selects the hyperbolic tangent function.
 func (a *ActivationMode) Tanh() ActivationMode {
 	*a = ActivationMode(C.CUDNN_ACTIVATION_TANH)
 	return *a
 }
 
 //ClippedRelu sets a to  ActivationMode(C.CUDNN_ACTIVATION_CLIPPED_RELU)and returns that value.
+//
+//Selects the clipped rectified linear function.
 func (a *ActivationMode) ClippedRelu() ActivationMode {
 	*a = ActivationMode(C.CUDNN_ACTIVATION_CLIPPED_RELU)
 	return *a
 }
 
 //Elu sets a to ActivationMode(C.CUDNN_ACTIVATION_ELU) and returns that value.
+//
+//Selects the exponential linear function.
 func (a *ActivationMode) Elu() ActivationMode { *a = ActivationMode(C.CUDNN_ACTIVATION_ELU); return *a }
 
-//Identity returns  ActivationMode(C.CUDNN_ACTIVATION_IDENTITY)
+//Identity returns  ActivationMode(C.CUDNN_ACTIVATION_IDENTITY) (new for 7.1)
+//
+//Selects the identity function, intended for bypassing the activation step in (*Convolution)BiasActivationForward().
+//(The Identity flag must use CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_​PRECOMP_GEMM, and only for (*Convolution)BiasActivationForward())
+//Does not work with cudnnActivationForward() or cudnnActivationBackward().
 func (a *ActivationMode) Identity() ActivationMode {
 	*a = ActivationMode(C.CUDNN_ACTIVATION_SIGMOID)
 	return *a
