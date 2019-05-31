@@ -13,6 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //Algo returns an Algorithm used for
@@ -255,7 +256,7 @@ func (r *RNND) GetLinLayerMatrixParams(
 
 	*/
 	xD *TensorD,
-	wD *FilterD, w gocu.Mem,
+	wD *FilterD, w cutil.Mem,
 	linlayerID int32,
 	/*
 	   Input. The linear layer to obtain information about:
@@ -295,7 +296,7 @@ func (r *RNND) GetLinLayerMatrixParams(
 	return linLayerMatDesc, linLayerMat, err
 }
 
-//GetLinLayerMatrixParamsUS is like GetLinLayerMatrixParamsUS but uses unsafe.Pointer instead of gocu.Mem
+//GetLinLayerMatrixParamsUS is like GetLinLayerMatrixParamsUS but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) GetLinLayerMatrixParamsUS(
 	handle *Handle,
 	pseudoLayer int32,
@@ -333,7 +334,7 @@ func (r *RNND) GetLinLayerMatrixParamsUS(
 
 	*/
 
-) (FilterD, gocu.Mem, error) {
+) (FilterD, cutil.Mem, error) {
 	var linLayerMatDesc FilterD
 	var linLayerMat unsafe.Pointer
 	err := Status(C.cudnnGetRNNLinLayerMatrixParams(
@@ -367,7 +368,7 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 	*/
 	xD *TensorD,
 	wD *FilterD,
-	w gocu.Mem,
+	w cutil.Mem,
 	linlayerID int32,
 	/*
 	   Input. The linear layer to obtain information about:
@@ -389,7 +390,7 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 
 	*/
 
-) (BiasD *FilterD, Bias gocu.Mem, err error) {
+) (BiasD *FilterD, Bias cutil.Mem, err error) {
 	BiasD, err = CreateFilterDescriptor()
 	if err != nil {
 		return nil, nil, err
@@ -410,7 +411,7 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 	return BiasD, Bias, err
 }
 
-//GetRNNLinLayerBiasParamsUS is like GetRNNLinLayerBiasParams but uses unsafe.Pointer instead of gocu.Mem
+//GetRNNLinLayerBiasParamsUS is like GetRNNLinLayerBiasParams but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) GetRNNLinLayerBiasParamsUS(
 	handle *Handle,
 	pseudoLayer int32,
@@ -515,14 +516,14 @@ RNN Fluncs
 //RNNForwardInference is the forward inference
 func (r *RNND) RNNForwardInference(
 	handle *Handle,
-	xD []*TensorD, x gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	cxD *TensorD, cx gocu.Mem,
-	wD *FilterD, w gocu.Mem,
-	yD []*TensorD, y gocu.Mem,
-	hyD TensorD, hy gocu.Mem,
-	cyD TensorD, cy gocu.Mem,
-	wspace gocu.Mem, wspacesize uint,
+	xD []*TensorD, x cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	cxD *TensorD, cx cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	yD []*TensorD, y cutil.Mem,
+	hyD TensorD, hy cutil.Mem,
+	cyD TensorD, cy cutil.Mem,
+	wspace cutil.Mem, wspacesize uint,
 
 ) error {
 	seqLength := len(xD)
@@ -560,7 +561,7 @@ func (r *RNND) RNNForwardInference(
 	)).error("RNNForwardInference")
 }
 
-//RNNForwardInferenceUS is like RNNForwardInference but uses unsafe.Pointer instead of gocu.Mem
+//RNNForwardInferenceUS is like RNNForwardInference but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) RNNForwardInferenceUS(
 	handle *Handle,
 	xD []*TensorD, x unsafe.Pointer,
@@ -595,15 +596,15 @@ func (r *RNND) RNNForwardInferenceUS(
 //RNNForwardTraining is the forward algo for an RNN
 func (r *RNND) RNNForwardTraining(
 	handle *Handle,
-	xD []*TensorD, x gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	cxD *TensorD, cx gocu.Mem,
-	wD *FilterD, w gocu.Mem,
-	yD []*TensorD, y gocu.Mem,
-	hyD *TensorD, hy gocu.Mem,
-	cyD *TensorD, cy gocu.Mem,
-	wspace gocu.Mem, wspacesize uint,
-	rspace gocu.Mem, rspacesize uint,
+	xD []*TensorD, x cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	cxD *TensorD, cx cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	yD []*TensorD, y cutil.Mem,
+	hyD *TensorD, hy cutil.Mem,
+	cyD *TensorD, cy cutil.Mem,
+	wspace cutil.Mem, wspacesize uint,
+	rspace cutil.Mem, rspacesize uint,
 ) error {
 	seqLen := len(xD)
 	tocxD := tensorDArrayToC(xD)
@@ -641,7 +642,7 @@ func (r *RNND) RNNForwardTraining(
 
 }
 
-//RNNForwardTrainingUS is like RNNForwardTraining but using unsafe.Pointer instead of gocu.Mem
+//RNNForwardTrainingUS is like RNNForwardTraining but using unsafe.Pointer instead of cutil.Mem
 func (r *RNND) RNNForwardTrainingUS(
 	handle *Handle,
 	xD []*TensorD, x unsafe.Pointer,
@@ -678,18 +679,18 @@ func (r *RNND) RNNForwardTrainingUS(
 //RNNBackwardData is the backward algo for an RNN
 func (r *RNND) RNNBackwardData(
 	handle *Handle,
-	yD []*TensorD, y gocu.Mem,
-	dyD []*TensorD, dy gocu.Mem,
-	dhyD *TensorD, dhy gocu.Mem,
-	dcyD *TensorD, dcy gocu.Mem,
-	wD *FilterD, w gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	cxD *TensorD, cx gocu.Mem,
-	dxD []*TensorD, dx gocu.Mem,
-	dhxD *TensorD, dhx gocu.Mem,
-	dcxD *TensorD, dcx gocu.Mem,
-	wspace gocu.Mem, wspacesize uint,
-	rspace gocu.Mem, rspacesize uint,
+	yD []*TensorD, y cutil.Mem,
+	dyD []*TensorD, dy cutil.Mem,
+	dhyD *TensorD, dhy cutil.Mem,
+	dcyD *TensorD, dcy cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	cxD *TensorD, cx cutil.Mem,
+	dxD []*TensorD, dx cutil.Mem,
+	dhxD *TensorD, dhx cutil.Mem,
+	dcxD *TensorD, dcx cutil.Mem,
+	wspace cutil.Mem, wspacesize uint,
+	rspace cutil.Mem, rspacesize uint,
 ) error {
 	seqLen := len(yD)
 	tocdxD := tensorDArrayToC(dxD)
@@ -735,7 +736,7 @@ func (r *RNND) RNNBackwardData(
 
 }
 
-//RNNBackwardDataUS is like RNNBackwardData but uses unsafe.Pointer instead of gocu.Mem
+//RNNBackwardDataUS is like RNNBackwardData but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) RNNBackwardDataUS(
 	handle *Handle,
 	yD []*TensorD, y unsafe.Pointer,
@@ -779,12 +780,12 @@ func (r *RNND) RNNBackwardDataUS(
 //BackwardWeights does the backward weight function
 func (r *RNND) BackwardWeights(
 	handle *Handle,
-	xD []*TensorD, x gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	yD []*TensorD, y gocu.Mem,
-	wspace gocu.Mem, wspacesize uint,
-	dwD *FilterD, dw gocu.Mem,
-	rspace gocu.Mem, rspacesize uint,
+	xD []*TensorD, x cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	yD []*TensorD, y cutil.Mem,
+	wspace cutil.Mem, wspacesize uint,
+	dwD *FilterD, dw cutil.Mem,
+	rspace cutil.Mem, rspacesize uint,
 ) error {
 	seqLen := len(yD)
 	tocxD := tensorDArrayToC(xD)
@@ -818,7 +819,7 @@ func (r *RNND) BackwardWeights(
 
 }
 
-//BackwardWeightsUS is like BackwardWeights but uses unsafe.Pointer instead of gocu.Mem
+//BackwardWeightsUS is like BackwardWeights but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) BackwardWeightsUS(
 	handle *Handle,
 	xD []*TensorD, x unsafe.Pointer,

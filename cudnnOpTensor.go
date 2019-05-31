@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //OPTensorD holds OP Tensor information
@@ -59,11 +59,11 @@ func (t *OPTensorD) Destroy() error {
 func (t *OPTensorD) OpTensor(
 	handle *Handle,
 	alpha1 float64,
-	aD *TensorD, A gocu.Mem,
+	aD *TensorD, A cutil.Mem,
 	alpha2 float64,
-	bD *TensorD, B gocu.Mem,
+	bD *TensorD, B cutil.Mem,
 	beta float64,
-	cD *TensorD, cmem gocu.Mem) error {
+	cD *TensorD, cmem cutil.Mem) error {
 	a1 := cscalarbydatatype(aD.dtype, alpha1)
 	a2 := cscalarbydatatype(bD.dtype, alpha2)
 	b := cscalarbydatatype(cD.dtype, beta)
@@ -80,7 +80,7 @@ func (t *OPTensorD) OpTensor(
 	return Status(x).error("OpTensor")
 }
 
-//OpTensorUS is like OpTensor but uses unsafe.Pointer instead of gocu.Mem
+//OpTensorUS is like OpTensor but uses unsafe.Pointer instead of cutil.Mem
 func (t *OPTensorD) OpTensorUS(
 	handle *Handle,
 	alpha1 float64,

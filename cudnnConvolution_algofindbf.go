@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //Algo returns an Algorithm Struct
@@ -70,10 +70,10 @@ func (c *ConvolutionD) FindBackwardFilterAlgorithm(
 //FindBackwardFilterAlgorithmEx finds some algorithms with memory
 func (c *ConvolutionD) FindBackwardFilterAlgorithmEx(
 	handle *Handle,
-	xD *TensorD, x gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
-	dwD *FilterD, dw gocu.Mem,
-	wspace gocu.Mem, wspacesize uint) ([]ConvBwdFiltAlgoPerformance, error) {
+	xD *TensorD, x cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
+	dwD *FilterD, dw cutil.Mem,
+	wspace cutil.Mem, wspacesize uint) ([]ConvBwdFiltAlgoPerformance, error) {
 	reqAlgoCount, err := c.getBackwardFilterAlgorithmMaxCount(handle)
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (c *ConvolutionD) FindBackwardFilterAlgorithmEx(
 	return results, err
 }
 
-//FindBackwardFilterAlgorithmExUS is just like FindBackwardFilterAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+//FindBackwardFilterAlgorithmExUS is just like FindBackwardFilterAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) FindBackwardFilterAlgorithmExUS(
 	handle *Handle,
 	xD *TensorD, x unsafe.Pointer,

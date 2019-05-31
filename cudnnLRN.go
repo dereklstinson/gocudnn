@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //LRN is a struct that is used in making lrn layers. It holds the Funcs, and Flags
@@ -116,9 +116,9 @@ func (l *LRND) LRNCrossChannelForward(
 	handle *Handle,
 	mode LRNmode,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	yD *TensorD, y gocu.Mem,
+	yD *TensorD, y cutil.Mem,
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
@@ -133,7 +133,7 @@ func (l *LRND) LRNCrossChannelForward(
 	)).error("LRNCrossChannelForward")
 }
 
-//LRNCrossChannelForwardUS is like LRNCrossChannelForward but using unsafe.Pointer instead of gocu.Mem
+//LRNCrossChannelForwardUS is like LRNCrossChannelForward but using unsafe.Pointer instead of cutil.Mem
 func (l *LRND) LRNCrossChannelForwardUS(
 	handle *Handle,
 	mode LRNmode,
@@ -160,11 +160,11 @@ func (l *LRND) LRNCrossChannelBackward(
 	handle *Handle,
 	mode LRNmode,
 	alpha float64,
-	yD *TensorD, y gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
-	xD *TensorD, x gocu.Mem,
+	yD *TensorD, y cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	dxD *TensorD, dx gocu.Mem,
+	dxD *TensorD, dx cutil.Mem,
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
@@ -181,7 +181,7 @@ func (l *LRND) LRNCrossChannelBackward(
 	)).error("LRNCrossChannelForward")
 }
 
-//LRNCrossChannelBackwardUS is like LRNCrossChannelBackward but using unsafe.Pointer instead of gocu.Mem
+//LRNCrossChannelBackwardUS is like LRNCrossChannelBackward but using unsafe.Pointer instead of cutil.Mem
 func (l *LRND) LRNCrossChannelBackwardUS(
 	handle *Handle,
 	mode LRNmode,
@@ -212,9 +212,9 @@ func (l *LRND) DivisiveNormalizationForward(
 	handle *Handle,
 	mode DivNormMode,
 	alpha float64,
-	xD TensorD, x, means, temp, temp2 gocu.Mem,
+	xD TensorD, x, means, temp, temp2 cutil.Mem,
 	beta float64,
-	yD TensorD, y gocu.Mem,
+	yD TensorD, y cutil.Mem,
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
@@ -234,7 +234,7 @@ func (l *LRND) DivisiveNormalizationForward(
 	)).error("DivisiveNormalizationForward")
 }
 
-//DivisiveNormalizationForwardUS is like DivisiveNormalizationForward but using unsafe.Pointer instead of gocu.Mem
+//DivisiveNormalizationForwardUS is like DivisiveNormalizationForward but using unsafe.Pointer instead of cutil.Mem
 func (l *LRND) DivisiveNormalizationForwardUS(
 	handle *Handle,
 	mode DivNormMode,
@@ -261,9 +261,9 @@ func (l *LRND) DivisiveNormalizationBackward(
 	handle *Handle,
 	mode DivNormMode,
 	alpha float64,
-	xD *TensorD, x, means, dy, temp, temp2 gocu.Mem,
+	xD *TensorD, x, means, dy, temp, temp2 cutil.Mem,
 	beta float64,
-	dXdMeansDesc *TensorD, dx, dMeans gocu.Mem,
+	dXdMeansDesc *TensorD, dx, dMeans cutil.Mem,
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(xD.dtype, beta)
@@ -278,7 +278,7 @@ func (l *LRND) DivisiveNormalizationBackward(
 	)).error("DivisiveNormalizationBackward")
 }
 
-//DivisiveNormalizationBackwardUS is like DivisiveNormalizationBackward but using unsafe.Pointer instead of gocu.Mem
+//DivisiveNormalizationBackwardUS is like DivisiveNormalizationBackward but using unsafe.Pointer instead of cutil.Mem
 func (l *LRND) DivisiveNormalizationBackwardUS(
 	handle *Handle,
 	mode DivNormMode,

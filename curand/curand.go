@@ -4,7 +4,10 @@ package curand
 #include <curand.h>
 */
 import "C"
-import "github.com/dereklstinson/GoCudnn/gocu"
+import (
+	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
+)
 
 //Generator is a random number generator for the device.
 type Generator struct {
@@ -46,7 +49,7 @@ From cuRAND documentation:
 The curandGenerate() function is used to generate pseudo- or quasirandom bits of output for XORWOW, MRG32k3a, MTGP32, MT19937, Philox_4x32_10 and SOBOL32 generators. Each output element is a 32-bit unsigned int where all bits are random. For SOBOL64 generators, each output element is a 64-bit unsigned long long where all bits are random. curandGenerate() returns an error for SOBOL64 generators. Use curandGenerateLongLong() to generate 64 bit integers with the SOBOL64 generators.
 //values need to be stored as an uint32
 */
-func (c Generator) Uint(mem gocu.Mem, sizeinbytes uint) error {
+func (c Generator) Uint(mem cutil.Mem, sizeinbytes uint) error {
 	return curandstatus(C.curandGenerate(c.generator, (*C.uint)(mem.Ptr()), C.size_t(sizeinbytes))).error("Generate")
 }
 
@@ -56,7 +59,7 @@ From cuRAND documentation:
 The curandGenerate() function is used to generate pseudo- or quasirandom bits of output for XORWOW, MRG32k3a, MTGP32, MT19937, Philox_4x32_10 and SOBOL32 generators. Each output element is a 32-bit unsigned int where all bits are random. For SOBOL64 generators, each output element is a 64-bit unsigned long long where all bits are random. curandGenerate() returns an error for SOBOL64 generators. Use curandGenerateLongLong() to generate 64 bit integers with the SOBOL64 generators.
 //values need to be stored as an uint32
 */
-func (c Generator) Uint64(mem gocu.Mem, sizeinbytes uint) error {
+func (c Generator) Uint64(mem cutil.Mem, sizeinbytes uint) error {
 	return curandstatus(C.curandGenerateLongLong(c.generator, (*C.ulonglong)(mem.Ptr()), C.size_t(sizeinbytes))).error("Generate")
 }
 
@@ -65,7 +68,7 @@ func (c Generator) Uint64(mem gocu.Mem, sizeinbytes uint) error {
 from cuRAND documentation:
 The curandGenerateUniform() function is used to generate uniformly distributed floating point values between 0.0 and 1.0, where 0.0 is excluded and 1.0 is included.
 */
-func (c Generator) UniformFloat32(mem gocu.Mem, sizeinbytes uint) error {
+func (c Generator) UniformFloat32(mem cutil.Mem, sizeinbytes uint) error {
 	return curandstatus(C.curandGenerateUniform(c.generator, (*C.float)(mem.Ptr()), C.size_t(sizeinbytes))).error("Generate")
 }
 
@@ -74,7 +77,7 @@ func (c Generator) UniformFloat32(mem gocu.Mem, sizeinbytes uint) error {
 from cuRAND documentation:
 The curandGenerateNormal() function is used to generate normally distributed floating point values with the given mean and standard deviation.
 */
-func (c Generator) NormalFloat32(mem gocu.Mem, sizeinbytes uint, mean, std float32) error {
+func (c Generator) NormalFloat32(mem cutil.Mem, sizeinbytes uint, mean, std float32) error {
 	return curandstatus(C.curandGenerateNormal(c.generator, (*C.float)(mem.Ptr()), C.size_t(sizeinbytes), C.float(mean), C.float(std))).error("NormalFloat32")
 }
 

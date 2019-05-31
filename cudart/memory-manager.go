@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //MemManager allocates memory to cuda under the unified memory management,
@@ -47,7 +48,7 @@ func (m *MemManager) SetHost(onhost bool) {
 
 //Malloc allocates memory to either the host or the device. sib = size in bytes
 //If onhost is false then device assigned to Allocator will be set. If onhost is false then it won't be set.
-func (m *MemManager) Malloc(sib uint) (cuda gocu.Mem, err error) {
+func (m *MemManager) Malloc(sib uint) (cuda cutil.Mem, err error) {
 	cuda = new(gocu.CudaPtr)
 	if m.onhost {
 		err = MallocManagedHost(cuda, sib)
@@ -65,7 +66,7 @@ func (m *MemManager) Malloc(sib uint) (cuda gocu.Mem, err error) {
 }
 
 //Copy copies memory with amount of bytes passed in sib from src to dest
-func (m *MemManager) Copy(dest, src gocu.Pointer, sib uint) error {
+func (m *MemManager) Copy(dest, src cutil.Pointer, sib uint) error {
 	return MemCpy(dest, src, sib, m.flg)
 
 }

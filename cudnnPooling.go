@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //PoolingD handles the pooling descriptor
@@ -102,9 +102,9 @@ func destroypoolingdescriptor(p *PoolingD) error {
 func (p *PoolingD) Forward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	yD *TensorD, y gocu.Mem,
+	yD *TensorD, y cutil.Mem,
 ) error {
 
 	a := cscalarbydatatype(xD.dtype, alpha)
@@ -121,7 +121,7 @@ func (p *PoolingD) Forward(
 	)).error("PoolingForward")
 }
 
-//ForwardUS is like Forward but uses unsafe.Pointer instead of gocu.Mem
+//ForwardUS is like Forward but uses unsafe.Pointer instead of cutil.Mem
 func (p *PoolingD) ForwardUS(
 	handle *Handle,
 	alpha float64,
@@ -146,18 +146,18 @@ func (p *PoolingD) ForwardUS(
 func (p *PoolingD) Backward(
 	handle *Handle,
 	alpha float64,
-	yD *TensorD, y gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
-	xD *TensorD, x gocu.Mem,
+	yD *TensorD, y cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	dxD *TensorD, dx gocu.Mem,
+	dxD *TensorD, dx cutil.Mem,
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnPoolingBackward(handle.x, p.descriptor, a.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("PoolingBackward")
 }
 
-//BackwardUS is like Backward but uses unsafe.Pointer instead of gocu.Mem
+//BackwardUS is like Backward but uses unsafe.Pointer instead of cutil.Mem
 func (p *PoolingD) BackwardUS(
 	handle *Handle,
 	alpha float64,

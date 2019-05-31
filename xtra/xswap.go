@@ -5,8 +5,8 @@ import (
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
-	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/GoCudnn/kernels"
+	"github.com/dereklstinson/cutil"
 )
 
 //Swapper contains swap kernels that are used through methods
@@ -29,7 +29,7 @@ func comparedimsswap(a, b []int32) error {
 
 //UpperLower swaps two different tensor batches. Either the upper half of both tensors or the lower half of both tensors
 //inverse is a holder variable. It doesn't do anything right now
-func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdesc *gocudnn.TensorD, B gocu.Mem, Aupper, Bupper, inverse bool) error {
+func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bdesc *gocudnn.TensorD, B cutil.Mem, Aupper, Bupper, inverse bool) error {
 
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
@@ -65,7 +65,7 @@ func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdes
 }
 
 //EveryOther swaps the two tensors by every other batch.  Even does the evens if not even then it does the ood.
-func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A gocu.Mem, Bdesc *gocudnn.TensorD, B gocu.Mem, start, stride int32) error {
+func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bdesc *gocudnn.TensorD, B cutil.Mem, start, stride int32) error {
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
 		return err

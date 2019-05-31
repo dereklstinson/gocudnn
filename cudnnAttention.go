@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //AttnQueryMap type is a flag for multihead attention.  Flags are exposed through type methods.
@@ -186,7 +187,7 @@ func (m *MultiHeadAttnWeightKind) Output() MultiHeadAttnWeightKind {
 }
 
 //GetMultiHeadAttnWeights returns a Descripter for w and its goco.Mem
-func (a *AttentionD) GetMultiHeadAttnWeights(h *Handle, wkind MultiHeadAttnWeightKind, wbuffSIB uint, wbuff gocu.Mem) (wD *TensorD, w gocu.Mem, err error) {
+func (a *AttentionD) GetMultiHeadAttnWeights(h *Handle, wkind MultiHeadAttnWeightKind, wbuffSIB uint, wbuff cutil.Mem) (wD *TensorD, w cutil.Mem, err error) {
 	w = new(gocu.CudaPtr)
 	wD, err = createtensordescriptor(true, h.gogc)
 	if err != nil {
@@ -211,13 +212,13 @@ func (a *AttentionD) Forward(
 	hiWinIdx []int32, // array of upper (exclusive) key and value time step windows
 	seqLengthArrayQRO []int32, // array of lengths for for queries,residuals,and out
 	seqLengthArrayKV []int32, // array of lengths for keys and values
-	qrDesc *SeqDataD, queries, residuals gocu.Mem,
-	keyDesc *SeqDataD, keys gocu.Mem,
-	vDesc *SeqDataD, values gocu.Mem,
-	oDesc *SeqDataD, out gocu.Mem,
-	wbuffSIB uint, wbuff gocu.Mem,
-	wspaceSIB uint, wspace gocu.Mem,
-	rspaceSIB uint, rspace gocu.Mem) error {
+	qrDesc *SeqDataD, queries, residuals cutil.Mem,
+	keyDesc *SeqDataD, keys cutil.Mem,
+	vDesc *SeqDataD, values cutil.Mem,
+	oDesc *SeqDataD, out cutil.Mem,
+	wbuffSIB uint, wbuff cutil.Mem,
+	wspaceSIB uint, wspace cutil.Mem,
+	rspaceSIB uint, rspace cutil.Mem) error {
 	lo := int32Tocint(loWinIdx)
 	hi := int32Tocint(hiWinIdx)
 	QRO := int32Tocint(seqLengthArrayQRO)
@@ -228,7 +229,7 @@ func (a *AttentionD) Forward(
 
 }
 
-//ForwardUS is like Forward but takes unsafe.Pointer's instead of gocu.Mem
+//ForwardUS is like Forward but takes unsafe.Pointer's instead of cutil.Mem
 func (a *AttentionD) ForwardUS(
 	h *Handle,
 	currIdx int32, //if currIdx <0  trainingmode, currIdx >=0 inference mode
@@ -260,11 +261,11 @@ func (a *AttentionD) BackwardData(
 	hiWinIdx []int32, // array of upper (exclusive) key and value time step windows
 	seqLengthArrayDQDO []int32, //array of lengths for dqueries and dout
 	seqLengthArrayDKDV []int32, //array of lengths for dkeys and dvalues
-	doDesc *SeqDataD, dout gocu.Mem,
-	dqDesc *SeqDataD, dqueries, queries gocu.Mem, //dqueries is output
-	dkDesc *SeqDataD, dkeys, keys gocu.Mem, //dkeys is output
-	dvDesc *SeqDataD, dvalues, values gocu.Mem, //dvalues is output
-	wbuffSIB uint, wbuff gocu.Mem, wspaceSIB uint, wspace gocu.Mem, rspaceSIB uint, rspace gocu.Mem) error {
+	doDesc *SeqDataD, dout cutil.Mem,
+	dqDesc *SeqDataD, dqueries, queries cutil.Mem, //dqueries is output
+	dkDesc *SeqDataD, dkeys, keys cutil.Mem, //dkeys is output
+	dvDesc *SeqDataD, dvalues, values cutil.Mem, //dvalues is output
+	wbuffSIB uint, wbuff cutil.Mem, wspaceSIB uint, wspace cutil.Mem, rspaceSIB uint, rspace cutil.Mem) error {
 	lo := int32Tocint(loWinIdx)
 	hi := int32Tocint(hiWinIdx)
 	DQDO := int32Tocint(seqLengthArrayDQDO)
@@ -279,7 +280,7 @@ func (a *AttentionD) BackwardData(
 		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
 }
 
-//BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of gocu.Mem
+//BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of cutil.Mem
 func (a *AttentionD) BackwardDataUS(
 	h *Handle,
 	loWinIdx []int32, // array of lower (inclusive) key and value time step windows
@@ -328,12 +329,12 @@ func (w *WgradMode) Set() WgradMode {
 func (a *AttentionD) BackwardWeights(
 	h *Handle,
 	wgmode WgradMode,
-	qDesc *SeqDataD, queries gocu.Mem,
-	keyDesc *SeqDataD, keys gocu.Mem,
-	vDesc *SeqDataD, values gocu.Mem,
-	doDesc *SeqDataD, dout gocu.Mem,
-	wbuffSIB uint, wbuff, dwbuff gocu.Mem,
-	wspaceSIB uint, wspace gocu.Mem, rspaceSIB uint, rspace gocu.Mem) error {
+	qDesc *SeqDataD, queries cutil.Mem,
+	keyDesc *SeqDataD, keys cutil.Mem,
+	vDesc *SeqDataD, values cutil.Mem,
+	doDesc *SeqDataD, dout cutil.Mem,
+	wbuffSIB uint, wbuff, dwbuff cutil.Mem,
+	wspaceSIB uint, wspace cutil.Mem, rspaceSIB uint, rspace cutil.Mem) error {
 
 	return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
 		qDesc.descriptor, queries.Ptr(),
@@ -345,7 +346,7 @@ func (a *AttentionD) BackwardWeights(
 		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
 }
 
-//BackwardWeightsUS is like BackwardWeightsUS but uses unsafe.Pointer instead of gocu.Mem
+//BackwardWeightsUS is like BackwardWeightsUS but uses unsafe.Pointer instead of cutil.Mem
 func (a *AttentionD) BackwardWeightsUS(
 	h *Handle,
 	wgmode WgradMode,

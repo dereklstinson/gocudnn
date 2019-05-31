@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 /*
@@ -276,12 +276,12 @@ func (c *ConvolutionD) GetBackwardDataWorkspaceSize(
 func (c *ConvolutionD) BackwardData(
 	handle *Handle,
 	alpha float64,
-	wD *FilterD, w gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
+	wD *FilterD, w cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
 	algo ConvBwdDataAlgo,
-	wspace gocu.Mem, wspaceSIB uint,
+	wspace cutil.Mem, wspaceSIB uint,
 	beta float64,
-	dxD *TensorD, dx gocu.Mem,
+	dxD *TensorD, dx cutil.Mem,
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
@@ -321,7 +321,7 @@ func (c *ConvolutionD) BackwardData(
 	)).error("ConvolutionBackwardData")
 }
 
-//BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of gocu.Mem
+//BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) BackwardDataUS(
 	handle *Handle,
 	alpha float64,
@@ -352,9 +352,9 @@ func (c *ConvolutionD) BackwardDataUS(
 func (c *ConvolutionD) Im2Col(
 	handle *Handle,
 	xD *TensorD,
-	x gocu.Mem,
+	x cutil.Mem,
 	wD *FilterD,
-	buffer gocu.Mem,
+	buffer cutil.Mem,
 ) error {
 
 	return Status(C.cudnnIm2Col(
@@ -367,7 +367,7 @@ func (c *ConvolutionD) Im2Col(
 	)).error("Im2Col")
 }
 
-//Im2ColUS is like IN2Col but using unsafe.Pointer instead of gocu.Mem
+//Im2ColUS is like IN2Col but using unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) Im2ColUS(
 	handle *Handle,
 	xD *TensorD, x unsafe.Pointer,
@@ -389,16 +389,16 @@ func (c *ConvolutionD) BackwardBias(
 	handle *Handle,
 	alpha float64,
 	dyD *TensorD,
-	dy gocu.Mem,
+	dy cutil.Mem,
 	beta float64,
 	dbD *TensorD,
-	db gocu.Mem) error {
+	db cutil.Mem) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
 	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
 }
 
-//BackwardBiasUS is like BackwardBias but using unsafe.Pointer instead of gocu.Mem
+//BackwardBiasUS is like BackwardBias but using unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) BackwardBiasUS(
 	handle *Handle,
 	alpha float64,
@@ -434,12 +434,12 @@ func (c *ConvolutionD) GetBackwardFilterWorkspaceSize(
 func (c *ConvolutionD) BackwardFilter(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
+	xD *TensorD, x cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
 	algo ConvBwdFiltAlgo,
-	wspace gocu.Mem, wspacesize uint,
+	wspace cutil.Mem, wspacesize uint,
 	beta float64,
-	dwD *FilterD, dw gocu.Mem,
+	dwD *FilterD, dw cutil.Mem,
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
@@ -480,7 +480,7 @@ func (c *ConvolutionD) BackwardFilter(
 	)).error("cudnnConvolutionBackwardFilter")
 }
 
-//BackwardFilterUS is like BackwardFilter but using unsafe.Pointer instead of gocu.Mem
+//BackwardFilterUS is like BackwardFilter but using unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) BackwardFilterUS(
 	handle *Handle,
 	alpha float64,
@@ -526,12 +526,12 @@ func (c *ConvolutionD) GetForwardWorkspaceSize(
 func (c *ConvolutionD) Forward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
-	wD *FilterD, w gocu.Mem,
+	xD *TensorD, x cutil.Mem,
+	wD *FilterD, w cutil.Mem,
 	algo ConvFwdAlgo,
-	wspace gocu.Mem, wspacesize uint,
+	wspace cutil.Mem, wspacesize uint,
 	beta float64,
-	yD *TensorD, y gocu.Mem) error {
+	yD *TensorD, y cutil.Mem) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	if wspace == nil {
@@ -558,7 +558,7 @@ func (c *ConvolutionD) Forward(
 	return err
 }
 
-//ForwardUS is like Forward but using unsafe.Pointer instead of gocu.Mem
+//ForwardUS is like Forward but using unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) ForwardUS(
 	handle *Handle,
 	alpha float64,
@@ -599,16 +599,16 @@ func (c *ConvolutionD) ForwardUS(
 func (c *ConvolutionD) BiasActivationForward(
 	handle *Handle,
 	alpha1 float64,
-	xD *TensorD, x gocu.Mem,
-	wD *FilterD, w gocu.Mem,
+	xD *TensorD, x cutil.Mem,
+	wD *FilterD, w cutil.Mem,
 	algo ConvFwdAlgo,
-	wspace gocu.Mem,
+	wspace cutil.Mem,
 	wspacesize uint,
 	alpha2 float64,
-	zD *TensorD, z gocu.Mem,
-	biasD *TensorD, bias gocu.Mem,
+	zD *TensorD, z cutil.Mem,
+	biasD *TensorD, bias cutil.Mem,
 	aD *ActivationD,
-	yD *TensorD, y gocu.Mem,
+	yD *TensorD, y cutil.Mem,
 ) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha1)
 	a2 := cscalarbydatatype(yD.dtype, alpha2)
@@ -661,7 +661,7 @@ func (c *ConvolutionD) BiasActivationForward(
 		)).error("ConvolutionBiasActivationForward")
 }
 
-//BiasActivationForwardUS is like BiasActivationForward but using unsafe.Pointer instead of gocu.Mem
+//BiasActivationForwardUS is like BiasActivationForward but using unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) BiasActivationForwardUS(
 	handle *Handle,
 	alpha1 float64,

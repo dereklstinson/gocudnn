@@ -10,14 +10,15 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/GoCudnn/kernels"
 )
+import "github.com/dereklstinson/cutil"
 
 //XLossD is the loss descriptor for the loss function
 type XLossD struct {
 	mode        XLossMode
 	lossfunc    *cuda.Kernel
-	loss        gocu.Mem
+	loss        cutil.Mem
 	cpuloss     []float32
-	cpuptr      gocu.Mem
+	cpuptr      cutil.Mem
 	flg         XLossModeFlag
 	dflg        gocudnn.DataType
 	memcopykind cudart.MemcpyKind
@@ -80,11 +81,11 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 //and right now they can only be datatype float
 func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 	dxD *gocudnn.TensorD, //output -errors going back
-	dx gocu.Mem, // output -errors going back
+	dx cutil.Mem, // output -errors going back
 	yD *gocudnn.TensorD, //input - target values
-	y gocu.Mem, //input -target values
+	y cutil.Mem, //input -target values
 	dyD *gocudnn.TensorD, //input network output values
-	dy gocu.Mem, //input network output values
+	dy cutil.Mem, //input network output values
 	alpha, beta float64,
 ) (float32, error) {
 	_, dxdtype, dxdims, _, err := dxD.Get()

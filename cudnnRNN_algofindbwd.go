@@ -7,7 +7,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //GetRNNBackwardDataAlgorithmMaxCount gets the max number of algorithms for the back prop rnn
@@ -25,19 +25,19 @@ func (r *RNND) getRNNBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error
 //FindRNNBackwardDataAlgorithmEx finds a list of Algorithm for backprop this passes like 26 parameters and pointers and stuff so watch out.
 func (r *RNND) FindRNNBackwardDataAlgorithmEx(
 	handle *Handle,
-	yD []*TensorD, y gocu.Mem,
-	dyD []*TensorD, dy gocu.Mem,
-	dhyD *TensorD, dhy gocu.Mem,
-	dcyD *TensorD, dcy gocu.Mem,
-	wD *FilterD, w gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	cxD *TensorD, cx gocu.Mem,
-	dxD []*TensorD, dx gocu.Mem,
-	dhxD *TensorD, dhx gocu.Mem,
-	dcxD *TensorD, dcx gocu.Mem,
+	yD []*TensorD, y cutil.Mem,
+	dyD []*TensorD, dy cutil.Mem,
+	dhyD *TensorD, dhy cutil.Mem,
+	dcyD *TensorD, dcy cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	cxD *TensorD, cx cutil.Mem,
+	dxD []*TensorD, dx cutil.Mem,
+	dhxD *TensorD, dhx cutil.Mem,
+	dcxD *TensorD, dcx cutil.Mem,
 	findIntensity float32,
-	wspace gocu.Mem, wspacesize uint,
-	rspace gocu.Mem, rspacesize uint,
+	wspace cutil.Mem, wspacesize uint,
+	rspace cutil.Mem, rspacesize uint,
 
 ) ([]AlgorithmPerformance, error) {
 	reqAlgocount, err := r.getRNNBackwardDataAlgorithmMaxCount(handle)
@@ -99,7 +99,7 @@ func (r *RNND) FindRNNBackwardDataAlgorithmEx(
 	return calgoperftogoarray(perfresults, handle.gogc), err
 }
 
-//FindRNNBackwardDataAlgorithmExUS is like FindRNNBackwardDataAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+//FindRNNBackwardDataAlgorithmExUS is like FindRNNBackwardDataAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) FindRNNBackwardDataAlgorithmExUS(
 	handle *Handle,
 	yD []*TensorD, y unsafe.Pointer,

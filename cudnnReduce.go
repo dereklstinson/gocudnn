@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //ReduceTensorD is the struct that is used for reduce tensor ops
@@ -102,16 +102,16 @@ func (r *ReduceTensorD) GetWorkSpaceSize(
 /* The indices space is ignored for reduce ops other than min or max. */
 func (r *ReduceTensorD) ReduceTensorOp(
 	handle *Handle,
-	indices gocu.Mem,
+	indices cutil.Mem,
 	indiciessize uint,
-	wspace gocu.Mem,
+	wspace cutil.Mem,
 	wspacesize uint,
 	alpha float64,
 	aDesc *TensorD,
-	A gocu.Mem,
+	A cutil.Mem,
 	beta float64,
 	cDesc *TensorD,
-	Ce gocu.Mem) error {
+	Ce cutil.Mem) error {
 	a := cscalarbydatatype(aDesc.dtype, alpha)
 	b := cscalarbydatatype(cDesc.dtype, beta)
 	var x C.cudnnStatus_t
@@ -139,7 +139,7 @@ func (r *ReduceTensorD) ReduceTensorOp(
 	return Status(x).error("ReduceTensor")
 }
 
-//ReduceTensorOpUS is like ReduceTensorOp but uses unsafe.Pointer instead of gocu.Mem
+//ReduceTensorOpUS is like ReduceTensorOp but uses unsafe.Pointer instead of cutil.Mem
 func (r *ReduceTensorD) ReduceTensorOpUS(
 	handle *Handle,
 	indices unsafe.Pointer, indiciessize uint,

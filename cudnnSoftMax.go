@@ -8,7 +8,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //SoftMaxD holds the soft max flags and soft max funcs
@@ -50,9 +50,9 @@ func (s *SoftMaxD) Forward(
 	handle *Handle,
 
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	yD *TensorD, y gocu.Mem) error {
+	yD *TensorD, y cutil.Mem) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnSoftmaxForward(
@@ -72,10 +72,10 @@ func (s *SoftMaxD) Forward(
 func (s *SoftMaxD) Backward(
 	handle *Handle,
 	alpha float64,
-	yD *TensorD, y gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
+	yD *TensorD, y cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
 	beta float64,
-	dxD *TensorD, dx gocu.Mem,
+	dxD *TensorD, dx cutil.Mem,
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(dxD.dtype, beta)
@@ -91,7 +91,7 @@ func (s *SoftMaxD) Backward(
 	)).error("SoftMaxBackward")
 }
 
-//ForwardUS is like Forward but uses unsafe.Pointer instead of gocu.Mem
+//ForwardUS is like Forward but uses unsafe.Pointer instead of cutil.Mem
 func (s *SoftMaxD) ForwardUS(
 	handle *Handle,
 
@@ -112,7 +112,7 @@ func (s *SoftMaxD) ForwardUS(
 	)).error("SoftMaxForward")
 }
 
-//BackwardUS is like Backward but uses unsafe.Pointer instead of gocu.Mem
+//BackwardUS is like Backward but uses unsafe.Pointer instead of cutil.Mem
 func (s *SoftMaxD) BackwardUS(
 	handle *Handle,
 	alpha float64,

@@ -10,12 +10,12 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //MallocManagedHost uses the Unified memory mangement system and starts it off in the host
 //It will also set a finalizer on the memory for GC
-func MallocManagedHost(mem gocu.Mem, size uint) error {
+func MallocManagedHost(mem cutil.Mem, size uint) error {
 	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachHost))
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func MallocManagedHostUS(mem unsafe.Pointer, size uint) error {
 
 //MallocManagedGlobal uses the Unified memory mangement system and starts it off in the Device
 //It will also set a finalizer on the memory for GC
-func MallocManagedGlobal(mem gocu.Mem, size uint) error {
+func MallocManagedGlobal(mem cutil.Mem, size uint) error {
 	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachGlobal))
 	runtime.SetFinalizer(mem, devicefreemem)
 	return err
@@ -58,7 +58,7 @@ func MallocManagedGlobalUS(mem unsafe.Pointer, size uint) error {
 
 //Malloc will allocate memory to the device the size that was passed.
 //It will also set the finalizer for GC
-func Malloc(mem gocu.Mem, sizet uint) error {
+func Malloc(mem cutil.Mem, sizet uint) error {
 	err := newErrorRuntime("Malloc", C.cudaMalloc(mem.DPtr(), C.size_t(sizet)))
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func Malloc(mem gocu.Mem, sizet uint) error {
 
 //MallocHost will allocate memory on the host for cuda use.
 //
-func MallocHost(mem gocu.Mem, sizet uint) error {
+func MallocHost(mem cutil.Mem, sizet uint) error {
 	err := newErrorRuntime("Malloc", C.cudaMalloc(mem.DPtr(), C.size_t(sizet)))
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func MallocHost(mem gocu.Mem, sizet uint) error {
 }
 
 //PointerGetAttributes returns the atributes
-func PointerGetAttributes(mem gocu.Mem) (Atribs, error) {
+func PointerGetAttributes(mem cutil.Mem) (Atribs, error) {
 	var x C.cudaPointerAttributes
 	cuerr := C.cudaPointerGetAttributes(&x, mem.Ptr())
 	err := newErrorRuntime("Attributes", cuerr)
@@ -107,6 +107,8 @@ func PointerGetAttributes(mem gocu.Mem) (Atribs, error) {
 		Managed: managed,
 	}, nil
 }
+
+//MemsetUS is like Memset but with unsafe.pointer
 func MemsetUS(mem unsafe.Pointer, value int32, count uint) error {
 	err := C.cudaMemset(mem, C.int(value), C.size_t(count))
 
@@ -114,7 +116,7 @@ func MemsetUS(mem unsafe.Pointer, value int32, count uint) error {
 }
 
 //Memset sets the value for each byte in device memory
-func Memset(mem gocu.Mem, value int32, count uint) error {
+func Memset(mem cutil.Mem, value int32, count uint) error {
 	err := C.cudaMemset(mem.Ptr(), C.int(value), C.size_t(count))
 
 	return newErrorRuntime("cudaMemset", err)
@@ -138,7 +140,7 @@ finalizer functions
 
 */
 
-func devicefreemem(mem gocu.Mem) error {
+func devicefreemem(mem cutil.Mem) error {
 
 	err := newErrorRuntime("devicefree", C.cudaFree(mem.Ptr()))
 	if err != nil {
@@ -164,7 +166,7 @@ func hostfreememUS(mem unsafe.Pointer) error {
 	mem = nil
 	return nil
 }
-func hostfreemem(mem gocu.Mem) error {
+func hostfreemem(mem cutil.Mem) error {
 	err := newErrorRuntime("hostfree", C.cudaFreeHost(mem.Ptr()))
 	if err != nil {
 		return err

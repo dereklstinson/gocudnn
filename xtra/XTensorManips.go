@@ -6,7 +6,7 @@ import (
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/cudart"
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //Reshape is failing ---- changed all to private
@@ -60,7 +60,7 @@ func (t *XTransposeD) GetChannelTransposeOutputProperties(src *gocudnn.TensorD) 
 
 
 //Transpose will transpose the values of src to dest . only works on non sliding Tensors
-func (t *XTransposeD) Transpose(handle *Handle, perm []int32, srcdesc *gocudnn.TensorD, src gocu.Mem, destdesc *gocudnn.TensorD, dest gocu.Mem) error {
+func (t *XTransposeD) Transpose(handle *Handle, perm []int32, srcdesc *gocudnn.TensorD, src cutil.Mem, destdesc *gocudnn.TensorD, dest cutil.Mem) error {
 
 	xfrmt, err := srcdesc.GetFormat()
 	if err != nil {
@@ -109,7 +109,7 @@ func (t *XTransposeD) Transpose(handle *Handle, perm []int32, srcdesc *gocudnn.T
 	var lflg LocationFlag
 
 	if src.Stored() == lflg.Unified() {
-		var devbuffer gocu.Mem
+		var devbuffer cutil.Mem
 		devbuffer, err = UnifiedMangedGlobal(buffptr.ByteSize())
 		if err != nil {
 			return err
@@ -135,7 +135,7 @@ func (t *XTransposeD) Transpose(handle *Handle, perm []int32, srcdesc *gocudnn.T
 
 		return devbuffer.Free()
 	}
-	var devbuffer gocu.Mem
+	var devbuffer cutil.Mem
 	devbuffer, err = Malloc(buffptr.ByteSize())
 	if err != nil {
 		return err
@@ -211,7 +211,7 @@ func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 }
 
 //ResizeForward does the reshape operation
-func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x gocu.Mem, ydesc *gocudnn.TensorD, y gocu.Mem) error {
+func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil.Mem, ydesc *gocudnn.TensorD, y cutil.Mem) error {
 
 	frmtx, _, dimsx, _, err := xdesc.Get()
 	if err != nil {
@@ -261,7 +261,7 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x gocu.
 }
 
 //ResizeBackward does a reshape backwards but it will add the errors on the backprop.
-func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx gocu.Mem, dydesc *gocudnn.TensorD, dy gocu.Mem) error {
+func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cutil.Mem, dydesc *gocudnn.TensorD, dy cutil.Mem) error {
 	frmtx, _, dimsx, _, err := dxdesc.Get()
 	if err != nil {
 		return err
@@ -337,7 +337,7 @@ func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 //if S2B is false the y values will be placed into the x tensor. The C channel is the only thing that needs to be the same between tensor x and y.
 //Any values that don't fit will get the zero value
 //To get the y tensor please use FindShapetoBatchoutputTensor.
-func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, x gocu.Mem, yDesc *gocudnn.TensorD, y gocu.Mem, hstride int32, wstride int32, S2B bool) error {
+func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, x cutil.Mem, yDesc *gocudnn.TensorD, y cutil.Mem, hstride int32, wstride int32, S2B bool) error {
 
 	frmt, dtype, xdims, _, err := xDesc.Get()
 	var dflag gocudnn.DataType
@@ -455,7 +455,7 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, 
 }
 
 /*
-func copytogpumalloc(x *GoPointer) (gocu.Mem, error) {
+func copytogpumalloc(x *GoPointer) (cutil.Mem, error) {
 
 	y, err := Malloc(x.ByteSize())
 	if err != nil {
@@ -468,7 +468,7 @@ func copytogpumalloc(x *GoPointer) (gocu.Mem, error) {
 	}
 	return y, nil
 }
-func copytogpuunified(x *GoPointer) (gocu.Mem, error) {
+func copytogpuunified(x *GoPointer) (cutil.Mem, error) {
 
 	y, err := UnifiedMangedGlobal(x.ByteSize())
 	if err != nil {

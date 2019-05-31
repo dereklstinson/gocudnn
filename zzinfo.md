@@ -21,6 +21,6 @@ func GetValueNCHW(A []float32, dims []int, n,c,h,w int) float32{
   return A[(s[0]*n)+(s[1]*c)+(s[2]*h)+(s[3]*w)]
 }
 [/code]
- 
+  
 
  to be continued

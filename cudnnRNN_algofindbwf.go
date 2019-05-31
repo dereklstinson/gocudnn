@@ -7,7 +7,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //GetRNNBackwardWeightsAlgorithmMaxCount gets the max number of Algorithm for weights
@@ -25,13 +25,13 @@ func (r *RNND) getRNNBackwardWeightsAlgorithmMaxCount(handle *Handle) (int32, er
 //FindRNNBackwardWeightsAlgorithmEx returns some Algorithm and their performance and stuff
 func (r *RNND) FindRNNBackwardWeightsAlgorithmEx(
 	handle *Handle,
-	xD []*TensorD, x gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	yD []*TensorD, y gocu.Mem,
+	xD []*TensorD, x cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	yD []*TensorD, y cutil.Mem,
 	findIntensity float32, //unused for future use
-	wspace gocu.Mem, wspacesize uint,
-	dwD *FilterD, dw gocu.Mem,
-	rspace gocu.Mem, rspacesize uint,
+	wspace cutil.Mem, wspacesize uint,
+	dwD *FilterD, dw cutil.Mem,
+	rspace cutil.Mem, rspacesize uint,
 
 ) ([]AlgorithmPerformance, error) {
 	reqAlgocount, err := r.getRNNBackwardWeightsAlgorithmMaxCount(handle)
@@ -82,7 +82,7 @@ func (r *RNND) FindRNNBackwardWeightsAlgorithmEx(
 	return calgoperftogoarray(perfresults, handle.gogc), err
 }
 
-//FindRNNBackwardWeightsAlgorithmExUS is like FindRNNBackwardWeightsAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+//FindRNNBackwardWeightsAlgorithmExUS is like FindRNNBackwardWeightsAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) FindRNNBackwardWeightsAlgorithmExUS(
 	handle *Handle,
 	xD []*TensorD, x unsafe.Pointer,

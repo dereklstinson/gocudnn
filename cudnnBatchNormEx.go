@@ -8,7 +8,7 @@ import (
 	"errors"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //BatchNormDEx is a gocudnn original.  This is to make the batchnorm operation similar to the majority cudnn.
@@ -107,24 +107,24 @@ func (b *BatchNormDEx) ForwardTraining(
 	h *Handle,
 	alpha, beta float64, //alpha -result blend factor, beta - dest blend factor
 	xD *TensorD,
-	x gocu.Mem,
+	x cutil.Mem,
 	zD *TensorD,
-	z gocu.Mem,
+	z cutil.Mem,
 	yD *TensorD,
-	y gocu.Mem, //output
+	y cutil.Mem, //output
 	bnScaleBiasMeanVarDesc *TensorD,
-	scale gocu.Mem,
-	bias gocu.Mem,
+	scale cutil.Mem,
+	bias cutil.Mem,
 	expoAverageFactor float64,
-	resultRunningMean gocu.Mem,
-	resultRunningVariance gocu.Mem,
+	resultRunningMean cutil.Mem,
+	resultRunningVariance cutil.Mem,
 	epsilon float64,
-	resultSaveMean gocu.Mem, //optional can be null this and reslutSaveInVariance either both have to be null or not // output
-	reslutSaveInVariance gocu.Mem, //optional can be null this and resultSaveMean either both have to be null or not. //output
+	resultSaveMean cutil.Mem, //optional can be null this and reslutSaveInVariance either both have to be null or not // output
+	reslutSaveInVariance cutil.Mem, //optional can be null this and resultSaveMean either both have to be null or not. //output
 	actD *ActivationD,
-	wspace gocu.Mem,
+	wspace cutil.Mem,
 	wspacesib uint,
-	rspace gocu.Mem,
+	rspace cutil.Mem,
 	rspacesib uint,
 ) error {
 	if !b.set {
@@ -189,7 +189,7 @@ func (b *BatchNormDEx) ForwardTraining(
 	)).error("ForwardTrainingEx")
 }
 
-//ForwardTrainingUS is loke ForwardTraining but using unsafe.Pointers instead of gocu.Mems
+//ForwardTrainingUS is loke ForwardTraining but using unsafe.Pointers instead of cutil.Mems
 func (b *BatchNormDEx) ForwardTrainingUS(
 	h *Handle,
 	alpha, beta float64, //alpha -result blend factor, beta - dest blend factor
@@ -248,27 +248,27 @@ func (b *BatchNormDEx) Backward(
 	h *Handle,
 	alphadata, betadata, alphaparam, betaparam float64, //alpha -result blend factor, beta - dest blend factor
 	xD *TensorD,
-	x gocu.Mem,
+	x cutil.Mem,
 	yD *TensorD,
-	y gocu.Mem,
+	y cutil.Mem,
 	dyD *TensorD,
-	dy gocu.Mem,
+	dy cutil.Mem,
 	dzD *TensorD,
-	dz gocu.Mem,
+	dz cutil.Mem,
 	dxD *TensorD,
-	dx gocu.Mem,
+	dx cutil.Mem,
 	dbnScaleBiasMeanVarDesc *TensorD,
-	scale gocu.Mem,
-	bias gocu.Mem,
-	dscale gocu.Mem, //output - for training scale and bias
-	dbias gocu.Mem, //output - for training scale and bias
+	scale cutil.Mem,
+	bias cutil.Mem,
+	dscale cutil.Mem, //output - for training scale and bias
+	dbias cutil.Mem, //output - for training scale and bias
 	epsilon float64, //input - use the same as forward pass
-	fromresultSaveMean gocu.Mem, //optional can be null this and reslutSaveInVariance either both have to be null or not // input
-	fromreslutSaveInVariance gocu.Mem, //optional can be null this and resultSaveMean either both have to be null or not. //input
+	fromresultSaveMean cutil.Mem, //optional can be null this and reslutSaveInVariance either both have to be null or not // input
+	fromreslutSaveInVariance cutil.Mem, //optional can be null this and resultSaveMean either both have to be null or not. //input
 	actD *ActivationD,
-	wspace gocu.Mem,
+	wspace cutil.Mem,
 	wspacesib uint,
-	rspace gocu.Mem,
+	rspace cutil.Mem,
 	rspacesib uint,
 ) error {
 	if !b.set {
@@ -340,7 +340,7 @@ func (b *BatchNormDEx) Backward(
 	)).error("BackwardEx")
 }
 
-//BackwardUS is just like Backward but uses unsafe.Pointers instead of gocu.Mem.
+//BackwardUS is just like Backward but uses unsafe.Pointers instead of cutil.Mem.
 func (b *BatchNormDEx) BackwardUS(
 	h *Handle,
 	alphadata, betadata, alphaparam, betaparam float64, //alpha -result blend factor, beta - dest blend factor
@@ -464,11 +464,11 @@ func (b *BatchNormDEx) ForwardInference(
 	handle *Handle,
 	alpha, beta float64, /* alpha[0] = result blend factor, beta[0] = dest layer blend factor */
 	xD *TensorD,
-	x gocu.Mem, /* NxCxHxW */
+	x cutil.Mem, /* NxCxHxW */
 	yD *TensorD,
-	y gocu.Mem, /* NxCxHxW */
+	y cutil.Mem, /* NxCxHxW */
 	ScaleBiasMeanVarDesc *TensorD,
-	scale, bias, estimatedMean, estimatedVariance gocu.Mem, //all share the ScaleBiasMeanVarDesc descriptor
+	scale, bias, estimatedMean, estimatedVariance cutil.Mem, //all share the ScaleBiasMeanVarDesc descriptor
 	epsilon float64,
 
 ) error {
@@ -492,7 +492,7 @@ func (b *BatchNormDEx) ForwardInference(
 	)).error("BatchNormalizationForwardInference")
 }
 
-//ForwardInferenceUS is just like ForwardInference but uses unsafe.Pointers instead of gocu.Mem
+//ForwardInferenceUS is just like ForwardInference but uses unsafe.Pointers instead of cutil.Mem
 func (b *BatchNormDEx) ForwardInferenceUS(
 	handle *Handle,
 	alpha, beta float64, /* alpha[0] = result blend factor, beta[0] = dest layer blend factor */

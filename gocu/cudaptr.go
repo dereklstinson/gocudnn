@@ -2,6 +2,8 @@ package gocu
 
 import (
 	"unsafe"
+
+	"github.com/dereklstinson/cutil"
 )
 
 //CudaPtr can be used to allocate mem that is used by cuda.
@@ -31,7 +33,7 @@ func (d *CudaPtr) DPtr() *unsafe.Pointer {
 
 //Allocator allocates memory for cuda.  //Example can be seen in cudart.
 type Allocator interface {
-	Malloc(size uint) (Mem, error)
+	Malloc(size uint) (cutil.Mem, error)
 }
 
 /*

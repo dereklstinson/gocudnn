@@ -21,6 +21,7 @@ import (
 	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 	"github.com/dereklstinson/half"
 )
 
@@ -243,7 +244,7 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 		case nil:
 			C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
 
-		case gocu.Mem:
+		case cutil.Mem:
 			if x == nil {
 				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
@@ -264,7 +265,7 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
 
 		default:
-			scalar := gocu.CScalarConversion(x)
+			scalar := cutil.CScalarConversion(x)
 			if scalar == nil {
 				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
 			}
@@ -277,7 +278,7 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 
 				C.memcpy(k.args[i], y, (C.size_t)(sizeof))
 			*/
-			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.Bytes()))
+			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.SIB()))
 		}
 
 	}
@@ -301,7 +302,7 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 		case nil:
 			C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
 
-		case gocu.Mem:
+		case cutil.Mem:
 			if x == nil {
 				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
@@ -330,12 +331,12 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 
 				}
 			*/
-			scalar := gocu.CScalarConversion(x)
+			scalar := cutil.CScalarConversion(x)
 			if scalar == nil {
 				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
 			}
 
-			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.Bytes()))
+			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.SIB()))
 		}
 	}
 	return nil

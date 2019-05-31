@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //Algo returns al algo
@@ -94,15 +94,15 @@ func (c CTCLossAlgo) c() C.cudnnCTCLossAlgo_t {
 func (c *CTCLossD) CTCLoss(
 	handle *Handle,
 	probsD *TensorD, /* Tensor descriptor for probabilities, the dimensions are T,N,A (T is the timing steps, N is the mini batch size, A is the alphabet size)  */
-	probs gocu.Mem, /* probabilities after softmax, in GPU memory */
+	probs cutil.Mem, /* probabilities after softmax, in GPU memory */
 	labels []int32, /* labels, in CPU memory */
 	labelLengths []int32, /* the length of each label, in CPU memory */
 	inputLengths []int32, /* the lengths of timing steps in each batch, in CPU memory */
-	costs gocu.Mem, //output /* the returned costs of CTC, in GPU memory */
+	costs cutil.Mem, //output /* the returned costs of CTC, in GPU memory */
 	gradientsD *TensorD, /* Tensor descriptor for gradients, the dimensions are T,N,A */
-	gradients gocu.Mem, //output  /* the returned CTC gradients, in GPU memory, to compute costs only, set it to NULL */
+	gradients cutil.Mem, //output  /* the returned CTC gradients, in GPU memory, to compute costs only, set it to NULL */
 	algo CTCLossAlgo, /* algorithm selected, supported now 0 and 1 */
-	wspace gocu.Mem, /* pointer to the workspace, in GPU memory */
+	wspace cutil.Mem, /* pointer to the workspace, in GPU memory */
 	wspacesize uint,
 ) error {
 	toclabels := int32Tocint(labels)
@@ -144,7 +144,7 @@ func (c *CTCLossD) CTCLoss(
 	return err
 }
 
-//CTCLossUS is like CTCLoss but uses unsafe.Pointer instead of gocu.Mem
+//CTCLossUS is like CTCLoss but uses unsafe.Pointer instead of cutil.Mem
 func (c *CTCLossD) CTCLossUS(
 	handle *Handle,
 	probsD *TensorD, probs unsafe.Pointer, /* probabilities after softmax, in GPU memory */

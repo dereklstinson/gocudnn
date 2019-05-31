@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //Algo returns an Algorithm Struct
@@ -60,12 +60,12 @@ func (c *ConvolutionD) FindForwardAlgorithm(
 func (c *ConvolutionD) FindForwardAlgorithmEx(
 	handle *Handle,
 	xD *TensorD,
-	x gocu.Mem,
+	x cutil.Mem,
 	wD *FilterD,
-	w gocu.Mem,
+	w cutil.Mem,
 	yD *TensorD,
-	y gocu.Mem,
-	wspace gocu.Mem,
+	y cutil.Mem,
+	wspace cutil.Mem,
 	wspacesize uint) ([]ConvFwdAlgoPerformance, error) {
 	reqAlgoCount, err := c.getForwardAlgorithmMaxCount(handle)
 	if err != nil {
@@ -90,7 +90,7 @@ func (c *ConvolutionD) FindForwardAlgorithmEx(
 	return results, err
 }
 
-//FindForwardAlgorithmExUS is like FindForwardAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+//FindForwardAlgorithmExUS is like FindForwardAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) FindForwardAlgorithmExUS(
 	handle *Handle,
 	xD *TensorD,

@@ -6,8 +6,8 @@ import (
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
-	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/GoCudnn/kernels"
+	"github.com/dereklstinson/cutil"
 )
 
 //XActivationMode is flags for xtra activations
@@ -188,7 +188,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 //Prelu uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
 //Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, yD *gocudnn.TensorD, y gocu.Mem, coefs, thresh, coefs1 gocu.Mem, alpha, beta float64) error {
+func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, yD *gocudnn.TensorD, y cutil.Mem, coefs, thresh, coefs1 cutil.Mem, alpha, beta float64) error {
 	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
@@ -251,7 +251,7 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, 
 //Prelu uses coefs and dcoefs. dx[i]=coefs[i]* dx[i] where x[i]<0   dcoefs=dy[i]*x[i]
 //Threshhold uses coefs and coefs1 thresh, dcoefs,dthresh,and dcoefs1 for dx[i]=dy[i]*coefs[i] where x[i]<thresh[i] else dx[i]=coefs1[i]*dy[i]. and dcoefs[i]+=x[i]*dy[i] same for dcoefs1
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem, alpha, beta float64) error {
+func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 cutil.Mem, alpha, beta float64) error {
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
@@ -264,7 +264,7 @@ func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD
 	return errors.New("Unsupported XActivationMode")
 }
 
-func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs gocu.Mem) error {
+func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs cutil.Mem) error {
 	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
@@ -287,7 +287,7 @@ func (xA *XActivationD) preluback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dx
 	return nil
 
 }
-func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, alpha, beta float64) error {
+func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, alpha, beta float64) error {
 	_, dtype, _, _, err := xD.Get()
 	if err != nil {
 		return err
@@ -315,7 +315,7 @@ func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x gocu.
 	}
 	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef)) //, xA.propnan)
 }
-func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x gocu.Mem, dxD *gocudnn.TensorD, dx gocu.Mem, dyD *gocudnn.TensorD, dy gocu.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 gocu.Mem) error {
+func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 cutil.Mem) error {
 	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err

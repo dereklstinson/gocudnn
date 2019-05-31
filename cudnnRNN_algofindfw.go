@@ -7,28 +7,28 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //FindRNNForwardInferenceAlgorithmEx finds the inference algorithmEx
 func (r *RNND) FindRNNForwardInferenceAlgorithmEx(
 	handle *Handle,
 	xD []*TensorD, //Input. An array of fully packed tensor descriptors describing the input to each recurrent iteration (one descriptor per iteration).
-	x gocu.Mem, //input
+	x cutil.Mem, //input
 	hxD *TensorD, //Input. A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx gocu.Mem, //input
+	hx cutil.Mem, //input
 	cxD *TensorD, //Input. A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx gocu.Mem, //input
+	cx cutil.Mem, //input
 	wD *FilterD, //Input. Handle to a previously initialized filter descriptor describing the weights for the RNN.
-	w gocu.Mem, //Input
+	w cutil.Mem, //Input
 	yD []*TensorD, //input An array of fully packed tensor descriptors.
-	y gocu.Mem, //Output Data pointer to GPU memory associated with the output tensor descriptor yDesc
+	y cutil.Mem, //Output Data pointer to GPU memory associated with the output tensor descriptor yDesc
 	hyD *TensorD, //input  A fully packed tensor descriptor describing the final hidden state of the RNN.
-	hy gocu.Mem, //Output. Data pointer to GPU memory associated with the tensor descriptor hyDesc. If
+	hy cutil.Mem, //Output. Data pointer to GPU memory associated with the tensor descriptor hyDesc. If
 	cyD *TensorD, //Input. A fully packed tensor descriptor describing the final cell state for LSTM networks.
-	cy gocu.Mem, //output
+	cy cutil.Mem, //output
 	findIntensity float32,
-	wspace gocu.Mem, wspacesize uint,
+	wspace cutil.Mem, wspacesize uint,
 ) ([]AlgorithmPerformance, error) {
 	algocount, err := r.getRNNForwardInferenceAlgorithmMaxCount(handle)
 	if err != nil {
@@ -61,7 +61,7 @@ func (r *RNND) FindRNNForwardInferenceAlgorithmEx(
 	return calgoperftogoarray(perfResults, setfinalizer), err
 }
 
-//FindRNNForwardInferenceAlgorithmExUS is like FindRNNForwardInferenceAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+//FindRNNForwardInferenceAlgorithmExUS is like FindRNNForwardInferenceAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) FindRNNForwardInferenceAlgorithmExUS(
 	handle *Handle,
 	xD []*TensorD, //Input. An array of fully packed tensor descriptors describing the input to each recurrent iteration (one descriptor per iteration).
@@ -127,24 +127,24 @@ func (r *RNND) GetRNNForwardTrainingAlgorithmMaxCount(handle *Handle) (int32, er
 func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 	handle *Handle,
 	xD []*TensorD, //input
-	x gocu.Mem, //input
+	x cutil.Mem, //input
 	hxD *TensorD, //input: A fully packed tensor descriptor describing the initial hidden state of the RNN.
-	hx gocu.Mem, //input
+	hx cutil.Mem, //input
 	cxD *TensorD, // :input A fully packed tensor descriptor describing the initial cell state for LSTM networks.
-	cx gocu.Mem, //input
+	cx cutil.Mem, //input
 	wD *FilterD, //input
-	w gocu.Mem, //input
+	w cutil.Mem, //input
 	yD []*TensorD, //Input. An array of fully packed tensor descriptors describing the output from each recurrent iteration (one descriptor per iteration).
-	y gocu.Mem, //output
+	y cutil.Mem, //output
 	hyD *TensorD, //input
-	hy gocu.Mem, //output
+	hy cutil.Mem, //output
 	cyD *TensorD,
-	cy gocu.Mem, //output
+	cy cutil.Mem, //output
 	findIntensity float32, //input
 	reqAlgocount int32, //input
-	wspace gocu.Mem, ///input
+	wspace cutil.Mem, ///input
 	wspacesize uint,
-	rspace gocu.Mem, //input/output
+	rspace cutil.Mem, //input/output
 	rspacesize uint,
 
 ) ([]AlgorithmPerformance, error) {
@@ -210,7 +210,7 @@ func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 	return calgoperftogoarray(perfresults, handle.gogc), err
 }
 
-//FindRNNForwardTrainingAlgorithmExUS is like FindRNNForwardTrainingAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+//FindRNNForwardTrainingAlgorithmExUS is like FindRNNForwardTrainingAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) FindRNNForwardTrainingAlgorithmExUS(
 	handle *Handle,
 	xD []*TensorD, x unsafe.Pointer,

@@ -8,7 +8,7 @@ import "C"
 import (
 	"runtime"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //AlgorithmD holds the C.cudnnAlgorithmDescriptor_t
@@ -169,7 +169,7 @@ func (a *AlgorithmD) GetAlgorithmSpaceSize(handle *Handle) (uint, error) {
 }
 
 //SaveAlgorithm saves the algorithm to host
-func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbytes uint) error {
+func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace cutil.Mem, sizeinbytes uint) error {
 
 	return Status(C.cudnnSaveAlgorithm(
 		handle.x,
@@ -180,7 +180,7 @@ func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbyt
 }
 
 //RestoreAlgorithm from host
-func (a *AlgorithmD) RestoreAlgorithm(handle *Handle, algoSpace gocu.Mem, sizeinbytes uint) error {
+func (a *AlgorithmD) RestoreAlgorithm(handle *Handle, algoSpace cutil.Mem, sizeinbytes uint) error {
 
 	return Status(C.cudnnRestoreAlgorithm(
 		handle.x,

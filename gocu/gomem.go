@@ -8,8 +8,8 @@ import (
 	"github.com/dereklstinson/half"
 )
 
-//GoMem allows go memory to interact with cuda using the Mem interface
-type GoMem struct {
+//Wrapper allows go memory to interact with cuda using the Mem interface
+type Wrapper struct {
 	ptr       unsafe.Pointer
 	unitlen   uint
 	unitbytes uint
@@ -17,21 +17,21 @@ type GoMem struct {
 }
 
 //Ptr is an unsafe.Pointer of some cuda memory
-func (g *GoMem) Ptr() unsafe.Pointer {
+func (g *Wrapper) Ptr() unsafe.Pointer {
 	return g.ptr
 }
 
 //DPtr is a double pointer of the unsafe.Pointer
-func (g *GoMem) DPtr() *unsafe.Pointer {
+func (g *Wrapper) DPtr() *unsafe.Pointer {
 	return &g.ptr
 }
 
-//OffSet returns a new GoMem
-func (g *GoMem) OffSet(byunits uint) *GoMem {
+//OffSet returns a new Wrapper
+func (g *Wrapper) OffSet(byunits uint) *Wrapper {
 
 	offset := unsafe.Pointer(uintptr(g.ptr) + uintptr(byunits*g.unitbytes))
 
-	return &GoMem{
+	return &Wrapper{
 		ptr:       offset,
 		unitlen:   g.unitlen - byunits,
 		unitbytes: g.unitbytes,
@@ -39,16 +39,16 @@ func (g *GoMem) OffSet(byunits uint) *GoMem {
 }
 
 //TotalBytes returns the total bytes this has
-func (g *GoMem) TotalBytes() uint {
+func (g *Wrapper) TotalBytes() uint {
 	return g.unitlen * g.unitbytes
 
 }
 
 //MakeGoMem returns a GoMem considering the input type.
 //Will only support slices and pointers to go types
-func MakeGoMem(input interface{}) (*GoMem, error) {
+func MakeGoMem(input interface{}) (*Wrapper, error) {
 	//fname:="MakeGoPointer"
-	ptr := new(GoMem)
+	ptr := new(Wrapper)
 	switch val := input.(type) {
 	case []int:
 		ptr.ptr = unsafe.Pointer(&val[0])

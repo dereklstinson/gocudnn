@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 func (m MathType) string() string {
@@ -246,9 +246,9 @@ This will change the layout of a tensor stride wise
 */
 func TransformTensor(h *Handle,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	yD *TensorD, y gocu.Mem) error {
+	yD *TensorD, y cutil.Mem) error {
 
 	var s Status
 	a := cscalarbydatatype(xD.dtype, alpha)
@@ -258,7 +258,7 @@ func TransformTensor(h *Handle,
 	return s.error("TransformTensor")
 }
 
-//TransformTensorUS is like TransformTensor but it uses unsafe.Pointer instead of gocu.Mem
+//TransformTensorUS is like TransformTensor but it uses unsafe.Pointer instead of cutil.Mem
 func TransformTensorUS(h *Handle, alpha float64, xD *TensorD, x unsafe.Pointer, beta float64, yD *TensorD, y unsafe.Pointer) error {
 
 	var s Status
@@ -277,7 +277,7 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 
 **Note: Up to dimension 5, all tensor formats are supported. Beyond those dimensions, this routine is not supported
 */
-func AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, beta float64, cD *TensorD, c gocu.Mem) error {
+func AddTensor(h *Handle, alpha float64, aD *TensorD, A cutil.Mem, beta float64, cD *TensorD, c cutil.Mem) error {
 	a := cscalarbydatatype(aD.dtype, alpha)
 	b := cscalarbydatatype(aD.dtype, beta)
 	s := Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A.Ptr(), b.CPtr(), cD.descriptor, c.Ptr()))
@@ -285,7 +285,7 @@ func AddTensor(h *Handle, alpha float64, aD *TensorD, A gocu.Mem, beta float64, 
 	return s.error("AddTensor")
 }
 
-//AddTensorUS is like AddTensor but uses unsafe.Pointer instead of gocu.Mem
+//AddTensorUS is like AddTensor but uses unsafe.Pointer instead of cutil.Mem
 func AddTensorUS(h *Handle, alpha float64, aD *TensorD, A unsafe.Pointer, beta float64, cD *TensorD, c unsafe.Pointer) error {
 	a := cscalarbydatatype(aD.dtype, alpha)
 	b := cscalarbydatatype(aD.dtype, beta)
@@ -295,19 +295,19 @@ func AddTensorUS(h *Handle, alpha float64, aD *TensorD, A unsafe.Pointer, beta f
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
-func ScaleTensor(h *Handle, yD *TensorD, y gocu.Mem, alpha float64) error {
+func ScaleTensor(h *Handle, yD *TensorD, y cutil.Mem, alpha float64) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), a.CPtr())).error("ScaleTensor")
 }
 
-//ScaleTensorUS is like ScaleTensor but it uses unsafe.Pointer instead of gocu.Mem
+//ScaleTensorUS is like ScaleTensor but it uses unsafe.Pointer instead of cutil.Mem
 func ScaleTensorUS(h *Handle, yD *TensorD, y unsafe.Pointer, alpha float64) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y, a.CPtr())).error("ScaleTensor")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
-func SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
+func SetTensor(h *Handle, yD *TensorD, y cutil.Mem, v float64) error {
 
 	vc := cscalarbydatatypeforsettensor(yD.dtype, v)
 	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), vc.CPtr())
@@ -315,7 +315,7 @@ func SetTensor(h *Handle, yD *TensorD, y gocu.Mem, v float64) error {
 	return Status(x).error("SetTensor")
 }
 
-//SetTensorUS is like SetTensor but it uses unsafe.Pointer instead of gocu.Mem
+//SetTensorUS is like SetTensor but it uses unsafe.Pointer instead of cutil.Mem
 func SetTensorUS(h *Handle, yD *TensorD, y unsafe.Pointer, v float64) error {
 
 	vc := cscalarbydatatypeforsettensor(yD.dtype, v)

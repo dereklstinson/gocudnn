@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //DropOutD holds the dropout descriptor
@@ -33,7 +34,7 @@ func CreateDropOutDescriptor() (*DropOutD, error) {
 }
 
 //Set sets the drop out descriptor
-func (d *DropOutD) Set(handle *Handle, dropout float32, states gocu.Mem, bytes uint, seed uint64) error {
+func (d *DropOutD) Set(handle *Handle, dropout float32, states cutil.Mem, bytes uint, seed uint64) error {
 	return Status(C.cudnnSetDropoutDescriptor(
 		d.descriptor,
 		handle.x,
@@ -44,7 +45,7 @@ func (d *DropOutD) Set(handle *Handle, dropout float32, states gocu.Mem, bytes u
 	)).error("SetDropoutDescriptor")
 }
 
-//SetUS is like Set but uses unsafe.Pointer instead of gocu.Mem
+//SetUS is like Set but uses unsafe.Pointer instead of cutil.Mem
 func (d *DropOutD) SetUS(handle *Handle, dropout float32, states unsafe.Pointer, bytes uint, seed uint64) error {
 	return Status(C.cudnnSetDropoutDescriptor(
 		d.descriptor,
@@ -70,7 +71,7 @@ func destroydropoutdescriptor(d *DropOutD) error {
 func (d *DropOutD) Restore(
 	handle *Handle,
 	dropout float32, //probability that the input value is set to zero
-	states gocu.Mem,
+	states cutil.Mem,
 	bytes uint,
 	seed uint64,
 ) error {
@@ -85,7 +86,7 @@ func (d *DropOutD) Restore(
 	)).error("RestoreDropoutDescriptor")
 }
 
-//RestoreUS is like Restore but uses unsafe.Pointer instead of gocu.Mem
+//RestoreUS is like Restore but uses unsafe.Pointer instead of cutil.Mem
 func (d *DropOutD) RestoreUS(
 	handle *Handle,
 	dropout float32, //probability that the input value is set to zero
@@ -107,7 +108,7 @@ func (d *DropOutD) RestoreUS(
 //Get gets the descriptor to a previously saved-off state
 func (d *DropOutD) Get(
 	handle *Handle,
-) (float32, gocu.Mem, uint64, error) {
+) (float32, cutil.Mem, uint64, error) {
 	var seed C.ulonglong
 	var dropout C.float
 	var x unsafe.Pointer
@@ -122,7 +123,7 @@ func (d *DropOutD) Get(
 	return float32(dropout), gocu.WrapUnsafe(x), uint64(seed), err
 }
 
-//GetUS is like GetUS but uses unsafe.Pointer instead of gocu.Mem
+//GetUS is like GetUS but uses unsafe.Pointer instead of cutil.Mem
 func (d *DropOutD) GetUS(handle *Handle) (float32, unsafe.Pointer, uint64, error) {
 	var seed C.ulonglong
 	var dropout C.float
@@ -140,7 +141,7 @@ func (d *DropOutD) GetUS(handle *Handle) (float32, unsafe.Pointer, uint64, error
 
 //GetStateSize returns the  state size in bytes
 //Method calls a function that doesn't use DropOutD, but it is a dropout type function, and is
-//used to get the size the gocu.Mem, or unsafe.Pointer needs to for state.
+//used to get the size the cutil.Mem, or unsafe.Pointer needs to for state.
 func (d *DropOutD) GetStateSize(handle *Handle) (uint, error) {
 	var size C.size_t
 	err := Status(C.cudnnDropoutGetStatesSize(handle.x, &size)).error("DropoutGetStateSize")
@@ -162,10 +163,10 @@ func (d *DropOutD) GetReserveSpaceSize(t *TensorD) (uint, error) {
 func (d *DropOutD) Forward(
 	handle *Handle,
 	xD *TensorD, //input
-	x gocu.Mem, //input
+	x cutil.Mem, //input
 	yD *TensorD, //input
-	y gocu.Mem, //input/output
-	reserveSpace gocu.Mem, //input/output
+	y cutil.Mem, //input/output
+	reserveSpace cutil.Mem, //input/output
 	reservesize uint,
 ) error {
 
@@ -181,7 +182,7 @@ func (d *DropOutD) Forward(
 	)).error("DropoutForward")
 }
 
-//ForwardUS is like Forward but uses unsafe.Pointer instead of gocu.Mem
+//ForwardUS is like Forward but uses unsafe.Pointer instead of cutil.Mem
 func (d *DropOutD) ForwardUS(
 	handle *Handle,
 	xD *TensorD, x unsafe.Pointer, //input
@@ -205,10 +206,10 @@ func (d *DropOutD) ForwardUS(
 func (d *DropOutD) Backward(
 	handle *Handle,
 	dyD *TensorD, //input
-	dy gocu.Mem, //input
+	dy cutil.Mem, //input
 	dxD *TensorD, //input
-	dx gocu.Mem, //input/output
-	reserveSpace gocu.Mem, //input/output
+	dx cutil.Mem, //input/output
+	reserveSpace cutil.Mem, //input/output
 	reservesize uint,
 ) error {
 
@@ -224,7 +225,7 @@ func (d *DropOutD) Backward(
 	)).error("DropoutBackward")
 }
 
-//BackwardUS is like Backward but uses unsafe.Pointer instead of gocu.Mem
+//BackwardUS is like Backward but uses unsafe.Pointer instead of cutil.Mem
 func (d *DropOutD) BackwardUS(
 	handle *Handle,
 	dyD *TensorD, //input

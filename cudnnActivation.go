@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //ActivationD is an opaque struct that holds the description of an activation operation.
@@ -60,7 +60,7 @@ func destroyactivationdescriptor(a *ActivationD) error {
 //
 //This routine applies a specified neuron activation function element-wise over each input value.
 //
-//Note: In-place operation is allowed for this routine; i.e., x and y gocu.Mem may be equal.
+//Note: In-place operation is allowed for this routine; i.e., x and y cutil.Mem may be equal.
 //However, this requires xD and yD descriptors to be identical
 //(particularly, the strides of the input and output must match for in-place operation to be allowed).
 //
@@ -129,15 +129,15 @@ func destroyactivationdescriptor(a *ActivationD) error {
 func (a *ActivationD) Forward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	yD *TensorD, y gocu.Mem) error {
+	yD *TensorD, y cutil.Mem) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
 }
 
-//ForwardUS is just like Forward but it takes unsafe.Pointers instead of gocu.Mem
+//ForwardUS is just like Forward but it takes unsafe.Pointers instead of cutil.Mem
 func (a *ActivationD) ForwardUS(
 	handle *Handle,
 	alpha float64,
@@ -155,7 +155,7 @@ func (a *ActivationD) ForwardUS(
 //
 //This routine computes the gradient of a neuron activation function.
 //
-//Note: In-place operation is allowed for this routine; i.e., dx and dy gocu.Mem may be equal.
+//Note: In-place operation is allowed for this routine; i.e., dx and dy cutil.Mem may be equal.
 //However, this requires dxD and dyD descriptors to be identical
 //(particularly, the strides of the input and output must match for in-place operation to be allowed).
 //
@@ -244,17 +244,17 @@ func (a *ActivationD) ForwardUS(
 func (a *ActivationD) Backward(
 	handle *Handle,
 	alpha float64,
-	yD *TensorD, y gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
-	xD *TensorD, x gocu.Mem,
+	yD *TensorD, y cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	dxD *TensorD, dx gocu.Mem) error {
+	dxD *TensorD, dx cutil.Mem) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
 	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
 }
 
-//BackwardUS is just like Backward but it takes unsafe.Pointers instead of gocu.Mem
+//BackwardUS is just like Backward but it takes unsafe.Pointers instead of cutil.Mem
 func (a *ActivationD) BackwardUS(
 	handle *Handle,
 	alpha float64,

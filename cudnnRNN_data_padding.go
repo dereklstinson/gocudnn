@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //RNNDataD is a RNNDataDescriptor
@@ -75,7 +75,7 @@ func (r *RNNDataD) Get() (dtype DataType, layout RNNDataLayout, maxSeqLength, ve
 	maxSeqLength = int32(msl)
 	vectorsize = int32(vs)
 
-	paddingsymbol = gocu.CScalartoFloat64(ps)
+	paddingsymbol = cutil.CScalartoFloat64(ps)
 
 	if r.seqlensize > int32(bs) {
 		seqLengthArray = cintToint32(sla[:bs])
@@ -249,15 +249,15 @@ rspace -Input/Output. Data pointer to GPU memory to be used as a reserve space f
 rspacesib - Input. Specifies the size in bytes of the provided rspace
 */
 func (r *RNND) ForwardTrainingEx(h *Handle,
-	xD *RNNDataD, x gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	cxD *TensorD, cx gocu.Mem,
-	wD *FilterD, w gocu.Mem,
-	yD *RNNDataD, y gocu.Mem,
-	hyD *TensorD, hy gocu.Mem,
-	cyD *TensorD, cy gocu.Mem,
-	wspace gocu.Mem, wspacesib uint,
-	rspace gocu.Mem, rspacesib uint) error {
+	xD *RNNDataD, x cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	cxD *TensorD, cx cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	yD *RNNDataD, y cutil.Mem,
+	hyD *TensorD, hy cutil.Mem,
+	cyD *TensorD, cy cutil.Mem,
+	wspace cutil.Mem, wspacesib uint,
+	rspace cutil.Mem, rspacesib uint) error {
 
 	return Status(C.cudnnRNNForwardTrainingEx(h.x,
 		r.descriptor,
@@ -283,7 +283,7 @@ func (r *RNND) ForwardTrainingEx(h *Handle,
 
 }
 
-//ForwardTrainingExUS is like ForwardTrainingEx but uses unsafe.Pointer instead of gocu.Mem
+//ForwardTrainingExUS is like ForwardTrainingEx but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) ForwardTrainingExUS(h *Handle,
 	xD *RNNDataD, x unsafe.Pointer,
 	hxD *TensorD, hx unsafe.Pointer,
@@ -385,14 +385,14 @@ wspacesib - Input. Specifies the size in bytes of the provided wspace.
 */
 func (r *RNND) ForwardInferenceEx(
 	h *Handle,
-	xD *RNNDataD, x gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	cxD *TensorD, cx gocu.Mem,
-	wD *FilterD, w gocu.Mem,
-	yD *RNNDataD, y gocu.Mem,
-	hyD *TensorD, hy gocu.Mem,
-	cyD *TensorD, cy gocu.Mem,
-	wspace gocu.Mem, wspacesib uint,
+	xD *RNNDataD, x cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	cxD *TensorD, cx cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	yD *RNNDataD, y cutil.Mem,
+	hyD *TensorD, hy cutil.Mem,
+	cyD *TensorD, cy cutil.Mem,
+	wspace cutil.Mem, wspacesib uint,
 ) error {
 	return Status(C.cudnnRNNForwardInferenceEx(h.x,
 		r.descriptor,
@@ -415,7 +415,7 @@ func (r *RNND) ForwardInferenceEx(
 
 }
 
-//ForwardInferenceExUS is like ForwardInferenceEx but uses unsafe.Pointer instead of gocu.Mem
+//ForwardInferenceExUS is like ForwardInferenceEx but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) ForwardInferenceExUS(
 	h *Handle,
 	xD *RNNDataD, x unsafe.Pointer,
@@ -534,18 +534,18 @@ rspace - Input/Output. Data pointer to GPU memory to be used as a reserve space 
 rspacesib - Input. Specifies the size in bytes of the provided rspace.
 */
 func (r *RNND) BackwardDataEx(h *Handle,
-	yD *RNNDataD, y gocu.Mem,
-	dyD *RNNDataD, dy gocu.Mem,
-	dhyD *TensorD, dhy gocu.Mem,
-	dcyD *TensorD, dcy gocu.Mem,
-	wD *FilterD, w gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	cxD *TensorD, cx gocu.Mem,
-	dxD *RNNDataD, dx gocu.Mem,
-	dhxD *TensorD, dhx gocu.Mem,
-	dcxD *TensorD, dcx gocu.Mem,
-	wspace gocu.Mem, wspacesib uint,
-	rspace gocu.Mem, rspacesib uint) error {
+	yD *RNNDataD, y cutil.Mem,
+	dyD *RNNDataD, dy cutil.Mem,
+	dhyD *TensorD, dhy cutil.Mem,
+	dcyD *TensorD, dcy cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	cxD *TensorD, cx cutil.Mem,
+	dxD *RNNDataD, dx cutil.Mem,
+	dhxD *TensorD, dhx cutil.Mem,
+	dcxD *TensorD, dcx cutil.Mem,
+	wspace cutil.Mem, wspacesib uint,
+	rspace cutil.Mem, rspacesib uint) error {
 
 	return Status(C.cudnnRNNBackwardDataEx(h.x,
 		r.descriptor,
@@ -567,7 +567,7 @@ func (r *RNND) BackwardDataEx(h *Handle,
 
 }
 
-//BackwardDataExUS is like BackwardDataEx but uses unsafe.Pointer instead of gocu.Mem
+//BackwardDataExUS is like BackwardDataEx but uses unsafe.Pointer instead of cutil.Mem
 func (r *RNND) BackwardDataExUS(h *Handle,
 	yD *RNNDataD, y unsafe.Pointer,
 	dyD *RNNDataD, dy unsafe.Pointer,
@@ -651,12 +651,12 @@ rspace - Input. Data pointer to GPU memory to be used as a reserve space for thi
 rspacesib - Input. Specifies the size in bytes of the provided rspace
 */
 func (r *RNND) BackwardWeightsEx(h *Handle,
-	xD *RNNDataD, x gocu.Mem,
-	hxD *TensorD, hx gocu.Mem,
-	yD *RNNDataD, y gocu.Mem,
-	wspace gocu.Mem, wspacesib uint,
-	dwD *FilterD, dw gocu.Mem,
-	rspace gocu.Mem, rspacesib uint,
+	xD *RNNDataD, x cutil.Mem,
+	hxD *TensorD, hx cutil.Mem,
+	yD *RNNDataD, y cutil.Mem,
+	wspace cutil.Mem, wspacesib uint,
+	dwD *FilterD, dw cutil.Mem,
+	rspace cutil.Mem, rspacesib uint,
 ) error {
 	return Status(C.cudnnRNNBackwardWeightsEx(
 		h.x,
@@ -671,7 +671,7 @@ func (r *RNND) BackwardWeightsEx(h *Handle,
 
 }
 
-//BackwardWeightsExUS is like BackwardWeightsEx but with unsafe.Pointer instead of gocu.Mem
+//BackwardWeightsExUS is like BackwardWeightsEx but with unsafe.Pointer instead of cutil.Mem
 func (r *RNND) BackwardWeightsExUS(h *Handle,
 	xD *RNNDataD, x unsafe.Pointer,
 	hxD *TensorD, hx unsafe.Pointer,

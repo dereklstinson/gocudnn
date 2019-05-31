@@ -9,7 +9,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 /*
@@ -63,7 +63,7 @@ func (n *Uint8) wrap(p *C.Npp8u) {
 //Offset returns the offset pointer
 func (n *Uint8) Offset(elements int32) *Uint8 {
 
-	mem := gocu.Offset(n, (uint)(elements))
+	mem := cutil.Offset(n, (uint)(elements))
 	return &Uint8{
 		p: mem.Ptr(),
 	}
@@ -115,7 +115,7 @@ func (n *Uint16) wrap(p *C.Npp16u) {
 //Offset returns the offset pointer
 func (n *Uint16) Offset(elements int32) *Uint16 {
 
-	mem := gocu.Offset(n, (uint)(elements*2))
+	mem := cutil.Offset(n, (uint)(elements*2))
 	return &Uint16{
 		p: mem.Ptr(),
 	}
@@ -166,7 +166,7 @@ func (n *Uint32) wrap(p *C.Npp32u) {
 //Offset returns the offset pointer
 func (n *Uint32) Offset(elements int32) *Uint32 {
 
-	mem := gocu.Offset(n, (uint)(elements*4))
+	mem := cutil.Offset(n, (uint)(elements*4))
 	return &Uint32{
 		p: mem.Ptr(),
 	}
@@ -209,7 +209,7 @@ func (n *Uint64) wrap(p *C.Npp64u) {
 //Offset returns the offset pointer
 func (n *Uint64) Offset(elements int32) *Uint64 {
 
-	mem := gocu.Offset(n, (uint)(elements*8))
+	mem := cutil.Offset(n, (uint)(elements*8))
 	return &Uint64{
 		p: mem.Ptr(),
 	}
@@ -267,7 +267,7 @@ func (n *Int8) wrap(p *C.Npp8s) {
 //Offset returns the offset pointer
 func (n *Int8) Offset(elements int32) *Int8 {
 
-	mem := gocu.Offset(n, (uint)(elements))
+	mem := cutil.Offset(n, (uint)(elements))
 	return &Int8{
 		p: mem.Ptr(),
 	}
@@ -317,7 +317,7 @@ func (n *Int16) wrap(p *C.Npp16s) {
 //Offset returns the offset pointer of Int16 Pointer
 func (n *Int16) Offset(elements int32) *Int16 {
 
-	mem := gocu.Offset(n, (uint)(elements*2))
+	mem := cutil.Offset(n, (uint)(elements*2))
 	return &Int16{
 		p: mem.Ptr(),
 	}
@@ -367,7 +367,7 @@ func (n *Int32) wrap(p *C.Npp32s) {
 //Offset returns the offset pointer
 func (n *Int32) Offset(elements int32) *Int32 {
 
-	mem := gocu.Offset(n, (uint)(elements*4))
+	mem := cutil.Offset(n, (uint)(elements*4))
 	return &Int32{
 		p: mem.Ptr(),
 	}
@@ -417,7 +417,7 @@ func (n *Int64) wrap(p *C.Npp64s) {
 //Offset returns the offset pointer
 func (n *Int64) Offset(elements int32) *Int64 {
 
-	mem := gocu.Offset(n, (uint)(elements*8))
+	mem := cutil.Offset(n, (uint)(elements*8))
 	return &Int64{
 		p: mem.Ptr(),
 	}
@@ -473,7 +473,7 @@ func (n *Float32) wrap(p *C.Npp32f) {
 //Offset returns the offset pointer
 func (n *Float32) Offset(elements int32) *Float32 {
 
-	mem := gocu.Offset(n, (uint)(elements*4))
+	mem := cutil.Offset(n, (uint)(elements*4))
 	return &Float32{
 		p: mem.Ptr(),
 	}
@@ -523,7 +523,7 @@ func (n *Float64) wrap(p *C.Npp64f) {
 //Offset returns the offset pointer
 func (n *Float64) Offset(elements int32) *Float64 {
 
-	mem := gocu.Offset(n, (uint)(elements*8))
+	mem := cutil.Offset(n, (uint)(elements*8))
 	return &Float64{
 		p: mem.Ptr(),
 	}
@@ -587,7 +587,7 @@ func (n *Uint8Complex) Get() (real, imaginary uint8) {
 //Offset returns the offset pointer
 func (n *Uint8Complex) Offset(elements int32) *Uint8Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*2))
+	mem := cutil.Offset(n, (uint)(elements*2))
 	return &Uint8Complex{
 		p: mem.Ptr(),
 	}
@@ -647,7 +647,7 @@ func (n *Uint16Complex) Get() (real, imaginary uint16) {
 //Offset returns the offset pointer
 func (n *Uint16Complex) Offset(elements int32) *Uint16Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*4))
+	mem := cutil.Offset(n, (uint)(elements*4))
 	return &Uint16Complex{
 		p: mem.Ptr(),
 	}
@@ -707,7 +707,7 @@ func (n *Uint32Complex) Get() (real, imaginary uint32) {
 //Offset returns the offset pointer
 func (n *Uint32Complex) Offset(elements int32) *Uint32Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*8))
+	mem := cutil.Offset(n, (uint)(elements*8))
 	return &Uint32Complex{
 		p: mem.Ptr(),
 	}
@@ -782,7 +782,7 @@ func (n *Int16Complex) Get() (real, imaginary int16) {
 //Offset returns the offset pointer
 func (n *Int16Complex) Offset(elements int32) *Int16Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*4))
+	mem := cutil.Offset(n, (uint)(elements*4))
 	return &Int16Complex{
 		p: mem.Ptr(),
 	}
@@ -851,7 +851,7 @@ func (n *Int32Complex) Get() (real, imaginary int32) {
 //Offset returns the offset pointer
 func (n *Int32Complex) Offset(elements int32) *Int32Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*8))
+	mem := cutil.Offset(n, (uint)(elements*8))
 	return &Int32Complex{
 		p: mem.Ptr(),
 	}
@@ -919,7 +919,7 @@ func (n *Int64Complex) Get() (real, imaginary int64) {
 //Offset returns the offset pointer
 func (n *Int64Complex) Offset(elements int32) *Int64Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*16))
+	mem := cutil.Offset(n, (uint)(elements*16))
 	return &Int64Complex{
 		p: mem.Ptr(),
 	}
@@ -994,7 +994,7 @@ func (n *Float32Complex) Get() (real, imaginary float32) {
 //Offset returns the offset pointer
 func (n *Float32Complex) Offset(elements int32) *Float32Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*8))
+	mem := cutil.Offset(n, (uint)(elements*8))
 	return &Float32Complex{
 		p: mem.Ptr(),
 	}
@@ -1062,7 +1062,7 @@ func (n *Float64Complex) Get() (real, imaginary float32) {
 //Offset returns the offset pointer
 func (n *Float64Complex) Offset(elements int32) *Float64Complex {
 
-	mem := gocu.Offset(n, (uint)(elements*16))
+	mem := cutil.Offset(n, (uint)(elements*16))
 	return &Float64Complex{
 		p: mem.Ptr(),
 	}

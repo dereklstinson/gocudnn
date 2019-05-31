@@ -8,7 +8,7 @@ import (
 	"errors"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //BatchNormD is a gocudnn original.  This is to make the batchnorm operation similar to the majority cudnn.
@@ -127,9 +127,9 @@ func (b *BatchNormD) DeriveBNTensorDescriptor(xDesc *TensorD) (bndesc *TensorD, 
 func (b *BatchNormD) ForwardInference(
 	handle *Handle,
 	alpha, beta float64, /* alpha[0] = result blend factor, beta[0] = dest layer blend factor */
-	xD *TensorD, x gocu.Mem, /* NxCxHxW */
-	yD *TensorD, y gocu.Mem, /* NxCxHxW */
-	ScaleBiasMeanVarDesc *TensorD, scale, bias, estimatedMean, estimatedVariance gocu.Mem, //all share the ScaleBiasMeanVarDesc descriptor
+	xD *TensorD, x cutil.Mem, /* NxCxHxW */
+	yD *TensorD, y cutil.Mem, /* NxCxHxW */
+	ScaleBiasMeanVarDesc *TensorD, scale, bias, estimatedMean, estimatedVariance cutil.Mem, //all share the ScaleBiasMeanVarDesc descriptor
 	epsilon float64,
 
 ) error {
@@ -153,7 +153,7 @@ func (b *BatchNormD) ForwardInference(
 	)).error("BatchNormalizationForwardInference")
 }
 
-//ForwardInferenceUS is like ForwardInference but uses unsafe.Pointers instead of gocu.Mems
+//ForwardInferenceUS is like ForwardInference but uses unsafe.Pointers instead of cutil.Mems
 func (b *BatchNormD) ForwardInferenceUS(
 	handle *Handle,
 	alpha, beta float64, /* alpha[0] = result blend factor, beta[0] = dest layer blend factor */
@@ -193,13 +193,13 @@ func (b *BatchNormD) ForwardInferenceUS(
 func (b *BatchNormD) Backward(
 	handle *Handle,
 	alphadata, betadata, alphaparam, betaparam float64,
-	xD *TensorD, x gocu.Mem, /* same desc for x, dx, dy */
-	dyD *TensorD, dy gocu.Mem,
-	dxD *TensorD, dx gocu.Mem,
-	dBnScaleBiasDesc *TensorD, scale, dscale, dbias gocu.Mem, /* Shared tensor desc for the 4 tensors below */
+	xD *TensorD, x cutil.Mem, /* same desc for x, dx, dy */
+	dyD *TensorD, dy cutil.Mem,
+	dxD *TensorD, dx cutil.Mem,
+	dBnScaleBiasDesc *TensorD, scale, dscale, dbias cutil.Mem, /* Shared tensor desc for the 4 tensors below */
 	epsilon float64, /* Same epsilon as forward pass */
 	/* Optionally cached intermediate results from forward pass */
-	savedMean, savedInvVariance gocu.Mem,
+	savedMean, savedInvVariance cutil.Mem,
 ) error {
 	if !b.set {
 		return errors.New("BatchNormD not set")
@@ -238,7 +238,7 @@ func (b *BatchNormD) Backward(
 	)).error("BatchNormalizationBackward")
 }
 
-//BackwardUS is like Backward but uses unsafe.Pointers instead of gocu.Mem
+//BackwardUS is like Backward but uses unsafe.Pointers instead of cutil.Mem
 func (b *BatchNormD) BackwardUS(
 	handle *Handle,
 	alphadata, betadata, alphaparam, betaparam float64,
@@ -376,9 +376,9 @@ func (b *BatchNormD) ForwardTraining(
 	alpha float64, /* alpha[0] = result blend factor */
 	beta float64, /* beta[0] = dest layer blend factor */
 	xD *TensorD,
-	x gocu.Mem,
+	x cutil.Mem,
 	yD *TensorD,
-	y gocu.Mem,
+	y cutil.Mem,
 	/* Shared desc for the next 6 tensors in the argument list.
 	   Data type to be set as follows:
 	   type = (typeOf(x) == double) ? double : float
@@ -389,8 +389,8 @@ func (b *BatchNormD) ForwardTraining(
 		(normalization is performed across N) */
 	bnScaleBiasMeanVar *TensorD,
 	/* 'Gamma' and 'Beta' respectively in Ioffe and Szegedy's paper's notation */
-	scale gocu.Mem,
-	bias gocu.Mem,
+	scale cutil.Mem,
+	bias cutil.Mem,
 	/* MUST use factor=1 in the very first call of a complete training cycle.
 	        Use a factor=1/(1+n) at N-th call to the function to get
 	        Cumulative Moving Average (CMA) behavior
@@ -401,13 +401,13 @@ func (b *BatchNormD) ForwardTraining(
 	expAveFactor float64,
 	/* Used in Training phase only.
 	   runningMean = newMean*factor + runningMean*(1-factor) */
-	resultrunningmean gocu.Mem, //output
+	resultrunningmean cutil.Mem, //output
 	/* Output in training mode, input in inference. Is the moving average
 	   of  variance[x] (factor is applied in the same way as for runningMean) */
-	resultRunningVariance gocu.Mem, //output
+	resultRunningVariance cutil.Mem, //output
 	epsilon float64, /* Has to be >= CUDNN_BN_MIN_EPSILON. Should be the same in forward and backward functions. */
-	resultSaveMean gocu.Mem, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
-	resultSaveInvVariance gocu.Mem, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveMean cutil.Mem, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
+	resultSaveInvVariance cutil.Mem, //output /* Optionally save intermediate results from the forward pass here	- can be reused to speed up backward pass. NULL if unused */
 
 ) error {
 	if !b.set {

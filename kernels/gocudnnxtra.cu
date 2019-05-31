@@ -1,5 +1,5 @@
-
-
+#include <cuda.h>
+#include <stdbool.h>
 #define CUDA_GRID_LOOP_X(i, n)                                 \
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; \
          i += blockDim.x * gridDim.x)
@@ -12,11 +12,12 @@
      
      
 
-extern "C" __global__ void Transpose(int numthreads,
-                                     const float *src,
-                                     const int *buf,
-                                     const int ndims,
-                                     float *dest)
+extern "C" __global__
+void Transpose(int numthreads,
+               const float *src,
+               const int *buf,
+               const int ndims,
+               float *dest)
 {
     const int *src_strides = buf; 
     const int *dest_strides = &buf[ndims];
@@ -104,7 +105,7 @@ const int BVol = yThreads;
                     const float swapper =  t1[(xIdx*BVol)+(yIdx)];
                     t1[(xIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
                     t2[(xIdx*BVol)+yIdx]=swapper;
-                }
+                } 
             }
         }   
     }

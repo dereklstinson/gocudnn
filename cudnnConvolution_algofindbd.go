@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //Algo returns an Algorithm struct
@@ -69,10 +69,10 @@ func (c *ConvolutionD) FindBackwardDataAlgorithm(
 //FindBackwardDataAlgorithmEx finds some algorithms with memory
 func (c *ConvolutionD) FindBackwardDataAlgorithmEx(
 	handle *Handle,
-	wD *FilterD, w gocu.Mem,
-	dyD *TensorD, dy gocu.Mem,
-	dxD *TensorD, dx gocu.Mem,
-	wspace gocu.Mem, wspacesize uint) ([]ConvBwdDataAlgoPerformance, error) {
+	wD *FilterD, w cutil.Mem,
+	dyD *TensorD, dy cutil.Mem,
+	dxD *TensorD, dx cutil.Mem,
+	wspace cutil.Mem, wspacesize uint) ([]ConvBwdDataAlgoPerformance, error) {
 	reqAlgoCount, err := c.getBackwardDataAlgorithmMaxCount(handle)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (c *ConvolutionD) FindBackwardDataAlgorithmEx(
 	return results, err
 }
 
-//FindBackwardDataAlgorithmExUS is just like FindBackwardDataAlgorithmEx but uses unsafe.Pointer instead of gocu.Mem
+//FindBackwardDataAlgorithmExUS is just like FindBackwardDataAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
 func (c *ConvolutionD) FindBackwardDataAlgorithmExUS(
 	handle *Handle,
 	wD *FilterD, w unsafe.Pointer,
@@ -128,13 +128,57 @@ func (c *ConvolutionD) FindBackwardDataAlgorithmExUS(
 	return results, err
 }
 
-//GetBackwardDataAlgorithm gives a good algo with the limits given to it
+//GetBackwardDataAlgorithm - This function serves as a heuristic for obtaining the best suited algorithm for (*ConvolutionD)BackwardData() for the given layer specifications.
+//Based on the input preference, this function will either return the fastest algorithm or the fastest algorithm within a given memory limit.
+//For an exhaustive search for the fastest algorithm, please use  (*ConvolutionD)FindBackwardDataAlgorithm().
+//
+//Parameters:
+//	----
+//	handle(input):
+//	Handle to a previously created cuDNN context.
+//	----
+//	---
+//	wD(input):
+//	Handle to a previously initialized filter descriptor
+//	---
+//	----
+//	dyD(input):
+//	Handle to the previously initialized input differential tensor descriptor.
+//	----
+//	---
+//	dxD(input):
+//	Handle to the previously initialized output tensor descriptor.
+//	---
+//	----
+//	pref(input):
+//	Enumerant to express the preference criteria in terms of memory requirement and speed.
+//	----
+//	---
+//	wspaceSIBlimit(input):
+//	It is to specify the maximum amount of GPU memory the user is willing to use as a workspace.
+//	This is currently a placeholder and is not used
+//	---
+//	----
+//	returns:
+//	ConvBwdDataAlgo and error.
+//	----
+//
+//Possible Error Returns:
+//	nil:
+//
+//	The function launched successfully.
+//
+//	CUDNN_STATUS_BAD_PARAM:
+//
+//	At least one of these conditions are met:
+//	1) The numbers of feature maps of the input tensor and output tensor differ.
+//	2) The DataType of the tensor descriptors or the filter are different.
 func (c *ConvolutionD) GetBackwardDataAlgorithm(
 	handle *Handle,
 	wD *FilterD,
 	dyD *TensorD,
 	dxD *TensorD,
-	pref ConvBwdDataPref, wsmemlimit uint) (ConvBwdDataAlgo, error) {
+	pref ConvBwdDataPref, wspaceSIBlimit uint) (ConvBwdDataAlgo, error) {
 	var algo C.cudnnConvolutionBwdDataAlgo_t
 	err := Status(C.cudnnGetConvolutionBackwardDataAlgorithm(
 		handle.x,
@@ -142,13 +186,15 @@ func (c *ConvolutionD) GetBackwardDataAlgorithm(
 		dyD.descriptor,
 		c.descriptor,
 		dxD.descriptor,
-		pref.c(), (C.size_t)(wsmemlimit), &algo)).error("GetConvolutionBackwardDataAlgorithm")
+		pref.c(), (C.size_t)(wspaceSIBlimit), &algo)).error("GetConvolutionBackwardDataAlgorithm")
 
 	return ConvBwdDataAlgo(algo), err
 }
 
-//GetBackwardDataAlgorithmV7 will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
-//So if 4 is passed through in requestedAlgoCount, then it will return the top 4 performers in the ConvolutionFwdAlgoPerformance struct.  using this could possible give the user cheat level performance :-)
+//GetBackwardDataAlgorithmV7 - This function serves as a heuristic for obtaining the best suited algorithm for cudnnConvolutionBackwardData for the given layer specifications.
+//This function will return all algorithms (including (MathType where available) sorted by expected (based on internal heuristic)
+//relative performance with fastest being index 0 of perfResults.
+//For an exhaustive search for the fastest algorithm, please use (*ConvolutionD)FindBackwardDataAlgorithm().
 func (c *ConvolutionD) GetBackwardDataAlgorithmV7(
 	handle *Handle,
 	wD *FilterD,

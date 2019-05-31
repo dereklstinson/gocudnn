@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
 )
 
 //SpatialTransformerD holdes the spatial descriptor
@@ -21,8 +21,8 @@ type SpatialTransformerD struct {
 //GridGeneratorForward This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
 func (s *SpatialTransformerD) GridGeneratorForward(
 	handle *Handle,
-	theta gocu.Mem, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
-	grid gocu.Mem, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
+	theta cutil.Mem, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
+	grid cutil.Mem, /*Output. A grid of coordinates. It is of size n*h*w*2 for a 2d transformation, where n,
 	h, w is specified in stDesc . In the 4th dimension, the first coordinate is x, and the
 	second coordinate is y*/
 
@@ -36,7 +36,7 @@ func (s *SpatialTransformerD) GridGeneratorForward(
 	)).error("SpatialTfGridGeneratorForward")
 }
 
-//GridGeneratorForwardUS is like GridGeneratorForward but uses unsafe.Pointer instead of gocu.Mem
+//GridGeneratorForwardUS is like GridGeneratorForward but uses unsafe.Pointer instead of cutil.Mem
 func (s *SpatialTransformerD) GridGeneratorForwardUS(
 	handle *Handle,
 	theta unsafe.Pointer, //Input. Affine transformation matrix. It should be of size n*2*3 for a 2d transformation, n is the number of images.
@@ -57,8 +57,8 @@ func (s *SpatialTransformerD) GridGeneratorForwardUS(
 //GridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
 func (s *SpatialTransformerD) GridGeneratorBackward(
 	handle *Handle,
-	grid gocu.Mem,
-	theta gocu.Mem,
+	grid cutil.Mem,
+	theta cutil.Mem,
 ) error {
 
 	return Status(C.cudnnSpatialTfGridGeneratorBackward(
@@ -69,7 +69,7 @@ func (s *SpatialTransformerD) GridGeneratorBackward(
 	)).error("SpatialTfGridGeneratorBackward")
 }
 
-//GridGeneratorBackwardUS is like GridGeneratorBackward but uses unsafe.Pointer instead of gocu.Mem
+//GridGeneratorBackwardUS is like GridGeneratorBackward but uses unsafe.Pointer instead of cutil.Mem
 func (s *SpatialTransformerD) GridGeneratorBackwardUS(
 	handle *Handle,
 	grid unsafe.Pointer,
@@ -88,10 +88,10 @@ func (s *SpatialTransformerD) GridGeneratorBackwardUS(
 func (s *SpatialTransformerD) SamplerForward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
-	grid gocu.Mem,
+	xD *TensorD, x cutil.Mem,
+	grid cutil.Mem,
 	beta float64,
-	yD *TensorD, y gocu.Mem,
+	yD *TensorD, y cutil.Mem,
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
@@ -109,7 +109,7 @@ func (s *SpatialTransformerD) SamplerForward(
 	)).error("SpatialTfSamplerForward")
 }
 
-//SamplerForwardUS is like SamplerForward but uses unsafe.Pointer instead of gocu.Mem
+//SamplerForwardUS is like SamplerForward but uses unsafe.Pointer instead of cutil.Mem
 func (s *SpatialTransformerD) SamplerForwardUS(
 	handle *Handle,
 	alpha float64,
@@ -136,14 +136,14 @@ func (s *SpatialTransformerD) SamplerForwardUS(
 func (s *SpatialTransformerD) SamplerBackward(
 	handle *Handle,
 	alpha float64,
-	xD *TensorD, x gocu.Mem,
+	xD *TensorD, x cutil.Mem,
 	beta float64,
-	dxD *TensorD, dx gocu.Mem,
+	dxD *TensorD, dx cutil.Mem,
 	alphaDgrid float64,
-	dyD *TensorD, dy gocu.Mem,
-	grid gocu.Mem,
+	dyD *TensorD, dy cutil.Mem,
+	grid cutil.Mem,
 	betaDgrid float64,
-	dGrid gocu.Mem,
+	dGrid cutil.Mem,
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dxD.dtype, beta)
@@ -164,7 +164,7 @@ func (s *SpatialTransformerD) SamplerBackward(
 	)).error("SpatialTfSamplerBackward")
 }
 
-//SamplerBackwardUS is like SamplerBackward but uses unsafe.Pointer instead of gocu.Mem
+//SamplerBackwardUS is like SamplerBackward but uses unsafe.Pointer instead of cutil.Mem
 func (s *SpatialTransformerD) SamplerBackwardUS(
 	handle *Handle,
 	alpha float64,
