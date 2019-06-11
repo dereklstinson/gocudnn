@@ -12,8 +12,7 @@
      
      
 
-extern "C" __global__
-void Transpose(int numthreads,
+extern "C" __global__ void Transpose(int numthreads,
                const float *src,
                const int *buf,
                const int ndims,
@@ -43,7 +42,7 @@ void Transpose(int numthreads,
    if even is >0 then it will do the even batches.
    Make sure labels are swapped on host end.
    */
-   extern "C" __global__ void SwapEveryOther(
+extern "C" __global__ void SwapEveryOther(
     const int xThreads, //total batches
     const int totalbatches,
     float *t1,
