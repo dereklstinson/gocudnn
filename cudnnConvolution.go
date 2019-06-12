@@ -88,7 +88,7 @@ func (c *ConvolutionD) Get() (mode ConvolutionMode, data DataType, pad []int32, 
 	var dtype C.cudnnDataType_t
 	err = Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &padding[0], &striding[0], &dilationing[0], &moded, &dtype)).error("GetndDescriptor")
 
-	return ConvolutionMode(moded), DataType(dtype), cintToint32(padding), cintToint32(striding), cintToint32(dilationing), err
+	return ConvolutionMode(moded), DataType(dtype), cintToint32(padding[:actual]), cintToint32(striding[:actual]), cintToint32(dilationing[:actual]), err
 
 }
 
