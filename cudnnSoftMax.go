@@ -18,10 +18,6 @@ type SoftMaxD struct {
 	mode C.cudnnSoftmaxMode_t
 }
 
-//SoftMaxFuncs is a nil struct that is used to call SoftMax Functions
-type SoftMaxFuncs struct {
-}
-
 //CreateSoftMaxDescriptor creates a gocudnn softmax descriptor.  It is not part of cudnn, but I wanted to make the library
 //A little more stream lined after using it for a while
 func CreateSoftMaxDescriptor() *SoftMaxD {
