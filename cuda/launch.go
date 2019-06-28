@@ -80,6 +80,7 @@ func (m *Module) Load(filename string) error {
 	}
 	fname := C.CString(filename)
 	x := C.cuModuleLoad(&m.m, fname)
+	m.loaded = true
 	return newErrorDriver("Load", x)
 }
 
@@ -91,6 +92,8 @@ func (m *Module) LoadEx(ptx string) error {
 	cptx := unsafe.Pointer(C.CString(ptx))
 
 	x := C.cuModuleLoadDataEx(&m.m, cptx, 0, C.nullJitOptions, C.voiddptrnull)
+	m.loaded = true
+
 	return newErrorDriver("LoadEx", x)
 }
 
@@ -347,15 +350,7 @@ func (k *Kernel) destroyargs() {
 		C.free(k.args[i])
 	}
 }
-func (k *Kernel) keepsalive() {
-	runtime.KeepAlive(k)
 
-}
 func destroycudakernel(k *Kernel) {
-	k.destroyargs()
-}
-
-//Destroy destroys the argument array
-func (k *Kernel) Destroy() {
 	k.destroyargs()
 }
