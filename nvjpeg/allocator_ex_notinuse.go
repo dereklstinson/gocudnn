@@ -44,46 +44,17 @@ func CreateEx(backend Backend) (h *Handle, err error) {
 	return h, err
 }
 
-/*
-func CreateEx(backend Backend, dev *DevAllocator, pin *PinnedAllocator, flags uint32) (*Handle, error) {
-	h := new(Handle)
-	err := status(C.nvjpegCreateEx(backend.c(), dev.cptr(), pin.cptr(), (C.uint)(flags), &h.h)).error()
-	if err != nil {
-		return nil, err
-	}
-	runtime.SetFinalizer(h, nvjpegDestroy)
-	return h, err
+//BufferPinned buffer for pinned host memory
+type BufferPinned struct {
+	b C.nvjpegBufferPinned_t
 }
 
-//DevAllocator - Memory allocator using mentioned prototypes, provided to nvjpegCreate
-// This allocator will be used for all device memory allocations inside library
-// In any way library is doing smart allocations (reallocates memory only if needed)
-type DevAllocator struct {
-	da C.nvjpegDevAllocator_t
-}
+func CreateBufferPinned(h *Handle)
 
-func (d *DevAllocator) cptr() *C.nvjpegDevAllocator_t {
-	return &d.da
+//BufferDevice buffer for device memory
+type BufferDevice struct {
+	b C.nvjpegBufferDevice_t
 }
-func (d DevAllocator) c() C.nvjpegDevAllocator_t {
-	return d.da
-}
-
-//PinnedAllocator will wrap a pinned allocator.
-type PinnedAllocator struct {
-	pa C.nvjpegPinnedAllocator_t
-}
-
-func (p *PinnedAllocator) cptr() *C.nvjpegPinnedAllocator_t {
-	return &p.pa
-}
-func (p PinnedAllocator) c() C.nvjpegPinnedAllocator_t {
-	return p.pa
-}
-
-
-
-*/
 
 //Backend are flags that are used to set the implimentation.
 type Backend C.nvjpegBackend_t
