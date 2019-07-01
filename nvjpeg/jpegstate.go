@@ -208,3 +208,9 @@ func (j *JpegState) DecodeBatchedPhase3(h *Handle, dest []*Image, s gocu.Streame
 	}
 	return s.Sync()
 }
+func (j *JpegState) AttachPinnedBuffer(p *PinnedBuffer) error {
+	return status(C.nvjpegStateAttachPinnedBuffer(j.j, p.b)).error()
+}
+func (j *JpegState) AttachDeviceBuffer(d *DeviceBuffer) error {
+	return status(C.nvjpegStateAttachDeviceBuffer(j.j, d.b)).error()
+}
