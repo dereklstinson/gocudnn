@@ -151,7 +151,7 @@ extern "C" __global__ void ShapetoBatch4DNHWC(
     float *batch,
     const int h_over_scan,
     const int w_over_scan,
-    const int S2B)
+    const bool S2B)
 {
     int batch0 = N2 * xThreads * yThreads * zThreads;
     int batch1 = xThreads * yThreads * zThreads;
@@ -175,7 +175,7 @@ extern "C" __global__ void ShapetoBatch4DNHWC(
                         int oh = (hstride * i) + xIdx;
                         int ow = (wstride * j) + yIdx;
 
-                        if (S2B > 0)
+                        if (S2B)
                         {
                             if (oh < hSize && ow < wSize)
                             {
@@ -226,7 +226,7 @@ extern "C" __global__ void ShapetoBatch4DNCHW(
     float *batch,
     const int h_over_scan,
     const int w_over_scan,
-    const int S2B)
+    const bool S2B)
 {
     int batch0 = N2 * xThreads * yThreads * zThreads;
     int batch1 = xThreads * yThreads * zThreads;
@@ -250,7 +250,7 @@ extern "C" __global__ void ShapetoBatch4DNCHW(
                         int oh = (hstride * i) + yIdx;
                         int ow = (wstride * j) + zIdx;
 
-                        if (S2B > 0)
+                        if (S2B )
                         {
                             if (oh < hSize && ow < wSize)
                             {
