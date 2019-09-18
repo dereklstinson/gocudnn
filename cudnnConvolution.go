@@ -527,7 +527,7 @@ func (c *ConvolutionD) Forward(
 	handle *Handle,
 	alpha float64,
 	xD *TensorD, x cutil.Mem,
-	wD *FilterD, w cutil.Mem,
+	wD *FilterD, w cutil.Mem, 
 	algo ConvFwdAlgo,
 	wspace cutil.Mem, wspacesize uint,
 	beta float64,
