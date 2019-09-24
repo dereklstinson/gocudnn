@@ -1,7 +1,6 @@
 # GoCudnn [![Coverage Status](https://coveralls.io/repos/github/dereklstinson/GoCudnn/badge.svg?branch=master)](https://coveralls.io/github/dereklstinson/GoCudnn?branch=master)
 <p><img alt="Gopher" title="GoCu" src="GoCu.png" width="500"/></p>
 
-
 V0.1_75_101 is compiling.  It is cudnn 7.5 w/ cuda 10.1, There might be bugs. Let me know.  
 
 This is an api breaking update.  Flags are being used completely differently.  Now flags have methods that change value of the type, but also return that changed value.  Also, I am trimming out all non "ND" functions.
@@ -28,6 +27,14 @@ I would have liked to not use cuda.h, but it is needed to run the kernels.  Its 
 I am adding some NPP library stuff where it would be appropriate with gocudnn.
 I've added nvjpeg, but that was before the 10.1 update.  So, I will upgrade to 10.1 (cuda) and 7.5 (cudnn) and start a new branch.
 Any subpackage library bindings I include will most likely only be made to suppliment cudnn.
+
+## Some required packages
+
+```text
+go get github.com/dereklstinson/half
+go get github.com/dereklstinson/cutil
+```
+If I ever go to modules. These will be placed in there.
 
 ## Setup
 
