@@ -1,0 +1,4 @@
+github.com/dereklstinson/cutil v0.0.0-20190702155631-f1e343df01e3 h1:dLjqp0iQiD/DHGVpfphHsl4zWtFNACwlYtezq5Wdiz4=
+github.com/dereklstinson/cutil v0.0.0-20190702155631-f1e343df01e3/go.mod h1:mbgIBN4GY0S+4hhh9+7aFnU7yYey9R6b31M+Y4wqA6M=
+github.com/dereklstinson/half v0.0.0-20170106005425-c705bde19bd0 h1:qUyKfXkJepFDCaoYhwwsq33kkN5lXHCUeufaRjfL0N4=
+github.com/dereklstinson/half v0.0.0-20170106005425-c705bde19bd0/go.mod h1:NwINW+TmvRV9tNFZVnQmKjEAcZZZxIhqsv8ly3U2fNY=
