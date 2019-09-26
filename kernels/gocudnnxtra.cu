@@ -1230,6 +1230,39 @@ extern "C" __global__ void ThreshBackward(const int XThreads,
     }
 }
 
+extern "C" __global__ void ThreshBackwardhalf(const int XThreads,
+                                          const int batchsize,
+                                          const __half *x,
+                                          __half *dx,
+                                          const __half *dy,
+                                          const __half *negcoefs,
+                                          __half *dnegcoefs,
+                                          const __half *threshhold,
+                                          const __half *poscoefs,
+                                          __half *dposcoefs)
+{
+    for (int i=0;i<batchsize;i++)
+    {
+        int stride=XThreads*i;
+            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            {
+                if (__hgt(x[stride+xIdx],threshhold[xIdx]))
+                {
+                 //  dx[stride+xIdx]=  poscoefs[xIdx]*dy[stride+xIdx];
+                 dx[stride+xIdx]=__hmul(dy[stride+xIdx],poscoefs[xIdx]);
+                 // dposcoefs[xIdx]+=dy[xIdx]*x[stride+xIdx];
+                 dposcoefs[xIdx]=__hfma(dy[xIdx],x[stride+xIdx],dposcoefs[xIdx]);
+                }
+                else
+                {
+                  // dx[stride+xIdx]=  negcoefs[xIdx]*dy[stride+xIdx];
+                  dx[stride+xIdx]= __hmul(dy[stride+xIdx],negcoefs[xIdx]);
+                  // dnegcoefs[xIdx]+=dy[xIdx]*x[stride+xIdx];
+                  dnegcoefs[xIdx]=__hfma(dy[xIdx],x[stride+xIdx],dnegcoefs[xIdx]);
+                }
+            }
+    }
+}
 //forwardPrelu does the forward Prelu
 extern "C" __global__ void PreluForward(const int XThreads,
                                         const int batchsize,
@@ -1255,7 +1288,30 @@ extern "C" __global__ void PreluForward(const int XThreads,
     }
    
 }
-    
+extern "C" __global__ void PreluForwardhalf(const int XThreads,
+                                        const int batchsize,
+                                        const __half *x,
+                                        __half *y,
+                                        const __half *coefs)
+{
+  
+    for (int i=0;i<batchsize;i++)
+    {
+        int stride=XThreads*i;
+            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            {
+                if (__hgt(x[stride+xIdx],0))
+                {
+                    y[stride+xIdx]=  x[stride+xIdx];
+                }
+                else
+                {
+                    y[stride+xIdx]=  __hmul(coefs[xIdx],x[stride+xIdx]);
+                }
+            }
+    }
+   
+}    
 //backwardPrelu does the backprop of the parametric float
 
 extern "C" __global__ void PreluBackward(const int XThreads,
@@ -1279,6 +1335,33 @@ extern "C" __global__ void PreluBackward(const int XThreads,
                 {
                     dx[stride+xIdx]=  coefs[xIdx]*dy[stride+xIdx];
                     dcoefs[xIdx]+=dy[xIdx]*x[stride+xIdx];
+                }
+            }
+    }
+}
+extern "C" __global__ void PreluBackwardhalf(const int XThreads,
+                                                          const int batchsize,
+                                                          __half *dx,
+                                                          const __half *x,
+                                                          const __half *dy,
+                                                          const __half *coefs,
+                                                          __half *dcoefs)
+{
+    for (int i=0;i<batchsize;i++)
+    {
+        int stride=XThreads*i;
+            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            {
+               if (__hgt(x[stride+xIdx],(__half)(0.0)))
+                {
+                    dx[stride+xIdx]=  dy[stride+xIdx];
+                }
+                else
+                {
+                 //  dx[stride+xIdx]=  coefs[xIdx]*dy[stride+xIdx];
+                  dx[stride+xIdx]=  __hmul(coefs[xIdx],dy[stride+xIdx]);
+                 // dcoefs[xIdx]+=dy[xIdx]*x[stride+xIdx];
+                 dcoefs[xIdx]=__hfma(dy[xIdx],x[stride+xIdx],dcoefs[xIdx]);
                 }
             }
     }
@@ -1312,6 +1395,29 @@ extern "C" __global__ void forwardleakyfloatalphabeta(const int length,
           __syncthreads();
     }
 }
+extern "C" __global__ void forwardleakyfloatalphabetahalf(const int length,
+                                             const __half *x,
+                                             __half *y,
+                                             const __half coef,
+                                             const __half alpha,
+                                              const __half beta)
+{
+    CUDA_GRID_LOOP_X(i, length)
+    {
+       
+      if (__hgt(x[i],(__half)(0.0)))
+        {
+            // y[i] = (beta*y[i]) + (alpha *x[i]) ;
+            y[i]=__hadd(__hmul(beta,y[i]),__hmul(alpha,x[i]));
+        }
+        else
+        {
+         //y[i] = (beta*previous) + (alpha *x[i]*coef);
+         y[i]=__hadd(__hmul(beta,y[i]),__hmul(alpha,__hmul(x[i],coef)));
+        }
+          __syncthreads();
+    }
+}
 extern "C" __global__ void backwardleakyfloatalphabeta(const int length,
                                               const float *x,
                                               float *dx,
@@ -1337,7 +1443,31 @@ extern "C" __global__ void backwardleakyfloatalphabeta(const int length,
         __syncthreads();
     }
 }
+extern "C" __global__ void backwardleakyfloatalphabetahalf(const int length,
+                                              const __half *x,
+                                              __half *dx,
+                                              const __half *dy,
+                                              const __half coef,
+                                              const __half alpha,
+                                              const __half beta)
+{
 
+    CUDA_GRID_LOOP_X(i, length)
+    {
+  
+        if (__hgt(x[i],(__half)(0.0)))
+        {
+             // dx[i] =(beta *dx[i]) + (dy[i] * alpha);
+              dx[i]=__hadd(__hmul(beta,dy[i]),__hmul(alpha,dx[i]));
+        }
+        else
+        {
+             // dx[i] = (beta *dx[i]) + (dy[i]*coef * alpha);
+             dx[i]=__hadd(__hmul(beta,dx[i]),__hmul(alpha,__hmul(dy[i],coef)));
+        }
+        __syncthreads();
+    }
+}
 extern "C" __global__ void forwardleakyfloatalpha(const int length,
                                              const float *x,
                                              float *y,
@@ -1360,6 +1490,28 @@ extern "C" __global__ void forwardleakyfloatalpha(const int length,
          __syncthreads();
     }
 }
+extern "C" __global__ void forwardleakyfloatalphahalf(const int length,
+                                             const float *x,
+                                             float *y,
+                                             const float coef,
+                                             const float alpha)
+{
+
+    CUDA_GRID_LOOP_X(i, length)
+    {
+        
+      if (__hgt(x[i],(__half)(0.0)))
+        {
+            y[i] = __hmul(alpha ,x[i]);
+        }
+        else
+        {
+        
+            y[i] =__hmul(__hmul(x[i],coef) , alpha);
+        }
+         __syncthreads();
+    }
+}
 extern "C" __global__ void backwardleakyfloatalpha(const int length,
                                               const float *x,
                                               float *dx,
@@ -1375,7 +1527,7 @@ extern "C" __global__ void backwardleakyfloatalpha(const int length,
         {
             dx[i] = dy[i]*alpha;
         }
-        else
+        else   
         {
             const float current=dy[i]*coef;
             dx[i] = current *alpha;
