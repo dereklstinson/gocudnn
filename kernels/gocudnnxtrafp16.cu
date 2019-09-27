@@ -27,70 +27,11 @@ Leaky functions
 
 
 
-extern "C" __global__ void backwardleakyfloatalpha(const int length,
-                                              const float *x,
-                                              float *dx,
-                                              const float *dy,
-                                              const float coef,
-                                              const float alpha)
-{
- 
-    CUDA_GRID_LOOP_X(i, length)
-    {
-
-        if (x[i] > 0.0)
-        {
-            dx[i] = dy[i]*alpha;
-        }
-        else
-        {
-            const float current=dy[i]*coef;
-            dx[i] = current *alpha;
-        }
-         __syncthreads();
-    }
-}
 
 
-extern "C" __global__ void forwardleakyfloat(const int length,
-                                             const float *x,
-                                             float *y,
-                                             const float coef)
-{
-    CUDA_GRID_LOOP_X(i, length)
-    {
-        if (x[i] > 0.0)
-        {
-            y[i] = x[i];
-        }
-        else
-        {
-            y[i] = x[i] * coef;
-        }
-    }
-}
-extern "C" __global__ void backwardleakyfloat(const int length,
-                                              const float *x,
-                                              float *dx,
-                                              const float *dy,
-                                              const float coef)
-{
 
-    CUDA_GRID_LOOP_X(i, length)
-    {
 
-        if (x[i] > 0.0)
-        {
 
-            dx[i] = dy[i];
-        }
-        else
-        {
-
-            dx[i] = dy[i] * coef;
-        }
-    }
-}
 
 extern "C" __global__ void MSELoss(const int length, 
                             float *errors, 

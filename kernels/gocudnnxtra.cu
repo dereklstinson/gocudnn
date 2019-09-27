@@ -1491,10 +1491,10 @@ extern "C" __global__ void forwardleakyfloatalpha(const int length,
     }
 }
 extern "C" __global__ void forwardleakyfloatalphahalf(const int length,
-                                             const float *x,
-                                             float *y,
-                                             const float coef,
-                                             const float alpha)
+                                             const __half *x,
+                                             __half *y,
+                                             const __half coef,
+                                             const __half alpha)
 {
 
     CUDA_GRID_LOOP_X(i, length)
@@ -1536,7 +1536,30 @@ extern "C" __global__ void backwardleakyfloatalpha(const int length,
     }
 }
 
+extern "C" __global__ void backwardleakyfloatalphahalf(const int length,
+                                              const __half *x,
+                                              __half *dx,
+                                              const __half *dy,
+                                              const __half coef,
+                                              const __half alpha)
+{
+ 
+    CUDA_GRID_LOOP_X(i, length)
+    {
 
+        if  (__hgt(x[i],(__half)(0.0)))
+        {
+           // dx[i] = dy[i]*alpha;
+            dx[i] = __hmul(alpha ,dy[i]);
+        }
+        else
+        {
+             // dx[i] = dy[i]*coef *alpha;
+             dx[i] =__hmul(__hmul(dy[i],coef) , alpha);
+        }
+         __syncthreads();
+    }
+}
 extern "C" __global__ void forwardleakyfloat(const int length,
                                              const float *x,
                                              float *y,
@@ -1551,6 +1574,24 @@ extern "C" __global__ void forwardleakyfloat(const int length,
         else
         {
             y[i] = x[i] * coef;
+        }
+    }
+}
+extern "C" __global__ void forwardleakyhalf(const int length,
+                                             const __half *x,
+                                             __half *y,
+                                             const __half coef)
+{
+    CUDA_GRID_LOOP_X(i, length)
+    {
+       if  (__hgt(x[i],(__half)(0.0)))
+        {
+            y[i] = x[i];
+        }
+        else
+        {
+         //   y[i] = x[i] * coef;
+       y[i]= __hmul( x[i] , coef);
         }
     }
 }
@@ -1576,7 +1617,27 @@ extern "C" __global__ void backwardleakyfloat(const int length,
         }
     }
 }
+extern "C" __global__ void backwardleakyhalf(const int length,
+                                              const __half *x,
+                                              __half *dx,
+                                              const __half *dy,
+                                              const __half coef)
+{
 
+    CUDA_GRID_LOOP_X(i, length)
+    {
+
+         if  (__hgt(x[i],(__half)(0.0)))
+        {
+            dx[i] = dy[i];
+        }
+        else
+        {
+//       dx[i] = dy[i] * coef;
+         dx[i]= __hmul( dy[i] , coef);
+        }
+    }
+}
 extern "C" __global__ void MSELoss(const int length, 
                             float *errors, 
                             const float *target,
