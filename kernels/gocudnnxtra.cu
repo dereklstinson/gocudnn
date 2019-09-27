@@ -36,7 +36,7 @@ extern "C" __global__ void Transpose(int numthreads,
         dest[destIdx] = src[srcIdx];
     }  
 }
-extern "C" __global__ void TransposeF16(int numthreads,
+extern "C" __global__ void TransposeFP16(int numthreads,
                const __half *src,
                const int *buf,
                const int ndims,
@@ -87,7 +87,7 @@ const int BVol = xThreads;
             __syncthreads();
         }    
 }
-extern "C" __global__ void SwapEveryOtherF16(
+extern "C" __global__ void SwapEveryOtherFP16(
     const int xThreads, //total batches
     const int totalbatches,
     __half *t1,
@@ -170,7 +170,7 @@ const int BVol = yThreads;
         }   
     }
 }
-extern "C" __global__ void SwapUpperLowerF16(
+extern "C" __global__ void SwapUpperLowerFP16(
     const int xThreads, //batchsize
     const int yThreads, //batchvol
     __half *t1,
@@ -301,7 +301,7 @@ extern "C" __global__ void ShapetoBatch4DNHWC(
 }
 }
 //ShapetoBatch4DNHWC Does a stride shape to batch. Make sure values on receiving end are set to zero when s2b is 0
-extern "C" __global__ void ShapetoBatch4DNHWCF16(
+extern "C" __global__ void ShapetoBatch4DNHWCFP16(
     const int xThreads,
     const int yThreads,
     const int zThreads,
@@ -449,7 +449,7 @@ extern "C" __global__ void ShapetoBatch4DNCHW(
 }
 
 
-extern "C" __global__ void ShapetoBatch4DNCHWF16(
+extern "C" __global__ void ShapetoBatch4DNCHWFP16(
     const int xThreads,
     const int yThreads,
     const int zThreads,
@@ -520,7 +520,7 @@ extern "C" __global__ void ShapetoBatch4DNCHWF16(
     }
 }
 }
-extern "C" __global__ void nearestneighborNHWC(
+extern "C" __global__ void NearestNeighborNHWC(
     const int aligncorners,
     const int threads,
     const float *src,
@@ -554,7 +554,7 @@ extern "C" __global__ void nearestneighborNHWC(
         dest[i] = src_data_n[idx];
     }
 }
-extern "C" __global__ void nearestneighborNHWCF16(
+extern "C" __global__ void NearestNeighborNHWCFP16(
     const int aligncorners,
     const int threads,
     const __half *src,
@@ -590,7 +590,7 @@ extern "C" __global__ void nearestneighborNHWCF16(
     }
 }
 //When calling this function it will have to do the stuff indexes on the destination
-extern "C" __global__ void nearestneighborv2NCHW(
+extern "C" __global__ void NearestNeighborv2NCHW(
     const int xThreads,
     const int yThreads,
     const int zThreads,
@@ -1657,6 +1657,25 @@ extern "C" __global__ void MSELoss(const int length,
 
    
 }
+extern "C" __global__ void MSELossHalf(const int length, 
+                            __half *errors, 
+                            const __half *target,
+                            const __half *networkout, 
+                            __half *loss,
+                            const __half alpha,
+                            const __half beta)
+{
+    
+    loss[0]=0;
+    CUDA_GRID_LOOP_X(i, length)
+    {
+        const __half y = __hsub(networkout[i] , target[i]);
+        errors[i] = y;
+        atomicAdd(loss, __hdiv(__hmul(y , y) , 2));
+    }
+
+   
+}
 extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythreads, float *errors, const float *target, const float *networkout, float *loss)
 {
 
@@ -1668,6 +1687,25 @@ extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythread
              const float y = networkout[offset+yIdx] - target[offset+yIdx];
              errors[offset+yIdx] = y;
              atomicAdd(&loss[xIdx], (y * y) / 2);
+            }
+    }
+}
+extern "C" __global__ void MSELossbyBatchesHalf(const int xthreads,
+const int ythreads,
+ __half *errors, 
+ const __half *target, 
+ const __half *networkout, 
+ __half *loss)
+{
+
+    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    {
+        const int i=ythreads*xIdx;
+            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            {  
+                const __half y = __hsub(networkout[i] , target[i]);
+        errors[i] = y;
+             atomicAdd(&loss[xIdx], __hdiv(__hmul(y , y) , 2));
             }
     }
 }
@@ -1710,6 +1748,66 @@ extern "C" __global__ void ConcatBackwardNCHW( const int XThreads,
                                               const int src2vol,
                                                float *Src2,
                                               const float *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int Stride= Batches*(src1vol+src2vol);
+        const int src1batchstride=src1vol*i;
+        const int src2batchstride=src2vol*i;
+        for (int j=0;j<Channels1;j++)
+        {
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+                 Src1[src1batchstride+(j*XThreads)+xIdx]=  dest[Stride+(j*XThreads)+xIdx];  
+            }
+        }
+        for (int j=0;j<Channels2;j++){
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+                Src2[src2batchstride+(j*XThreads)+xIdx]  = dest[Stride+(j*XThreads)+src1vol+xIdx];  
+            }
+        }
+    }
+}
+extern "C" __global__ void ConcatForwardNCHWhalf( const int XThreads,
+                                              const int Batches,
+                                              const int Channels1,
+                                              const int src1vol,
+                                              const __half *Src1,
+                                              const int Channels2,
+                                              const int src2vol,
+                                              const __half *Src2,
+                                              __half *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int Stride= Batches*(src1vol+src2vol);
+        const int src1batchstride=src1vol*i;
+        const int src2batchstride=src2vol*i;
+        for (int j=0;j<Channels1;j++)
+        {
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+           dest[Stride+(j*XThreads)+xIdx]  = Src1[src1batchstride+(j*XThreads)+xIdx];
+            }
+        }
+        for (int j=0;j<Channels2;j++){
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            {
+           dest[Stride+(j*XThreads)+src1vol+xIdx]  = Src2[src2batchstride+(j*XThreads)+xIdx];
+            }
+        }
+    }
+}
+extern "C" __global__ void ConcatBackwardNCHWhalf( const int XThreads,
+                                                   const int Batches,
+                                                   const int Channels1,
+                                                   const int src1vol,
+                                               __half *Src1,
+                                              const int Channels2,
+                                              const int src2vol,
+                                               __half *Src2,
+                                              const __half *dest)
 {
     for (int i = 0;i<Batches;i++)
     {

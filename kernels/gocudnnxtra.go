@@ -13,31 +13,53 @@ func (t XtraKerns) MSELoss() string {
 func (t XtraKerns) ShapeToBatch4DNCHW() string {
 	return "ShapetoBatch4DNCHW"
 }
+//ShapetoBatch4DNCHWFP16 transfers HW to batch and vice versa for NCHW tensors
+func (t XtraKerns) ShapetoBatch4DNCHWFP16() string {
+	return "ShapetoBatch4DNCHWFP16"
+}
 
 //SwapEveryOther allows the user to swap batches between to tensors
 //Either the even or the odd tensors.
 func (t XtraKerns) SwapEveryOther() string {
 	return "SwapEveryOther"
 }
-
+//SwapEveryOtherFP16 does SwapEveryOther in fp16
+func (t XtraKerns)SwapEveryOtherFP16() string{
+	return "SwapEveryOtherFP16"
+}
 //SwapUpperLower takes to tensors and swaps the upper or lower batches between the two tensors
 func (t XtraKerns) SwapUpperLower() string {
 	return "SwapUpperLower"
+}
+//SwapUpperLowerFP16 takes to tensors and swaps the upper or lower batches between the two tensors
+func (t XtraKerns) SwapUpperLowerFP16() string {
+	return "SwapUpperLowerFP16"
 }
 
 //Transpose switches values around from one dimention to the other
 func (t XtraKerns) Transpose() string {
 	return "Transpose"
 }
-
+//TransposeFP16 switches values around from one dimention to the other
+func (t XtraKerns)TransposeFP16()string{
+	return "TransposeFP16"
+}
 //ShapeToBatch4DNHWC transfer HW to batch and vice versa through windows for NHWC tensors
 func (t XtraKerns) ShapeToBatch4DNHWC() string {
 	return "ShapetoBatch4DNHWC"
 }
+//ShapetoBatch4DNHWCFP16 transfer HW to batch and vice versa through windows for NHWC tensors
+func (t XtraKerns) ShapetoBatch4DNHWCFP16() string {
+	return "ShapetoBatch4DNHWCFP16"
+}
 
 //NearestNeighborNHWC Resize NearestNeightbor for NHWC tensors
 func (t XtraKerns) NearestNeighborNHWC() string {
-	return "nearestneighborNHWC"
+	return "NearestNeighborNHWC"
+}
+//NearestNeighborNHWCFP16 Resize NearestNeightbor for NHWC tensors
+func (t XtraKerns) NearestNeighborNHWCFP16() string {
+	return "NearestNeighborNHWCFP16"
 }
 
 //NearestNeighborNCHW Resize NearestNeightbor for NCHW tensors
