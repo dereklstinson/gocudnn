@@ -23,7 +23,7 @@ var cu gocudnn.Cuda
 ctx,err:= cu.CtxCreate(flag,device)
 
 Written in the style of cudnn/GoCudnn. This is an added set of functions to calculate loss.
-
+ 
 */
 
 //TrainerD is the descriptor of the trainer
@@ -39,7 +39,7 @@ type TrainerD struct {
 //RegParams holds the regulator paramaters
 type RegParams struct {
 	decay1 float32
-	decay2 float32
+	decay2 float32 
 	batch  float32
 }
 
@@ -216,13 +216,15 @@ func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l
 			return err
 		}
 		size = int32(sizeinbytes / 4)
+	case d.dtflg.Half():
+
 	default:
 		return errors.New("Unsupported Type")
 
 	}
 	config := h.LaunchConfig(size)
 	return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
-
+ 
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.

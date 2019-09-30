@@ -51,7 +51,7 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 		gpu := new(gocu.CudaPtr)
 		err = cudart.MallocManagedGlobal(gpu, 4)
 		//	gpu, err := nvidia.MallocGlobal(h, 4)
-		if err != nil {
+		if err != nil { 
 			return nil, err
 		}
 		cudart.Memset(gpu, 0, 4)

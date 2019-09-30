@@ -26,13 +26,13 @@ func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
 	var ktf kernels.XtraKerns
 	switch x {
 	case xaflg.Leaky():
-		return ktf.ForwardLeakyfloat()
+		return ktf.LeakyForward()
 	case xaflg.Threshhold():
 		return ktf.ThreshForward()
 	case xaflg.Prelu():
 
 		return ktf.PreluForward()
-	}
+	} 
 	return "error"
 
 }
@@ -46,7 +46,7 @@ func (x XActivationMode) tostringbwd(dtype gocudnn.DataType) string {
 	var ktf kernels.XtraKerns
 	switch x {
 	case xaflg.Leaky():
-		return ktf.BackwardLeakyfloat()
+		return ktf.LeakyBackward()
 	case xaflg.Threshhold():
 		return ktf.ThreshBackward()
 	case xaflg.Prelu():
@@ -155,19 +155,19 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 		var ktf kernels.XtraKerns
 		specials := new(leakyspecials)
 
-		specials.alphabwd, err = cuda.MakeKernel(ktf.BackwardLeakyfloatalpha(), h.mod)
+		specials.alphabwd, err = cuda.MakeKernel(ktf.LeakyBackwardAlpha(), h.mod)
 		if err != nil {
 			return nil, err
 		}
-		specials.alphafwd, err = cuda.MakeKernel(ktf.ForwardLeakyfloatalpha(), h.mod)
+		specials.alphafwd, err = cuda.MakeKernel(ktf.LeakyForwardAlpha(), h.mod)
 		if err != nil {
 			return nil, err
 		}
-		specials.alphabetabwd, err = cuda.MakeKernel(ktf.BackwardLeakyfloatalphabeta(), h.mod)
+		specials.alphabetabwd, err = cuda.MakeKernel(ktf.LeakyBackwardAlphaBeta(), h.mod)
 		if err != nil {
 			return nil, err
 		}
-		specials.alphabetafwd, err = cuda.MakeKernel(ktf.ForwardLeakyfloatalphabeta(), h.mod)
+		specials.alphabetafwd, err = cuda.MakeKernel(ktf.LeakyForwardAlphaBeta(), h.mod)
 		if err != nil {
 			return nil, err
 		}
@@ -237,7 +237,7 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 			config.ThreadPerBlock, 1, 1, 0, h.s,
 			config.Elements, dims[0], x, y, coefs, thresh, coefs1)
 		if err != nil {
-			return err
+			return err 
 		}
 		return errors.New("Unsupported XActivationMode")
 		//return nil
