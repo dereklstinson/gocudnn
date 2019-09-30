@@ -19,7 +19,7 @@
 //backwardPrelu does the backprop of the parametric float
 
 
-/*
+/* 
 Leaky functions
 */
 
