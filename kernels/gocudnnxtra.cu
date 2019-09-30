@@ -589,6 +589,7 @@ extern "C" __global__ void NearestNeighborNHWCFP16(
         dest[i] = src_data_n[idx];
     }
 }
+/*
 //When calling this function it will have to do the stuff indexes on the destination
 extern "C" __global__ void NearestNeighborv2NCHW(
     const int xThreads,
@@ -739,7 +740,8 @@ extern "C" __global__ void nearestneighborv2NCHWAddGradientF16(
         }
     }
 }
-extern "C" __global__ void nearestneighborNCHW(
+*/
+extern "C" __global__ void NearestNeighborNCHW(
     const int aligncorners,
     const int threads,
     const float *src,
@@ -773,7 +775,7 @@ extern "C" __global__ void nearestneighborNCHW(
         dest[i] = src_data_n[idx];
     }
 }
-extern "C" __global__ void nearestneighborNCHWF16(
+extern "C" __global__ void NearestNeighborNCHWFP16(
     const int aligncorners,
     const int threads,
     const __half *src,
@@ -807,7 +809,7 @@ extern "C" __global__ void nearestneighborNCHWF16(
         dest[i] = src_data_n[idx];
     }
 }
-extern "C" __global__ void nearestneighborNCHWBack(
+extern "C" __global__ void NearestNeighborNCHWBack(
     const int aligncorners,
     const int threads,
     float *src,
@@ -841,7 +843,7 @@ extern "C" __global__ void nearestneighborNCHWBack(
         atomicAdd(&src_data_n[idx], dest[i]);
     }
 }
-extern "C" __global__ void nearestneighborNCHWBackF16(
+extern "C" __global__ void NearestNeighborNCHWBackFP16(
     const int aligncorners,
     const int threads,
     __half *src,
@@ -875,7 +877,7 @@ extern "C" __global__ void nearestneighborNCHWBackF16(
         atomicAdd(&src_data_n[idx], dest[i]);
     }
 }
-extern "C" __global__ void nearestneighborNHWCBack(
+extern "C" __global__ void NearestNeighborNHWCBack(
     const int aligncorners,
     const int threads,
     float *src,
@@ -909,7 +911,7 @@ extern "C" __global__ void nearestneighborNHWCBack(
         atomicAdd(&src_data_n[idx], dest[i]);
     }
 }
-extern "C" __global__ void nearestneighborNHWCBackF16(
+extern "C" __global__ void NearestNeighborNHWCBackFP16(
     const int aligncorners,
     const int threads,
     __half *src,
@@ -944,7 +946,7 @@ extern "C" __global__ void nearestneighborNHWCBackF16(
         atomicAdd(&src_data_n[idx], dest[i]);
     }
 }
-extern "C" __global__ void adagradfloat(const int length,
+extern "C" __global__ void AdaGrad(const int length,
                                         float *weights,   //weights input and output
                                         float *dw,        //input and will have to set to zero
                                         float *gsum,      //storage
@@ -964,7 +966,7 @@ extern "C" __global__ void adagradfloat(const int length,
 }
 
 
-extern "C" __global__ void adagradhalf(const int length,
+extern "C" __global__ void AdaGradFP16(const int length,
                                         __half *weights,   //weights input and output
                                         __half *dw,        //input and will have to set to zero
                                         __half *gsum,      //storage
@@ -981,7 +983,7 @@ extern "C" __global__ void adagradhalf(const int length,
         dw[cell] =__hmul(dw[cell],dwalpha);
     }
 }
-extern "C" __global__ void adamfloat(const int length,
+extern "C" __global__ void Adam(const int length,
                                      float *w,
                                      float *gsum,
                                      float *xsum,
@@ -1006,7 +1008,7 @@ extern "C" __global__ void adamfloat(const int length,
         dw[i]=  previous;
     }
 }
-extern "C" __global__ void adamhalf(const int length,
+extern "C" __global__ void AdamFP16(const int length,
                                      __half *w,
                                      __half *gsum,
                                      __half *xsum,
@@ -1035,7 +1037,7 @@ extern "C" __global__ void adamhalf(const int length,
         dw[i]=  __hmul(dwalpha,dw[i]);
     }
 }
-extern "C" __global__ void adadeltafloat(const int length,
+extern "C" __global__ void AdaDelta(const int length,
                                          float *weights,   //weights input and output
                                          float *gsum,      //storage
                                          float *xsum,      //storage
@@ -1054,7 +1056,7 @@ extern "C" __global__ void adadeltafloat(const int length,
         dw[cell] = previous;
     }
 }
-extern "C" __global__ void adadeltahalf(const int length,
+extern "C" __global__ void AdaDeltaFP16(const int length,
                                          __half *weights,   //weights input and output
                                          __half *gsum,      //storage
                                          __half *xsum,      //storage
@@ -1074,6 +1076,7 @@ extern "C" __global__ void adadeltahalf(const int length,
         dw[i] =  __hmul(dw[i],dwalpha);
     }
 }
+/*
 //This is paired with the host
 extern "C" __global__ void Segment1stDim(const int start_index, const float *src, float *dst, const int size)
 {
@@ -1094,8 +1097,8 @@ extern "C" __global__ void Segment1stDimhalf(const int start_index, const __half
         dst[i] = src[start_location + i];
     }
 }
-
-extern "C" __global__ void l1l2regularizationfloat(
+*/
+extern "C" __global__ void L1L2(
     const int length,
     float *dw,          //input and output
     const float *w,     //input needs to ba an array
@@ -1116,7 +1119,7 @@ extern "C" __global__ void l1l2regularizationfloat(
         dw[i] = (dw[i] + gradl2 + gradl1) / batch;
     }
 }
-extern "C" __global__ void l1l2regularizationhalf(
+extern "C" __global__ void L1L2FP16(
     const int length,
     __half *dw,          //input and output
     const __half *w,     //input needs to ba an array
@@ -1173,7 +1176,7 @@ extern "C" __global__ void ThreshForward(const int XThreads,
             }
     }
 }
-extern "C" __global__ void ThreshForwardhalf(const int XThreads,
+extern "C" __global__ void ThreshForwardFP16(const int XThreads,
                                          const int batchsize,
                                          const __half *x,
                                          __half *y,
@@ -1230,7 +1233,7 @@ extern "C" __global__ void ThreshBackward(const int XThreads,
     }
 }
 
-extern "C" __global__ void ThreshBackwardhalf(const int XThreads,
+extern "C" __global__ void ThreshBackwardFP16(const int XThreads,
                                           const int batchsize,
                                           const __half *x,
                                           __half *dx,
@@ -1288,7 +1291,7 @@ extern "C" __global__ void PreluForward(const int XThreads,
     }
    
 }
-extern "C" __global__ void PreluForwardhalf(const int XThreads,
+extern "C" __global__ void PreluForwardFP16(const int XThreads,
                                         const int batchsize,
                                         const __half *x,
                                         __half *y,
@@ -1339,7 +1342,7 @@ extern "C" __global__ void PreluBackward(const int XThreads,
             }
     }
 }
-extern "C" __global__ void PreluBackwardhalf(const int XThreads,
+extern "C" __global__ void PreluBackwardFP16(const int XThreads,
                                                           const int batchsize,
                                                           __half *dx,
                                                           const __half *x,
@@ -1371,7 +1374,7 @@ extern "C" __global__ void PreluBackwardhalf(const int XThreads,
 Leaky functions
 */
 
-extern "C" __global__ void forwardleakyfloatalphabeta(const int length,
+extern "C" __global__ void LeakyForwardAlphaBeta(const int length,
                                              const float *x,
                                              float *y,
                                              const float coef,
@@ -1395,7 +1398,7 @@ extern "C" __global__ void forwardleakyfloatalphabeta(const int length,
           __syncthreads();
     }
 }
-extern "C" __global__ void forwardleakyfloatalphabetahalf(const int length,
+extern "C" __global__ void LeakyForwardAlphaBetaFP16(const int length,
                                              const __half *x,
                                              __half *y,
                                              const __half coef,
@@ -1418,7 +1421,7 @@ extern "C" __global__ void forwardleakyfloatalphabetahalf(const int length,
           __syncthreads();
     }
 }
-extern "C" __global__ void backwardleakyfloatalphabeta(const int length,
+extern "C" __global__ void LeakyBackwardAlphaBeta(const int length,
                                               const float *x,
                                               float *dx,
                                               const float *dy,
@@ -1443,7 +1446,7 @@ extern "C" __global__ void backwardleakyfloatalphabeta(const int length,
         __syncthreads();
     }
 }
-extern "C" __global__ void backwardleakyfloatalphabetahalf(const int length,
+extern "C" __global__ void LeakyBackwardAlphaBetaFP16(const int length,
                                               const __half *x,
                                               __half *dx,
                                               const __half *dy,
@@ -1468,7 +1471,7 @@ extern "C" __global__ void backwardleakyfloatalphabetahalf(const int length,
         __syncthreads();
     }
 }
-extern "C" __global__ void forwardleakyfloatalpha(const int length,
+extern "C" __global__ void LeakyForwardAlpha(const int length,
                                              const float *x,
                                              float *y,
                                              const float coef,
@@ -1490,7 +1493,7 @@ extern "C" __global__ void forwardleakyfloatalpha(const int length,
          __syncthreads();
     }
 }
-extern "C" __global__ void forwardleakyfloatalphahalf(const int length,
+extern "C" __global__ void LeakyForwardAlphaFP16(const int length,
                                              const __half *x,
                                              __half *y,
                                              const __half coef,
@@ -1512,7 +1515,7 @@ extern "C" __global__ void forwardleakyfloatalphahalf(const int length,
          __syncthreads();
     }
 }
-extern "C" __global__ void backwardleakyfloatalpha(const int length,
+extern "C" __global__ void LeakyBackwardAlpha(const int length,
                                               const float *x,
                                               float *dx,
                                               const float *dy,
@@ -1536,7 +1539,7 @@ extern "C" __global__ void backwardleakyfloatalpha(const int length,
     }
 }
 
-extern "C" __global__ void backwardleakyfloatalphahalf(const int length,
+extern "C" __global__ void LeakyBackwardAlphaFP16(const int length,
                                               const __half *x,
                                               __half *dx,
                                               const __half *dy,
@@ -1560,7 +1563,7 @@ extern "C" __global__ void backwardleakyfloatalphahalf(const int length,
          __syncthreads();
     }
 }
-extern "C" __global__ void forwardleakyfloat(const int length,
+extern "C" __global__ void LeakyForward(const int length,
                                              const float *x,
                                              float *y,
                                              const float coef)
@@ -1577,7 +1580,7 @@ extern "C" __global__ void forwardleakyfloat(const int length,
         }
     }
 }
-extern "C" __global__ void forwardleakyhalf(const int length,
+extern "C" __global__ void LeakyForwardFP16(const int length,
                                              const __half *x,
                                              __half *y,
                                              const __half coef)
@@ -1595,7 +1598,7 @@ extern "C" __global__ void forwardleakyhalf(const int length,
         }
     }
 }
-extern "C" __global__ void backwardleakyfloat(const int length,
+extern "C" __global__ void LeakyBackward(const int length,
                                               const float *x,
                                               float *dx,
                                               const float *dy,
@@ -1617,7 +1620,7 @@ extern "C" __global__ void backwardleakyfloat(const int length,
         }
     }
 }
-extern "C" __global__ void backwardleakyhalf(const int length,
+extern "C" __global__ void LeakyBackwardFP16(const int length,
                                               const __half *x,
                                               __half *dx,
                                               const __half *dy,
@@ -1657,7 +1660,7 @@ extern "C" __global__ void MSELoss(const int length,
 
    
 }
-extern "C" __global__ void MSELossHalf(const int length, 
+extern "C" __global__ void MSELossFP16(const int length, 
                             __half *errors, 
                             const __half *target,
                             const __half *networkout, 
@@ -1690,7 +1693,7 @@ extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythread
             }
     }
 }
-extern "C" __global__ void MSELossbyBatchesHalf(const int xthreads,
+extern "C" __global__ void MSELossbyBatchesFP16(const int xthreads,
 const int ythreads,
  __half *errors, 
  const __half *target, 
