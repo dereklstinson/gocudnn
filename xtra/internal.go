@@ -1,6 +1,6 @@
 package xtra
 
-import "C" 
+import "C"   
 
 func int32Tocint(x []int32) []C.int {
 	y := make([]C.int, len(x))

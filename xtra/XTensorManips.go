@@ -180,24 +180,44 @@ type XResizeD struct {
 	nearestbwdnhwc *cuda.Kernel
 	nearestfwdnchw *cuda.Kernel
 	nearestbwdnchw *cuda.Kernel
+	nearestfwdnhwcfp16 *cuda.Kernel
+	nearestbwdnhwcfp16 *cuda.Kernel
+	nearestfwdnchwfp16 *cuda.Kernel
+	nearestbwdnchwfp16 *cuda.Kernel
 	aligncorners   bool
 }
 
 //CreateResizeDesc creates a descriptor that holds the reshpaes
 func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
-	nearestfwdnhwc, err := cuda.MakeKernel("nearestneighborNHWC", handle.mod)
+	nearestfwdnhwc, err := cuda.MakeKernel("NearestNeighborNHWC", handle.mod)
 	if err != nil {
 		return nil, err
 	}
-	nearestbwdnhwc, err := cuda.MakeKernel("nearestneighborNHWCBack", handle.mod)
+	nearestbwdnhwc, err := cuda.MakeKernel("NearestNeighborNHWCBack", handle.mod)
 	if err != nil {
 		return nil, err
 	}
-	nearestfwdnchw, err := cuda.MakeKernel("nearestneighborNCHW", handle.mod)
+	nearestfwdnchw, err := cuda.MakeKernel("NearestNeighborNCHW", handle.mod)
 	if err != nil {
 		return nil, err
 	}
-	nearestbwdnchw, err := cuda.MakeKernel("nearestneighborNCHWBack", handle.mod)
+	nearestbwdnchw, err := cuda.MakeKernel("NearestNeighborNCHWBack", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	nearestfwdnhwcfp16, err := cuda.MakeKernel("NearestNeighborNHWCFP16", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	nearestbwdnhwcfp16, err := cuda.MakeKernel("NearestNeighborNHWCBackFP16", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	nearestfwdnchwfp16, err := cuda.MakeKernel("NearestNeighborNCHWFP16", handle.mod)
+	if err != nil {
+		return nil, err
+	}
+	nearestbwdnchwfp16, err := cuda.MakeKernel("NearestNeighborNCHWBackFP16", handle.mod)
 	if err != nil {
 		return nil, err
 	}
@@ -206,6 +226,10 @@ func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 		nearestbwdnhwc: nearestbwdnhwc,
 		nearestfwdnchw: nearestfwdnchw,
 		nearestbwdnchw: nearestbwdnchw,
+		nearestfwdnhwcfp16 :nearestfwdnhwcfp16 ,
+		nearestbwdnhwcfp16 :nearestbwdnhwcfp16 ,
+		nearestfwdnchwfp16 :nearestfwdnchwfp16 ,
+		nearestbwdnchwfp16 :nearestbwdnchwfp16 ,
 		aligncorners:   aligncorners,
 	}, nil
 }
@@ -213,7 +237,7 @@ func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 //ResizeForward does the reshape operation
 func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil.Mem, ydesc *gocudnn.TensorD, y cutil.Mem) error {
 
-	frmtx, _, dimsx, _, err := xdesc.Get()
+	frmtx, dtypex, dimsx, _, err := xdesc.Get()
 	if err != nil {
 		return err
 	}
@@ -222,7 +246,7 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil
 		return err
 	}
 	var fmtflag gocudnn.TensorFormat
-
+	var dtypeflg gocudnn.DataType
 	if frmtx != frmty {
 		return errors.New("ResizeForward - tensors must match")
 	}
@@ -240,7 +264,15 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil
 		if s.aligncorners == true {
 			aligned = 1
 		}
-		return s.nearestfwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, y)
+
+		if dtypex==dtypeflg.Float(){
+			return s.nearestfwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, y)
+		}else if  dtypex==dtypeflg.Half(){
+			return s.nearestfwdnhwcfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, y)
+		}
+
+		
+		
 	case fmtflag.NCHW():
 
 		if dimsx[0] != dimsy[0] || dimsx[1] != dimsy[1] {
@@ -254,7 +286,12 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil
 		if s.aligncorners == true {
 			aligned = 1
 		}
-		return s.nearestfwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[2], dimsx[3], dimsx[1], dimsy[2], dimsy[3], ratioh, ratiow, y)
+		if dtypex==dtypeflg.Float(){
+			return s.nearestfwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[2], dimsx[3], dimsx[1], dimsy[2], dimsy[3], ratioh, ratiow, y)
+		}else if  dtypex==dtypeflg.Half(){
+			return s.nearestfwdnchwfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[2], dimsx[3], dimsx[1], dimsy[2], dimsy[3], ratioh, ratiow, y)
+		}
+
 
 	}
 	return errors.New("Not Supported Tensor Format")
@@ -262,7 +299,7 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil
 
 //ResizeBackward does a reshape backwards but it will add the errors on the backprop.
 func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cutil.Mem, dydesc *gocudnn.TensorD, dy cutil.Mem) error {
-	frmtx, _, dimsx, _, err := dxdesc.Get()
+	frmtx, dtypex, dimsx, _, err := dxdesc.Get()
 	if err != nil {
 		return err
 	}
@@ -273,7 +310,7 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 	}
 
 	var fmtflag gocudnn.TensorFormat
-
+	var dtypeflg gocudnn.DataType
 	if frmtx != frmty {
 		return errors.New("ResizeForward - tensors must match")
 	}
@@ -296,8 +333,12 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 		}
 
 		cudart.Memset(dx, 0, sizeinbytes)
-
-		return s.nearestbwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+		if dtypex==dtypeflg.Float(){
+			return s.nearestbwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+		}else if  dtypex==dtypeflg.Half(){
+			return s.nearestbwdnhwcfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+		}
+	
 	case fmtflag.NCHW():
 		if dimsx[0] != dimsy[0] || dimsx[1] != dimsy[1] {
 			return errors.New("x and y dims n to n or c to c do not equal")
@@ -311,7 +352,12 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 			aligned = 1
 		}
 		cudart.Memset(dx, 0, sizeinbytes)
-		return s.nearestbwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+		if dtypex==dtypeflg.Float(){
+			return s.nearestbwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+		}else if  dtypex==dtypeflg.Half(){
+			return s.nearestbwdnchwfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
+		}
+		
 	}
 	return errors.New("Not Supported Tensor Format")
 }

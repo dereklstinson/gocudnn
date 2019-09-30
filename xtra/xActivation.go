@@ -2,9 +2,8 @@ package xtra
 
 import "C"
 import (
-	"errors"
-
-	gocudnn "github.com/dereklstinson/GoCudnn"
+	"errors" 
+ 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/kernels"
 	"github.com/dereklstinson/cutil"
@@ -20,40 +19,66 @@ type XActivationModeFlag struct {
 func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
 	var dtf gocudnn.DataType
 	var xaflg XActivationModeFlag
-	if dtype != dtf.Float() {
+	var ktf kernels.XtraKerns
+	switch dtype{
+	case dtf.Half():
+		switch x {
+		case xaflg.Leaky():
+			return ktf.LeakyForwardFP16()
+		case xaflg.Threshhold():
+			return ktf.ThreshForwardFP16()
+		case xaflg.Prelu():
+			return ktf.PreluForwardFP16()
+		default:
+			return "error"
+		}
+	case dtf.Float():
+			switch x {
+			case xaflg.Leaky():
+				return ktf.LeakyForward()
+			case xaflg.Threshhold():
+				return ktf.ThreshForward()
+			case xaflg.Prelu():
+				return ktf.PreluForward()
+			default:
+				return "error"
+			} 
+	
+		}
 		return "error XActivationMode - DataTypeNotSupported"
 	}
-	var ktf kernels.XtraKerns
-	switch x {
-	case xaflg.Leaky():
-		return ktf.LeakyForward()
-	case xaflg.Threshhold():
-		return ktf.ThreshForward()
-	case xaflg.Prelu():
-
-		return ktf.PreluForward()
-	} 
-	return "error"
-
-}
 
 func (x XActivationMode) tostringbwd(dtype gocudnn.DataType) string {
 	var dtf gocudnn.DataType
 	var xaflg XActivationModeFlag
-	if dtype != dtf.Float() {
+	var ktf kernels.XtraKerns
+	switch dtype{
+	case dtf.Half():
+		switch x {
+		case xaflg.Leaky():
+			return ktf.LeakyBackwardFP16()
+		case xaflg.Threshhold():
+			return ktf.ThreshBackwardFP16()
+		case xaflg.Prelu():
+			return ktf.PreluBackwardFP16()
+		default:
+			return "error"
+		}
+	case dtf.Float():
+		switch x {
+		case xaflg.Leaky():
+			return ktf.LeakyBackward()
+		case xaflg.Threshhold():
+			return ktf.ThreshBackward()
+		case xaflg.Prelu():
+			return ktf.PreluBackward()
+		default:
+			return "error"
+		}
+	default:
 		return "error XActivationMode - DataTypeNotSupported"
 	}
-	var ktf kernels.XtraKerns
-	switch x {
-	case xaflg.Leaky():
-		return ktf.LeakyBackward()
-	case xaflg.Threshhold():
-		return ktf.ThreshBackward()
-	case xaflg.Prelu():
 
-		return ktf.PreluBackward()
-	}
-	return "error"
 }
 
 //Leaky returns the leaky flag
@@ -73,9 +98,8 @@ func (x XActivationModeFlag) Prelu() XActivationMode {
 
 //XActivationD is the activation descriptor for the "Xtra" stuff that I added to cudnn
 type XActivationD struct {
-	data      *gocudnn.DataType
 	amode     XActivationMode
-	dtype     *gocudnn.DataType
+	dtype     gocudnn.DataType
 	tmode     TrainingMode
 	counter   int32
 	fwdmode   *cuda.Kernel
@@ -119,6 +143,8 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 			bwdmode: bwdmode,
 			amode:   amode,
 			propnan: nan,
+			dtype:dtype,
+			
 		}
 
 		return act, nil
@@ -139,6 +165,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 			amode:     amode,
 			counter:   ctr,
 			propnan:   nan,
+			dtype:dtype,
 			istrained: true,
 		}
 
@@ -177,6 +204,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 			coef:     float32(coef),
 			amode:    amode,
 			propnan:  nan,
+			dtype:dtype,
 			specials: specials,
 		}, nil
 	}
