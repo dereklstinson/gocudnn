@@ -10,6 +10,7 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/GoCudnn/kernels"
 	"github.com/dereklstinson/cutil"
+	"github.com/dereklstinson/half"
 )
 
 
@@ -23,7 +24,7 @@ type XLossD struct {
 	cpuloss     []float32
 	cpulossfp16 []half.Float16
 	cpuptr      cutil.Mem
-	cpuptrfp16
+	cpuptrfp16 cutil.Mem
 	flg         XLossModeFlag
 	dflg        gocudnn.DataType
 	memcopykind cudart.MemcpyKind
@@ -80,6 +81,7 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 		return &XLossD{
 			mode:        mode,
 			lossfunc:    mse,
+			lossfuncfp16:msefp16,
 			loss:        gpu,
 			lossfp16:gpu16,
 			cpuloss:     cpuloss,
@@ -140,7 +142,7 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 			return -1, err
 		}
 		switch dxdtype{
-		case l.dlflg.Float():
+		case l.dflg.Float():
 			a := float32(alpha)
 			b := float32(beta)
 			config := h.LaunchConfig(int32(length))
@@ -159,11 +161,11 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 				return -1, err
 			}
 			return l.cpuloss[0] / batch, err
-		case l.dlflg.Half():
+		case l.dflg.Half():
 			a2 := float32(alpha)
 			b2 := float32(beta)
-			a:=half.ToFloat16(a2)
-			b:=half.ToFloat16(b2)
+			a:=half.NewFloat16(a2)
+			b:=half.NewFloat16(b2)
 			config := h.LaunchConfig(int32(length))
 			err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.lossfp16, a, b)
 			if err != nil {
@@ -179,7 +181,7 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 			if err != nil {
 				return -1, err
 			}
-			return half.ToFloat32(l.cpulossfp16[0] )/ batch, err
+			return l.cpulossfp16[0].Float32()/ batch, err
 		}
 		
 

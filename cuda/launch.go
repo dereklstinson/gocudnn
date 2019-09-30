@@ -46,6 +46,7 @@ func (m *Module) c() C.CUmodule { return m.m }
 func NewModule(filename string) (module *Module, err error) {
 	var mod C.CUmodule
 	fname := C.CString(filename)
+	defer C.free((unsafe.Pointer)(fname))
 	x := C.cuModuleLoad(&mod, fname)
 	module = &Module{
 		m:      mod,
@@ -58,6 +59,7 @@ func NewModule(filename string) (module *Module, err error) {
 func NewModuleEx(Ptx string) (*Module, error) {
 	var mod C.CUmodule
 	cptx := unsafe.Pointer(C.CString(Ptx))
+	defer C.free((unsafe.Pointer)(cptx))
 	x := C.cuModuleLoadDataEx(&mod, cptx, 0, C.nullJitOptions, C.voiddptrnull)
 	return &Module{
 		m:      mod,
@@ -79,6 +81,7 @@ func (m *Module) Load(filename string) error {
 		return errors.New("(*Module)Load: Goside: Already Loaded")
 	}
 	fname := C.CString(filename)
+	defer C.free((unsafe.Pointer)(fname))
 	x := C.cuModuleLoad(&m.m, fname)
 	m.loaded = true
 	return newErrorDriver("Load", x)
@@ -90,7 +93,7 @@ func (m *Module) LoadEx(ptx string) error {
 		return errors.New("(*Module)LoadEx: Goside: Already Loaded")
 	}
 	cptx := unsafe.Pointer(C.CString(ptx))
-
+	defer C.free((unsafe.Pointer)(cptx))
 	x := C.cuModuleLoadDataEx(&m.m, cptx, 0, C.nullJitOptions, C.voiddptrnull)
 	m.loaded = true
 
@@ -105,6 +108,7 @@ func MakeKernel(kname string, m *Module) (k *Kernel, err error) {
 	}
 
 	name := C.CString(kname)
+	defer C.free((unsafe.Pointer)(name))
 	err = newErrorDriver("MakeKernel", C.cuModuleGetFunction(&kern, m.m, name))
 	if err != nil {
 		return nil, err
@@ -352,5 +356,6 @@ func (k *Kernel) destroyargs() {
 }
 
 func destroycudakernel(k *Kernel) {
+	
 	k.destroyargs()
 }
