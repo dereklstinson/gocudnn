@@ -12,7 +12,9 @@ import (
 //Swapper contains swap kernels that are used through methods
 type Swapper struct {
 	swapeveryother *cuda.Kernel
+	swapeveryotherfp16 *cuda.Kernel
 	swapupperlower *cuda.Kernel
+	swapupperlowerfp16 *cuda.Kernel
 }
 
 func comparedimsswap(a, b []int32) error {
@@ -56,11 +58,22 @@ func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bde
 		isinverse = 255
 	}
 	var dflg gocudnn.DataType
-	if Adesc.DataType() == dflg.Float() {
-		return s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
-	}
-
+switch Adesc.DataType(){
+case  dflg.Float():
+	err= s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
+if err !=nil{
+	return err
+}
+case dflg.Half():
+	err= s.swapupperlowerfp16.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
+if err !=nil{
+	return err
+}
+default:
 	return errors.New("Unsupported Datatype")
+}
+return h.s.Sync()
+	
 
 }
 
@@ -79,10 +92,24 @@ func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bde
 	//cfg := h.LaunchConfig2d(batches, batchvol)
 	cfg := h.LaunchConfig(batchvol)
 	var dflg gocudnn.DataType
-	if Adesc.DataType() == dflg.Float() {
-		return s.swapeveryother.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
+	switch Adesc.DataType(){
+	case dflg.Float():
+		err= s.swapeveryother.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
+		if err !=nil{
+			return err
+		}
+		
+	case dflg.Half():
+		err= s.swapeveryotherfp16.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
+		if err !=nil{
+			return err
+		}
+	default:
+		return errors.New("Unsupported Datatype")
 	}
-	return errors.New("Unsupported Datatype")
+	
+	return h.s.Sync()
+	
 }
 
 //NewBatchSwapper makes a Swapper
@@ -92,15 +119,23 @@ func NewBatchSwapper(h *Handle) (*Swapper, error) {
 	if err != nil {
 		return nil, err
 	}
+	swapeveryotherfp16, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapEveryOtherFP16(), h.mod)
+	if err != nil {
+		return nil, err
+	}
 
 	swapupperlower, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapUpperLower(), h.mod)
 	if err != nil {
 		return nil, err
 	}
-
+	swapupperlowerfp16, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapUpperLowerFP16(), h.mod)
+	if err != nil {
+		return nil, err
+	}
 	return &Swapper{
 		swapeveryother: swapeveryother,
-
+		swapeveryotherfp16:swapeveryotherfp16,
 		swapupperlower: swapupperlower,
+		swapupperlowerfp16:swapupperlowerfp16,
 	}, nil
 }

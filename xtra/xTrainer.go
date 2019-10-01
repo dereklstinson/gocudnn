@@ -137,17 +137,32 @@ func (t TrainingModeFlag) AdaDelta() TrainingMode {
 func (t TrainingModeFlag) Adam() TrainingMode {
 	return TrainingMode(4)
 }
-func (t TrainingMode) tostring() string {
+
+func (t TrainingMode) tostring(datatype gocudnn.DataType) string {
 	f := TrainingModeFlag{}
+	var dtf gocudnn.DataType
 	x := kernels.XtraKerns{}
-	switch t {
-	case f.Adam():
-		return x.Adam()
-	case f.AdaDelta():
-		return x.AdaDelta()
-	case f.AdaGrad():
-		return x.AdaGrad()
+	switch datatype{
+	case dtf.Float():
+		switch t {
+		case f.Adam():
+			return x.Adam()
+		case f.AdaDelta():
+			return x.AdaDelta()
+		case f.AdaGrad():
+			return x.AdaGrad()
+		}
+	case dtf.Half():
+		switch t {
+		case f.Adam():
+			return x.AdamFP16()
+		case f.AdaDelta():
+			return x.AdaDeltaFP16()
+		case f.AdaGrad():
+			return x.AdaGradFP16()
+		}
 	}
+
 	return "Not Supported"
 }
 
@@ -159,25 +174,37 @@ func NewTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) 
 
 	var mflg TrainingModeFlag
 	var mname string
-	switch mode {
-	case mflg.AdaDelta():
-		mname = ktf.AdaDelta()
-	case mflg.AdaGrad():
-		mname = ktf.AdaGrad()
-	case mflg.Adam():
-		mname = ktf.Adam()
-	default:
-		return nil, errors.New("TrainingMode Not Supported")
-	}
-
 	var dt gocudnn.DataType
-	switch data {
-
-	case dt.Float(): //this is just used to check if it is true.
-	//case dt.Double():
+	switch data{
+	case dt.Float():
+		switch mode {
+		case mflg.AdaDelta():
+			mname = ktf.AdaDelta()
+		case mflg.AdaGrad():
+			mname = ktf.AdaGrad()
+		case mflg.Adam():
+			mname = ktf.Adam()
+		default:
+			return nil, errors.New("TrainingMode Not Supported")
+		}
+	case dt.Half():
+		switch mode {
+		case mflg.AdaDelta():
+			mname = ktf.AdaDeltaFP16()
+		case mflg.AdaGrad():
+			mname = ktf.AdaGradFP16()
+		case mflg.Adam():
+			mname = ktf.AdamFP16()
+		default:
+			return nil, errors.New("TrainingMode Not Supported")
+		}
 	default:
-		return nil, errors.New("NewTrainingDescriptor: unsupported Datatype") //if not true then return error
+		return nil, errors.New("NewTrainingDescriptor: unsupported Datatype")
 	}
+
+	
+
+
 	kmode, err := cuda.MakeKernel(mname, h.mod)
 	if err != nil {
 		return nil, err
@@ -217,7 +244,11 @@ func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l
 		}
 		size = int32(sizeinbytes / 4)
 	case d.dtflg.Half():
-
+		sizeinbytes, err := desc.GetSizeInBytes()
+		if err != nil {
+			return err
+		}
+		size = int32(sizeinbytes / 2)
 	default:
 		return errors.New("Unsupported Type")
 
@@ -239,6 +270,12 @@ func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xs
 			return err
 		}
 		size = int32(sizeinbytes / (4))
+	case d.dtflg.Half():
+		sizeinbytes, err := desc.GetSizeInBytes()
+		if err != nil {
+			return err
+		}
+		size = int32(sizeinbytes / 2)
 	default:
 		return errors.New("Unsupported Type")
 	}

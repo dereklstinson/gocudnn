@@ -365,7 +365,10 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 //XShapetoBatchD holds the kernel function
 type XShapetoBatchD struct {
 	nhwc *cuda.Kernel
+	nhwcfp16 *cuda.Kernel
 	nchw *cuda.Kernel
+	nchwfp16 *cuda.Kernel
+
 }
 
 //CreateShapetoBatchDesc creates a shape to batch desc
@@ -374,8 +377,19 @@ func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 	if err != nil {
 		return nil, err
 	}
+	nhwcfp16, err := cuda.MakeKernel("ShapetoBatch4DNHWCFP16", handle.mod)
+	if err != nil {
+		return nil, err
+	}
 	nchw, err := cuda.MakeKernel("ShapetoBatch4DNCHW", handle.mod)
-	return &XShapetoBatchD{nhwc: nhwc, nchw: nchw}, err
+	if err != nil {
+		return nil, err
+	}
+	nchwfp16, err := cuda.MakeKernel("ShapetoBatch4DNCHWFP16", handle.mod)
+	return &XShapetoBatchD{nhwc: nhwc, 
+		nhwcfp16:nhwcfp16,
+		nchw: nchw,
+		nchwfp16:nchwfp16}, err
 }
 
 //ShapeToBatch4d seperates chunks fo memory to blocks, so each window is the size of the block passed, and that those will becomoe the new batches.
@@ -387,13 +401,13 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, 
 
 	frmt, dtype, xdims, _, err := xDesc.Get()
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float() {
-		return errors.New("Only Supported dtype is float32")
+	if dtype != dflag.Float()|| dtype !=dflag.Half(){
+		return errors.New("Only Supported dtype is float32 and half")
 	}
 
 	frmt2, dtype, ydims, _, err := yDesc.Get()
-	if dtype != dflag.Float() {
-		return errors.New("Only Supported dytype is float32")
+	if dtype != dflag.Float()|| dtype !=dflag.Half() {
+		return errors.New("Only Supported dytype is float32 and half")
 	}
 	var tflag gocudnn.TensorFormat
 
@@ -448,12 +462,28 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, 
 		}
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
+switch dtype{
+case dflag.Float():
+	err= s.nhwc.Launch(
+		cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
+		cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
+		0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
+		if err != nil {
+			return err
+		}
+case dflag.Half():
+	err= s.nhwcfp16.Launch(
+		cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
+		cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
+		0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("Unsupported type")
 
-		return s.nhwc.Launch(
-			cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
-			cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
-			0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
-
+}
+			
 	case tflag.NCHW():
 		var n1 int32
 		var n2 int32
@@ -487,19 +517,36 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, 
 		}
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
-
-		return s.nchw.Launch(cfg.BlockCountx,
-			cfg.BlockCounty,
-			cfg.BlockCountz,
-			cfg.ThreadPerBlockx,
-			cfg.ThreadPerBlocky,
-			cfg.ThreadPerBlockz,
-			0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
-
+		switch dtype{
+		case dflag.Float():
+		err=	s.nchw.Launch(cfg.BlockCountx,
+				cfg.BlockCounty,
+				cfg.BlockCountz,
+				cfg.ThreadPerBlockx,
+				cfg.ThreadPerBlocky,
+				cfg.ThreadPerBlockz,
+				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
+				if err != nil {
+					return err
+				}
+		case dflag.Half():
+			s.nchwfp16.Launch(cfg.BlockCountx,
+				cfg.BlockCounty,
+				cfg.BlockCountz,
+				cfg.ThreadPerBlockx,
+				cfg.ThreadPerBlocky,
+				cfg.ThreadPerBlockz,
+				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
+				if err != nil {
+					return err
+				}
+			default:
+				return errors.New("Unsupported Type")
 	}
-	return errors.New("Unsupported Tensor Format")
-}
 
+}
+return handle.s.Sync()
+}
 /*
 func copytogpumalloc(x *GoPointer) (cutil.Mem, error) {
 
@@ -536,8 +583,8 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *gocudnn.TensorD,
 		return 255, 255, nil, err
 	}
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float() {
-		return 255, 255, nil, errors.New("Only Supported Format is float32")
+	if dtype != dflag.Float()||dtype !=dflag.Half(){
+		return 255, 255, nil, errors.New("Only Supported Format is float32 or half")
 	}
 	var frmt gocudnn.TensorFormat
 
@@ -576,8 +623,8 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *gocudnn.TensorD,
 		return 255, 255, nil, err
 	}
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float() {
-		return 255, 255, nil, errors.New("Only Supported Format is float32")
+	if dtype != dflag.Float() ||dtype !=dflag.Half() {
+		return 255, 255, nil, errors.New("Only Supported Format is float32 and half")
 	}
 	var frmt gocudnn.TensorFormat
 
@@ -632,8 +679,8 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *gocudnn.Tens
 		return 255, 255, nil, nil, err
 	}
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float() {
-		return 255, 255, nil, nil, errors.New("Only Supported Format is float32")
+	if dtype != dflag.Float() ||dtype !=dflag.Half(){
+		return 255, 255, nil, nil, errors.New("Only Supported Format is float32 and half")
 	}
 	var frmt gocudnn.TensorFormat
 
