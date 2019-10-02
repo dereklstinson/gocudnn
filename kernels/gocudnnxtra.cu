@@ -112,9 +112,10 @@ __half2 *t2h=(half2 *)t2;
                     t2h[(i*BVol)+xIdx]=swapper;
                 }
                 if (stx==0 && (n%2)){
-                    const __half swapper =  t1h[(i*n)+(n-1)];
-                    t1h[(i*n) +(n-1)]=t2h[(i*n)+(n-1)];
-                    t2h[(i*n)+(n-1)]=swapper;
+                    const int xIdx=n-1;
+                    const __half swapper =  t1[(i*n)+(xIdx)];
+                    t1[(i*n) +(xIdx)]=t1[(i*n)+(xIdx)];
+                    t2[(i*n)+(xIdx)]=swapper;
                 }
 
             __syncthreads();
@@ -189,7 +190,7 @@ extern "C" __global__ void SwapUpperLowerFP16(
     const int t2upper,
     const int inverse)
 {
-const int BVol = yThreads
+const int BVol = yThreads;
     if (t1upper>0)
     {
         CUDA_GRID_AXIS_LOOP(xIdx,xThreads/2,x)
@@ -966,12 +967,9 @@ extern "C" __global__ void AdaGrad(const int length,
 { //input
     CUDA_GRID_LOOP_X(cell, length)
     {
-
-        float holder = gsum[cell];
-        gsum[cell] = holder + (dw[cell] * dw[cell]);
+        gsum[cell] =  gsum[cell] + (dw[cell] * dw[cell]);
         weights[cell] += -(rate * dw[cell]) / (sqrtf(gsum[cell]) + eps);
-        const float previous= dw[cell]*dwalpha;
-        dw[cell] = previous;
+        dw[cell] = dw[cell]*dwalpha; //smoothing factor.
     }
 }
 
@@ -985,8 +983,9 @@ extern "C" __global__ void AdaGradFP16(const int n,
                                         const __half dwalpha)
 { //input
     StartAxis(stx,x)
-    int n2=n/2
-    __half2 *w2=(__half2*)w,*dw2=(__half2*)dw2,*gsum2=(__half2*)gsum;
+    int n2=n/2;
+    __half2 *w2=(__half2*)w,*dw2=(__half2*)dw,*gsum2=(__half2*)gsum;
+    
     const __half2 rate2=__halves2half2(rate,rate);
     const __half2 eps2=__halves2half2(eps,eps);
     const __half2 dwalpha2=__halves2half2(dwalpha,dwalpha);
@@ -1013,7 +1012,8 @@ extern "C" __global__ void Adam(const int n,
                                      const float beta1,
                                      const float beta2,
                                      const float eps,
-                                     const float counter,
+                                     const float denombeta1,
+                                     const float denombeta2,
                                      const float dwalpha)
 {
 
@@ -1021,12 +1021,11 @@ extern "C" __global__ void Adam(const int n,
     {
       
         gsum[i] = (beta1 * gsum[i]) + ((1.0 - beta1) * dw[i]);
-        float gsumt = gsum[i] / (1.0 - powf(beta1, counter));
+        float gsumt = gsum[i] /denombeta1;
         xsum[i] = (beta2 * xsum[i]) + ((1.0 - beta2) * (dw[i] * dw[i]));
-        float xsumt = xsum[i] / (1.0 - powf(beta2, counter));
+        float xsumt = xsum[i] / denombeta2;
         w[i] += -(rate * gsumt) / (sqrtf(xsumt) + eps);
-        const float previous=dwalpha*dw[i];
-        dw[i]=  previous;
+        dw[i]=  dwalpha*dw[i]; //smoothing factor
     }
   
 }
@@ -1041,42 +1040,37 @@ extern "C" __global__ void AdamFP16(const int n,
                                      const __half beta1,
                                      const __half beta2,
                                      const __half eps,
-                                     const __half counter,
+                                     const __half denombeta1,
+                                     const __half denombeta2,
                                      const __half dwalpha)
 {
- int n2=n/2
-    __half2 *w2=(__half2*)w,*dw2=(__half2*)dw2,*gsum2=(__half2*)gsum,*xsum2=(__half2*)xsum;
+    int n2=n/2;
+    __half2 *w2=(__half2*)w,*dw2=(__half2*)dw,*gsum2=(__half2*)gsum,*xsum2=(__half2*)xsum;
     const __half2 rate2=__halves2half2(rate,rate);
     const __half2 eps2=__halves2half2(eps,eps);
     const __half2 dwalpha2=__halves2half2(dwalpha,dwalpha);
     const __half2 beta12=__halves2half2(beta1,beta1);
     const __half2 beta22=__halves2half2(beta2,beta2);
-    const __half2 counter1=__halves2half2(counter,counter);
-    const __half2 h2one=__halves2half2((__half)1.0,(__half)1.0)
-    const __half2 denombeta1=__float2half((1.0 - powf( __half2float(beta1) , counter)));
-    const __half2 denombeta2 =__float2half((1.0 - powf( __half2float(beta2) , counter)));
+     const __half one1 = __float2half(1.0);
+  const __half2 one2=__halves2half2(one1,one1);
+    StartAxis(stx,x)
     CUDA_GRID_LOOP_X(i, n2)
     {
-        //gsum[i] = (beta1 * gsum[i]) + ((1.0 - beta1) * dw[i]);
-     gsum2[i] =__hfma2(beta12,gsum2[i],__hmul(__hsub((h2one,beta12),dw2[i]));
-       // __half gsumt = gsum[i] / (1.0 - powf(beta1, counter));
-       __half2 gsumt = __hdiv(gsum2[i] ,__halves2half2(denombeta1,denombeta1));
-      //xsum[i] = (beta2 * xsum[i]) + ((1.0 - beta2) * (dw[i] * dw[i]));
-        xsum[i] = __hfma(beta2 , xsum[i], __hmul(__hsub((__half)1.0, beta2), __hmul(dw[i] , dw[i])));
-       // __half xsumt = xsum[i] / (1.0 - powf(beta2, counter));
-           __half xsumt = __hdiv(xsum[i] , __halves2half2(denombeta2,denombeta2));
-       // w[i] += -(rate * gsumt) / (sqrtf(xsumt) + eps);
-        w[i]=__hadd(__hdiv(__hmul(rate,gsumt),__hadd(hsqrt(xsumt),eps)),w[i]);
-        //dw[i]=  dwalpha*dw[i];;
-        dw[i]=  __hmul(dwalpha,dw[i]);
+      gsum2[i] =__hfma2(__hsub2(one2,beta12),dw2[i],__hmul2(beta12,gsum2[i]));
+     __half2 gsumt = __h2div(gsum2[i] ,__halves2half2(denombeta1,denombeta1));
+      xsum2[i] = __hfma2(beta22 , xsum2[i], __hmul2(__hsub2(one2, beta22), __hmul2(dw2[i] , dw2[i])));
+     __half2 xsumt = __h2div(xsum2[i] , __halves2half2(denombeta2,denombeta2));
+     w2[i]=__hsub2(w2[i],__h2div(__hmul2(rate2,gsumt),__hadd2(h2sqrt(xsumt),eps2)));
+     dw2[i]=  __hmul2(dwalpha2,dw2[i]);
     }
+ 
         if (stx==0 && (n%2)){
             const int i = n-1;
-            gsum[i] =__hfma(beta1,gsum[i],__hmul(__hsub((__half)(1.0),beta1),dw[i]));
-            __half gsumt = __hdiv(gsum[i] , __float2half((1.0 - powf( __half2float(beta1) , counter))));
-            xsum[i] = __hfma(beta2 , xsum[i], __hmul(__hsub((__half)1.0, beta2), __hmul(dw[i] , dw[i])));
-            __half xsumt = __hdiv(xsum[i] , __float2half((1.0 - powf( __half2float(beta2) , counter))));
-            w[i]=__hadd(__hdiv(__hmul(rate,gsumt),__hadd(hsqrt(xsumt),eps)),w[i]);
+             gsum[i] =__hfma(__hsub(one1,beta1),dw[i],__hmul(beta1,gsum[i]));
+            __half gsumt = __hdiv(gsum[i] ,denombeta1);
+              xsum[i] = __hfma(beta2 , xsum[i], __hmul(__hsub(one1, beta2), __hmul(dw[i] , dw[i])));
+             __half xsumt = __hdiv(xsum[i] , denombeta2);
+             w[i]=__hsub(w[i],__hdiv(__hmul(rate,gsumt),__hadd(hsqrt(xsumt),eps)));
             dw[i]=  __hmul(dwalpha,dw[i]);
       }
 }
@@ -1087,36 +1081,55 @@ extern "C" __global__ void AdaDelta(const int length,
                                          float *dw,        //input and will have to set to zero
                                          const float rate, //input
                                          const float eps,
+                                         const float ro,
                                          const float dwalpha)
 {
 
-    CUDA_GRID_LOOP_X(cell, length)
+    CUDA_GRID_LOOP_X(i, length)
     {
 
-        gsum[cell] = gsum[cell] + (dw[cell] * dw[cell]);
-        weights[cell] = -(rate * dw[cell]) / (sqrtf(gsum[cell]) + eps);
-        const float previous= dw[cell]*dwalpha;
-        dw[cell] = previous;
+        gsum[i] = (ro * gsum[i]) + ((1.0-ro)*dw[i] * dw[i]);
+        const float dx = sqrtf((xsum[i]+eps)/(gsum[i]+eps))*dw[i];
+        xsum[i]=(ro*xsum[i])+((1-ro)*dx*dx);
+        weights[i] -= dx;
+        dw[i] = dw[i]*dwalpha;
     }
 }
-extern "C" __global__ void AdaDeltaFP16(const int length,
-                                         __half *weights,   //weights input and output
+extern "C" __global__ void AdaDeltaFP16(const int n,
+                                         __half *w,   //weights input and output
                                          __half *gsum,      //storage
                                          __half *xsum,      //storage
                                          __half *dw,        //input and will have to set to zero
                                          const __half rate, //input
                                          const __half eps,
+                                          const __half ro,
                                          const __half dwalpha)
 {
-
-    CUDA_GRID_LOOP_X(i, length)
+    StartAxis(stx,x)
+    int n2=n/2;
+     __half2 *w2=(__half2*)w,*dw2=(__half2*)dw,*gsum2=(__half2*)gsum,*xsum2=(__half2*)xsum;
+    const __half2 rate2=__halves2half2(rate,rate);
+    const __half2 eps2=__halves2half2(eps,eps);
+    const __half2 ro2=__halves2half2(ro,ro);
+   const __half one1 = __float2half(1.0);
+  const __half2 one2=__halves2half2(one1,one1);
+    const __half2 dwalpha2=__halves2half2(dwalpha,dwalpha);
+    CUDA_GRID_LOOP_X(i, n2)
     {
-     //   gsum[i] = gsum[i] + (dw[i] * dw[i]);
-       gsum[i]= __hfma(dw[i] , dw[i],gsum[i]);
-      //  weights[i] = -(rate * dw[i]) / (hsqrt(gsum[i]) + eps);
-        weights[i] = -__hmul(rate , dw[i]) / __hadd(hsqrt(gsum[i]) , eps);
-      //  dw[i] =  dw[i]*dwalpha;
-        dw[i] =  __hmul(dw[i],dwalpha);
+       gsum2[i]= __hfma2(__hsub2(one2,ro2),__hmul2(dw2[i],dw2[i]),__hmul2(ro2,gsum2[i]));
+       const __half2 dx2= __hmul2(h2sqrt(__h2div(__hadd2(xsum2[i],eps2),__hadd2(gsum2[i],eps2))),dw2[i]);
+       xsum2[i]= __hfma2(__hsub2(one2,ro2),__hmul2(dx2,dx2),__hmul2(ro2,xsum2[i]));
+       w2[i] =__hsub2(w2[i],dx2);
+       dw2[i] =  __hmul2(dw2[i],dwalpha2);
+    }
+  
+    if (stx ==0 &&(n%2)){
+       int i = n-1;
+       gsum[i]= __hfma(__hsub(one1,ro),__hmul(dw[i],dw[i]),__hmul(ro,gsum[i]));
+       const __half dx= __hmul(hsqrt(__hdiv(__hadd(xsum[i],eps),__hadd(gsum[i],eps))),dw[i]);
+       xsum[i]= __hfma(__hsub(one1,ro),__hmul(dx,dx),__hmul(ro,xsum[i]));
+       w[i] =__hsub(w[i],dx);
+       dw[i] =  __hmul(dw[i],dwalpha);
     }
 }
 /*
@@ -1703,7 +1716,7 @@ extern "C" __global__ void MSELoss(const int length,
 
    
 }
-extern "C" __global__ void MSELossFP16(const int length, 
+extern "C" __global__ void MSELossFP16(const int n, 
                             __half *errors, 
                             const __half *target,
                             const __half *networkout, 
@@ -1711,14 +1724,25 @@ extern "C" __global__ void MSELossFP16(const int length,
                             const __half alpha,
                             const __half beta)
 {
-    
+    StartAxis(stx,x)
+    int n2=n/2;
+     __half2 *errors2=(__half2*)errors, *target2=(__half2*)target, *networkout2=(__half2*)networkout, *loss2=(__half2*)loss;
+ //  const __half2 alpha2=__halves2half2(alpha), beta2=__halves2half2(beta);
+    const __half2 htwo=__halves2half2(__float2half(2.0),__float2half(2.0));
     loss[0]=0;
-    CUDA_GRID_LOOP_X(i, length)
+    CUDA_GRID_LOOP_X(i, n2)
     {
+        const __half2 y = __hsub2(networkout2[i] , target2[i]);
+        errors2[i] = y;
+        atomicAdd(loss2, __h2div(__hmul2(y , y) ,htwo));
+    }
+    if (stx==0 && (n%2)){
+       const int i=n-1;
         const __half y = __hsub(networkout[i] , target[i]);
         errors[i] = y;
-        atomicAdd(loss, __hdiv(__hmul(y , y) , 2));
+        atomicAdd(loss, __hdiv(__hmul(y , y) , __float2half(2.0)));
     }
+      
 
    
 }

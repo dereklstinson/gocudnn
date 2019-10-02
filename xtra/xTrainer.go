@@ -2,11 +2,12 @@ package xtra
 
 import "C"
 import (
+	"github.com/dereklstinson/half"
 	"errors"
-
+	"math"
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
-	"github.com/dereklstinson/GoCudnn/gocu"
+	//"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/GoCudnn/kernels"
 	"github.com/dereklstinson/cutil"
 )
@@ -229,9 +230,6 @@ func NewTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) 
 func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, gocudnn.DataType) {
 	return d.mode, d.data
 }
-func (d *TrainerD) adam(gx, gy, gz, bx, by, bz, shared uint32, stream gocu.Streamer, length int32, w, gsum, xsum, dw cutil.Mem, rate, beta1, beta2, eps, counter, dwalpha interface{}) error {
-	return d.kmode.Launch(gx, gy, gz, bx, by, bz, shared, stream, length, w, gsum, xsum, dw, rate, beta1, beta2, eps, counter, dwalpha)
-}
 
 //L1L2Regularization does the l1l2 regularization
 func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l1, l2 cutil.Mem, params RegParams) error {
@@ -284,8 +282,24 @@ func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xs
 
 	switch d.mode {
 	case TrainingModeFlag{}.Adam():
-
-		err = d.adam(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, float32(d.counter), params.dwalpha)
+		denombeta1:=1.0-(float32)(math.Pow(float64(params.beta1),float64(d.counter)))
+		denombeta2:=1.0-(float32)(math.Pow(float64(params.beta2),float64(d.counter)))
+		switch d.data{
+		case d.dtflg.Float():
+			err= d.kmode.Launch(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, denombeta1,denombeta2, params.dwalpha)
+	
+		case d.dtflg.Half():
+			dnb1:=half.NewFloat16(denombeta1)
+			dnb2:=half.NewFloat16(denombeta2)
+			hdwalpha:=half.NewFloat16(params.dwalpha)
+			hrate:=half.NewFloat16(params.rate)
+			heps:=half.NewFloat16(params.eps)
+			hbeta1:=half.NewFloat16(params.beta1)
+			hbeta2:=half.NewFloat16(params.beta2)
+			err= d.kmode.Launch(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, hrate, hbeta1, hbeta2, heps, dnb1,dnb2, hdwalpha)
+	
+		}
+		//err = d.adam(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, , params.dwalpha)
 		if err != nil {
 			return err
 		}
