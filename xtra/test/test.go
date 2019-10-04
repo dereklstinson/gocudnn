@@ -1,7 +1,7 @@
 package main
 import (
-	"github.com/dereklstinson/GoCudnn/gocu"
-	"github.com/dereklstinson/GoCudnn/cudart"
+	//"github.com/dereklstinson/GoCudnn/gocu"
+	//"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/nvrtc"
 	"fmt"
@@ -12,11 +12,16 @@ import (
 const cudapath = "/usr/local/cuda/include"
 const cudaname ="cuda_fp16.h"
 func main(){
+	cuda.LockHostThread()
+
 	check:=func(e error){
-		if err !=nil{
-			panic(err)
+		if e !=nil{
+			panic(e)
 		}
 	}
+	
+	
+	
 	p:=program()
 	err:=p.AddNameExpression("testfma")
 	check(err)
@@ -34,10 +39,11 @@ func main(){
 	check(err)
 	//fmt.Println(ptx)
 	m1,err:=cuda.NewModuleEx(ptx)
+	check(err)
     kern1,err:=cuda.MakeKernel("testfma",m1)
 	check(err)
-cutil.
-	cudart.Malloc()
+	fmt.Println(kern1)
+	//cudart.Malloc()
 	p2:=program2()
 	err=p2.AddNameExpression("testfma2")
 	check(err)
@@ -98,15 +104,21 @@ const kernel = `
          i += blockDim.x * gridDim.x)
 
 #define CUDA_GRID_AXIS_LOOP(i, n, axis)                                 \
-    for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
+	for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
 		 i += blockDim.axis * gridDim.axis)
-		 
-		extern "C" __global__
+		
+		 __device__ float addmult (float a, float b, float c);
+		
+		 extern "C" __global__
 		void testfma(int n, float *a, float *b, float *c, float *d){
 			CUDA_GRID_LOOP_X(i,n){
-				d[i]=(a[i]*b[i])+c[i];
+				d[i] =(a[i]*b[i])+c[i];
+			    
 			}
-			}`
+			}
+		__device__ float addmult(float a, float b, float c){
+			return (a*b)+c;
+		}`
 
 const kernelhalf = `
 #include <cuda_fp16.h>

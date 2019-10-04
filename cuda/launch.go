@@ -64,7 +64,7 @@ func NewModuleEx(Ptx string) (*Module, error) {
 	return &Module{
 		m:      mod,
 		loaded: true,
-	}, newErrorDriver("NewModule", x)
+	}, newErrorDriver("NewModuleEX", x)
 }
 
 //UnLoad Loads a Module
