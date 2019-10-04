@@ -89,9 +89,9 @@ func (p *Program) Compile(options ...string) error {
 		}
 		p.options=nil
 	}
-	p.numofoptions= (C.int)(len(p.options))
+	p.numofoptions= (C.int)(len(options))
 	p.options = make([]*C.char, 	p.numofoptions)
-	for i := range options {
+	for i := range options { 
 		p.options[i] = C.CString(options[i])
 	}
 

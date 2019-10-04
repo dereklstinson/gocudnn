@@ -2,6 +2,7 @@ package npp
 
 //#include<nppcore.h>
 import "C"
+
 import (
 	"errors"
 	"unsafe"
@@ -16,14 +17,16 @@ func GetLibVersion() (version LibraryVersion) {
 	version = (LibraryVersion)(*x)
 	return version
 }
-
+/*
 //GetGpuComputeCapability returns the CUDA compute model is supported by the active CUDA device?
 //Before trying to call any NPP functions, the user should make a call
 //this function to ensure that the current machine has a CUDA capable device.
 func GetGpuComputeCapability() GpuComputeCapability {
-	return (GpuComputeCapability)(C.nppGetGpuComputeCapability())
+	var x GpuComputeCapability
+	return x
+	//return (GpuComputeCapability)(C.nppGetGpuComputeCapability())
 }
-
+*/
 //GetGpuNumSMs returns the number of streaming multiprocessors the current set device has
 func GetGpuNumSMs() int32 {
 	return (int32)(C.nppGetGpuNumSMs())

@@ -78,13 +78,17 @@ type TrainingParams struct {
 	beta1   float32
 	beta2   float32
 	dwalpha float32
+	ro float32
 }
 
 //SetBeta1 sets beta1
 func (a *TrainingParams) SetBeta1(beta1 float32) {
 	a.beta1 = beta1
 }
-
+//SetRo sets ro.  Ro is used for adadelta
+func (a *TrainingParams) SetRo(ro float32){
+	a.ro=ro
+}
 //SetBeta2 sets beta2
 func (a *TrainingParams) SetBeta2(beta2 float32) {
 	a.beta2 = beta2
@@ -251,9 +255,24 @@ func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l
 		return errors.New("Unsupported Type")
 
 	}
+	var err error
 	config := h.LaunchConfig(size)
-	return d.kreg.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
- 
+	switch d.data{
+	case d.dtflg.Float():
+		err= d.kreg.Launch(
+			config.BlockCount, 1, 1, 
+			config.ThreadPerBlock, 1, 1, 0, h.s, 
+			config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
+	case d.dtflg.Half():
+		hbatch:=half.NewFloat16(params.batch)
+		hdecay1:=half.NewFloat16(params.decay1)
+		hdecay2:=half.NewFloat16(params.decay2)
+		err= d.kreg.Launch(config.BlockCount, 1, 1,
+			 config.ThreadPerBlock, 1, 1, 0, h.s,
+			  config.Elements, dw, w, l1, l2,hbatch, hdecay1,hdecay2)
+	}
+	
+ return err
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
@@ -312,13 +331,50 @@ func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xs
 
 	case TrainingModeFlag{}.AdaDelta():
 		config := h.LaunchConfig(size)
-		err = d.kmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, w, gsum, dw, params.rate, params.eps)
-		if err != nil {
-			return err
-		}
+		switch d.data{
+		case d.dtflg.Float():
+			err = d.kmode.Launch(config.BlockCount, 1, 1,
+								 config.ThreadPerBlock, 1, 1,
+								 0, h.s,
+								 config.Elements, w, gsum, dw, params.rate, params.eps,params.ro, params.dwalpha)
+			if err != nil {
+				return err
+			}
+		case d.dtflg.Half():
+			config := h.LaunchConfig(size/2)
+			hdwalpha:=half.NewFloat16(params.dwalpha)
+			hrate:=half.NewFloat16(params.rate)
+			heps:=half.NewFloat16(params.eps)
+			hro:=half.NewFloat16(params.ro)
+			err = d.kmode.Launch(config.BlockCount, 1, 1,
+				config.ThreadPerBlock, 1, 1,
+				0, h.s,
+				config.Elements, w, gsum, dw,hrate, heps,hro, hdwalpha)
+			}
+		
 	case TrainingModeFlag{}.AdaGrad():
 		config := h.LaunchConfig(size)
-		err = d.kmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, w, gsum, dw, params.rate, params.eps)
+		
+		switch d.data{
+		case d.dtflg.Float():
+			err = d.kmode.Launch(
+				config.BlockCount, 1, 1, 
+				config.ThreadPerBlock, 1, 1, 0, h.s,
+				 config.Elements, w, dw,gsum, params.rate, params.eps,params.dwalpha)
+			if err != nil {
+				return err
+			}
+		case d.dtflg.Half():
+			config := h.LaunchConfig(size/2)
+			hdwalpha:=half.NewFloat16(params.dwalpha)
+			hrate:=half.NewFloat16(params.rate)
+			heps:=half.NewFloat16(params.eps)
+			err = d.kmode.Launch(
+				config.BlockCount, 1, 1, 
+				config.ThreadPerBlock, 1, 1, 0, h.s,
+				 config.Elements, w,dw, gsum,  hrate,heps,hdwalpha)
+			}
+		
 		if err != nil {
 			return err
 		}

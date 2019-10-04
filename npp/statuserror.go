@@ -159,7 +159,7 @@ func (n status) Error() string {
 	}
 	return "UNSUPPORTED STATUS FLAG ON GO SIDE OF BINDING"
 }
-
+/*
 //GpuComputeCapability is the cuda compute capability
 type GpuComputeCapability C.NppGpuComputeCapability
 
@@ -214,6 +214,6 @@ func (g GpuComputeCapability) String() string {
 	}
 	return "SUPER COMPUTE CAPABILITY OR NONE IDK"
 }
-
+*/
 //LibraryVersion is the version of the npp library
 type LibraryVersion C.NppLibraryVersion

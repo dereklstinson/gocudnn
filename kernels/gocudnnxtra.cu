@@ -600,158 +600,7 @@ extern "C" __global__ void NearestNeighborNHWCFP16(
         dest[i] = src_data_n[idx];
     }
 }
-/*
-//When calling this function it will have to do the stuff indexes on the destination
-extern "C" __global__ void NearestNeighborv2NCHW(
-    const int xThreads,
-    const int yThreads,
-    const int zThreads,
-    const int batches,
-    const float *src,
-    const int src_height,
-    const int src_width,
-    // const int dest_height,
-    //  const int dest_width,
-    const float hratio,
-    const float wratio,
-    float *dest)
-{
-    const int dbatchslide = xThreads * yThreads * zThreads;
-    const int dchanslide = yThreads * zThreads;
-    const int dhslide = zThreads;
-    const int schanslide = src_height * src_width;
-    const int sbatchslide = schanslide * xThreads;
-    for (int i = 1; i < batches; i++)
-    {
 
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
-        {
-            CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
-            {
-                CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
-                {
-                    float ph = floorf(yIdx * hratio);
-                    float pw = floorf(zIdx * wratio);
-                    dest[(i * dbatchslide) + (xIdx * dchanslide) + (yIdx * dhslide) + zIdx] =
-                        src[(int)((i * sbatchslide) + (schanslide * xIdx) + (ph * src_height) + pw)];
-                }
-            }
-        }
-    }
-}
-extern "C" __global__ void nearestneighborv2NCHWF16(
-    const int xThreads,
-    const int yThreads,
-    const int zThreads,
-    const int batches,
-    const __half *src,
-    const int src_height,
-    const int src_width,
-    // const int dest_height,
-    //  const int dest_width,
-    const float hratio,
-    const float wratio,
-    __half *dest)
-{
-    const int dbatchslide = xThreads * yThreads * zThreads;
-    const int dchanslide = yThreads * zThreads;
-    const int dhslide = zThreads;
-    const int schanslide = src_height * src_width;
-    const int sbatchslide = schanslide * xThreads;
-    for (int i = 1; i < batches; i++)
-    {
-
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
-        {
-            CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
-            {
-                CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
-                {
-                    float ph = floorf(yIdx * hratio);
-                    float pw = floorf(zIdx * wratio);
-                    dest[(i * dbatchslide) + (xIdx * dchanslide) + (yIdx * dhslide) + zIdx] =
-                        src[(int)((i * sbatchslide) + (schanslide * xIdx) + (ph * src_height) + pw)];
-                }
-            }
-        }
-    }
-    }
-
-//When calling this function it will have to do the stuff indexes on the destination
-extern "C" __global__ void nearestneighborv2NCHWAddGradient(
-    const int xThreads,
-    const int yThreads,
-    const int zThreads,
-    const int batches,
-    const float *src,
-    const int src_height,
-    const int src_width,
-    // const int dest_height,
-    //  const int dest_width,
-    const float hratio,
-    const float wratio,
-    float *dest)
-{
-    const int dbatchslide = xThreads * yThreads * zThreads;
-    const int dchanslide = yThreads * zThreads;
-    const int dhslide = zThreads;
-    const int schanslide = src_height * src_width;
-    const int sbatchslide = schanslide * xThreads;
-    for (int i = 1; i < batches; i++)
-    {
-
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
-        {
-            CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
-            {
-                CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
-                {
-                    float ph = floorf(yIdx * hratio);
-                    float pw = floorf(zIdx * wratio);
-                    dest[(i * dbatchslide) + (xIdx * dchanslide) + (yIdx * dhslide) + zIdx] +=
-                        src[(int)((i * sbatchslide) + (schanslide * xIdx) + (ph * src_height) + pw)];
-                }
-            }
-        }
-    }
-}
-//When calling this function it will have to do the stuff indexes on the destination
-extern "C" __global__ void nearestneighborv2NCHWAddGradientF16(
-    const int xThreads,
-    const int yThreads,
-    const int zThreads,
-    const int batches,
-    const __half *src,
-    const int src_height,
-    const int src_width,
-    const float hratio,
-    const float wratio,
-    __half *dest)
-{
-    const int dbatchslide = xThreads * yThreads * zThreads;
-    const int dchanslide = yThreads * zThreads;
-    const int dhslide = zThreads;
-    const int schanslide = src_height * src_width;
-    const int sbatchslide = schanslide * xThreads;
-    for (int i = 1; i < batches; i++)
-    {
-
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
-        {
-            CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
-            {
-                CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
-                {
-                    float ph = floorf(yIdx * hratio);
-                    float pw = floorf(zIdx * wratio);
-                    dest[(i * dbatchslide) + (xIdx * dchanslide) + (yIdx * dhslide) + zIdx] +=
-                        src[(int)((i * sbatchslide) + (schanslide * xIdx) + (ph * src_height) + pw)];
-                }
-            }
-        }
-    }
-}
-*/
 extern "C" __global__ void NearestNeighborNCHW(
     const int aligncorners,
     const int threads,
@@ -1185,11 +1034,12 @@ extern "C" __global__ void L1L2FP16(
     const __half decay1, //input
     const __half decay2)
 { //input
-
+  const __half one1 = __float2half(1.0);
+    const __half zero0 = __float2half(0);
     CUDA_GRID_LOOP_X(i, length)
     {
         __half abs = w[i];
-        if (__hlt(abs,(__half)0.0)){
+        if (__hlt(abs,zero0)){
             abs=-abs;
         }
         //atomicAdd(l1, abs(w[i]) * decay1);
@@ -1197,7 +1047,7 @@ extern "C" __global__ void L1L2FP16(
         //atomicAdd(l2, (w[i] * w[i] * decay2) / 2.0);
         atomicAdd(l2, __hdiv(__hmul(__hmul(w[i] , w[i]) , decay2) , 2.0));
         //const float gradl1 = decay1 * (w[i] > 0 ? 1 : -1);
-        const __half gradl1 = __hmul(decay1, (__hgt(w[i],(__half)0.0) ? (__half)(1) : -(__half)(1)));
+        const __half gradl1 = __hmul(decay1, (__hgt(w[i],zero0) ? one1 : -one1));
         //const float gradl2 = w[i] * decay2;
         const __half gradl2 = __hmul(w[i] ,decay2);
         //dw[i] = (dw[i] + gradl2 + gradl1) / batch;     
@@ -1406,12 +1256,13 @@ extern "C" __global__ void PreluBackwardFP16(const int XThreads,
                                                           const __half *coefs,
                                                           __half *dcoefs)
 {
+        const __half zero0 = __float2half(0);
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
             CUDA_GRID_LOOP_X(xIdx,XThreads)
             {
-               if (__hgt(x[stride+xIdx],(__half)(0.0)))
+               if (__hgt(x[stride+xIdx],zero0))
                 {
                     dx[stride+xIdx]=  dy[stride+xIdx];
                 }
@@ -1461,10 +1312,11 @@ extern "C" __global__ void LeakyForwardAlphaBetaFP16(const int length,
                                              const __half alpha,
                                               const __half beta)
 {
+        const __half zero0 = __float2half(0);
     CUDA_GRID_LOOP_X(i, length)
     {
        
-      if (__hgt(x[i],(__half)(0.0)))
+      if (__hgt(x[i],zero0))
         {
             // y[i] = (beta*y[i]) + (alpha *x[i]) ;
             y[i]=__hadd(__hmul(beta,y[i]),__hmul(alpha,x[i]));
@@ -1510,11 +1362,11 @@ extern "C" __global__ void LeakyBackwardAlphaBetaFP16(const int length,
                                               const __half alpha,
                                               const __half beta)
 {
-
+    const __half zero0 = __float2half(0);
     CUDA_GRID_LOOP_X(i, length)
     {
   
-        if (__hgt(x[i],(__half)(0.0)))
+        if (__hgt(x[i],zero0))
         {
              // dx[i] =(beta *dx[i]) + (dy[i] * alpha);
               dx[i]=__hadd(__hmul(beta,dy[i]),__hmul(alpha,dx[i]));
@@ -1555,11 +1407,11 @@ extern "C" __global__ void LeakyForwardAlphaFP16(const int length,
                                              const __half coef,
                                              const __half alpha)
 {
-
+    const __half zero0 = __float2half(0);
     CUDA_GRID_LOOP_X(i, length)
     {
         
-      if (__hgt(x[i],(__half)(0.0)))
+      if (__hgt(x[i],zero0))
         {
             y[i] = __hmul(alpha ,x[i]);
         }
@@ -1602,11 +1454,12 @@ extern "C" __global__ void LeakyBackwardAlphaFP16(const int length,
                                               const __half coef,
                                               const __half alpha)
 {
+        const __half zero0 = __float2half(0);
  
     CUDA_GRID_LOOP_X(i, length)
     {
 
-        if  (__hgt(x[i],(__half)(0.0)))
+        if  (__hgt(x[i],zero0))
         {
            // dx[i] = dy[i]*alpha;
             dx[i] = __hmul(alpha ,dy[i]);
@@ -1641,9 +1494,10 @@ extern "C" __global__ void LeakyForwardFP16(const int length,
                                              __half *y,
                                              const __half coef)
 {
+        const __half zero0 = __float2half(0);
     CUDA_GRID_LOOP_X(i, length)
     {
-       if  (__hgt(x[i],(__half)(0.0)))
+       if  (__hgt(x[i],zero0))
         {
             y[i] = x[i];
         }
@@ -1682,11 +1536,11 @@ extern "C" __global__ void LeakyBackwardFP16(const int length,
                                               const __half *dy,
                                               const __half coef)
 {
-
+    const __half zero0 = __float2half(0);
     CUDA_GRID_LOOP_X(i, length)
     {
 
-         if  (__hgt(x[i],(__half)(0.0)))
+         if  (__hgt(x[i],zero0))
         {
             dx[i] = dy[i];
         }
@@ -1728,19 +1582,20 @@ extern "C" __global__ void MSELossFP16(const int n,
     int n2=n/2;
      __half2 *errors2=(__half2*)errors, *target2=(__half2*)target, *networkout2=(__half2*)networkout, *loss2=(__half2*)loss;
  //  const __half2 alpha2=__halves2half2(alpha), beta2=__halves2half2(beta);
-    const __half2 htwo=__halves2half2(__float2half(2.0),__float2half(2.0));
+    const __half2 htwo2=__halves2half2(__float2half(2.0),__float2half(2.0));
+     const __half htwo= __float2half(2.0);
     loss[0]=0;
     CUDA_GRID_LOOP_X(i, n2)
     {
         const __half2 y = __hsub2(networkout2[i] , target2[i]);
         errors2[i] = y;
-        atomicAdd(loss2, __h2div(__hmul2(y , y) ,htwo));
+        atomicAdd(loss2, __h2div(__hmul2(y , y) ,htwo2));
     }
     if (stx==0 && (n%2)){
        const int i=n-1;
         const __half y = __hsub(networkout[i] , target[i]);
         errors[i] = y;
-        atomicAdd(loss, __hdiv(__hmul(y , y) , __float2half(2.0)));
+        atomicAdd(loss, __hdiv(__hmul(y , y) , htwo));
     }
       
 
@@ -1767,7 +1622,7 @@ const int ythreads,
  const __half *networkout, 
  __half *loss)
 {
-
+  const __half htwo= __float2half(2.0);
     CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
     {
         const int i=ythreads*xIdx;
@@ -1775,7 +1630,7 @@ const int ythreads,
             {  
                 const __half y = __hsub(networkout[i] , target[i]);
         errors[i] = y;
-             atomicAdd(&loss[xIdx], __hdiv(__hmul(y , y) , 2));
+             atomicAdd(&loss[xIdx], __hdiv(__hmul(y , y) , htwo));
             }
     }
 }

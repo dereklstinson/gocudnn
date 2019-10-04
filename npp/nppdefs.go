@@ -2,9 +2,7 @@ package npp
 
 //#include <nppdefs.h>
 import "C"
-import (
-	"unsafe"
-)
+
 
 //Flags is a special struct that contains all the flag types npp uses.
 //Even though these types are flags themselves.
@@ -206,31 +204,7 @@ func (d *DifferentialKernel) SCHARR() DifferentialKernel {
 	return *d
 }
 
-/*
- *
- * Float16
- *
- */
 
-//Float16 is a half used by npp.
-type Float16 C.Npp16f
-
-func (n *Float16) cptr() *C.Npp16f {
-	return (*C.Npp16f)(n)
-}
-
-//Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
-func (n *Float16) Ptr() unsafe.Pointer {
-	return unsafe.Pointer(n)
-}
-
-/*
-//DPtr returns an double pointer used for allocating memory on device
-func (n *Float16) DPtr() *unsafe.Pointer {
-	x := unsafe.Pointer(n)
-	return (*unsafe.Pointer)(&x)
-}
-*/
 
 /*
 func convertUint64toCNpp64uarray(x []Uint64) []C.Npp64u {
