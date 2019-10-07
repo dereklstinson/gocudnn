@@ -19,7 +19,6 @@ import (
 	"runtime"
 	"sync"
 	"unsafe"
-
 	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/cutil"
 	"github.com/dereklstinson/half"
@@ -56,12 +55,14 @@ func NewModule(filename string) (module *Module, err error) {
 }
 
 //NewModuleEx takes a string of the ptx data
-func NewModuleEx(Ptx string) (*Module, error) {
+func NewModuleEx(ptx string) (*Module, error) {
 	var mod C.CUmodule
-	cptx := unsafe.Pointer(C.CString(Ptx))
+	cptx := C.CString(ptx)
 	defer C.free((unsafe.Pointer)(cptx))
-	x := C.cuModuleLoadDataEx(&mod, cptx, 0, C.nullJitOptions, C.voiddptrnull)
+	x:=C.cuModuleLoadData(&mod,(unsafe.Pointer)(cptx))
+	//x := C.cuModuleLoadDataEx(&mod, (unsafe.Pointer)(&data[0]), 0, C.nullJitOptions, C.voiddptrnull)
 	return &Module{
+		
 		m:      mod,
 		loaded: true,
 	}, newErrorDriver("NewModuleEX", x)

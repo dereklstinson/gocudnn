@@ -1,7 +1,7 @@
 package main
 import (
 	//"github.com/dereklstinson/GoCudnn/gocu"
-	//"github.com/dereklstinson/GoCudnn/cudart"
+	"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/nvrtc"
 	"fmt"
@@ -14,18 +14,28 @@ const cudaname ="cuda_fp16.h"
 func main(){
 	cuda.LockHostThread()
 
+	
 	check:=func(e error){
 		if e !=nil{
 			panic(e)
 		}
 	}
 	
-	
-	
-	p:=program()
-	err:=p.AddNameExpression("testfma")
+
+
+
+
+
+
+dev,err:=cudart.CreateDevice(0)
+check(err)	
+fmt.Println(dev.Major())
+dev.Set()
+p:=program()
+	err=p.AddNameExpression("testfma")
 	check(err)
 	err=p.Compile()
+	
 	if err !=nil{
 		log,err2:=p.GetLog()
 		check(err2)
@@ -37,13 +47,14 @@ func main(){
 	fmt.Println(ln)
 	ptx,err:=p.PTX()
 	check(err)
-	//fmt.Println(ptx)
+	ptx,err=p.PTX()
+	check(err)
+	//fmt.Println(string(ptx))
 	m1,err:=cuda.NewModuleEx(ptx)
 	check(err)
     kern1,err:=cuda.MakeKernel("testfma",m1)
 	check(err)
 	fmt.Println(kern1)
-	//cudart.Malloc()
 	p2:=program2()
 	err=p2.AddNameExpression("testfma2")
 	check(err)
@@ -57,9 +68,9 @@ func main(){
 	ln2,err:=p2.GetLoweredName("testfma2")
 	check(err)
 	fmt.Println(ln2)
-	ptx2,err:=p2.PTX()
+	//ptx2,err:=p2.PTX()
 	check(err)
-	fmt.Println(ptx2)
+	//fmt.Println(ptx2)
 }
 
 func program ()*nvrtc.Program{
@@ -107,8 +118,6 @@ const kernel = `
 	for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
 		 i += blockDim.axis * gridDim.axis)
 		
-		 __device__ float addmult (float a, float b, float c);
-		
 		 extern "C" __global__
 		void testfma(int n, float *a, float *b, float *c, float *d){
 			CUDA_GRID_LOOP_X(i,n){
@@ -116,9 +125,7 @@ const kernel = `
 			    
 			}
 			}
-		__device__ float addmult(float a, float b, float c){
-			return (a*b)+c;
-		}`
+	`
 
 const kernelhalf = `
 #include <cuda_fp16.h>
