@@ -4,9 +4,11 @@ package nvrtc
 import "C"
 import "errors"
 import "fmt"
+
 type status C.nvrtcResult
-func (s status)Error()string{
-	switch s{
+
+func (s status) Error() string {
+	switch s {
 	case status(C.NVRTC_SUCCESS):
 		return "NVRTC_SUCCESS"
 	case status(C.NVRTC_ERROR_OUT_OF_MEMORY):
@@ -35,35 +37,34 @@ func (s status)Error()string{
 		return fmt.Sprintf("Unsupported Error, %d", s)
 	}
 }
-func (s status)error(commment string)error{
-switch s{
-case (status)(C.NVRTC_SUCCESS):
-	return nil
-case status(C.NVRTC_ERROR_OUT_OF_MEMORY):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_PROGRAM_CREATION_FAILURE):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_INVALID_INPUT):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_INVALID_PROGRAM):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_INVALID_OPTION):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_COMPILATION):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_BUILTIN_OPERATION_FAILURE):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_NO_NAME_EXPRESSIONS_AFTER_COMPILATION):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_NO_LOWERED_NAMES_BEFORE_COMPILATION):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_NAME_EXPRESSION_NOT_VALID):
-	return errors.New(commment +" : " + s.Error())
-case status(C.NVRTC_ERROR_INTERNAL_ERROR):
-	return errors.New(commment +" : " + s.Error())
-default:
-	return  errors.New(commment +" : " + s.Error())
+func (s status) error(commment string) error {
+	switch s {
+	case (status)(C.NVRTC_SUCCESS):
+		return nil
+	case status(C.NVRTC_ERROR_OUT_OF_MEMORY):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_PROGRAM_CREATION_FAILURE):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_INVALID_INPUT):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_INVALID_PROGRAM):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_INVALID_OPTION):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_COMPILATION):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_BUILTIN_OPERATION_FAILURE):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_NO_NAME_EXPRESSIONS_AFTER_COMPILATION):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_NO_LOWERED_NAMES_BEFORE_COMPILATION):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_NAME_EXPRESSION_NOT_VALID):
+		return errors.New(commment + " : " + s.Error())
+	case status(C.NVRTC_ERROR_INTERNAL_ERROR):
+		return errors.New(commment + " : " + s.Error())
+	default:
+		return errors.New(commment + " : " + s.Error())
 
+	}
 }
-}
-

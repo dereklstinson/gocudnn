@@ -176,15 +176,15 @@ func findnewdims(original, perm []int32) []int32 {
 
 //XResizeD is a struct that holds the reshape functions
 type XResizeD struct {
-	nearestfwdnhwc *cuda.Kernel
-	nearestbwdnhwc *cuda.Kernel
-	nearestfwdnchw *cuda.Kernel
-	nearestbwdnchw *cuda.Kernel
+	nearestfwdnhwc     *cuda.Kernel
+	nearestbwdnhwc     *cuda.Kernel
+	nearestfwdnchw     *cuda.Kernel
+	nearestbwdnchw     *cuda.Kernel
 	nearestfwdnhwcfp16 *cuda.Kernel
 	nearestbwdnhwcfp16 *cuda.Kernel
 	nearestfwdnchwfp16 *cuda.Kernel
 	nearestbwdnchwfp16 *cuda.Kernel
-	aligncorners   bool
+	aligncorners       bool
 }
 
 //CreateResizeDesc creates a descriptor that holds the reshpaes
@@ -222,15 +222,15 @@ func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 		return nil, err
 	}
 	return &XResizeD{
-		nearestfwdnhwc: nearestfwdnhwc,
-		nearestbwdnhwc: nearestbwdnhwc,
-		nearestfwdnchw: nearestfwdnchw,
-		nearestbwdnchw: nearestbwdnchw,
-		nearestfwdnhwcfp16 :nearestfwdnhwcfp16 ,
-		nearestbwdnhwcfp16 :nearestbwdnhwcfp16 ,
-		nearestfwdnchwfp16 :nearestfwdnchwfp16 ,
-		nearestbwdnchwfp16 :nearestbwdnchwfp16 ,
-		aligncorners:   aligncorners,
+		nearestfwdnhwc:     nearestfwdnhwc,
+		nearestbwdnhwc:     nearestbwdnhwc,
+		nearestfwdnchw:     nearestfwdnchw,
+		nearestbwdnchw:     nearestbwdnchw,
+		nearestfwdnhwcfp16: nearestfwdnhwcfp16,
+		nearestbwdnhwcfp16: nearestbwdnhwcfp16,
+		nearestfwdnchwfp16: nearestfwdnchwfp16,
+		nearestbwdnchwfp16: nearestbwdnchwfp16,
+		aligncorners:       aligncorners,
 	}, nil
 }
 
@@ -265,14 +265,12 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil
 			aligned = 1
 		}
 
-		if dtypex==dtypeflg.Float(){
+		if dtypex == dtypeflg.Float() {
 			return s.nearestfwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, y)
-		}else if  dtypex==dtypeflg.Half(){
+		} else if dtypex == dtypeflg.Half() {
 			return s.nearestfwdnhwcfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, y)
 		}
 
-		
-		
 	case fmtflag.NCHW():
 
 		if dimsx[0] != dimsy[0] || dimsx[1] != dimsy[1] {
@@ -286,12 +284,11 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil
 		if s.aligncorners == true {
 			aligned = 1
 		}
-		if dtypex==dtypeflg.Float(){
+		if dtypex == dtypeflg.Float() {
 			return s.nearestfwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[2], dimsx[3], dimsx[1], dimsy[2], dimsy[3], ratioh, ratiow, y)
-		}else if  dtypex==dtypeflg.Half(){
+		} else if dtypex == dtypeflg.Half() {
 			return s.nearestfwdnchwfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, x, dimsx[2], dimsx[3], dimsx[1], dimsy[2], dimsy[3], ratioh, ratiow, y)
 		}
-
 
 	}
 	return errors.New("Not Supported Tensor Format")
@@ -333,12 +330,12 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 		}
 
 		cudart.Memset(dx, 0, sizeinbytes)
-		if dtypex==dtypeflg.Float(){
+		if dtypex == dtypeflg.Float() {
 			return s.nearestbwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
-		}else if  dtypex==dtypeflg.Half(){
+		} else if dtypex == dtypeflg.Half() {
 			return s.nearestbwdnhwcfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
 		}
-	
+
 	case fmtflag.NCHW():
 		if dimsx[0] != dimsy[0] || dimsx[1] != dimsy[1] {
 			return errors.New("x and y dims n to n or c to c do not equal")
@@ -352,23 +349,22 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 			aligned = 1
 		}
 		cudart.Memset(dx, 0, sizeinbytes)
-		if dtypex==dtypeflg.Float(){
+		if dtypex == dtypeflg.Float() {
 			return s.nearestbwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
-		}else if  dtypex==dtypeflg.Half(){
+		} else if dtypex == dtypeflg.Half() {
 			return s.nearestbwdnchwfp16.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
 		}
-		
+
 	}
 	return errors.New("Not Supported Tensor Format")
 }
 
 //XShapetoBatchD holds the kernel function
 type XShapetoBatchD struct {
-	nhwc *cuda.Kernel
+	nhwc     *cuda.Kernel
 	nhwcfp16 *cuda.Kernel
-	nchw *cuda.Kernel
+	nchw     *cuda.Kernel
 	nchwfp16 *cuda.Kernel
-
 }
 
 //CreateShapetoBatchDesc creates a shape to batch desc
@@ -386,10 +382,10 @@ func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 		return nil, err
 	}
 	nchwfp16, err := cuda.MakeKernel("ShapetoBatch4DNCHWFP16", handle.mod)
-	return &XShapetoBatchD{nhwc: nhwc, 
-		nhwcfp16:nhwcfp16,
-		nchw: nchw,
-		nchwfp16:nchwfp16}, err
+	return &XShapetoBatchD{nhwc: nhwc,
+		nhwcfp16: nhwcfp16,
+		nchw:     nchw,
+		nchwfp16: nchwfp16}, err
 }
 
 //ShapeToBatch4d seperates chunks fo memory to blocks, so each window is the size of the block passed, and that those will becomoe the new batches.
@@ -401,12 +397,12 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, 
 
 	frmt, dtype, xdims, _, err := xDesc.Get()
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float()|| dtype !=dflag.Half(){
+	if dtype != dflag.Float() || dtype != dflag.Half() {
 		return errors.New("Only Supported dtype is float32 and half")
 	}
 
 	frmt2, dtype, ydims, _, err := yDesc.Get()
-	if dtype != dflag.Float()|| dtype !=dflag.Half() {
+	if dtype != dflag.Float() || dtype != dflag.Half() {
 		return errors.New("Only Supported dytype is float32 and half")
 	}
 	var tflag gocudnn.TensorFormat
@@ -462,28 +458,28 @@ func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, 
 		}
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
-switch dtype{
-case dflag.Float():
-	err= s.nhwc.Launch(
-		cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
-		cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
-		0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
-		if err != nil {
-			return err
-		}
-case dflag.Half():
-	err= s.nhwcfp16.Launch(
-		cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
-		cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
-		0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
-		if err != nil {
-			return err
-		}
-	default:
-		return errors.New("Unsupported type")
+		switch dtype {
+		case dflag.Float():
+			err = s.nhwc.Launch(
+				cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
+				cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
+				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
+			if err != nil {
+				return err
+			}
+		case dflag.Half():
+			err = s.nhwcfp16.Launch(
+				cfg.BlockCountx, cfg.BlockCounty, cfg.BlockCountz,
+				cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, cfg.ThreadPerBlockz,
+				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
+			if err != nil {
+				return err
+			}
+		default:
+			return errors.New("Unsupported type")
 
-}
-			
+		}
+
 	case tflag.NCHW():
 		var n1 int32
 		var n2 int32
@@ -517,18 +513,18 @@ case dflag.Half():
 		}
 
 		cfg := handle.LaunchConfig3d(ydims[1], ydims[2], ydims[3])
-		switch dtype{
+		switch dtype {
 		case dflag.Float():
-		err=	s.nchw.Launch(cfg.BlockCountx,
+			err = s.nchw.Launch(cfg.BlockCountx,
 				cfg.BlockCounty,
 				cfg.BlockCountz,
 				cfg.ThreadPerBlockx,
 				cfg.ThreadPerBlocky,
 				cfg.ThreadPerBlockz,
 				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
-				if err != nil {
-					return err
-				}
+			if err != nil {
+				return err
+			}
 		case dflag.Half():
 			s.nchwfp16.Launch(cfg.BlockCountx,
 				cfg.BlockCounty,
@@ -537,16 +533,17 @@ case dflag.Half():
 				cfg.ThreadPerBlocky,
 				cfg.ThreadPerBlockz,
 				0, handle.s, cfg.Dimx, cfg.Dimy, cfg.Dimz, oHH, oHW, OriginalBatches, BatchedVol, OriginalVol, n1, n2, hstride, wstride, x, y, HOverScan, WOverScan, S2B)
-				if err != nil {
-					return err
-				}
-			default:
-				return errors.New("Unsupported Type")
-	}
+			if err != nil {
+				return err
+			}
+		default:
+			return errors.New("Unsupported Type")
+		}
 
+	}
+	return handle.s.Sync()
 }
-return handle.s.Sync()
-}
+
 /*
 func copytogpumalloc(x *GoPointer) (cutil.Mem, error) {
 
@@ -583,7 +580,7 @@ func (s *XShapetoBatchD) GetBatchtoShapeOutputProperties(descX *gocudnn.TensorD,
 		return 255, 255, nil, err
 	}
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float()||dtype !=dflag.Half(){
+	if dtype != dflag.Float() || dtype != dflag.Half() {
 		return 255, 255, nil, errors.New("Only Supported Format is float32 or half")
 	}
 	var frmt gocudnn.TensorFormat
@@ -623,7 +620,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputProperties(descX *gocudnn.TensorD,
 		return 255, 255, nil, err
 	}
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float() ||dtype !=dflag.Half() {
+	if dtype != dflag.Float() || dtype != dflag.Half() {
 		return 255, 255, nil, errors.New("Only Supported Format is float32 and half")
 	}
 	var frmt gocudnn.TensorFormat
@@ -679,7 +676,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *gocudnn.Tens
 		return 255, 255, nil, nil, err
 	}
 	var dflag gocudnn.DataType
-	if dtype != dflag.Float() ||dtype !=dflag.Half(){
+	if dtype != dflag.Float() || dtype != dflag.Half() {
 		return 255, 255, nil, nil, errors.New("Only Supported Format is float32 and half")
 	}
 	var frmt gocudnn.TensorFormat

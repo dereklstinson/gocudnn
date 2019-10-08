@@ -17,7 +17,7 @@ type Device interface {
 	Major() (int, error)
 	Minor() (int, error)
 }
- 
+
 const nvcccmd = "nvcc "
 
 //const nvccarg = " --gpu-architecture=compute_"

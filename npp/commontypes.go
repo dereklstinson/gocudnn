@@ -429,24 +429,24 @@ func (n *Int64) Offset(elements int32) *Int64 {
 *
  */
 
- /*
+/*
  *
  * Float16
  *
  */
 
- //Float16 is for functions that use half precision
-type Float16 struct{
+//Float16 is for functions that use half precision
+type Float16 struct {
 	p unsafe.Pointer
 }
-func (n *Float16)c()C.Npp16f{
-	x:=(*C.Npp16f)(n.p)
+
+func (n *Float16) c() C.Npp16f {
+	x := (*C.Npp16f)(n.p)
 	return *x
 }
 func (n *Float16) cptr() *C.Npp16f {
 	return (*C.Npp16f)(n.p)
 }
-
 
 //Ptr returns an unsafe pointer to this variable location. This is so it can be used with other cuda libraries like (cudnn, cudart, cuda, and such)
 func (n *Float16) Ptr() unsafe.Pointer {
@@ -462,14 +462,15 @@ func (n *Float16) DPtr() *unsafe.Pointer {
 *
 * Float16h2
 *
-*/
+ */
 
 //Float16h2 holds 2 float16s it us used to take advantage of the 32 bit registers.
-type Float16h2 struct{
- p unsafe.Pointer
+type Float16h2 struct {
+	p unsafe.Pointer
 }
-func (n *Float16h2)c()C.Npp16f_2{
-	x:=(*C.Npp16f_2)(n.p)
+
+func (n *Float16h2) c() C.Npp16f_2 {
+	x := (*C.Npp16f_2)(n.p)
 	return *x
 }
 func (n *Float16h2) cptr() *C.Npp16f_2 {

@@ -15,18 +15,21 @@ func (d Device) c() C.CUdevice {
 
 //Major returns the compute capability major part of cuda device
 func (d Device) Major() (int, error) {
-	return d.getattribute(C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR)
+	val, err := (d.getattribute(C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR))
+	return (int)(val), err
 }
 
 //Minor returns the compute capability minor part
 func (d Device) Minor() (int, error) {
-	return d.getattribute(C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR)
+	val, err := (d.getattribute(C.CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR))
+	return (int)(val), err
+
 }
 
-func (d Device) getattribute(atribute C.CUdevice_attribute) (int, error) {
+func (d Device) getattribute(atribute C.CUdevice_attribute) (int32, error) {
 	var val C.int
 	err := newErrorDriver("cuDeviceGetAttribute - major", C.cuDeviceGetAttribute(&val, atribute, d.c()))
-	return (int)(val), err
+	return (int32)(val), err
 }
 
 //GetDeviceList returns a list of *Devices that are not set yet.
@@ -65,4 +68,63 @@ func LockHostThread() {
 //UnLockHostThread unlocks the current host thread
 func UnLockHostThread() {
 	runtime.UnlockOSThread()
+}
+
+//MaxBlockDimXYZ returns an array of the values of blocks xyz in that order and an error
+//Will set device
+func (d Device) MaxBlockDimXYZ() ([]int32, error) {
+	var err error
+	xyz := make([]int32, 3)
+	xyz[0], err = d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X)
+	if err != nil {
+		return nil, err
+	}
+	xyz[1], err = d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Y)
+	if err != nil {
+		return nil, err
+	}
+	xyz[2], err = d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Z)
+	if err != nil {
+		return nil, err
+	}
+	return xyz, err
+}
+
+//MaxGridDimXYZ returns an array of the values of blocks xyz in that order and an error
+//Will set device
+func (d Device) MaxGridDimXYZ() ([]int32, error) {
+	var err error
+	xyz := make([]int32, 3)
+	xyz[0], err = d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X)
+	if err != nil {
+		return nil, err
+	}
+	xyz[1], err = d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y)
+	if err != nil {
+		return nil, err
+	}
+	xyz[2], err = d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z)
+	if err != nil {
+		return nil, err
+	}
+	return xyz, err
+}
+
+//MaxThreadsPerBlock returns the max number of threads per block and the rutime error
+//will set deivce
+func (d Device) MaxThreadsPerBlock() (int32, error) {
+	return d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK)
+}
+
+//MultiProcessorCount returns the number of multiproccessors on device and the runtime error
+//will set device
+func (d Device) MultiProcessorCount() (int32, error) {
+	return d.getattribute(C.CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT)
+}
+
+//MaxThreadsPerMultiProcessor returns the number of threads that run a multiprocessor on device and the runtime error
+//Will set device
+func (d Device) MaxThreadsPerMultiProcessor() (int32, error) {
+
+	return d.getattribute(C.CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR)
 }

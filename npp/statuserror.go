@@ -159,6 +159,7 @@ func (n status) Error() string {
 	}
 	return "UNSUPPORTED STATUS FLAG ON GO SIDE OF BINDING"
 }
+
 /*
 //GpuComputeCapability is the cuda compute capability
 type GpuComputeCapability C.NppGpuComputeCapability

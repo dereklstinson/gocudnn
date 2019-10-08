@@ -3,7 +3,6 @@ package npp
 //#include <nppdefs.h>
 import "C"
 
-
 //Flags is a special struct that contains all the flag types npp uses.
 //Even though these types are flags themselves.
 //They can return flags with different values within the same type through methods
@@ -203,8 +202,6 @@ func (d *DifferentialKernel) SCHARR() DifferentialKernel {
 	*d = DifferentialKernel(C.NPP_FILTER_SCHARR)
 	return *d
 }
-
-
 
 /*
 func convertUint64toCNpp64uarray(x []Uint64) []C.Npp64u {

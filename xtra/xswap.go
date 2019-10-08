@@ -11,9 +11,9 @@ import (
 
 //Swapper contains swap kernels that are used through methods
 type Swapper struct {
-	swapeveryother *cuda.Kernel
+	swapeveryother     *cuda.Kernel
 	swapeveryotherfp16 *cuda.Kernel
-	swapupperlower *cuda.Kernel
+	swapupperlower     *cuda.Kernel
 	swapupperlowerfp16 *cuda.Kernel
 }
 
@@ -58,22 +58,21 @@ func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bde
 		isinverse = 255
 	}
 	var dflg gocudnn.DataType
-switch Adesc.DataType(){
-case  dflg.Float():
-	err= s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
-if err !=nil{
-	return err
-}
-case dflg.Half():
-	err= s.swapupperlowerfp16.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
-if err !=nil{
-	return err
-}
-default:
-	return errors.New("Unsupported Datatype")
-}
-return h.s.Sync()
-	
+	switch Adesc.DataType() {
+	case dflg.Float():
+		err = s.swapupperlower.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
+		if err != nil {
+			return err
+		}
+	case dflg.Half():
+		err = s.swapupperlowerfp16.Launch(cfg.BlockCountx, cfg.BlockCounty, 1, cfg.ThreadPerBlockx, cfg.ThreadPerBlocky, 1, 0, h.s, cfg.Dimx, cfg.Dimy, A, B, isAupper, isBupper, isinverse)
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("Unsupported Datatype")
+	}
+	return h.s.Sync()
 
 }
 
@@ -92,24 +91,24 @@ func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bde
 	//cfg := h.LaunchConfig2d(batches, batchvol)
 	cfg := h.LaunchConfig(batchvol)
 	var dflg gocudnn.DataType
-	switch Adesc.DataType(){
+	switch Adesc.DataType() {
 	case dflg.Float():
-		err= s.swapeveryother.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
-		if err !=nil{
+		err = s.swapeveryother.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
+		if err != nil {
 			return err
 		}
-		
+
 	case dflg.Half():
-		err= s.swapeveryotherfp16.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
-		if err !=nil{
+		err = s.swapeveryotherfp16.Launch(cfg.BlockCount, 1, 1, cfg.ThreadPerBlock, 1, 1, 0, h.s, cfg.Elements, batches, A, B, start, stride)
+		if err != nil {
 			return err
 		}
 	default:
 		return errors.New("Unsupported Datatype")
 	}
-	
+
 	return h.s.Sync()
-	
+
 }
 
 //NewBatchSwapper makes a Swapper
@@ -133,9 +132,9 @@ func NewBatchSwapper(h *Handle) (*Swapper, error) {
 		return nil, err
 	}
 	return &Swapper{
-		swapeveryother: swapeveryother,
-		swapeveryotherfp16:swapeveryotherfp16,
-		swapupperlower: swapupperlower,
-		swapupperlowerfp16:swapupperlowerfp16,
+		swapeveryother:     swapeveryother,
+		swapeveryotherfp16: swapeveryotherfp16,
+		swapupperlower:     swapupperlower,
+		swapupperlowerfp16: swapupperlowerfp16,
 	}, nil
 }

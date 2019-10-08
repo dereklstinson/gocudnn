@@ -16,7 +16,7 @@ import (
 const DimMax = int32(C.CUDNN_DIM_MAX)
 
 //BnMinEpsilon is the min epsilon for batchnorm
-//It used to be 1e-5, but it is now 0 
+//It used to be 1e-5, but it is now 0
 const BnMinEpsilon = (float64)(C.CUDNN_BN_MIN_EPSILON)
 
 //CScalarByDataType takes the DataType flag and puts num into a CScalar interface. The value of num will be bound by what is passed for DataType.

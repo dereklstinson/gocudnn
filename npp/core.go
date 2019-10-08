@@ -17,6 +17,7 @@ func GetLibVersion() (version LibraryVersion) {
 	version = (LibraryVersion)(*x)
 	return version
 }
+
 /*
 //GetGpuComputeCapability returns the CUDA compute model is supported by the active CUDA device?
 //Before trying to call any NPP functions, the user should make a call

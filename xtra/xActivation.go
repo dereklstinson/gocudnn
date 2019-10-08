@@ -2,8 +2,8 @@ package xtra
 
 import "C"
 import (
-	"errors" 
- 	gocudnn "github.com/dereklstinson/GoCudnn"
+	"errors"
+	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/kernels"
 	"github.com/dereklstinson/cutil"
@@ -20,7 +20,7 @@ func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
 	var dtf gocudnn.DataType
 	var xaflg XActivationModeFlag
 	var ktf kernels.XtraKerns
-	switch dtype{
+	switch dtype {
 	case dtf.Half():
 		switch x {
 		case xaflg.Leaky():
@@ -33,26 +33,26 @@ func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
 			return "error"
 		}
 	case dtf.Float():
-			switch x {
-			case xaflg.Leaky():
-				return ktf.LeakyForward()
-			case xaflg.Threshhold():
-				return ktf.ThreshForward()
-			case xaflg.Prelu():
-				return ktf.PreluForward()
-			default:
-				return "error"
-			} 
-	
+		switch x {
+		case xaflg.Leaky():
+			return ktf.LeakyForward()
+		case xaflg.Threshhold():
+			return ktf.ThreshForward()
+		case xaflg.Prelu():
+			return ktf.PreluForward()
+		default:
+			return "error"
 		}
-		return "error XActivationMode - DataTypeNotSupported"
+
 	}
+	return "error XActivationMode - DataTypeNotSupported"
+}
 
 func (x XActivationMode) tostringbwd(dtype gocudnn.DataType) string {
 	var dtf gocudnn.DataType
 	var xaflg XActivationModeFlag
 	var ktf kernels.XtraKerns
-	switch dtype{
+	switch dtype {
 	case dtf.Half():
 		switch x {
 		case xaflg.Leaky():
@@ -143,8 +143,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 			bwdmode: bwdmode,
 			amode:   amode,
 			propnan: nan,
-			dtype:dtype,
-			
+			dtype:   dtype,
 		}
 
 		return act, nil
@@ -165,7 +164,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 			amode:     amode,
 			counter:   ctr,
 			propnan:   nan,
-			dtype:dtype,
+			dtype:     dtype,
 			istrained: true,
 		}
 
@@ -204,7 +203,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 			coef:     float32(coef),
 			amode:    amode,
 			propnan:  nan,
-			dtype:dtype,
+			dtype:    dtype,
 			specials: specials,
 		}, nil
 	}
@@ -265,7 +264,7 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 			config.ThreadPerBlock, 1, 1, 0, h.s,
 			config.Elements, dims[0], x, y, coefs, thresh, coefs1)
 		if err != nil {
-			return err 
+			return err
 		}
 		return errors.New("Unsupported XActivationMode")
 		//return nil

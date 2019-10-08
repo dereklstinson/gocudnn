@@ -13,21 +13,20 @@ import (
 	"github.com/dereklstinson/half"
 )
 
-
 //XLossD is the loss descriptor for the loss function
 type XLossD struct {
-	mode        XLossMode
-	lossfunc    *cuda.Kernel
+	mode         XLossMode
+	lossfunc     *cuda.Kernel
 	lossfuncfp16 *cuda.Kernel
-	loss        cutil.Mem
-	lossfp16 cutil.Mem
-	cpuloss     []float32
-	cpulossfp16 []half.Float16
-	cpuptr      cutil.Mem
-	cpuptrfp16 cutil.Mem
-	flg         XLossModeFlag
-	dflg        gocudnn.DataType
-	memcopykind cudart.MemcpyKind
+	loss         cutil.Mem
+	lossfp16     cutil.Mem
+	cpuloss      []float32
+	cpulossfp16  []half.Float16
+	cpuptr       cutil.Mem
+	cpuptrfp16   cutil.Mem
+	flg          XLossModeFlag
+	dflg         gocudnn.DataType
+	memcopykind  cudart.MemcpyKind
 }
 
 //XLossModeFlag passes XLossMode flags through methods
@@ -56,11 +55,11 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 		}
 
 		gpu := new(gocu.CudaPtr)
-		gpu16:=new(gocu.CudaPtr)
+		gpu16 := new(gocu.CudaPtr)
 		err = cudart.MallocManagedGlobal(gpu, 4)
 		err = cudart.MallocManagedGlobal(gpu16, 2)
 		//	gpu, err := nvidia.MallocGlobal(h, 4)
-		if err != nil { 
+		if err != nil {
 			return nil, err
 		}
 		cudart.Memset(gpu, 0, 4)
@@ -72,23 +71,23 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 			return nil, err
 		}
 		cpuloss := make([]float32, 1)
-		cpulossfp16 :=make([]half.Float16,1)
+		cpulossfp16 := make([]half.Float16, 1)
 		cpuptr, err := gocu.MakeGoMem(cpuloss)
 		cpuptrfp16, err := gocu.MakeGoMem(cpulossfp16)
 		if err != nil {
 			return nil, err
 		}
 		return &XLossD{
-			mode:        mode,
-			lossfunc:    mse,
-			lossfuncfp16:msefp16,
-			loss:        gpu,
-			lossfp16:gpu16,
-			cpuloss:     cpuloss,
-			cpulossfp16: cpulossfp16,
-			
+			mode:         mode,
+			lossfunc:     mse,
+			lossfuncfp16: msefp16,
+			loss:         gpu,
+			lossfp16:     gpu16,
+			cpuloss:      cpuloss,
+			cpulossfp16:  cpulossfp16,
+
 			cpuptr:      cpuptr,
-			cpuptrfp16:cpuptrfp16,
+			cpuptrfp16:  cpuptrfp16,
 			memcopykind: memflg.DeviceToHost(),
 		}, nil
 
@@ -141,7 +140,7 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 		if err != nil {
 			return -1, err
 		}
-		switch dxdtype{
+		switch dxdtype {
 		case l.dflg.Float():
 			a := float32(alpha)
 			b := float32(beta)
@@ -155,7 +154,7 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 				return -1, err
 			}
 			err = cudart.MemCpy(l.cpuptr, l.loss, 4, l.memcopykind)
-	
+
 			err = h.s.Sync()
 			if err != nil {
 				return -1, err
@@ -164,8 +163,8 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 		case l.dflg.Half():
 			a2 := float32(alpha)
 			b2 := float32(beta)
-			a:=half.NewFloat16(a2)
-			b:=half.NewFloat16(b2)
+			a := half.NewFloat16(a2)
+			b := half.NewFloat16(b2)
 			config := h.LaunchConfig(int32(length))
 			err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.lossfp16, a, b)
 			if err != nil {
@@ -176,14 +175,13 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 				return -1, err
 			}
 			err = cudart.MemCpy(l.cpuptrfp16, l.lossfp16, 2, l.memcopykind)
-	
+
 			err = h.s.Sync()
 			if err != nil {
 				return -1, err
 			}
-			return l.cpulossfp16[0].Float32()/ batch, err
+			return l.cpulossfp16[0].Float32() / batch, err
 		}
-		
 
 	}
 	return 0, errors.New("Unsupported Loss Function")

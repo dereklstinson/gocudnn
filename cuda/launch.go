@@ -16,12 +16,12 @@ import "C"
 import (
 	"errors"
 	"fmt"
-	"runtime"
-	"sync"
-	"unsafe"
 	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/cutil"
 	"github.com/dereklstinson/half"
+	"runtime"
+	"sync"
+	"unsafe"
 )
 
 //Kernel is a function stored on the gpu.
@@ -54,18 +54,18 @@ func NewModule(filename string) (module *Module, err error) {
 	return module, newErrorDriver("NewModule", x)
 }
 
-//NewModuleEx takes a string of the ptx data
-func NewModuleEx(ptx string) (*Module, error) {
+//NewModuleData takes a string of the ptx data
+func NewModuleData(ptx string) (*Module, error) {
 	var mod C.CUmodule
 	cptx := C.CString(ptx)
 	defer C.free((unsafe.Pointer)(cptx))
-	x:=C.cuModuleLoadData(&mod,(unsafe.Pointer)(cptx))
+	x := C.cuModuleLoadData(&mod, (unsafe.Pointer)(cptx))
 	//x := C.cuModuleLoadDataEx(&mod, (unsafe.Pointer)(&data[0]), 0, C.nullJitOptions, C.voiddptrnull)
 	return &Module{
-		
+
 		m:      mod,
 		loaded: true,
-	}, newErrorDriver("NewModuleEX", x)
+	}, newErrorDriver("NewModuleData", x)
 }
 
 //UnLoad Loads a Module
@@ -88,11 +88,27 @@ func (m *Module) Load(filename string) error {
 	return newErrorDriver("Load", x)
 }
 
+//LoadData loads a string in ptx form.
+func (m *Module) LoadData(ptx string) error {
+	/*
+		if m.loaded == true {
+			return errors.New("(*Module)LoadEx: Goside: Already Loaded")
+		}
+	*/
+	cptx := unsafe.Pointer(C.CString(ptx))
+	defer C.free((unsafe.Pointer)(cptx))
+	x := C.cuModuleLoadData(&m.m, cptx)
+	m.loaded = true
+	return newErrorDriver("LoadData", x)
+}
+
 //LoadEx loads the ptx string straightup
 func (m *Module) LoadEx(ptx string) error {
-	if m.loaded == true {
-		return errors.New("(*Module)LoadEx: Goside: Already Loaded")
-	}
+	/*
+		if m.loaded == true {
+			return errors.New("(*Module)LoadEx: Goside: Already Loaded")
+		}
+	*/
 	cptx := unsafe.Pointer(C.CString(ptx))
 	defer C.free((unsafe.Pointer)(cptx))
 	x := C.cuModuleLoadDataEx(&m.m, cptx, 0, C.nullJitOptions, C.voiddptrnull)
@@ -357,6 +373,6 @@ func (k *Kernel) destroyargs() {
 }
 
 func destroycudakernel(k *Kernel) {
-	
+
 	k.destroyargs()
 }

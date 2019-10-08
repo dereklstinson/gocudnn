@@ -12,7 +12,7 @@ import (
 //Just make one by the built in x:=new(gocu.DevicePtr)
 type CudaPtr struct {
 	d unsafe.Pointer
-} 
+}
 
 //WrapUnsafe wraps an unsafe.Pointer around a *CudaPtr
 func WrapUnsafe(d unsafe.Pointer) *CudaPtr {
