@@ -9,10 +9,58 @@
 #define CUDA_GRID_AXIS_LOOP(i, n, axis)                                 \
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
+/*
 
-       
-     
-     
+This is put on hold
+
+//COMP_FUNC are just characters. Limited to:
+//gt - Greater Than 
+//lt - Less Than
+//ge = Greater Than or Equal
+//le = Less Than or Equal
+//
+//RH_VALUE is a half2 
+//LH_VALUE is a half2
+//OUTCOME_VALUE is a half2 - needs to be made first will be a combo of TRUE_VALUE and FALSE_VALUE as such ([TV,TV],[FV,TV],[TV,FV],[FV,FV])
+//TRUE_VALUE is a half
+//FALSE_VALUE is a half
+//COMP_FUNC(RH_VALUE,LH_VALUE)
+//#define HALF2_COMPARISON_HELPER(COMP_FUNC, RH_VALUE, LH_VALUE, TRUE_VALUE,FALSE_VALUE, OUTCOME_VALUE){\
+//if (hbCOMP_FUNC2())\
+//}
+*/
+
+__device__ __half2  h2agtb(__half2 a, __half2 b, __half gtval, __half leval ){
+    if (__hbgt2(a,b)){
+        return __halves2half2(gtval,gtval);
+    } 
+        return __halves2half2(__hgt(__low2half(a),__low2half(b)) ? gtval : leval,
+                              __hgt(__high2half(a),__high2half(b)) ? gtval : leval); 
+    
+ }
+__device__ __half2  h2ageb(__half2 a, __half2 b, __half geval, __half ltval ){
+  
+    if (__hbge2(a,b)){
+    return __halves2half2(geval,geval);
+    }
+    return __halves2half2(__hge(__low2half(a),__low2half(b)) ? geval : ltval,
+                          __hge(__high2half(a),__high2half(b)) ? geval : ltval);
+  
+}
+__device__ __half2  h2altb(__half2 a, __half2 b, __half geval, __half ltval ){
+    if (__hblt2(a,b)){
+    return __halves2half2(ltval,ltval);
+    }
+    return __halves2half2(__hlt(__low2half(a),__low2half(b)) ?ltval: geval,
+                          __hlt(__high2half(a),__high2half(b)) ?ltval: geval);
+  }
+__device__ __half2  h2aleb(__half2 a, __half2 b, __half gtval, __half leval ){
+    if (__hble2(a,b)){
+    return __halves2half2(leval,leval);
+    }
+    return __halves2half2(__hle(__low2half(a),__low2half(b)) ?leval: gtval,
+                          __hle(__high2half(a),__high2half(b)) ?leval: gtval);
+}
 
 extern "C" __global__ void Transpose(int numthreads,
                const float *src,
@@ -1305,6 +1353,8 @@ extern "C" __global__ void LeakyForwardAlphaBeta(const int length,
           __syncthreads();
     }
 }
+
+
 extern "C" __global__ void LeakyForwardAlphaBetaFP16(const int length,
                                              const __half *x,
                                              __half *y,
@@ -1329,6 +1379,7 @@ extern "C" __global__ void LeakyForwardAlphaBetaFP16(const int length,
           __syncthreads();
     }
 }
+
 extern "C" __global__ void LeakyBackwardAlphaBeta(const int length,
                                               const float *x,
                                               float *dx,
