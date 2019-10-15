@@ -13,7 +13,9 @@ import (
 
 //Handle - Opaque library handle identifier.
 type Handle struct {
-	h C.nvjpegHandle_t
+	h                 C.nvjpegHandle_t
+	expinnedallocator *C.nvjpegPinnedAllocator_t
+	exdevallocator    *C.nvjpegDevAllocator_t
 }
 
 func nvjpegDestroy(h *Handle) error {

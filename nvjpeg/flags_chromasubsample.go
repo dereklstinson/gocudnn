@@ -20,6 +20,9 @@ type ChromaSubsampling C.nvjpegChromaSubsampling_t
 func (ch ChromaSubsampling) c() C.nvjpegChromaSubsampling_t {
 	return C.nvjpegChromaSubsampling_t(ch)
 }
+func (ch *ChromaSubsampling) cptr() *C.nvjpegChromaSubsampling_t {
+	return (*C.nvjpegChromaSubsampling_t)(ch)
+}
 
 //String returns a human readable string of the flag.  Mostly useful for debugging.
 func (ch ChromaSubsampling) String() string {
