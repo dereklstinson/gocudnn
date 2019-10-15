@@ -73,7 +73,7 @@ func main() {
 	check(err)
 	kern2, err := cuda.MakeKernel("testfma2", m1)
 	check(err)
-	//fmt.Println(ptx2)
+	fmt.Println(ptx2)
 	fmt.Println(kern2)
 	//	kern1.Launch((gx uint32), gy uint32, gz uint32, bx uint32, by uint32, bz uint32, shared uint32, stream gocu.Streamer, args ...interface{})
 	//	kern2.Launch()
