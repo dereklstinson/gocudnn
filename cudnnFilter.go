@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 
 import (
+	"github.com/dereklstinson/cutil"
 	"runtime"
 )
 
@@ -101,6 +102,29 @@ func destroyfilterdescriptor(f *FilterD) error {
 	f = nil
 
 	return nil
+
+}
+
+//ReorderFilterBias -reorders the filter and bias values. It can be used to enhance
+//the inference time by separating the reordering operation from convolution.
+//
+//For example, convolutions in a neural network of multiple layers can require
+//reordering of kernels at every layer, which can take up a significant fraction
+//of the total inference time. Using this function, the reordering can be done one
+//time on the filter and bias data followed by the convolution operations at the multiple
+//layers, thereby enhancing the inference time.
+func (f *FilterD) ReorderFilterBias(h *Handle,
+	r Reorder,
+	filtersrc, reorderfilterdest cutil.Mem,
+	reorderbias bool,
+	biassrc, reorderbiasdest cutil.Mem) error {
+	var robias C.int
+	if reorderbias {
+		robias = 1
+	}
+	return Status(C.cudnnReorderFilterAndBias(h.x, f.descriptor,
+		r.c(), filtersrc.Ptr(), reorderfilterdest.Ptr(),
+		robias, biassrc.Ptr(), reorderbiasdest.Ptr())).error("ReorderFilterBias")
 
 }
 

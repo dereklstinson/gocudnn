@@ -101,6 +101,17 @@ func (c *ConvolutionD) SetGroupCount(groupCount int32) error {
 
 }
 
+//SetReorderType sets the reorder type
+func (c *ConvolutionD) SetReorderType(r Reorder) error {
+	return Status(C.cudnnSetConvolutionReorderType(c.descriptor, r.c())).error("SetReorderType")
+}
+
+//GetReorderType gets the reorder type
+func (c *ConvolutionD) GetReorderType() (r Reorder, err error) {
+	err = Status(C.cudnnGetConvolutionReorderType(c.descriptor, r.cptr())).error("GetReorderType")
+	return r, err
+}
+
 //SetMathType sets the mathtype
 func (c *ConvolutionD) SetMathType(mathtype MathType) error {
 
@@ -1030,6 +1041,27 @@ func (c *ConvFwdAlgo) Count() ConvFwdAlgo {
 
 func (c ConvFwdAlgo) c() C.cudnnConvolutionFwdAlgo_t {
 	return C.cudnnConvolutionFwdAlgo_t(c)
+}
+
+//Reorder is a flag that is changed through its methods
+type Reorder C.cudnnReorderType_t
+
+//Default Sets Reorder for inference
+func (r *Reorder) Default() Reorder {
+	*r = (Reorder)(C.CUDNN_DEFAULT_REORDER)
+	return *r
+}
+
+//NoReorder changes the flag to noreorder
+func (r *Reorder) NoReorder() Reorder {
+	*r = (Reorder)(C.CUDNN_NO_REORDER)
+	return *r
+}
+func (r Reorder) c() C.cudnnReorderType_t {
+	return C.cudnnReorderType_t(r)
+}
+func (r *Reorder) cptr() *C.cudnnReorderType_t {
+	return (*C.cudnnReorderType_t)(r)
 }
 
 /*
