@@ -26,7 +26,6 @@ type Handle struct {
 	mod                          *cuda.Module
 	ptx                          string
 	s                            gocu.Streamer
-	c                            *cuda.Context
 	maxblockthreads              int32
 	muliproccessorcount          int32
 	maxthreadspermultiproccessor int32

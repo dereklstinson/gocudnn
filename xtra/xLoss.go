@@ -85,10 +85,9 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 			lossfp16:     gpu16,
 			cpuloss:      cpuloss,
 			cpulossfp16:  cpulossfp16,
-
-			cpuptr:      cpuptr,
-			cpuptrfp16:  cpuptrfp16,
-			memcopykind: memflg.DeviceToHost(),
+			cpuptr:       cpuptr,
+			cpuptrfp16:   cpuptrfp16,
+			memcopykind:  memflg.DeviceToHost(),
 		}, nil
 
 	}

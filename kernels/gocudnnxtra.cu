@@ -9,26 +9,6 @@
 #define CUDA_GRID_AXIS_LOOP(i, n, axis)                                 \
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
-/*
-
-This is put on hold
-
-//COMP_FUNC are just characters. Limited to:
-//gt - Greater Than 
-//lt - Less Than
-//ge = Greater Than or Equal
-//le = Less Than or Equal
-//
-//RH_VALUE is a half2 
-//LH_VALUE is a half2
-//OUTCOME_VALUE is a half2 - needs to be made first will be a combo of TRUE_VALUE and FALSE_VALUE as such ([TV,TV],[FV,TV],[TV,FV],[FV,FV])
-//TRUE_VALUE is a half
-//FALSE_VALUE is a half
-//COMP_FUNC(RH_VALUE,LH_VALUE)
-//#define HALF2_COMPARISON_HELPER(COMP_FUNC, RH_VALUE, LH_VALUE, TRUE_VALUE,FALSE_VALUE, OUTCOME_VALUE){\
-//if (hbCOMP_FUNC2())\
-//}
-*/
 
 __device__ __half2  h2agtb(__half2 a, __half2 b, __half gtval, __half leval ){
     if (__hbgt2(a,b)){
