@@ -123,7 +123,6 @@ func CreateTensorDescriptor() (*TensorD, error) {
 func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) error {
 	t.frmt = frmt
 	t.shape = shape
-
 	t.dims = (C.int)(len(shape))
 	t.dtype = data
 	switch t.frmt {
@@ -135,7 +134,7 @@ func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) e
 		}
 
 		shapecint := int32Tocint(shape)
-		stridecint := int32Tocint(stride)
+		stridecint := int32Tocint(t.stride)
 		return Status(C.cudnnSetTensorNdDescriptor(t.descriptor, C.cudnnDataType_t(data), t.dims, &shapecint[0], &stridecint[0])).error("cudnnSetTensorNdDescriptor")
 
 	default:
