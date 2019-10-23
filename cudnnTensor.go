@@ -128,7 +128,12 @@ func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) e
 	t.dtype = data
 	switch t.frmt {
 	case t.fflag.Strided():
-		t.stride = stride
+		if stride == nil {
+			t.stride = stridecalc(shape)
+		} else {
+			t.stride = stride
+		}
+
 		shapecint := int32Tocint(shape)
 		stridecint := int32Tocint(stride)
 		return Status(C.cudnnSetTensorNdDescriptor(t.descriptor, C.cudnnDataType_t(data), t.dims, &shapecint[0], &stridecint[0])).error("cudnnSetTensorNdDescriptor")
@@ -151,10 +156,10 @@ func (t *TensorD) Get() (frmt TensorFormat, dtype DataType, shape []int32, strid
 		t.dims = C.CUDNN_DIM_MAX
 		shapec := make([]C.int, t.dims)
 		stridec := make([]C.int, t.dims)
-		frmt = t.frmt
 		var actual C.int
 		err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
 		t.dims = actual
+		t.dtype = dtype
 		shape = cintToint32(shapec[:t.dims])
 		stride = cintToint32(stridec[:t.dims])
 		return frmt, dtype, shape, stride, err

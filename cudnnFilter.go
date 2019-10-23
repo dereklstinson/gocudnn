@@ -70,6 +70,14 @@ func (f *FilterD) Set(dtype DataType, format TensorFormat, shape []int32) error 
 
 //Get returns a copy of the ConvolutionD
 func (f *FilterD) Get() (dtype DataType, frmt TensorFormat, shape []int32, err error) {
+	if f.dims == 0 {
+		f.dims = C.CUDNN_DIM_MAX
+		shape = make([]int32, f.dims)
+		var actual C.int
+		err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &actual, (*C.int)(&shape[0]))).error("cudnnGetFilterNdDescriptor")
+		f.dims = actual
+		return dtype, frmt, shape[:f.dims], err
+	}
 	var holder C.int
 	shape = make([]int32, f.dims)
 	err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error("cudnnGetFilterNdDescriptor")

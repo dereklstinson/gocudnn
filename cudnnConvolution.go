@@ -79,15 +79,18 @@ func (c *ConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, dil
 
 //Get gets returns the values used to make the convolution descriptor
 func (c *ConvolutionD) Get() (mode ConvolutionMode, data DataType, pad []int32, stride []int32, dilation []int32, err error) {
-
+	if c.dims == 0 {
+		c.dims = C.CUDNN_DIM_MAX
+	}
 	padding := make([]C.int, c.dims)
 	striding := make([]C.int, c.dims)
 	dilationing := make([]C.int, c.dims)
 	var actual C.int
 	var moded C.cudnnConvolutionMode_t
 	var dtype C.cudnnDataType_t
-	err = Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &padding[0], &striding[0], &dilationing[0], &moded, &dtype)).error("GetndDescriptor")
 
+	err = Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &padding[0], &striding[0], &dilationing[0], &moded, &dtype)).error("GetndDescriptor")
+	c.dims = actual
 	return ConvolutionMode(moded), DataType(dtype), cintToint32(padding[:actual]), cintToint32(striding[:actual]), cintToint32(dilationing[:actual]), err
 
 }

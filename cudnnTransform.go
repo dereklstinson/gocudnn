@@ -95,6 +95,40 @@ func (t *TransformD) Get() (destFormat TensorFormat, padBefore, padAfter []int32
 
 }
 
+//TransformFilter performs transform on filter
+func (t *TransformD) TransformFilter(h *Handle, alpha float64, srcD *FilterD, src cutil.Mem, beta float64, destD *FilterD, dest cutil.Mem) error {
+	sdtype, _, _, err := srcD.Get()
+	if err != nil {
+		return err
+	}
+	ddtye, _, _, err := destD.Get()
+	if err != nil {
+		return err
+	}
+	a := cscalarbydatatype(sdtype, alpha)
+	b := cscalarbydatatype(ddtye, beta)
+	return Status(C.cudnnTransformFilter(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformFilter")
+}
+
+//InitDest This function initializes and returns a destination tensor descriptor destDesc for tensor transform operations.
+//The initialization is done with the desired parameters described in the transform descriptor TensorD.
+//Note: The returned tensor descriptor will be packed.
+func (t *TransformD) InitDest(src *TensorD) (dest *TensorD, destsib uint, err error) {
+	dest = new(TensorD)
+	var csib C.size_t
+	err = Status(C.cudnnInitTransformDest(t.descriptor, src.descriptor, dest.descriptor, &csib)).error("TransformTensorEx")
+	if err != nil {
+		return nil, 0, err
+	}
+	_, _, _, _, err = dest.Get()
+	if err != nil {
+		return nil, 0, err
+	}
+	dest.frmt.Strided()
+	destsib = (uint)(csib)
+	return dest, destsib, nil
+}
+
 //TransformTensor transforms a tensor according to how TransformD was set
 func (t *TransformD) TransformTensor(h *Handle, alpha float64, srcD *TensorD, src cutil.Mem, beta float64, destD *TensorD, dest cutil.Mem) error {
 
@@ -118,6 +152,74 @@ func (t *TransformD) Destroy() error {
 	return cudnnDestroyTensorTransformDescriptor(t)
 }
 
+//GetFoldedConvBackwardDataDescriptors - Hidden Helper function to calculate folding descriptors  for dgrad
+func GetFoldedConvBackwardDataDescriptors(h *Handle,
+	filter *FilterD,
+	diff *TensorD,
+	conv *ConvolutionD,
+	grad *TensorD,
+	transform TensorFormat) (
+	foldedfilter *FilterD,
+	paddeddiff *TensorD,
+	foldedConv *ConvolutionD,
+	foldedgrad *TensorD,
+	filterfold *TransformD,
+	diffpad *TransformD,
+	gradfold *TransformD,
+	gradunfold *TransformD,
+	err error) {
+	foldedfilter = new(FilterD)
+	paddeddiff = new(TensorD)
+	foldedConv = new(ConvolutionD)
+	foldedgrad = new(TensorD)
+	filterfold = new(TransformD)
+	diffpad = new(TransformD)
+	gradfold = new(TransformD)
+	gradunfold = new(TransformD)
+	err = Status(C.cudnnGetFoldedConvBackwardDataDescriptors(h.x,
+		filter.descriptor,
+		diff.descriptor,
+		conv.descriptor,
+		grad.descriptor,
+		transform.c(),
+		foldedfilter.descriptor,
+		paddeddiff.descriptor,
+		foldedConv.descriptor,
+		foldedgrad.descriptor,
+		filterfold.descriptor,
+		diffpad.descriptor,
+		gradfold.descriptor,
+		gradunfold.descriptor,
+	)).error("GetFoldedConvBackwardDataDescriptors")
+	runtime.SetFinalizer(foldedfilter, destroyfilterdescriptor)
+	runtime.SetFinalizer(paddeddiff, destroytensordescriptor)
+	runtime.SetFinalizer(foldedConv, destroyconvolutiondescriptor)
+	runtime.SetFinalizer(foldedgrad, destroytensordescriptor)
+	runtime.SetFinalizer(filterfold, cudnnDestroyTensorTransformDescriptor)
+	runtime.SetFinalizer(diffpad, cudnnDestroyTensorTransformDescriptor)
+	runtime.SetFinalizer(gradfold, cudnnDestroyTensorTransformDescriptor)
+	runtime.SetFinalizer(gradunfold, cudnnDestroyTensorTransformDescriptor)
+	if err != nil {
+		return nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	_, _, _, err = foldedfilter.Get()
+	if err != nil {
+		return nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	_, _, _, _, err = paddeddiff.Get()
+	if err != nil {
+		return nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	_, _, _, _, err = foldedgrad.Get()
+	if err != nil {
+		return nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+	filterfold.nbdims = C.uint32_t(foldedgrad.dims)
+	diffpad.nbdims = C.uint32_t(foldedgrad.dims)
+	gradfold.nbdims = C.uint32_t(foldedgrad.dims)
+	gradunfold.nbdims = C.uint32_t(foldedgrad.dims)
+	return foldedfilter, paddeddiff, foldedConv, foldedgrad, filterfold, diffpad, gradfold, gradunfold, nil
+}
 func cudnnDestroyTensorTransformDescriptor(t *TransformD) error {
 	err := Status(C.cudnnDestroyTensorTransformDescriptor(t.descriptor)).error("cudnnDestroyTensorTransformDescriptor")
 	if err != nil {

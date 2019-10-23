@@ -1,5 +1,26 @@
 package xtrakerns
 
+/*
+func ConcatForwardNHWC()Kernel{
+	return Kernel{
+		Name:`ConcatForwardHWC`,
+		Code:`extern "C" __global__ void ConcatForwardNHWC(const int XThreads,
+			const int YThreads,
+			const int Batch,
+			const int nsrcs,
+			const float **srcs
+			const int **srcchansize,
+			const int destchansize,
+			float* Dest){
+
+				CUDA_GRID_LOOP_AXIS(i, YThreads,y){
+				CUDA_GRID_LOOP_AXIS(j, XThreads,x){
+
+				}
+				}`
+	}
+}
+*/
 //ConcatForwardNCHW is a concat for NCHW that hasn't been tested.
 func ConcatForwardNCHW() Kernel {
 	return Kernel{
@@ -75,10 +96,10 @@ Src2[src2batchstride+(j*XThreads)+xIdx]  = dest[Stride+(j*XThreads)+src1vol+xIdx
 }
 
 //ConcatForwardNCHWhalf is concat func in halfs
-func ConcatForwardNCHWhalf() Kernel {
+func ConcatForwardNCHWFP16() Kernel {
 	return Kernel{
-		Name: `ConcatForwardNCHWhalf`,
-		Code: `extern "C" __global__ void ConcatForwardNCHWhalf( const int XThreads,
+		Name: `ConcatForwardNCHWFP16`,
+		Code: `extern "C" __global__ void ConcatForwardNCHWFP16( const int XThreads,
 			const int Batches,
 			const int Channels1,
 			const int src1vol,
@@ -112,10 +133,10 @@ dest[Stride+(j*XThreads)+src1vol+xIdx]  = Src2[src2batchstride+(j*XThreads)+xIdx
 }
 
 //ConcatBackwardNCHWhalf for concat half
-func ConcatBackwardNCHWhalf() Kernel {
+func ConcatBackwardNCHWFP16() Kernel {
 	return Kernel{
-		Name: `ConcatBackwardNCHWhalf`,
-		Code: `extern "C" __global__ void ConcatBackwardNCHWhalf( const int XThreads,
+		Name: `ConcatBackwardNCHWFP16`,
+		Code: `extern "C" __global__ void ConcatBackwardNCHWFP16( const int XThreads,
 			const int Batches,
 			const int Channels1,
 			const int src1vol,

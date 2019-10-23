@@ -4,7 +4,8 @@ package xtrakerns
 const Headers = `
 #include <cuda.h>
 #include <stdbool.h>
-#include <cuda_fp16.h>`
+#include <cuda_fp16.h>
+`
 
 //Defines are used for all kernels
 const Defines = `

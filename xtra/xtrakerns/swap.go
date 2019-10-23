@@ -1,9 +1,57 @@
 package xtrakerns
 
+import (
+	"errors"
+	"fmt"
+	"github.com/dereklstinson/GoCudnn/cuda"
+	"github.com/dereklstinson/GoCudnn/nvrtc"
+	"strconv"
+)
+
 //Kernel is used to build kernels
 type Kernel struct {
 	Name string
 	Code string
+}
+
+func (k *Kernel) cuname() string {
+	return k.Name + `.cu`
+}
+func CreateModule(k Kernel, dev cuda.Device) (*cuda.Module, error) {
+	p, err := nvrtc.CreateProgram(Headers+Defines+k.Code, k.cuname())
+	if err != nil {
+		return nil, err
+	}
+	major, err := dev.Major()
+	if err != nil {
+		panic(err)
+	}
+	minor, err := dev.Minor()
+	if err != nil {
+		panic(err)
+	}
+	majstr := strconv.Itoa(major)
+	minstr := strconv.Itoa(minor)
+	computecapability := majstr + minstr
+	err = p.AddNameExpression(k.Name)
+	if err != nil {
+		return nil, err
+	}
+	err = p.Compile("--gpu-architecture=compute_"+computecapability, "-I/usr/local/cuda/include")
+	if err != nil {
+		logerr, err2 := p.GetLog()
+		if err2 != nil {
+			fmt.Println(err2)
+		}
+		err = errors.New(logerr + " : " + err.Error())
+		panic(err)
+	}
+	ptx, err := p.PTX()
+	if err != nil {
+
+		panic(err)
+	}
+	return cuda.NewModuleData(ptx)
 }
 
 //SwapEveryOther will swap the batches between 2 tensors.
