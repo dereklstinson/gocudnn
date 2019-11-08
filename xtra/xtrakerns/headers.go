@@ -17,4 +17,5 @@ const Defines = `
 #define CUDA_GRID_AXIS_LOOP(i, n, axis)                                 \
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
+
 `

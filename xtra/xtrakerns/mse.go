@@ -42,7 +42,8 @@ atomicAdd(loss, __hdiv(__hmul(y , y) , htwo));
 func MSELoss() Kernel {
 	return Kernel{
 		Name: `MSELoss`,
-		Code: `extern "C" __global__ void MSELoss(const int length, 
+		Code: `extern "C" 
+		__global__ void MSELoss(const int length, 
 			float *errors, 
 			const float *target,
 			const float *networkout, 

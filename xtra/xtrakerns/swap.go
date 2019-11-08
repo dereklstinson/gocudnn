@@ -1,11 +1,12 @@
 package xtrakerns
 
 import (
-	"errors"
+	//"errors"
 	"fmt"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/nvrtc"
 	"strconv"
+	"strings"
 )
 
 //Kernel is used to build kernels
@@ -15,10 +16,11 @@ type Kernel struct {
 }
 
 func (k *Kernel) cuname() string {
-	return k.Name + `.cu`
+	return strings.ToLower(k.Name) + ".cu"
 }
+
 func CreateModule(k Kernel, dev cuda.Device) (*cuda.Module, error) {
-	p, err := nvrtc.CreateProgram(Headers+Defines+k.Code, k.cuname())
+	p, err := nvrtc.CreateProgram(Defines+k.Code, k.cuname())
 	if err != nil {
 		return nil, err
 	}
@@ -33,19 +35,26 @@ func CreateModule(k Kernel, dev cuda.Device) (*cuda.Module, error) {
 	majstr := strconv.Itoa(major)
 	minstr := strconv.Itoa(minor)
 	computecapability := majstr + minstr
+	fmt.Println(k.Name, k.cuname(), computecapability)
 	err = p.AddNameExpression(k.Name)
 	if err != nil {
-		return nil, err
+		panic(err)
+		//return nil, err
 	}
-	err = p.Compile("--gpu-architecture=compute_"+computecapability, "-I/usr/local/cuda/include")
+
+	err = p.Compile("--gpu-architecture=compute_75", "-I/usr/local/cuda/include")
 	if err != nil {
 		logerr, err2 := p.GetLog()
 		if err2 != nil {
-			fmt.Println(err2)
+			fmt.Println("LOG:", logerr)
+			fmt.Println("Error in the log:", err2.Error())
 		}
-		err = errors.New(logerr + " : " + err.Error())
+		fmt.Println("LOG:", logerr, err)
 		panic(err)
+		//err = errors.New(logerr + " : " + err.Error())
+		///	panic(err)
 	}
+	p.GetLoweredName(MSELoss().Name)
 	ptx, err := p.PTX()
 	if err != nil {
 

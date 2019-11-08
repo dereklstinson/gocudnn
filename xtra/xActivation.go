@@ -215,7 +215,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 //Prelu uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
 //Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, yD *gocudnn.TensorD, y cutil.Mem, coefs, thresh, coefs1 cutil.Mem, alpha, beta float64) error {
+func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, yD *gocudnn.TensorD, y cutil.Mem, coefs, thresh, dthresh, coefs1 cutil.Mem, alpha, beta float64) error {
 	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
@@ -249,25 +249,27 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 
 		err = xA.fwdmode.Launch(config.BlockCount, 1, 1,
 			config.ThreadPerBlock, 1, 1, 0, h.s,
-			config.Elements, dims[0], x, y, coefs, coefs1, xA.propnan)
-		if err != nil {
-			return err
-		}
-		return errors.New("Unsupported XActivationMode")
-		//return nil
-	case XActivationModeFlag{}.Prelu():
-
-		length := findvolume(dims[1:])
-		config := h.LaunchConfig(length)
-
-		err = xA.fwdmode.Launch(config.BlockCount, 1, 1,
-			config.ThreadPerBlock, 1, 1, 0, h.s,
 			config.Elements, dims[0], x, y, coefs, thresh, coefs1)
 		if err != nil {
 			return err
 		}
 		return errors.New("Unsupported XActivationMode")
 		//return nil
+	case XActivationModeFlag{}.Prelu():
+		return errors.New("Unsupported XActivationMode")
+		/*
+			length := findvolume(dims[1:])
+			config := h.LaunchConfig(length)
+
+			err = xA.fwdmode.Launch(config.BlockCount, 1, 1,
+				config.ThreadPerBlock, 1, 1, 0, h.s,
+				config.Elements, dims[0], x, y, coefs, thresh, coefs1)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		*/
 	}
 
 	return errors.New("Unsupported XActivationMode")
@@ -278,13 +280,13 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 //Prelu uses coefs and dcoefs. dx[i]=coefs[i]* dx[i] where x[i]<0   dcoefs=dy[i]*x[i]
 //Threshhold uses coefs and coefs1 thresh, dcoefs,dthresh,and dcoefs1 for dx[i]=dy[i]*coefs[i] where x[i]<thresh[i] else dx[i]=coefs1[i]*dy[i]. and dcoefs[i]+=x[i]*dy[i] same for dcoefs1
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 cutil.Mem, alpha, beta float64) error {
+func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1 cutil.Mem, alpha, beta float64) error {
 
 	switch xA.amode {
 	case XActivationModeFlag{}.Leaky():
 		return xA.backpropropleaky(h, xD, x, dxD, dx, dyD, dy, alpha, beta)
 	case XActivationModeFlag{}.Threshhold():
-		return xA.threshback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs, thresh, coefs1, dcoefs1)
+		return xA.threshback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1)
 	case XActivationModeFlag{}.Prelu():
 		return xA.preluback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
 	}
@@ -342,7 +344,7 @@ func (xA *XActivationD) backpropropleaky(h *Handle, xD *gocudnn.TensorD, x cutil
 	}
 	return xA.bwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, dx, dy, float32(xA.coef)) //, xA.propnan)
 }
-func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, coefs1, dcoefs1 cutil.Mem) error {
+func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, ncoefs, dncoefs, thresh, dthresh, pcoefs1, dpcoefs1 cutil.Mem) error {
 	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
@@ -357,7 +359,7 @@ func (xA *XActivationD) threshback(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, 
 
 	err = xA.bwdmode.Launch(config.BlockCount, 1, 1,
 		config.ThreadPerBlock, 1, 1, 0, h.s,
-		config.Elements, dims[0], x, dx, dy, coefs, dcoefs, thresh, coefs1, dcoefs1)
+		config.Elements, dims[0], x, dx, dy, ncoefs, dncoefs, thresh, dthresh, pcoefs1, dpcoefs1)
 	if err != nil {
 		return err
 	}
