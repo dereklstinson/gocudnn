@@ -215,7 +215,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 //Prelu uses coefs. y[i]=coefs[i]* x[i] where x[i]<0
 //Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
-func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, yD *gocudnn.TensorD, y cutil.Mem, coefs, thresh, dthresh, coefs1 cutil.Mem, alpha, beta float64) error {
+func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, yD *gocudnn.TensorD, y cutil.Mem, coefs, thresh, coefs1 cutil.Mem, alpha, beta float64) error {
 	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
