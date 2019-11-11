@@ -2,6 +2,7 @@ package xtra
 
 import (
 	"errors"
+	"fmt"
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
@@ -116,19 +117,23 @@ func NewBatchSwapper(h *Handle) (*Swapper, error) {
 
 	swapeveryother, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapEveryOther(), h.mod)
 	if err != nil {
+		fmt.Println("1")
 		return nil, err
 	}
 	swapeveryotherfp16, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapEveryOtherFP16(), h.mod)
 	if err != nil {
+		fmt.Println("2")
 		return nil, err
 	}
 
 	swapupperlower, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapUpperLower(), h.mod)
 	if err != nil {
+		fmt.Println("3")
 		return nil, err
 	}
 	swapupperlowerfp16, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapUpperLowerFP16(), h.mod)
 	if err != nil {
+		fmt.Println("4")
 		return nil, err
 	}
 	return &Swapper{

@@ -165,7 +165,8 @@ func (l *XLossD) CalculateErrorAndLoss(h *Handle,
 			a := half.NewFloat16(a2)
 			b := half.NewFloat16(b2)
 			config := h.LaunchConfig(int32(length))
-			err = l.lossfunc.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, dx, dy, y, l.lossfp16, a, b)
+			sharedmem := uint32(4)
+			err = l.lossfuncfp16.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, sharedmem, h.s, config.Elements, dx, dy, y, l.lossfp16, a, b)
 			if err != nil {
 				return -1, err
 			}

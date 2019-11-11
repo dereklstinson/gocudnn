@@ -1,6 +1,8 @@
 package xtra
 
 import (
+	"errors"
+	"fmt"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/GoCudnn/gocu"
@@ -61,13 +63,38 @@ func (xtra Xtra) MakeHandleV2(dev *cuda.Device) (*Handle, error) {
 //MakeHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn. You use MakeHandleV2 if you want to use the default location
 func MakeHandle(trainingfloatdir string, dev cudart.Device, unified bool) (*Handle, error) {
 
-	x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
+	//x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
 	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
-	mod, err := cuda.NewModule(trainingfloatdir + x)
+	major, err := dev.Major()
 	if err != nil {
-		//fmt.Println(kerncode)
 		return nil, err
 	}
+	minor, err := dev.Minor()
+	if err != nil {
+		return nil, err
+	}
+	majmin := major*10 + minor
+	var mod *cuda.Module
+	if majmin == 75 {
+		fmt.Println("going to 75")
+		mod, err = cuda.NewModuleData(both75)
+	} else if majmin == 61 {
+		fmt.Println("going to 61")
+		mod, err = cuda.NewModuleData(both61)
+	} else {
+		return nil, errors.New("Unsupported GPU")
+	}
+	if err != nil {
+		fmt.Println("Error in new module")
+		return nil, err
+	}
+	/*
+		mod, err := cuda.NewModule(trainingfloatdir + x)
+		if err != nil {
+			//fmt.Println(kerncode)
+			return nil, err
+		}
+	*/
 	mtpb, err := dev.MaxThreadsPerBlock()
 	if err != nil {
 

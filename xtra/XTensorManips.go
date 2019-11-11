@@ -330,6 +330,7 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 		}
 
 		cudart.Memset(dx, 0, sizeinbytes)
+		handle.s.Sync()
 		if dtypex == dtypeflg.Float() {
 			return s.nearestbwdnhwc.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
 		} else if dtypex == dtypeflg.Half() {
@@ -349,6 +350,7 @@ func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cu
 			aligned = 1
 		}
 		cudart.Memset(dx, 0, sizeinbytes)
+		handle.s.Sync()
 		if dtypex == dtypeflg.Float() {
 			return s.nearestbwdnchw.Launch(conf.BlockCount, 1, 1, conf.ThreadPerBlock, 1, 1, 0, handle.s, aligned, conf.Elements, dx, dimsx[1], dimsx[2], dimsx[3], dimsy[1], dimsy[2], ratioh, ratiow, dy)
 		} else if dtypex == dtypeflg.Half() {
@@ -676,7 +678,7 @@ func (s *XShapetoBatchD) GetShapetoBatchOutputPropertiesPLUS(descX *gocudnn.Tens
 		return 255, 255, nil, nil, err
 	}
 	var dflag gocudnn.DataType
-	if!(dtype == dflag.Float() || dtype == dflag.Half()) {
+	if !(dtype == dflag.Float() || dtype == dflag.Half()) {
 		return 255, 255, nil, nil, errors.New("Only Supported Format is float32 and half")
 	}
 	var frmt gocudnn.TensorFormat

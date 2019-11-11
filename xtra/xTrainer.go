@@ -263,11 +263,12 @@ func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l
 			config.ThreadPerBlock, 1, 1, 0, h.s,
 			config.Elements, dw, w, l1, l2, params.batch, params.decay1, params.decay2)
 	case d.dtflg.Half():
+		l1l2sharedmem := uint32(64)
 		hbatch := half.NewFloat16(params.batch)
 		hdecay1 := half.NewFloat16(params.decay1)
 		hdecay2 := half.NewFloat16(params.decay2)
 		err = d.kreg.Launch(config.BlockCount, 1, 1,
-			config.ThreadPerBlock, 1, 1, 0, h.s,
+			config.ThreadPerBlock, 1, 1, l1l2sharedmem, h.s,
 			config.Elements, dw, w, l1, l2, hbatch, hdecay1, hdecay2)
 	}
 
