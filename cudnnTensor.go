@@ -413,6 +413,11 @@ func (m *MathType) Default() MathType { *m = MathType(C.CUDNN_DEFAULT_MATH); ret
 //TensorOpMath return MathType(C.CUDNN_TENSOR_OP_MATH)
 func (m *MathType) TensorOpMath() MathType { *m = MathType(C.CUDNN_TENSOR_OP_MATH); return *m }
 
+//AllowConversion return MathType(C.CUDNN_TENSOR_OP_MATH_ALLOW_CONVERSION)
+func (m *MathType) AllowConversion() MathType {
+	*m = MathType(C.CUDNN_TENSOR_OP_MATH_ALLOW_CONVERSION)
+	return *m
+}
 func (m MathType) c() C.cudnnMathType_t      { return (C.cudnnMathType_t)(m) }
 func (m *MathType) cptr() *C.cudnnMathType_t { return (*C.cudnnMathType_t)(m) }
 

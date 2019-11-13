@@ -61,7 +61,7 @@ func (xtra Xtra) MakeHandleV2(dev *cuda.Device) (*Handle, error) {
 */
 
 //MakeHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn. You use MakeHandleV2 if you want to use the default location
-func MakeHandle(trainingfloatdir string, dev cudart.Device, unified bool) (*Handle, error) {
+func MakeHandle(dev cudart.Device, unified bool) (*Handle, error) {
 
 	//x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)
 	//kerncode := kernels.LoadPTXFile(trainingfloatdir, x)
