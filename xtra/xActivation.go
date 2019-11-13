@@ -12,13 +12,9 @@ import (
 //XActivationMode is flags for xtra activations
 type XActivationMode uint
 
-//XActivationModeFlag holds flags for a XactivationMode
-type XActivationModeFlag struct {
-}
-
 func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
 	var dtf gocudnn.DataType
-	var xaflg XActivationModeFlag
+	var xaflg XActivationMode
 	var ktf kernels.XtraKerns
 	switch dtype {
 	case dtf.Half():
@@ -50,7 +46,7 @@ func (x XActivationMode) tostringfwd(dtype gocudnn.DataType) string {
 
 func (x XActivationMode) tostringbwd(dtype gocudnn.DataType) string {
 	var dtf gocudnn.DataType
-	var xaflg XActivationModeFlag
+	var xaflg XActivationMode
 	var ktf kernels.XtraKerns
 	switch dtype {
 	case dtf.Half():
@@ -82,18 +78,23 @@ func (x XActivationMode) tostringbwd(dtype gocudnn.DataType) string {
 }
 
 //Leaky returns the leaky flag
-func (x XActivationModeFlag) Leaky() XActivationMode {
-	return XActivationMode(101)
+func (x *XActivationMode) Leaky() XActivationMode {
+	*x = XActivationMode(101)
+	return *x
 }
 
 //Threshhold returns the Parametric flag
-func (x XActivationModeFlag) Threshhold() XActivationMode {
-	return XActivationMode(102)
+func (x *XActivationMode) Threshhold() XActivationMode {
+	*x = XActivationMode(102)
+	return *x
+
 }
 
 //Prelu returns the ParaChan flag and it is a weighted leaky on the just the channels
-func (x XActivationModeFlag) Prelu() XActivationMode {
-	return XActivationMode(103)
+func (x *XActivationMode) Prelu() XActivationMode {
+	*x = XActivationMode(103)
+	return *x
+
 }
 
 //XActivationD is the activation descriptor for the "Xtra" stuff that I added to cudnn
@@ -127,9 +128,10 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 	} else {
 		nan = 1
 	}
+	var xaflg XActivationMode
 	ctr := int32(1)
 	switch amode {
-	case XActivationModeFlag{}.Threshhold():
+	case xaflg.Threshhold():
 		fwdmode, err := cuda.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
@@ -147,7 +149,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 		}
 
 		return act, nil
-	case XActivationModeFlag{}.Prelu():
+	case xaflg.Prelu():
 
 		fwdmode, err := cuda.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
@@ -169,7 +171,7 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 		}
 
 		return act, nil
-	case XActivationModeFlag{}.Leaky():
+	case xaflg.Leaky():
 		fwdmode, err := cuda.MakeKernel(amode.tostringfwd(dtype), h.mod)
 		if err != nil {
 			return nil, err
@@ -224,8 +226,9 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 	if dtype != df.Float() {
 		return errors.New("Only Float is the supported datatype")
 	}
+	var xaflg XActivationMode
 	switch xA.amode {
-	case XActivationModeFlag{}.Leaky():
+	case xaflg.Leaky():
 
 		sib, err := xD.GetSizeInBytes()
 		if err != nil {
@@ -242,7 +245,7 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 			return xA.specials.alphafwd.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef), a)
 		}
 		return xA.fwdmode.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, x, y, float32(xA.coef)) //, xA.propnan)
-	case XActivationModeFlag{}.Threshhold():
+	case xaflg.Threshhold():
 
 		length := findvolume(dims[1:])
 		config := h.LaunchConfig(int32(length))
@@ -255,7 +258,7 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 		}
 		return errors.New("Unsupported XActivationMode")
 		//return nil
-	case XActivationModeFlag{}.Prelu():
+	case xaflg.Prelu():
 		return errors.New("Unsupported XActivationMode")
 		/*
 			length := findvolume(dims[1:])
@@ -281,13 +284,13 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 //Threshhold uses coefs and coefs1 thresh, dcoefs,dthresh,and dcoefs1 for dx[i]=dy[i]*coefs[i] where x[i]<thresh[i] else dx[i]=coefs1[i]*dy[i]. and dcoefs[i]+=x[i]*dy[i] same for dcoefs1
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
 func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1 cutil.Mem, alpha, beta float64) error {
-
+	var xaflg XActivationMode
 	switch xA.amode {
-	case XActivationModeFlag{}.Leaky():
+	case xaflg.Leaky():
 		return xA.backpropropleaky(h, xD, x, dxD, dx, dyD, dy, alpha, beta)
-	case XActivationModeFlag{}.Threshhold():
+	case xaflg.Threshhold():
 		return xA.threshback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1)
-	case XActivationModeFlag{}.Prelu():
+	case xaflg.Prelu():
 		return xA.preluback(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs)
 	}
 	return errors.New("Unsupported XActivationMode")
