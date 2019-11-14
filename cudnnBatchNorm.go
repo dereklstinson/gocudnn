@@ -568,18 +568,24 @@ func (b *BatchNormOps) AddActivation() BatchNormOps {
 type BatchNormMode C.cudnnBatchNormMode_t
 
 //PerActivation sets b to BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION) and returns that new value
+//Normalization is performed per-activation. This mode is intended to be used after the non-convolutional network layers.
+//In this mode, the tensor dimensions of bnBias and bnScale and the parameters used in the cudnnBatchNormalization* functions, are 1xCxHxW.
 func (b *BatchNormMode) PerActivation() BatchNormMode {
 	*b = BatchNormMode(C.CUDNN_BATCHNORM_PER_ACTIVATION)
 	return *b
 }
 
-//Spatial sets b to BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL) and returns that new value
+//Spatial sets b to BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL) and returns that new value.
+//Normalization is performed over N+spatial dimensions.
+//This mode is intended for use after convolutional layers (where spatial invariance is desired).
+//In this mode the bnBias and bnScale tensor dimensions are 1xCx1x1.
 func (b *BatchNormMode) Spatial() BatchNormMode {
 	*b = BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL)
 	return *b
 }
 
 // SpatialPersistent sets b to BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT) and returns that new value
+//This mode is similar to CUDNN_BATCHNORM_SPATIAL but it can be faster for some tasks.
 func (b *BatchNormMode) SpatialPersistent() BatchNormMode {
 	*b = BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT)
 	return *b
