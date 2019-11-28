@@ -222,7 +222,7 @@ func convertConvBwdFiltAlgoPerformance(input C.cudnnConvolutionBwdFilterAlgoPerf
 
 //Print prints a human readable copy of the algorithm
 func (cb ConvBwdFiltAlgoPerformance) Print() {
-	fmt.Println("Convolution Backward FIlter Algorithm Performance")
+	fmt.Println("Convolution Backward Filter Algorithm Performance")
 	fmt.Println("-------------------------------------------------")
 	ConvBwdFiltAlgo(cb.Algo).print()
 	fmt.Println("Status:", Status(cb.Algo).GetErrorString())

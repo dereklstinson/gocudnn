@@ -1,89 +1,55 @@
 package gocudnn
 
-/*
-This is me kind of playing around. Don't use this.  This needs to be on an upper level in another package.
-I am not deleting it because I will want to reference it for a project or package.
-
 import (
 	"runtime"
 )
 
-//Host is the cpu
-type Host struct {
-	Threads []HostThread
-	threads int
-	closed  int
-	done    chan int
-	quit    chan int
+//Device is a cuda device that can be set on the host thread
+type Device interface {
+	Set() error
 }
 
-type cudachan struct {
-	thread  int
-	handle  int
-	memeroy Memer
+//Worker works on functions on a device
+type Worker struct {
+	w       chan (func() error)
+	errChan chan error
 }
 
-//HostThread holds handles
-type HostThread struct {
-	handle Handle
+//NewWorker creates a worker that works on a single host thread
+func NewWorker(d Device) (w *Worker) {
+	w = new(Worker)
+
+	w.errChan = make(chan error, 1)
+	w.w = make(chan (func() error), 1)
+	go w.start(d)
+	return w
 }
+func (w *Worker) start(d Device) {
+	runtime.LockOSThread()
+	if d != nil {
+		d.Set()
+	}
+	for x := range w.w {
 
-
-
-//RunHostThread is a sample host thread
-func (thread *HostThread) RunHostThread(
-	src <-chan cudachan,
-	controller chan<- cudachan,
-	dest chan<- cudachan,
-	quit <-chan int,
-	f func(<-chan cudachan, chan<- cudachan, <-chan int, chan<- cudachan) error,
-) <-chan error {
-
-	threadquit := make(chan int, 1)
-	outputchan := make(chan cudachan, 1)
-	err := make(chan error, 1)
-	go func() {
-		runtime.LockOSThread()
-		err <- f(src, dest, threadquit, outputchan)
-
-	}()
-
-	for {
-		select {
-		case x := <-src:
-			dest <- x
-		case x := <-outputchan:
-			controller <- x
-		case x := <-quit:
-			threadquit <- x
-
-		case x := <-err:
-			err <- x
-			runtime.UnlockOSThread()
-			return err
-		}
+		w.errChan <- x()
 
 	}
-
+	runtime.UnlockOSThread()
+	return
 }
 
-//Closer closes program
-func (host *Host) Closer() {
-	for {
-		select {
-		case <-host.done:
-			host.closed++
-			if host.closed >= host.threads {
-				return
-			}
-
-		default:
-			if host.closed >= host.threads {
-				return
-			}
-
-		}
-
-	}
+//Work takes a call back function, sends it
+//through a channel to a locked thread hosting a gpu.
+//
+//This function will block until work is done.  You don't have to wait though.
+//
+// If not wanting to wait.  I would recomend wrapping this around a go func(){}()
+func (w *Worker) Work(fn func() error) error {
+	w.w <- fn
+	return <-w.errChan
 }
-*/
+
+//Close closes the worker channel
+func (w *Worker) Close() {
+	close(w.w)
+}

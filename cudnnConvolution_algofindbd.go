@@ -273,6 +273,8 @@ func (c ConvBwdDataAlgo) print() {
 
 //Print prints a human readable copy of the algorithm
 func (cbd ConvBwdDataAlgoPerformance) Print() {
+	fmt.Println("Convolution Backward Data Algorithm Performance")
+	fmt.Println("-------------------------------------------------")
 	ConvBwdFiltAlgo(cbd.Algo).print()
 	fmt.Println("Status:", Status(cbd.Algo).GetErrorString())
 	fmt.Println("Time:", cbd.Time)
