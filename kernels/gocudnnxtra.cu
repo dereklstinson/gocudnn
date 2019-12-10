@@ -822,6 +822,137 @@ extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythread
             }
     }
 }
+
+extern "C" __global__ void ConcatForwardNHWCEX( const int XThreads,
+                                                const int YThreads,
+                                                const int Batches,
+                                                const int ConcatBatchVolume,
+                                                const int *Channels,
+                                                const float *srcs, 
+                                                const int *vols, 
+                                                const int length,
+                                                float *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int deststride= Batches*(ConcatBatchVolume);
+        int destchanneloffset = 0;
+        for (int j=0;j<length;j++)
+        {
+             const int srcstride=vols[j]*i;
+        
+            CUDA_GRID_AXIS_LOOP(xIdx, XThreads,x)
+            {
+                const int xoffset=xIdx*YThreads;
+            
+                CUDA_GRID_AXIS_LOOP(yIdx, YThreads,y)
+                {
+                    const int yoffset=yIdx*Channels[j];
+                    const int destoffset=deststride+xoffset+yoffset+destchanneloffset;
+                    const int srcoffset=srcstride+xoffset+yoffset;
+                    for (int k=0;k<Channels[j];k++)
+                    {
+                        dest[destoffset+k]  = srcs[srcoffset+k];
+                    }
+                }
+            }
+            destchanneloffset+=Channels[j];
+        }
+    }
+}
+extern "C" __global__ void ConcatBackwardNHWCEX( const int XThreads,
+                                                const int YThreads,
+                                                const int Batches,
+                                                const int ConcatBatchVolume,
+                                                const int *Channels,
+                                                 float *srcs, 
+                                                const int *vols, 
+                                                const int length,
+                                                const float *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int deststride= Batches*(ConcatBatchVolume);
+        int destchanneloffset = 0;
+        for (int j=0;j<length;j++)
+        {
+             const int srcstride=vols[j]*i;
+        
+            CUDA_GRID_AXIS_LOOP(xIdx, XThreads,x)
+            {
+                const int xoffset=xIdx*YThreads;
+            
+                CUDA_GRID_AXIS_LOOP(yIdx, YThreads,y)
+                {
+                    const int yoffset=yIdx*Channels[j];
+                    const int destoffset=deststride+xoffset+yoffset+destchanneloffset;
+                    const int srcoffset=srcstride+xoffset+yoffset;
+                    for (int k=0;k<Channels[j];k++)
+                    {
+                      srcs[srcoffset+k]=dest[destoffset+k];
+                    }
+                }
+            }
+            destchanneloffset+=Channels[j];
+        }
+    }
+}
+extern "C" __global__ void ConcatForwardNCHWEX( const int XThreads,
+                                              const int Batches,
+                                              const int ConcatBatchVolume,
+                                              const int *Channels,
+                                              const float *srcs, 
+                                              const int *vols, 
+                                              const int length,
+                                              float *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int deststride= Batches*(ConcatBatchVolume);
+             int srcoffset =0;
+        for (int j=0;j<length;j++)
+        {
+         
+             const int srcstride=vols[j]*i;
+            for (int k=0;k<Channels[j];k++)
+            {
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+                {
+                    dest[deststride+(k*XThreads)+srcoffset+xIdx]  = srcs[srcstride+(k*XThreads)+xIdx];
+                }
+            }
+              srcoffset+=vols[j]*Batches;
+        }
+    }
+}
+extern "C" __global__ void ConcatBackwardNCHWEX( const int XThreads,
+                                              const int Batches,
+                                              const int ConcatBatchVolume,
+                                              const int *Channels,
+                                                    float *srcs, 
+                                              const int *vols, 
+                                              const int length,
+                                              const float *dest)
+{
+    for (int i = 0;i<Batches;i++)
+    {
+        const int deststride= Batches*(ConcatBatchVolume);
+        int srcoffset =0;
+        for (int j=0;j<length;j++)
+        {
+             const int srcstride=vols[j]*i;
+             
+            for (int k=0;k<Channels[j];k++)
+            {
+            CUDA_GRID_LOOP_X(xIdx, XThreads)
+                {
+                    srcs[srcstride+(k*XThreads)+xIdx]=dest[deststride+(k*XThreads)+srcoffset+xIdx] ;
+                }
+            }
+            srcoffset+=vols[j]*Batches;
+        }
+    }
+}
 extern "C" __global__ void ConcatForwardNCHW( const int XThreads,
                                               const int Batches,
                                               const int Channels1,
