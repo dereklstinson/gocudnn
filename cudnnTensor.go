@@ -7,10 +7,10 @@ package gocudnn
 */
 import "C"
 import (
+	"fmt"
+	"github.com/dereklstinson/cutil"
 	"runtime"
 	"unsafe"
-
-	"github.com/dereklstinson/cutil"
 )
 
 func (m MathType) string() string {
@@ -31,6 +31,10 @@ type TensorD struct {
 	frmt       TensorFormat
 	fflag      TensorFormat
 	gogc       bool
+}
+
+func (t *TensorD) String() string {
+	return fmt.Sprintf("TensorDescriptor{\nFormat: %s\nType  : %s\nShape : %v\nStride: %v\n}\n", t.frmt.String(), t.dtype.String(), t.shape, t.stride)
 }
 
 //Dims returns the shape of the tensor
@@ -141,7 +145,7 @@ func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) e
 		t.stride = stridecalc(shape)
 		shapecint := int32Tocint(shape)
 		if len(shape) == 0 {
-			panic("format is: " + t.frmt.ToString() + " and len is zero")
+			panic("format is: " + t.frmt.String() + " and len is zero")
 		}
 		return Status(C.cudnnSetTensorNdDescriptorEx(t.descriptor, t.frmt.c(), data.c(), t.dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
 
@@ -370,7 +374,7 @@ func (d DataType) c() C.cudnnDataType_t      { return C.cudnnDataType_t(d) }
 func (d *DataType) cptr() *C.cudnnDataType_t { return (*C.cudnnDataType_t)(d) }
 
 //ToString will return a human readable string that can be printed for debugging.
-func (d DataType) ToString() string {
+func (d DataType) String() string {
 	var flg DataType
 	switch d {
 	case flg.Float():
@@ -417,6 +421,18 @@ func (m *MathType) TensorOpMath() MathType { *m = MathType(C.CUDNN_TENSOR_OP_MAT
 func (m *MathType) AllowConversion() MathType {
 	*m = MathType(C.CUDNN_TENSOR_OP_MATH_ALLOW_CONVERSION)
 	return *m
+}
+func (m *MathType) String() string {
+	flg := *m
+	switch *m {
+	case flg.AllowConversion():
+		return "AllowConversion"
+	case flg.Default():
+		return "Default"
+	case flg.TensorOpMath():
+		return "TensorOpMath"
+	}
+	return "No Mathtype set"
 }
 func (m MathType) c() C.cudnnMathType_t      { return (C.cudnnMathType_t)(m) }
 func (m *MathType) cptr() *C.cudnnMathType_t { return (*C.cudnnMathType_t)(m) }
@@ -486,32 +502,37 @@ type TensorFormat C.cudnnTensorFormat_t
 //NCHW return TensorFormat(C.CUDNN_TENSOR_NCHW)
 //Method sets type and returns new value.
 func (t *TensorFormat) NCHW() TensorFormat {
-	return TensorFormat(C.CUDNN_TENSOR_NCHW)
+	*t = TensorFormat(C.CUDNN_TENSOR_NCHW)
+	return *t
 }
 
 //NHWC return TensorFormat(C.CUDNN_TENSOR_NHWC)
 //Method sets type and returns new value.
 func (t *TensorFormat) NHWC() TensorFormat {
-	return TensorFormat(C.CUDNN_TENSOR_NHWC)
+	*t = TensorFormat(C.CUDNN_TENSOR_NHWC)
+	return *t
 }
 
 //NCHWvectC return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
 //Method sets type and returns new value.
 func (t *TensorFormat) NCHWvectC() TensorFormat {
-	return TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
+	*t = TensorFormat(C.CUDNN_TENSOR_NCHW_VECT_C)
+	return *t
 }
 
 //Strided returns  TensorFormat(127) This is custom GoCudnn flag. Read TensorFormat notes for explanation.
 //Method sets type and returns new value.
 func (t *TensorFormat) Strided() TensorFormat {
 
-	return TensorFormat(127)
+	*t = TensorFormat(127)
+	return *t
 }
 
 //Unknown returns TensorFormat(128). This is custom GoCudnn flag.  Read TensorFormat notes for explanation.
 //Method sets type and returns new value.
 func (t *TensorFormat) Unknown() TensorFormat {
-	return TensorFormat(128)
+	*t = TensorFormat(128)
+	return *t
 }
 
 func (t TensorFormat) c() C.cudnnTensorFormat_t { return C.cudnnTensorFormat_t(t) }
@@ -520,7 +541,7 @@ func (t *TensorFormat) cptr() *C.cudnnTensorFormat_t {
 }
 
 //ToString will return a human readable string that can be printed for debugging.
-func (t TensorFormat) ToString() string {
+func (t TensorFormat) String() string {
 	var flg TensorFormat
 	switch t {
 	case flg.NCHW():

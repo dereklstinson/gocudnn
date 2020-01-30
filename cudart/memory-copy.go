@@ -15,28 +15,33 @@ import (
 type MemcpyKind C.enum_cudaMemcpyKind
 
 //HostToHost return MemcpyKind(C.cudaMemcpyHostToHost )
-func (m MemcpyKind) HostToHost() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyHostToHost)
+func (m *MemcpyKind) HostToHost() MemcpyKind {
+	*m = MemcpyKind(C.cudaMemcpyHostToHost)
+	return *m
 }
 
 //HostToDevice 	return MemcpyKind(C.cudaMemcpyHostToDevice )
-func (m MemcpyKind) HostToDevice() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyHostToDevice)
+func (m *MemcpyKind) HostToDevice() MemcpyKind {
+	*m = MemcpyKind(C.cudaMemcpyHostToDevice)
+	return *m
 }
 
 //DeviceToHost return MemcpyKind(C.cudaMemcpyDeviceToHost )
-func (m MemcpyKind) DeviceToHost() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyDeviceToHost)
+func (m *MemcpyKind) DeviceToHost() MemcpyKind {
+	*m = MemcpyKind(C.cudaMemcpyDeviceToHost)
+	return *m
 }
 
 //DeviceToDevice return MemcpyKind(C.cudaMemcpyDeviceToDevice )
-func (m MemcpyKind) DeviceToDevice() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyDeviceToDevice)
+func (m *MemcpyKind) DeviceToDevice() MemcpyKind {
+	*m = MemcpyKind(C.cudaMemcpyDeviceToDevice)
+	return *m
 }
 
 //Default return MemcpyKind(C.cudaMemcpyDefault )
-func (m MemcpyKind) Default() MemcpyKind {
-	return MemcpyKind(C.cudaMemcpyDefault)
+func (m *MemcpyKind) Default() MemcpyKind {
+	*m = MemcpyKind(C.cudaMemcpyDefault)
+	return *m
 }
 
 func (m MemcpyKind) c() C.enum_cudaMemcpyKind { return C.enum_cudaMemcpyKind(m) }

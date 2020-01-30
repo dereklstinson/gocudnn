@@ -4,6 +4,26 @@ package kernels
 type XtraKerns struct {
 }
 
+//ConcatNHWCEXHalf - Does a concat backward with multiple outputs
+func (t XtraKerns) ConcatNHWCEXHalf() string {
+	return "ConcatNHWCEXHalf"
+}
+
+//ConcatNHWCEX - Does a concat backward with multiple outputs
+func (t XtraKerns) ConcatNHWCEX() string {
+	return "ConcatNHWCEX"
+}
+
+//ConcatNCHWEX - Does a concat forward with multiple inputs
+func (t XtraKerns) ConcatNCHWEX() string {
+	return "ConcatNCHWEX"
+}
+
+//ConcatNCHWEXHalf - Does a concat forward with multiple inputs
+func (t XtraKerns) ConcatNCHWEXHalf() string {
+	return "ConcatNCHWEXHalf"
+}
+
 //MSELoss Mean Squared Error Loss
 func (t XtraKerns) MSELoss() string {
 	return "MSELoss"

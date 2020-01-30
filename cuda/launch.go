@@ -273,6 +273,13 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
 			C.memcpy(k.args[i], unsafe.Pointer(x.DPtr()), C.ptrSize)
+		case []cutil.Mem:
+			{
+				if x == nil {
+					C.memcpy(k.args[i], unsafe.Pointer(nil), C.ptrSize)
+				}
+				C.memcpy(k.args[i], unsafe.Pointer(x[0].DPtr()), C.ptrSize)
+			}
 		case bool:
 			if x {
 				val := C.int(255)
@@ -287,7 +294,8 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 		case uint:
 			val := C.uint(x)
 			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
-
+		case []int32:
+			C.memcpy(k.args[i], unsafe.Pointer(&x[0]), C.size_t(4))
 		default:
 			scalar := cutil.CScalarConversion(x)
 			if scalar == nil {
@@ -331,6 +339,13 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
 			C.memcpy(k.args[i], unsafe.Pointer(x.DPtr()), C.ptrSize)
+		case []cutil.Mem:
+			{
+				if x == nil {
+					C.memcpy(k.args[i], unsafe.Pointer(nil), C.ptrSize)
+				}
+				C.memcpy(k.args[i], unsafe.Pointer(x[0].Ptr()), C.ptrSize)
+			}
 		case bool:
 			if x {
 				val := C.int(255)
@@ -345,6 +360,8 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 		case uint:
 			val := C.uint(x)
 			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+		case []int32:
+			C.memcpy(k.args[i], unsafe.Pointer(&x[0]), C.size_t(4))
 		default:
 			/*
 					val := reflect.ValueOf(x)

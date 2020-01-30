@@ -898,58 +898,71 @@ extern "C" __global__ void ConcatBackwardNHWCEX( const int XThreads,
     }
 }
 extern "C" __global__ void ConcatForwardNCHWEX( const int XThreads,
+                                            const int YThreads,
                                               const int Batches,
                                               const int ConcatBatchVolume,
                                               const int *Channels,
                                               const float *srcs, 
                                               const int *vols, 
-                                              const int length,
+                                              const int numofsrcs,
                                               float *dest)
 {
     for (int i = 0;i<Batches;i++)
     {
-        const int deststride= Batches*(ConcatBatchVolume);
-             int srcoffset =0;
-        for (int j=0;j<length;j++)
+        const int destbatchstride= Batches*(ConcatBatchVolume);
+             int srcoffsetindest =0;
+        for (int j=0;j<numofsrcs;j++)
         {
          
-             const int srcstride=vols[j]*i;
+             const int srcbatchstride=vols[j]*i;
             for (int k=0;k<Channels[j];k++)
             {
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
-                {
-                    dest[deststride+(k*XThreads)+srcoffset+xIdx]  = srcs[srcstride+(k*XThreads)+xIdx];
+            CUDA_GRID_AXIS_LOOP(xIdx, XThreads,x)
+            {
+            CUDA_GRID_AXIS_LOOP(yIdx, YThreads,y)
+            {
+                
+                    dest[destbatchstride+srcoffsetindest+(k*XThreads*YThreads)+(xIdx*YThreads)+yIdx]  =
+                    srcs[srcbatchstride+(k*XThreads*YThreads)+(xIdx*YThreads)+yIdx];
                 }
             }
-              srcoffset+=vols[j]*Batches;
+            }
+              srcoffsetindest+=vols[j];
         }
     }
 }
 extern "C" __global__ void ConcatBackwardNCHWEX( const int XThreads,
-                                              const int Batches,
-                                              const int ConcatBatchVolume,
-                                              const int *Channels,
-                                                    float *srcs, 
-                                              const int *vols, 
-                                              const int length,
-                                              const float *dest)
+                                                 const int YThreads,
+                                                 const int Batches,
+                                                 const int ConcatBatchVolume,
+                                                 const int *Channels,
+                                                 float *srcs, 
+                                                 const int *vols, 
+                                                 const int numofsrcs,
+                                                 const float *dest)
 {
     for (int i = 0;i<Batches;i++)
     {
-        const int deststride= Batches*(ConcatBatchVolume);
-        int srcoffset =0;
-        for (int j=0;j<length;j++)
+        const int destbatchstride= Batches*(ConcatBatchVolume);
+             int srcoffsetindest =0;
+        for (int j=0;j<numofsrcs;j++)
         {
-             const int srcstride=vols[j]*i;
-             
+         
+             const int srcbatchstride=vols[j]*i;
             for (int k=0;k<Channels[j];k++)
             {
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
-                {
-                    srcs[srcstride+(k*XThreads)+xIdx]=dest[deststride+(k*XThreads)+srcoffset+xIdx] ;
+            CUDA_GRID_AXIS_LOOP(xIdx, XThreads,x)
+            {
+            CUDA_GRID_AXIS_LOOP(yIdx, YThreads,y)
+            {
+                
+                  srcs[srcbatchstride+(k*XThreads*YThreads)+(xIdx*YThreads)+yIdx] =
+                  dest[destbatchstride+srcoffsetindest+(k*XThreads*YThreads)+(xIdx*YThreads)+yIdx];
+                   
                 }
             }
-            srcoffset+=vols[j]*Batches;
+            }
+              srcoffsetindest+=vols[j];
         }
     }
 }

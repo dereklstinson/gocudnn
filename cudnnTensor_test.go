@@ -49,10 +49,10 @@ func TestCreateTensorDescriptor(t *testing.T) {
 		t.Error("Not Matching", ostride, gstride)
 	}
 	if gfrmt != frmt {
-		t.Error("Not Matching", gfrmt.ToString(), frmt.ToString())
+		t.Error("Not Matching", gfrmt.String(), frmt.String())
 	}
 	if gtype != dtype {
-		t.Error("Not Matching", gtype.ToString(), dtype.ToString())
+		t.Error("Not Matching", gtype.String(), dtype.String())
 	}
 	filter, err := CreateFilterDescriptor()
 	if err != nil {
@@ -75,10 +75,10 @@ func TestCreateTensorDescriptor(t *testing.T) {
 		}
 	}
 	if ffrmt != frmt {
-		t.Error("Not Matching", ffrmt.ToString(), frmt.ToString())
+		t.Error("Not Matching", ffrmt.String(), frmt.String())
 	}
 	if fdtype != dtype {
-		t.Error("Not Matching", fdtype.ToString(), dtype.ToString())
+		t.Error("Not Matching", fdtype.String(), dtype.String())
 	}
 	convolution, err := CreateConvolutionDescriptor()
 	if err != nil {

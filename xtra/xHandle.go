@@ -76,10 +76,10 @@ func MakeHandle(dev cudart.Device, unified bool) (*Handle, error) {
 	majmin := major*10 + minor
 	var mod *cuda.Module
 	if majmin == 75 {
-		fmt.Println("going to 75")
+		//	fmt.Println("going to 75")
 		mod, err = cuda.NewModuleData(both75)
 	} else if majmin == 61 {
-		fmt.Println("going to 61")
+		//	fmt.Println("going to 61")
 		mod, err = cuda.NewModuleData(both61)
 	} else {
 		return nil, errors.New("Unsupported GPU")
