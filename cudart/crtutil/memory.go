@@ -1,10 +1,15 @@
+//Package crtutil allows cudart to work with Go's io Reader and Writer interfaces.
+//
+//This package only works with devices that have Compute Capability 6.1 and up.
 package crtutil
 
 import (
+	"errors"
 	"io"
 	"unsafe"
 
 	"github.com/dereklstinson/GoCudnn/cudart"
+	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/cutil"
 )
 
@@ -19,14 +24,14 @@ type ReadWriter struct {
 	//	hackbuffer  []byte
 	//	hackpointer *cutil.Wrapper
 	//	hackflag    bool
-	s *cudart.Stream
+	s gocu.Streamer
 }
 
 //Allocator alocates memory to the current device
 type Allocator struct {
 	//dev cudart.Device
 	//w   *gocudnn.Worker
-	s *cudart.Stream
+	s gocu.Streamer
 }
 
 //const usehackbuffer = false
@@ -38,7 +43,7 @@ func (a *Allocator) GetWorker() (w *gocudnn.Worker) {
 */
 
 //CreateAsyncAllocator creates an allocator whose memory it creates does async mem copies.
-func CreateAsyncAllocator(s *cudart.Stream) (a *Allocator) {
+func CreateAsyncAllocator(s gocu.Streamer) (a *Allocator) {
 	a = new(Allocator)
 	//var err error
 	//	a.w = gocudnn.NewWorker(dev)
@@ -111,7 +116,7 @@ func NewReadWriter(p cutil.Pointer, size uint) *ReadWriter {
 
 //NewReadWriterAsync returns ReadWriter from already allocated memory passed in p.  It just needs to know the size of the memory.
 //It will use the async mem copy.
-func NewReadWriterAsync(p cutil.Pointer, size uint, s *cudart.Stream) *ReadWriter {
+func NewReadWriterAsync(p cutil.Pointer, size uint, s gocu.Streamer) *ReadWriter {
 	return &ReadWriter{
 		p:    p.Ptr(),
 		size: size,
@@ -155,7 +160,7 @@ var copyflag cudart.MemcpyKind
 //func (r *ReadWriter) hackread(b []byte) (n int, err error) {
 //	if r.i >= r.size {
 //		r.Reset()
-//		println("hit reset")
+//
 //		return 0, io.EOF
 //	}
 //	if len(b) == 0 {
@@ -190,7 +195,7 @@ func (r *ReadWriter) Read(b []byte) (n int, err error) {
 func (r *ReadWriter) nonhackbuffer(b []byte) (n int, err error) {
 	if r.i >= r.size {
 		r.Reset()
-		println("hit reset")
+
 		return 0, io.EOF
 	}
 	if len(b) == 0 {
@@ -237,6 +242,31 @@ func (r *ReadWriter) nonhackbuffer(b []byte) (n int, err error) {
 		return n, io.EOF
 	}
 	return n, nil
+}
+func (r *ReadWriter) Write(b []byte) (n int, err error) {
+	if r.i >= r.size {
+		r.Reset()
+		return 0, errors.New("Write Location Out of Memory")
+	}
+	if len(b) == 0 {
+		return 0, nil
+	}
+	var size = r.size - r.i
+	if uint(len(b)) < size {
+		size = uint(len(b))
+	}
+	bwrap, err := cutil.WrapGoMem(b)
+	if err != nil {
+		return 0, err
+	}
+	if r.s != nil {
+		err = cudart.MemcpyAsync(cutil.Offset(r, r.i), bwrap, size, copyflag.Default(), r.s)
+	} else {
+		err = cudart.MemCpy(cutil.Offset(r, r.i), bwrap, size, copyflag.Default())
+	}
+	r.i += size
+	n = int(size)
+	return n, err
 }
 
 /*
