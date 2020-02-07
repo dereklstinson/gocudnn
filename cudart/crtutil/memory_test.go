@@ -32,9 +32,9 @@ func TestReadWriter_Read(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	devallo := CreateAsyncAllocator(cstream)
+	devallo := CreateAllocator(cstream)
 
-	cudamem, err := devallo.AllocateReadWriterGlobal(arraysize)
+	cudamem, err := devallo.AllocateMemory(arraysize)
 	if err != nil {
 		t.Error(err)
 	}

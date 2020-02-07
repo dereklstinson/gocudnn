@@ -43,7 +43,7 @@ func (w *Worker) start(d Device) {
 //
 //This function will block until work is done.  You don't have to wait though.
 //
-// If not wanting to wait.  I would recomend wrapping this around a go func(){}()
+// If not wanting to wait.  I would recomend wrapping this around a go func(){}() so that you could pick up the error.
 func (w *Worker) Work(fn func() error) error {
 	w.w <- fn
 	return <-w.errChan
