@@ -63,7 +63,7 @@ func TestConvolution2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	allocator, err := cudart.CreateMemManager(stream, dev)
+	allocator, err := cudart.CreateMemManager(dev)
 	if err != nil {
 		t.Error(err)
 	}
@@ -157,7 +157,7 @@ func TestConvolution(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	allocator, err := cudart.CreateMemManager(stream, dev)
+	allocator, err := cudart.CreateMemManager(dev)
 	if err != nil {
 		t.Error(err)
 	}

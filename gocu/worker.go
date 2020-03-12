@@ -1,4 +1,4 @@
-package gocudnn
+package gocu
 
 import (
 	"runtime"

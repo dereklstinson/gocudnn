@@ -1,7 +1,6 @@
 package xtra
 
 import (
-	"bytes"
 	"fmt"
 	"runtime"
 
@@ -26,7 +25,8 @@ func TestCreateConcatEx(t *testing.T) {
 	dev, err := cudart.GetDevice()
 	check(err)
 	check(dev.Set())
-
+	alpha := float64(1)
+	beta := float64(0)
 	h, err := MakeHandle(dev, true)
 	check(err)
 	op, err := CreateConcatEx(h)
@@ -35,15 +35,15 @@ func TestCreateConcatEx(t *testing.T) {
 	srcs := 3
 	srcds := make([]*gocudnn.TensorD, srcs)
 	srcmem := make([]cutil.Mem, srcs)
-	hostmembytes := make([][]byte, srcs)  //This checks if the forward and backward work
-	copybackbytes := make([][]byte, srcs) //This checks if the forward and backward work
+	hostmembytes := make([][]float32, srcs)  //This checks if the forward and backward work
+	copybackbytes := make([][]float32, srcs) //This checks if the forward and backward work
 	var frmt gocudnn.TensorFormat
 	var dtype gocudnn.DataType
 	frmtflg := frmt
 	frmt.NCHW()
 	dtype.Float()
 	nbatch, hheight, width := int32(3), int32(3), int32(3)
-	memmanger, err := cudart.CreateMemManager(s, dev)
+	memmanger, err := cudart.CreateMemManager(dev)
 
 	check(err)
 	for i := range srcds {
@@ -67,8 +67,8 @@ func TestCreateConcatEx(t *testing.T) {
 		check(gocudnn.SetTensor(handle, srcds[i], srcmem[i], float64(i+1)))
 		bytesize, err := srcds[i].GetSizeInBytes()
 		check(err)
-		hostmembytes[i] = make([]byte, bytesize)
-		copybackbytes[i] = make([]byte, bytesize)
+		hostmembytes[i] = make([]float32, bytesize/4)
+		copybackbytes[i] = make([]float32, bytesize/4)
 		quckcopy, err := cutil.WrapGoMem(hostmembytes[i])
 		check(err)
 		memmanger.Copy(quckcopy, srcmem[i], bytesize)
@@ -101,7 +101,7 @@ func TestCreateConcatEx(t *testing.T) {
 
 	check(s.Sync())
 	println("Doing Forward")
-	check(op.Op(h, srcds, srcmem, destd, destmem, true))
+	check(op.Op(h, srcds, srcmem, alpha, destd, destmem, beta, true))
 	println("Done with Forward")
 
 	check(err)
@@ -113,11 +113,11 @@ func TestCreateConcatEx(t *testing.T) {
 	check(memmanger.Copy(hostptr, destmem, sib))
 	println("done copy")
 	//	t.Error(hostmem)
-	for i := range srcds {
+	/*for i := range srcds {
 		check(gocudnn.SetTensor(handle, srcds[i], srcmem[i], float64(0)))
 
-	}
-	check(op.Op(h, srcds, srcmem, destd, destmem, false))
+	}*/
+	check(op.Op(h, srcds, srcmem, alpha, destd, destmem, beta, false))
 	for i := range srcds {
 		sibback, err := srcds[i].GetSizeInBytes()
 		check(err)
@@ -126,8 +126,12 @@ func TestCreateConcatEx(t *testing.T) {
 		check(memmanger.Copy(quickcopy, srcmem[i], sibback))
 	}
 	for i := range copybackbytes {
-		if bytes.Compare(copybackbytes[i], hostmembytes[i]) != 0 {
-			t.Error(copybackbytes[i], hostmembytes[i])
+		for j := range copybackbytes[i] {
+			if copybackbytes[i][j] != hostmembytes[i][j] {
+				t.Error(copybackbytes[i], hostmembytes[i])
+				break
+			}
 		}
+
 	}
 }

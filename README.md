@@ -15,18 +15,45 @@ extra cudnn:
 
 I made a BatchNormalD descriptor and BatchNormDEx descriptor.  You will call this with a "Create" function. and set it like the other descriptors.  
 
-## Documentation
+## gocu folder
 
-I am in the middle of adding documentation to GoCudnn with examples!!!! That's better than what you get with the cudnn documentation, right?  I want to include the use of playground.
-but that won't happen because it uses the golang.org server.
+The gocu folder contains interfaces that interconnect the different sub packages.  To help parallelize your code use the type Worker.  It contains the method work. Where it takes a function at sends it to to be worked on a dedicated thread host thread.  Like if you wanted to make a new Context to handle gpu management.
+
+```text
+    type GPUcontext struct{
+        w *gocu.Worker
+        a *crtutil.Allocator
+    }
+    
+    func CreateGPUcontext(dev gocu.Device,s gocu.Streamer)(g *GPUcontext,err error){
+        g= new(GPUcontext)
+        g.w = new(gocu.Worker)
+        err = g.w.Work(func()error{
+             g.a = crtutil.CreateAllocator(s)
+             return nil
+        })
+      return err
+    }
+
+
+    func (g *GPUcontext)AllocateMemory(size uint)(c cutil.Mem,err  error){
+      err=  g.w.Work(func()error{
+            c,err=g.a.AllocateMemory(size)
+            return err
+        })
+    return c,err
+    }
+    
+
+```
 
 ## Back into alpha
 
-I am making the code more like an actual binding. I have seperated the different libraries into their own packages.  
+I am making the code more like an actual binding. I have separated the different libraries into their own packages.  
 I would have liked to not use cuda.h, but it is needed to run the kernels.  Its that or you would have to make a shared library every time you make a new kernel.  
 I am adding some NPP library stuff where it would be appropriate with gocudnn.
 I've added nvjpeg, but that was before the 10.1 update.  So, I will upgrade to 10.1 (cuda) and 7.5 (cudnn) and start a new branch.
-Any subpackage library bindings I include will most likely only be made to suppliment cudnn.
+Any subpackage library bindings I include will most likely only be made to supplement cudnn.
 
 ## Some required packages
 
@@ -76,7 +103,7 @@ A few exceptions though:.
 ## A little more on flag handling
 
 Flags are handled through methods.  You must be careful. The methods used with flags will change the flag value.  
-If you don't set the flag with a method. It will default with the initidalized value (0). That may or may not be a flag option with cudnn or any of the other packages.
+If you don't set the flag with a method. It will default with the initialized value (0). That may or may not be a flag option with cudnn or any of the other packages.
 
 
 ## Note on Handles.
