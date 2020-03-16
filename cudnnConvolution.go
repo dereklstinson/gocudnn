@@ -29,6 +29,32 @@ type ConvolutionD struct {
 
 const convolutionnd2dtestflag = true
 
+//String satisfies fmt Stringer interface.
+func (c *ConvolutionD) String() string {
+	cmode, dtype, pad, stride, dilation, err := c.Get()
+	if err != nil {
+		var errst = "error"
+		return fmt.Sprintf(
+			"ConvolutionD Values\n"+
+				"-------------------\n"+
+				"ConvolutionMode: %s\n"+
+				"DataType: %s\n"+
+				"Pad: %v\n"+
+				"Stride: %v\n"+
+				"Dilation %v\n", errst, errst, errst, errst, errst)
+
+	}
+	return fmt.Sprintf(
+		"DeConvolutionD Values\n"+
+			"---------------------\n"+
+			"ConvolutionMode: %s\n"+
+			"DataType: %s\n"+
+			"Pad: %v\n"+
+			"Stride: %v\n"+
+			"Dilation %v\n", cmode.String(), dtype.String(), pad, stride, dilation)
+
+}
+
 //CreateConvolutionDescriptor creates a convolution descriptor
 func CreateConvolutionDescriptor() (*ConvolutionD, error) {
 	d := new(ConvolutionD)
@@ -559,7 +585,7 @@ func (c *ConvolutionD) Forward(
 
 		cmode, cdtype, pad, stride, dilation, err1 := c.Get()
 		fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
-		fmt.Println("Algo Settings", algo.toString())
+		fmt.Println("Algo Settings", algo.String())
 		actualwspacesize, err := c.GetForwardWorkspaceSize(handle, xD, wD, yD, algo)
 
 		fmt.Println("Workspace Size Compare passed/wanted:", wspacesize, actualwspacesize, err)
@@ -755,6 +781,17 @@ func (c *ConvolutionMode) Convolution() ConvolutionMode {
 func (c *ConvolutionMode) CrossCorrelation() ConvolutionMode {
 	*c = ConvolutionMode(C.CUDNN_CROSS_CORRELATION)
 	return *c
+}
+func (c ConvolutionMode) String() string {
+	cflg := c
+	switch c {
+	case cflg.CrossCorrelation():
+		return "CrossCorrelation"
+	case cflg.Convolution():
+		return "Convolution"
+	default:
+		return "Unsupported Flag"
+	}
 }
 
 func (c ConvolutionMode) c() C.cudnnConvolutionMode_t { return C.cudnnConvolutionMode_t(c) }

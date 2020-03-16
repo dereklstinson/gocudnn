@@ -90,6 +90,32 @@ func (c *DeConvolutionD) Get() (mode ConvolutionMode, data DataType, pad []int32
 
 }
 
+//String satisfies fmt Stringer interface.
+func (c *DeConvolutionD) String() string {
+	cmode, dtype, pad, stride, dilation, err := c.Get()
+	if err != nil {
+		var errst = "error"
+		return fmt.Sprintf(
+			"DeConvolutionD Values\n"+
+				"---------------------\n"+
+				"ConvolutionMode: %s\n"+
+				"DataType: %s\n"+
+				"Pad: %v\n"+
+				"Stride: %v\n"+
+				"Dilation %v\n", errst, errst, errst, errst, errst)
+
+	}
+	return fmt.Sprintf(
+		"DeConvolutionD Values\n"+
+			"---------------------\n"+
+			"ConvolutionMode: %s\n"+
+			"DataType: %s\n"+
+			"Pad: %v\n"+
+			"Stride: %v\n"+
+			"Dilation %v\n", cmode.String(), dtype.String(), pad, stride, dilation)
+
+}
+
 //SetGroupCount sets the Group Count
 func (c *DeConvolutionD) SetGroupCount(groupCount int32) error {
 
@@ -151,7 +177,7 @@ func (c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32
 		neurons := fdims[0]
 		neuronchans := fdims[1]
 		batch := dims[0]
-		tensorchans := dims[0]
+		tensorchans := dims[1]
 		if neurons != tensorchans {
 			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): neurons != inputchannel size")
 		}
@@ -472,7 +498,7 @@ func (c *DeConvolutionD) BackwardData(
 
 		cmode, cdtype, pad, stride, dilation, err1 := c.Get()
 		fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
-		fmt.Println("Algo Settings", algo.toString())
+		fmt.Println("Algo Settings", algo)
 		actualwspacesize, err := c.GetBackwardWorkspaceSize(handle, wD, dyD, dxD, algo)
 
 		fmt.Println("Workspace Size Compare passed/wanted:", wspaceSIB, actualwspacesize, err)

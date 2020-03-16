@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 
 	"github.com/dereklstinson/cutil"
@@ -39,6 +40,14 @@ func (b *BatchNormDEx) Get() (mode BatchNormMode, op BatchNormOps, err error) {
 		return BatchNormMode(b.mode), BatchNormOps(b.op), errors.New("BatchNormD not set")
 	}
 	return BatchNormMode(b.mode), BatchNormOps(b.op), nil
+}
+func (b *BatchNormDEx) String() string {
+	return fmt.Sprintf(
+		"BatchNormDEx Values\n"+
+			"-----------------\n"+
+			"BatchNormMode: %s\n"+
+			"BatchNormOps: %s\n", BatchNormMode(b.mode).String(), BatchNormOps(b.op).String())
+
 }
 
 //DeriveBNTensorDescriptor derives a tensor used for the batch norm operation

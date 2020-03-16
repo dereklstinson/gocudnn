@@ -28,6 +28,17 @@ func (a *AttnQueryMap) OneToOne() AttnQueryMap {
 	*a = AttnQueryMap(C.CUDNN_ATTN_QUERYMAP_ONE_TO_ONE)
 	return *a
 }
+func (a AttnQueryMap) String() string {
+	aflg := a
+	switch a {
+	case aflg.AllToOne():
+		return "AllToOne"
+	case aflg.OneToOne():
+		return "OneToOne"
+	default:
+		return "Unsupported Flag"
+	}
+}
 func (a AttnQueryMap) c() C.cudnnAttnQueryMap_t {
 	return C.cudnnAttnQueryMap_t(a)
 }
@@ -184,6 +195,21 @@ func (m *MultiHeadAttnWeightKind) Values() MultiHeadAttnWeightKind {
 func (m *MultiHeadAttnWeightKind) Output() MultiHeadAttnWeightKind {
 	*m = MultiHeadAttnWeightKind(C.CUDNN_MH_ATTN_O_WEIGHTS)
 	return *m
+}
+func (m MultiHeadAttnWeightKind) String() string {
+	mflg := m
+	switch m {
+	case mflg.Keys():
+		return "Keys"
+	case mflg.Output():
+		return "Output"
+	case mflg.Queries():
+		return "Queries"
+	case mflg.Values():
+		return "Values"
+	default:
+		return "Unsupported Flag"
+	}
 }
 
 //GetMultiHeadAttnWeights returns a Descripter for w and its goco.Mem

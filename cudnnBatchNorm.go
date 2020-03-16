@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 
 	"github.com/dereklstinson/cutil"
@@ -37,6 +38,13 @@ func (b *BatchNormD) Get() (mode BatchNormMode, err error) {
 		return 0, errors.New("BatchNormD not set")
 	}
 	return BatchNormMode(b.mode), nil
+}
+func (b *BatchNormD) String() string {
+	return fmt.Sprintf(
+		"BatchNormD Values\n"+
+			"-----------------\n"+
+			"BatchNormMode: %s\n", BatchNormMode(b.mode).String())
+
 }
 
 //DeriveBNTensorDescriptor Derives a BN Tensor Descriptor from the one passed.
@@ -563,6 +571,19 @@ func (b *BatchNormOps) AddActivation() BatchNormOps {
 	*b = BatchNormOps(C.CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION)
 	return *b
 }
+func (b BatchNormOps) String() string {
+	bflg := b
+	switch b {
+	case bflg.Normal():
+		return "Normal"
+	case bflg.Activation():
+		return "Activation"
+	case bflg.AddActivation():
+		return "AddActivation"
+	default:
+		return "Unsupported Flag"
+	}
+}
 
 //BatchNormMode used for BatchNormMode Flags
 type BatchNormMode C.cudnnBatchNormMode_t
@@ -589,6 +610,19 @@ func (b *BatchNormMode) Spatial() BatchNormMode {
 func (b *BatchNormMode) SpatialPersistent() BatchNormMode {
 	*b = BatchNormMode(C.CUDNN_BATCHNORM_SPATIAL_PERSISTENT)
 	return *b
+}
+func (b BatchNormMode) String() string {
+	bflg := b
+	switch b {
+	case bflg.PerActivation():
+		return "PerActivation"
+	case bflg.Spatial():
+		return "Spatial"
+	case bflg.SpatialPersistent():
+		return "SpatialPersistent"
+	default:
+		return "Unsupported Flag"
+	}
 }
 func (b BatchNormMode) c() C.cudnnBatchNormMode_t { return C.cudnnBatchNormMode_t(b) }
 

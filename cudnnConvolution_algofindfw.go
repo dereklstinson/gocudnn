@@ -16,17 +16,54 @@ import (
 	"github.com/dereklstinson/cutil"
 )
 
+//ConvFwdAlgoPerformance is a struct that holds the performance of the algorithm
+type ConvFwdAlgoPerformance struct {
+	Algo        ConvFwdAlgo `json:"algo,omitempty"`
+	Status      Status      `json:"status,omitempty"`
+	Time        float32     `json:"time,omitempty"`
+	Memory      uint        `json:"memory,omitempty"`
+	Determinism Determinism `json:"determinism,omitempty"`
+	MathType    MathType    `json:"math_type,omitempty"`
+}
+
+func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFwdAlgoPerformance {
+	var x ConvFwdAlgoPerformance
+	x.Algo = ConvFwdAlgo(input.algo)
+	x.Status = Status(input.status)
+	x.Time = float32(input.time)
+	x.Memory = uint(input.memory)
+	x.Determinism = Determinism(input.determinism)
+	x.MathType = MathType(input.mathType)
+
+	return x
+}
+func (cb ConvFwdAlgoPerformance) String() string {
+	return fmt.Sprintf(
+		"Convolution Forward Algorithm Performance\n"+
+			"-----------------------------------------\n"+
+			"Algo: %s\n"+
+			"Status: %s\n"+
+			"Time: %v\n"+
+			"Memory: %v\n"+
+			"Determinism %s\n"+
+			"MathType: %s\n",
+		cb.Algo.String(), cb.Status.GetErrorString(), cb.Time, cb.Memory, cb.Determinism.String(), cb.MathType.String())
+}
+
 //Algo returns an Algorithm Struct
 func (c ConvFwdAlgo) Algo() Algorithm {
+	return makealgorithmforfwd(c.c())
+}
+func makealgorithmforfwd(algo C.cudnnConvolutionFwdAlgo_t) Algorithm {
 	var algorithm C.cudnnAlgorithm_t
-	C.MakeAlgorithmforFWD(&algorithm, c.c())
+	C.MakeAlgorithmforFWD(&algorithm, algo)
 	return Algorithm(algorithm)
 }
 
 //GetForwardAlgorithmMaxCount returns the max number of Algorithm
 func (c *ConvolutionD) getForwardAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
-	x := Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionForwardAlgorithmMaxCount")
+	x := Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("(c *ConvolutionD) getForwardAlgorithmMaxCount(handle *Handle)")
 
 	return int32(count), x
 
@@ -46,7 +83,14 @@ func (c *ConvolutionD) FindForwardAlgorithm(
 	}
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, C.int(requestedAlgoCount), &actualalgocount, &perfResults[0])).error("FindConvolutionForwardAlgorithm")
+	err = Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x,
+		xD.descriptor,
+		wD.descriptor,
+		c.descriptor,
+		yD.descriptor,
+		C.int(requestedAlgoCount),
+		&actualalgocount,
+		&perfResults[0])).error("(c *ConvolutionD) FindForwardAlgorithm")
 
 	results := make([]ConvFwdAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -75,10 +119,35 @@ func (c *ConvolutionD) FindForwardAlgorithmEx(
 	var actualalgocount C.int
 
 	if wspace == nil {
-		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(), c.descriptor, yD.descriptor, y.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], nil, C.size_t(0))).error("FindConvolutionForwardAlgorithmEx")
+		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+			handle.x,
+			xD.descriptor,
+			x.Ptr(),
+			wD.descriptor,
+			w.Ptr(),
+			c.descriptor,
+			yD.descriptor,
+			y.Ptr(),
+			C.int(reqAlgoCount),
+			&actualalgocount,
+			&perfResults[0],
+			nil, C.size_t(0))).error("(c *ConvolutionD) FindForwardAlgorithmEx")
 
 	} else {
-		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(), c.descriptor, yD.descriptor, y.Ptr(), C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("FindConvolutionForwardAlgorithmEx")
+		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+			handle.x,
+			xD.descriptor,
+			x.Ptr(),
+			wD.descriptor,
+			w.Ptr(),
+			c.descriptor,
+			yD.descriptor,
+			y.Ptr(),
+			C.int(reqAlgoCount),
+			&actualalgocount,
+			&perfResults[0],
+			wspace.Ptr(),
+			C.size_t(wspacesize))).error("(c *ConvolutionD) FindForwardAlgorithmEx")
 
 	}
 
@@ -108,7 +177,15 @@ func (c *ConvolutionD) FindForwardAlgorithmExUS(
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, reqAlgoCount)
 	var actualalgocount C.int
 
-	err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(handle.x, xD.descriptor, x, wD.descriptor, w, c.descriptor, yD.descriptor, y, C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace, C.size_t(wspacesize))).error("FindConvolutionForwardAlgorithmEx")
+	err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+		handle.x,
+		xD.descriptor, x,
+		wD.descriptor, w,
+		c.descriptor,
+		yD.descriptor, y,
+		C.int(reqAlgoCount), &actualalgocount,
+		&perfResults[0],
+		wspace, C.size_t(wspacesize))).error("(c *ConvolutionD) FindForwardAlgorithmExUS")
 
 	results := make([]ConvFwdAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -127,7 +204,14 @@ func (c *ConvolutionD) GetForwardAlgorithm(
 	pref ConvolutionForwardPref,
 	wsmemlimit uint) (ConvFwdAlgo, error) {
 	var algo C.cudnnConvolutionFwdAlgo_t
-	err := Status(C.cudnnGetConvolutionForwardAlgorithm(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionForwardAlgorithm")
+	err := Status(C.cudnnGetConvolutionForwardAlgorithm(
+		handle.x,
+		xD.descriptor,
+		wD.descriptor,
+		c.descriptor,
+		yD.descriptor,
+		pref.c(),
+		C.size_t(wsmemlimit), &algo)).error("(c *ConvolutionD) GetForwardAlgorithm")
 
 	return ConvFwdAlgo(algo), err
 }
@@ -146,7 +230,15 @@ func (c *ConvolutionD) GetForwardAlgorithmV7(
 	}
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnGetConvolutionForwardAlgorithm_v7(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, C.int(requestedAlgoCount), &actualalgocount, &perfResults[0])).error("FindConvolutionForwardAlgorithm")
+	err = Status(C.cudnnGetConvolutionForwardAlgorithm_v7(
+		handle.x,
+		xD.descriptor,
+		wD.descriptor,
+		c.descriptor,
+		yD.descriptor,
+		C.int(requestedAlgoCount),
+		&actualalgocount,
+		&perfResults[0])).error("(c *ConvolutionD) GetForwardAlgorithmV7")
 
 	results := make([]ConvFwdAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -156,29 +248,7 @@ func (c *ConvolutionD) GetForwardAlgorithmV7(
 	return results, err
 }
 
-func (c DeConvFwdAlgo) toString() string {
-
-	switch c {
-	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0):
-		return fmt.Sprint("ConvBwdDataAlgo0")
-	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1):
-		return fmt.Sprint("ConvBwdDataAlgo1")
-	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT):
-		return fmt.Sprint("ConvBwdDataAlgoFFT")
-	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING):
-		return fmt.Sprint("ConvBwdDataAlgoFFTTiling")
-	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD):
-		return fmt.Sprint("ConvBwdDataAlgoWinograd")
-	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED):
-		return fmt.Sprint("ConvBwdDataAlgoWinoGradNonFused")
-	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT):
-		return fmt.Sprint("ConvBwdDataAlgoCount")
-
-	default:
-		return fmt.Sprint("Not supported")
-	}
-}
-func (c ConvFwdAlgo) toString() string {
+func (c ConvFwdAlgo) String() string {
 	var x string
 	switch c {
 	case ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM):
@@ -203,39 +273,5 @@ func (c ConvFwdAlgo) toString() string {
 		x = "not supported algo --  to be honest ... I don't know how you got here"
 
 	}
-	return x
-}
-
-//Print prints a human readable copy of the algorithm
-func (algoPerf ConvFwdAlgoPerformance) Print() {
-	fmt.Println("Convolution Forward Filter Algorithm Performance")
-	fmt.Println("-------------------------------------------------")
-	ConvBwdFiltAlgo(algoPerf.Algo).print()
-	fmt.Println("Status:", Status(algoPerf.Algo).GetErrorString())
-	fmt.Println("Time:", algoPerf.Time)
-	fmt.Println("Memory:", algoPerf.Memory)
-	fmt.Println("Determinism:", algoPerf.Determinism)
-	fmt.Println("MathType:", algoPerf.MathType)
-}
-
-//ConvFwdAlgoPerformance is a struct that holds the performance of the algorithm
-type ConvFwdAlgoPerformance struct {
-	Algo        ConvFwdAlgo `json:"algo,omitempty"`
-	Status      Status      `json:"status,omitempty"`
-	Time        float32     `json:"time,omitempty"`
-	Memory      uint        `json:"memory,omitempty"`
-	Determinism Determinism `json:"determinism,omitempty"`
-	MathType    MathType    `json:"math_type,omitempty"`
-}
-
-func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFwdAlgoPerformance {
-	var x ConvFwdAlgoPerformance
-	x.Algo = ConvFwdAlgo(input.algo)
-	x.Status = Status(input.status)
-	x.Time = float32(input.time)
-	x.Memory = uint(input.memory)
-	x.Determinism = Determinism(input.determinism)
-	x.MathType = MathType(input.mathType)
-
 	return x
 }

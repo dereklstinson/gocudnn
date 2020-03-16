@@ -17,18 +17,52 @@ import (
 	"github.com/dereklstinson/cutil"
 )
 
+//ConvBwdDataAlgoPerformance is the return struct in the finding algorithm funcs
+type ConvBwdDataAlgoPerformance struct {
+	Algo        ConvBwdDataAlgo `json:"algo,omitempty"`
+	Status      Status          `json:"status,omitempty"`
+	Time        float32         `json:"time,omitempty"`
+	Memory      uint            `json:"memory,omitempty"`
+	Determinism Determinism     `json:"determinism,omitempty"`
+	MathType    MathType        `json:"math_type,omitempty"`
+}
+
+func convertConvBwdDataAlgoPerformance(input C.cudnnConvolutionBwdDataAlgoPerf_t) ConvBwdDataAlgoPerformance {
+	var x ConvBwdDataAlgoPerformance
+	x.Algo = ConvBwdDataAlgo(input.algo)
+	x.Status = Status(input.status)
+	x.Time = float32(input.time)
+	x.Memory = uint(input.memory)
+	x.Determinism = Determinism(input.determinism)
+	x.MathType = MathType(input.mathType)
+	return x
+}
+func (cb ConvBwdDataAlgoPerformance) String() string {
+	return fmt.Sprintf("Convolution Backward Data Algorithm Performance\n"+
+		"-------------------------------------------------\n"+
+		"Algo: %s\n"+
+		"Status: %s\n"+
+		"Time: %v\n"+
+		"Memory: %v\n"+
+		"Determinism %v\n"+
+		"MathType: %v\n", cb.Algo.String(), cb.Status.GetErrorString(), cb.Time, cb.Memory, cb.Determinism, cb.MathType)
+}
+
 //Algo returns an Algorithm struct
 func (c ConvBwdDataAlgo) Algo() Algorithm {
-	var algorithm C.cudnnAlgorithm_t
-	C.MakeAlgorithmforBWDData(&algorithm, c.c())
-	return Algorithm(algorithm)
+	return makealgorithmforbwddata(c.c())
 
+}
+func makealgorithmforbwddata(algo C.cudnnConvolutionBwdDataAlgo_t) Algorithm {
+	var algorithm C.cudnnAlgorithm_t
+	C.MakeAlgorithmforBWDData(&algorithm, algo)
+	return Algorithm(algorithm)
 }
 
 //GetBackwardDataAlgorithmMaxCount returns the max number of Algorithm
 func (c *ConvolutionD) getBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
-	x := Status(C.cudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionBackwardDataAlgorithmMaxCount")
+	x := Status(C.cudnnGetConvolutionBackwardDataAlgorithmMaxCount(handle.x, &count)).error("(c *ConvolutionD) getBackwardDataAlgorithmMaxCount(handle *Handle)")
 
 	return int32(count), x
 
@@ -56,7 +90,7 @@ func (c *ConvolutionD) FindBackwardDataAlgorithm(
 		C.int(requestedAlgoCount),
 		&actualalgocount,
 		&perfResults[0],
-	)).error("FindConvolutionBackwardDataAlgorithm")
+	)).error("(c *ConvolutionD) FindBackwardDataAlgorithm")
 
 	results := make([]ConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -86,7 +120,7 @@ func (c *ConvolutionD) FindBackwardDataAlgorithmEx(
 		c.descriptor,
 		dxD.descriptor, dx.Ptr(),
 		C.int(reqAlgoCount), &actualalgocount,
-		&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("cudnnFindConvolutionBackwardDataAlgorithmEx")
+		&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *ConvolutionD) FindBackwardDataAlgorithmEx")
 
 	results := make([]ConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -117,7 +151,7 @@ func (c *ConvolutionD) FindBackwardDataAlgorithmExUS(
 		c.descriptor,
 		dxD.descriptor, dx,
 		C.int(reqAlgoCount), &actualalgocount,
-		&perfResults[0], wspace, C.size_t(wspacesize))).error("cudnnFindConvolutionBackwardDataAlgorithmEx")
+		&perfResults[0], wspace, C.size_t(wspacesize))).error(" (c *ConvolutionD) FindBackwardDataAlgorithmExUS")
 
 	results := make([]ConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -186,7 +220,7 @@ func (c *ConvolutionD) GetBackwardDataAlgorithm(
 		dyD.descriptor,
 		c.descriptor,
 		dxD.descriptor,
-		pref.c(), (C.size_t)(wspaceSIBlimit), &algo)).error("GetConvolutionBackwardDataAlgorithm")
+		pref.c(), (C.size_t)(wspaceSIBlimit), &algo)).error("(c *ConvolutionD) GetBackwardDataAlgorithm")
 
 	return ConvBwdDataAlgo(algo), err
 }
@@ -215,7 +249,7 @@ func (c *ConvolutionD) GetBackwardDataAlgorithmV7(
 		dxD.descriptor,
 		C.int(requestedAlgoCount),
 		&actualalgocount,
-		&perfResults[0])).error("GetConvolutionBackwardDataAlgorithmV7")
+		&perfResults[0])).error("(c *ConvolutionD) GetBackwardDataAlgorithmV7")
 	results := make([]ConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertConvBwdDataAlgoPerformance(perfResults[i])
@@ -225,90 +259,25 @@ func (c *ConvolutionD) GetBackwardDataAlgorithmV7(
 	return results, err
 }
 
-//ConvBwdDataAlgoPerf is used to find the best/fastest algorithms
-//type ConvBwdDataAlgoPerformance C.cudnnConvolutionBwdDataAlgoPerf_t
+func (c ConvBwdDataAlgo) String() string {
 
-//ConvBwdDataAlgoPerformance is the return struct in the finding algorithm funcs
-type ConvBwdDataAlgoPerformance struct {
-	Algo        ConvBwdDataAlgo `json:"algo,omitempty"`
-	Status      Status          `json:"status,omitempty"`
-	Time        float32         `json:"time,omitempty"`
-	Memory      uint            `json:"memory,omitempty"`
-	Determinism Determinism     `json:"determinism,omitempty"`
-	MathType    MathType        `json:"math_type,omitempty"`
-}
-
-func convertConvBwdDataAlgoPerformance(input C.cudnnConvolutionBwdDataAlgoPerf_t) ConvBwdDataAlgoPerformance {
-	var x ConvBwdDataAlgoPerformance
-	x.Algo = ConvBwdDataAlgo(input.algo)
-	x.Status = Status(input.status)
-	x.Time = float32(input.time)
-	x.Memory = uint(input.memory)
-	x.Determinism = Determinism(input.determinism)
-	x.MathType = MathType(input.mathType)
-	return x
-}
-
-func (c ConvBwdDataAlgo) print() {
 	switch c {
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0):
-		fmt.Println("ConvBwdDataAlgo0")
+		return fmt.Sprint("ConvBwdDataAlgo0")
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1):
-		fmt.Println("ConvBwdDataAlgo1")
+		return fmt.Sprint("ConvBwdDataAlgo1")
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT):
-		fmt.Println("ConvBwdDataAlgoFFT")
+		return fmt.Sprint("ConvBwdDataAlgoFFT")
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING):
-		fmt.Println("ConvBwdDataAlgoFFTTiling")
+		return fmt.Sprint("ConvBwdDataAlgoFFTTiling")
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD):
-		fmt.Println("ConvBwdDataAlgoWinograd")
+		return fmt.Sprint("ConvBwdDataAlgoWinograd")
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED):
-		fmt.Println("ConvBwdDataAlgoWinoGradNonFused")
+		return fmt.Sprint("ConvBwdDataAlgoWinoGradNonFused")
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT):
-		fmt.Println("ConvBwdDataAlgoCount")
+		return fmt.Sprint("ConvBwdDataAlgoCount")
 
 	default:
-		fmt.Println("Not supported")
+		return fmt.Sprint("Not supported")
 	}
-}
-
-//Print prints a human readable copy of the algorithm
-func (cbd ConvBwdDataAlgoPerformance) Print() {
-	fmt.Println("Convolution Backward Data Algorithm Performance")
-	fmt.Println("-------------------------------------------------")
-	ConvBwdFiltAlgo(cbd.Algo).print()
-	fmt.Println("Status:", Status(cbd.Algo).GetErrorString())
-	fmt.Println("Time:", cbd.Time)
-	fmt.Println("Memory:", cbd.Memory)
-	fmt.Println("Determinism:", cbd.Determinism)
-	fmt.Println("MathType:", cbd.MathType)
-}
-func (c DeConvBwdDataAlgo) print() {
-	fmt.Println(c.toString())
-}
-func (c DeConvBwdDataAlgo) toString() string {
-	var x string
-	switch c {
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM):
-		x = "Implicit Gemm"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM):
-		x = "Implicit Precomp Gemm"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM):
-		x = "Gemm"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT):
-		x = "Direct"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT):
-		x = "FFT"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING):
-		x = "FFT Tiling"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD):
-		x = "WinoGrad"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED):
-		x = "WinoGradNonFused"
-	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT):
-		x = "Count"
-	default:
-		x = "not supported algo --  to be honest ... I don't know how you got here"
-
-	}
-	return x
 }
