@@ -2,10 +2,6 @@ package gocudnn
 
 /*
 #include <cudnn.h>
-
-
-
-
 */
 import "C"
 import (
@@ -130,9 +126,9 @@ func (c *ConvolutionD) SetMathType(mathtype MathType) error {
 //
 func (c *ConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32, error) {
 	dims := make([]C.int, int32(input.dims))
-	x := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, input.dims, &dims[0])).error("GetConvolutionNdForwardOutputDim")
+	err := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, input.dims, &dims[0])).error("GetConvolutionNdForwardOutputDim")
+	return cintToint32(dims), fmt.Errorf("err: %s\ninput: %v\nfilter: %v", err.Error(), input, filter)
 
-	return cintToint32(dims), x
 }
 
 //Destroy destroys the ConvolutionDescriptor. If GC is set then it only returns nil.
@@ -782,13 +778,13 @@ func (c *ConvBwdDataPref) NoWorkSpace() ConvBwdDataPref {
 
 //PreferFastest  sets c to ConvBwdDataPref( C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST) and returns value of c
 func (c *ConvBwdDataPref) PreferFastest() ConvBwdDataPref {
-	*c = ConvBwdDataPref(C.CUDNN_CONVOLUTION_FWD_PREFER_FASTEST)
+	*c = ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST)
 	return *c
 }
 
 //SpecifyWorkSpaceLimit  sets c to ConvBwdDataPref( C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)and returns value of c
 func (c *ConvBwdDataPref) SpecifyWorkSpaceLimit() ConvBwdDataPref {
-	*c = ConvBwdDataPref(C.CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT)
+	*c = ConvBwdDataPref(C.CUDNN_CONVOLUTION_BWD_DATA_SPECIFY_WORKSPACE_LIMIT)
 	return *c
 }
 

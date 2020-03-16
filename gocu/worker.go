@@ -13,21 +13,23 @@ type Device interface {
 type Worker struct {
 	w       chan (func() error)
 	errChan chan error
+	d       Device
+	err     error
 }
 
 //NewWorker creates a worker that works on a single host thread
 func NewWorker(d Device) (w *Worker) {
 	w = new(Worker)
-
-	w.errChan = make(chan error, 1)
-	w.w = make(chan (func() error), 1)
-	go w.start(d)
+	w.d = d
+	w.errChan = make(chan error, 2)
+	w.w = make(chan (func() error), 2)
+	go w.start()
 	return w
 }
-func (w *Worker) start(d Device) {
+func (w *Worker) start() {
 	runtime.LockOSThread()
-	if d != nil {
-		d.Set()
+	if w.d != nil {
+		w.d.Set()
 	}
 	for x := range w.w {
 

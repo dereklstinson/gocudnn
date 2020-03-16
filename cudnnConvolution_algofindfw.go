@@ -156,6 +156,28 @@ func (c *ConvolutionD) GetForwardAlgorithmV7(
 	return results, err
 }
 
+func (c DeConvFwdAlgo) toString() string {
+
+	switch c {
+	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0):
+		return fmt.Sprint("ConvBwdDataAlgo0")
+	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1):
+		return fmt.Sprint("ConvBwdDataAlgo1")
+	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT):
+		return fmt.Sprint("ConvBwdDataAlgoFFT")
+	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING):
+		return fmt.Sprint("ConvBwdDataAlgoFFTTiling")
+	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD):
+		return fmt.Sprint("ConvBwdDataAlgoWinograd")
+	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED):
+		return fmt.Sprint("ConvBwdDataAlgoWinoGradNonFused")
+	case DeConvFwdAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT):
+		return fmt.Sprint("ConvBwdDataAlgoCount")
+
+	default:
+		return fmt.Sprint("Not supported")
+	}
+}
 func (c ConvFwdAlgo) toString() string {
 	var x string
 	switch c {

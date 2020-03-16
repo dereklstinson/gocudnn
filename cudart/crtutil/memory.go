@@ -24,22 +24,31 @@ type ReadWriter struct {
 //Allocator alocates memory to the current device
 type Allocator struct {
 	s gocu.Streamer
+	d gocu.Device
+	w *gocu.Worker
 }
 
 //CreateAllocator creates an allocator whose memory it creates does async mem copies.
-func CreateAllocator(s gocu.Streamer) (a *Allocator) {
+func CreateAllocator(s gocu.Streamer, d gocu.Device) (a *Allocator) {
 	a = new(Allocator)
 	a.s = s
+	a.d = d
+	a.w = gocu.NewWorker(d)
 	return a
 }
 
 //AllocateMemory allocates memory on the current device
 func (a *Allocator) AllocateMemory(size uint) (r *ReadWriter, err error) {
-	r = new(ReadWriter)
-	r.size = size
-	cudart.MallocManagedGlobal(r, size)
-	r.s = a.s
-	return r, nil
+
+	err = a.w.Work(func() error {
+		r = new(ReadWriter)
+		r.size = size
+		err = cudart.MallocManagedGlobal(r, size)
+		r.s = a.s
+		return err
+	})
+
+	return r, err
 }
 
 //NewReadWriter returns ReadWriter from already allocated memory passed in p.  It just needs to know the size of the memory.

@@ -8,9 +8,10 @@ package gocudnn
 import "C"
 import (
 	"fmt"
-	"github.com/dereklstinson/cutil"
 	"runtime"
 	"unsafe"
+
+	"github.com/dereklstinson/cutil"
 )
 
 func (m MathType) string() string {
@@ -478,7 +479,7 @@ func (d *Determinism) Non() Determinism { *d = Determinism(C.CUDNN_NON_DETERMINI
 func (d *Determinism) Deterministic() Determinism { *d = Determinism(C.CUDNN_DETERMINISTIC); return *d }
 
 //ToString outputs a string of the type
-func (d Determinism) ToString() string {
+func (d Determinism) String() string {
 	if d == Determinism(C.CUDNN_NON_DETERMINISTIC) {
 		return "Non-Deterministic"
 	}

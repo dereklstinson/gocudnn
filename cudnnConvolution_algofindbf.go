@@ -199,6 +199,29 @@ func (c ConvBwdFiltAlgo) print() {
 	}
 }
 
+func (c ConvBwdFiltAlgo) string() string {
+	switch c {
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0):
+		return fmt.Sprint("ConvBwdFiltAlgo0")
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1):
+		return fmt.Sprint("ConvBwdFiltAlgo1")
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT):
+		return fmt.Sprint("ConvBwdFiltAlgoFFT")
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3):
+		return fmt.Sprint("ConvBwdFiltAlgo3")
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD):
+		return fmt.Sprint("ConvBwdFiltAlgoWinGrad")
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED):
+		return fmt.Sprint("ConvBwdFiltAlgoNonFused")
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING):
+		return fmt.Sprint("ConvBwdFiltAlgoFFTTiling")
+	case ConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT):
+		return fmt.Sprint("ConvBwdFiltAlgoCount")
+	default:
+		return fmt.Sprint("Not supported")
+	}
+}
+
 //ConvBwdFiltAlgoPerformance is the return struct in the finding algorithm funcs
 type ConvBwdFiltAlgoPerformance struct {
 	Algo        ConvBwdFiltAlgo `json:"algo,omitempty"`
@@ -218,6 +241,16 @@ func convertConvBwdFiltAlgoPerformance(input C.cudnnConvolutionBwdFilterAlgoPerf
 	x.Determinism = Determinism(input.determinism)
 	x.MathType = MathType(input.mathType)
 	return x
+}
+func (cb ConvBwdFiltAlgoPerformance) String() string {
+	return fmt.Sprintf("Convolution Backward Filter Algorithm Performance\n"+
+		"-------------------------------------------------\n"+
+		"Algo: %s\n"+
+		"Status: %s\n"+
+		"Time: %v\n"+
+		"Memory: %v\n"+
+		"Determinism %v\n"+
+		"MathType: %v\n", cb.Algo.string(), cb.Status.GetErrorString(), cb.Time, cb.Memory, cb.Determinism, cb.MathType)
 }
 
 //Print prints a human readable copy of the algorithm

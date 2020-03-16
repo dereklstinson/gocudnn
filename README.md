@@ -15,6 +15,10 @@ extra cudnn:
 
 I made a BatchNormalD descriptor and BatchNormDEx descriptor.  You will call this with a "Create" function. and set it like the other descriptors.  
 
+I also made a deconvoltuion descriptor.  It hasn't been tested yet.  Deconvolution works like a convolution except backward data is forward and forward is backward data.  
+I tried giving giving them there own algo finders and all.  The thing with a deconvolution is that the filter channels will be the output channel, and the filter neurons must match the input channels.
+
+
 ## gocu folder
 
 The gocu folder contains interfaces that interconnect the different sub packages.  To help parallelize your code use the type Worker.  It contains the method work. Where it takes a function at sends it to to be worked on a dedicated thread host thread.  Like if you wanted to make a new Context to handle gpu management.

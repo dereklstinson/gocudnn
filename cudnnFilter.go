@@ -6,8 +6,10 @@ package gocudnn
 import "C"
 
 import (
-	"github.com/dereklstinson/cutil"
+	"fmt"
 	"runtime"
+
+	"github.com/dereklstinson/cutil"
 )
 
 //FilterD is the struct holding discriptor information for cudnnFilterDescriptor_t
@@ -18,6 +20,16 @@ type FilterD struct {
 }
 
 const filterdescriptorallndtest = true
+
+func (f *FilterD) String() string {
+	dtype, frmt, dims, err := f.Get()
+	if err != nil {
+		return fmt.Sprintf("FilterDescriptor{error in pulling values")
+	}
+
+	return fmt.Sprintf("FilterDescriptor{\nFormat: %s\nType  : %s\nShape : %v\n}\n", frmt.String(), dtype.String(), dims)
+
+}
 
 /*
 //TensorD returns the tensor descripter of FilterD.  //Kind of a hack

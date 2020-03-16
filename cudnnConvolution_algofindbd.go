@@ -282,3 +282,33 @@ func (cbd ConvBwdDataAlgoPerformance) Print() {
 	fmt.Println("Determinism:", cbd.Determinism)
 	fmt.Println("MathType:", cbd.MathType)
 }
+func (c DeConvBwdDataAlgo) print() {
+	fmt.Println(c.toString())
+}
+func (c DeConvBwdDataAlgo) toString() string {
+	var x string
+	switch c {
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM):
+		x = "Implicit Gemm"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM):
+		x = "Implicit Precomp Gemm"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_GEMM):
+		x = "Gemm"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_DIRECT):
+		x = "Direct"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT):
+		x = "FFT"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING):
+		x = "FFT Tiling"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD):
+		x = "WinoGrad"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED):
+		x = "WinoGradNonFused"
+	case DeConvBwdDataAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_COUNT):
+		x = "Count"
+	default:
+		x = "not supported algo --  to be honest ... I don't know how you got here"
+
+	}
+	return x
+}
