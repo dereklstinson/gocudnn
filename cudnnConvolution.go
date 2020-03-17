@@ -41,7 +41,7 @@ func (c *ConvolutionD) String() string {
 				"DataType: %s\n"+
 				"Pad: %v\n"+
 				"Stride: %v\n"+
-				"Dilation %v\n", errst, errst, errst, errst, errst)
+				"Dilation: %v\n", errst, errst, errst, errst, errst)
 
 	}
 	return fmt.Sprintf(
@@ -51,7 +51,8 @@ func (c *ConvolutionD) String() string {
 			"DataType: %s\n"+
 			"Pad: %v\n"+
 			"Stride: %v\n"+
-			"Dilation %v\n", cmode.String(), dtype.String(), pad, stride, dilation)
+			"Dilation: %v\n"+
+			"Address: %p", cmode.String(), dtype.String(), pad, stride, dilation, c)
 
 }
 
@@ -153,7 +154,7 @@ func (c *ConvolutionD) SetMathType(mathtype MathType) error {
 func (c *ConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32, error) {
 	dims := make([]C.int, int32(input.dims))
 	err := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, input.dims, &dims[0])).error("GetConvolutionNdForwardOutputDim")
-	return cintToint32(dims), fmt.Errorf("err: %s\ninput: %v\nfilter: %v", err.Error(), input, filter)
+	return cintToint32(dims), err
 
 }
 
