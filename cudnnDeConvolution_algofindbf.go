@@ -165,26 +165,28 @@ func (c *DeConvolutionD) GetBackwardFilterAlgorithm(
 	return DeConvBwdFiltAlgo(algo), err
 }
 func (c DeConvBwdFiltAlgo) String() string {
+	var x string
 	switch c {
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0):
-		return fmt.Sprint("DeConvBwdFiltAlgo0")
+		x = "DeConvBwdFiltAlgo0"
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1):
-		return fmt.Sprint("DeConvBwdFiltAlgo1")
+		x = "DeConvBwdFiltAlgo1"
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT):
-		return fmt.Sprint("DeConvBwdFiltAlgoFFT")
+		x = "DeConvBwdFiltAlgoFFT"
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3):
-		return fmt.Sprint("DeConvBwdFiltAlgo3")
+		x = "DeConvBwdFiltAlgo3"
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD):
-		return fmt.Sprint("DeConvBwdFiltAlgoWinGrad")
+		x = "DeConvBwdFiltAlgoWinGrad"
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED):
-		return fmt.Sprint("DeConvBwdFiltAlgoNonFused")
+		x = "DeConvBwdFiltAlgoNonFused"
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING):
-		return fmt.Sprint("DeConvBwdFiltAlgoFFTTiling")
+		x = "DeConvBwdFiltAlgoFFTTiling"
 	case DeConvBwdFiltAlgo(C.CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT):
-		return fmt.Sprint("DeConvBwdFiltAlgoCount")
+		x = "DeConvBwdFiltAlgoCount"
 	default:
-		return fmt.Sprint("Not supported")
+		x = "Unsupported Flag"
 	}
+	return "DeConvBwdFiltAlgo" + x
 }
 
 //DeConvBwdFiltAlgoPerformance is the return struct in the finding algorithm funcs
@@ -198,14 +200,7 @@ type DeConvBwdFiltAlgoPerformance struct {
 }
 
 func (cb DeConvBwdFiltAlgoPerformance) String() string {
-	return fmt.Sprintf("DeConvolution Backward Filter Algorithm Performance\n"+
-		"-------------------------------------------------\n"+
-		"Algo: %s\n"+
-		"Status: %s\n"+
-		"Time: %v\n"+
-		"Memory: %v\n"+
-		"Determinism %v\n"+
-		"MathType: %v\n", cb.Algo.String(), cb.Status.GetErrorString(), cb.Time, cb.Memory, cb.Determinism, cb.MathType)
+	return fmt.Sprintf("DeConvBwdFiltAlgoPerformance{\n%v,\n%v,\nTime: %v,\nMemory: %v,\n%v,\n%v,\n}\n", cb.Algo, cb.Status, cb.Time, cb.Memory, cb.Determinism, cb.MathType)
 }
 
 func convertDeConvBwdFiltAlgoPerformance(input C.cudnnConvolutionBwdFilterAlgoPerf_t) DeConvBwdFiltAlgoPerformance {

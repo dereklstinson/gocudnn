@@ -6,6 +6,7 @@ package gocudnn
 */
 import "C"
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/dereklstinson/cutil"
@@ -13,7 +14,6 @@ import (
 
 //SoftMaxD holds the soft max flags and soft max funcs
 type SoftMaxD struct {
-	set  bool
 	algo C.cudnnSoftmaxAlgorithm_t
 	mode C.cudnnSoftmaxMode_t
 }
@@ -26,6 +26,7 @@ func CreateSoftMaxDescriptor() *SoftMaxD {
 
 //Set sets the soft max algos.
 func (s *SoftMaxD) Set(algo SoftMaxAlgorithm, mode SoftMaxMode) error {
+
 	s.algo = algo.c()
 	s.mode = mode.c()
 	return nil
@@ -33,8 +34,10 @@ func (s *SoftMaxD) Set(algo SoftMaxAlgorithm, mode SoftMaxMode) error {
 
 //Get gets the softmax descriptor values
 func (s *SoftMaxD) Get() (algo SoftMaxAlgorithm, mode SoftMaxMode, err error) {
-
 	return SoftMaxAlgorithm(s.algo), SoftMaxMode(s.mode), nil
+}
+func (s *SoftMaxD) String() string {
+	return fmt.Sprintf("SoftMaxD{\n%v,\n%v,\n}\n", s.algo, s.mode)
 }
 
 /* Softmax functions: All of the form "output = alpha * Op(inputs) + beta * output" */
@@ -153,6 +156,22 @@ func (s *SoftMaxAlgorithm) Log() SoftMaxAlgorithm {
 }
 
 func (s SoftMaxAlgorithm) c() C.cudnnSoftmaxAlgorithm_t { return C.cudnnSoftmaxAlgorithm_t(s) }
+func (s SoftMaxAlgorithm) String() string {
+	var x string
+	f := s
+	switch s {
+	case f.Fast():
+		x = "Fast"
+	case f.Accurate():
+		x = "Accurate"
+	case f.Log():
+		x = "Log"
+	default:
+		x = "Unsupported Flag"
+
+	}
+	return "SoftMaxAlgorithm: " + x
+}
 
 //SoftMaxMode is used for softmaxmode flags and are exposed through its methods
 type SoftMaxMode C.cudnnSoftmaxMode_t
@@ -167,3 +186,18 @@ func (s *SoftMaxMode) Instance() SoftMaxMode {
 func (s *SoftMaxMode) Channel() SoftMaxMode { *s = SoftMaxMode(C.CUDNN_SOFTMAX_MODE_CHANNEL); return *s }
 
 func (s SoftMaxMode) c() C.cudnnSoftmaxMode_t { return C.cudnnSoftmaxMode_t(s) }
+
+func (s SoftMaxMode) String() string {
+	var x string
+	f := s
+	switch s{
+	case f.Channel():
+		x = "Channel"
+	case f.Instance():
+		x = "Instance"
+	default:
+		x = "Unsupported Flag"
+
+	}
+	return "SoftMaxMode: " + x
+}

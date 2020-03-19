@@ -6,6 +6,7 @@ package gocudnn
 */
 import "C"
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -65,6 +66,14 @@ func (p *PoolingD) Get() (mode PoolingMode, nan NANProp, window, padding, stride
 	)).error("GetPoolingDescriptor-nd")
 	window, padding, stride = cintToint32(windowc), cintToint32(paddingc), cintToint32(stridec)
 	return mode, nan, window, padding, stride, err
+}
+func (p *PoolingD) String() string {
+	mode, nan, w, pad, s, err := p.Get()
+	if err != nil {
+		return fmt.Sprintf("PoolingD{\nError\n}\n")
+	}
+
+	return fmt.Sprintf("PoolingD{\n%v,\n%v,\nWindow: %v,\nPadding: %v,\nStride: %v,\n}\n", mode, nan, w, pad, s)
 }
 
 //GetOutputDims will return the forward output dims from the pooling desc, and the tensor passed
@@ -222,6 +231,24 @@ func (p *PoolingMode) MaxDeterministic() PoolingMode {
 
 func (p PoolingMode) c() C.cudnnPoolingMode_t      { return C.cudnnPoolingMode_t(p) }
 func (p *PoolingMode) cptr() *C.cudnnPoolingMode_t { return (*C.cudnnPoolingMode_t)(p) }
+
+func (p PoolingMode) String() string {
+	var x string
+	f := p
+	switch p {
+	case f.AverageCountExcludePadding():
+		x = "AverageCountExcludePadding"
+	case f.AverageCountIncludePadding():
+		x = "AverageCountIncludePadding"
+	case f.Max():
+		x = "Max"
+	case f.MaxDeterministic():
+		x = "MaxDeterministic"
+	default:
+		x = "Unsupported Flag"
+	}
+	return "PoolingMode" + x
+}
 
 /*
 //Set2D sets pooling descriptor to 2d

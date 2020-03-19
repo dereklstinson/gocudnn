@@ -215,14 +215,7 @@ func (c *DeConvolutionD) GetBackwardDataAlgorithmV7(
 }
 
 func (cb DeConvBwdDataAlgoPerformance) String() string {
-	return fmt.Sprintf("DeConvolution Backward Data Algorithm Performance\n"+
-		"-------------------------------------------------\n"+
-		"Algo: %s\n"+
-		"Status: %s\n"+
-		"Time: %v\n"+
-		"Memory: %v\n"+
-		"Determinism %v\n"+
-		"MathType: %v\n", cb.Algo.String(), cb.Status.GetErrorString(), cb.Time, cb.Memory, cb.Determinism, cb.MathType)
+	return fmt.Sprintf("DeConvBwdDataAlgoPerformance{\n%v,\n%v,\nTime: %v,\nMemory: %v,\n%v,\n%v,\n}\n", cb.Algo, cb.Status, cb.Time, cb.Memory, cb.Determinism, cb.MathType)
 }
 func (c DeConvBwdDataAlgo) String() string {
 	var x string
@@ -249,5 +242,5 @@ func (c DeConvBwdDataAlgo) String() string {
 		x = "not supported algo --  to be honest ... I don't know how you got here"
 
 	}
-	return x
+	return "DeConvBwdDataAlgo: " + x
 }

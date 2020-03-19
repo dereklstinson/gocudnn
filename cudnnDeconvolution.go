@@ -100,9 +100,9 @@ func (c *DeConvolutionD) String() string {
 				"---------------------\n"+
 				"ConvolutionMode: %s\n"+
 				"DataType: %s\n"+
-				"Pad: %v\n"+
-				"Stride: %v\n"+
-				"Dilation %v\n", errst, errst, errst, errst, errst)
+				"Pad: %v,\n"+
+				"Stride: %v,\n"+
+				"Dilation %v,\n", errst, errst, errst, errst, errst)
 
 	}
 	return fmt.Sprintf(
@@ -110,9 +110,9 @@ func (c *DeConvolutionD) String() string {
 			"---------------------\n"+
 			"ConvolutionMode: %s\n"+
 			"DataType: %s\n"+
-			"Pad: %v\n"+
-			"Stride: %v\n"+
-			"Dilation %v\n", cmode.String(), dtype.String(), pad, stride, dilation)
+			"Pad: %v,\n"+
+			"Stride: %v,\n"+
+			"Dilation %v,\n", cmode.String(), dtype.String(), pad, stride, dilation)
 
 }
 

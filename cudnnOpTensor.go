@@ -126,23 +126,25 @@ func (o *OpTensorOp) Sqrt() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_SQRT)
 //Not returns OpTensorOp(C.CUDNN_OP_TENSOR_NOT) and returns the new value
 func (o *OpTensorOp) Not() OpTensorOp { *o = OpTensorOp(C.CUDNN_OP_TENSOR_NOT); return *o }
 func (o OpTensorOp) String() string {
+	var x string
 	oflg := o
 	switch o {
 	case oflg.Add():
-		return "Add"
+		x = "Add"
 	case oflg.Mul():
-		return "Mul"
+		x = "Mul"
 	case oflg.Min():
-		return "Min"
+		x = "Min"
 	case oflg.Max():
-		return "Max"
+		x = "Max"
 	case oflg.Sqrt():
-		return "Sqrt"
+		x = "Sqrt"
 	case oflg.Not():
-		return "Not"
+		x = "Not"
 	default:
-		return "not supported flag for OpTensorOp"
+		x = "Unsupported Flag"
 	}
+	return "OpTensorOp: " + x
 
 }
 func (o OpTensorOp) c() C.cudnnOpTensorOp_t      { return C.cudnnOpTensorOp_t(o) }

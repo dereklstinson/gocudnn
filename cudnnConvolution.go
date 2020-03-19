@@ -33,26 +33,11 @@ const convolutionnd2dtestflag = true
 func (c *ConvolutionD) String() string {
 	cmode, dtype, pad, stride, dilation, err := c.Get()
 	if err != nil {
-		var errst = "error"
-		return fmt.Sprintf(
-			"ConvolutionD Values\n"+
-				"-------------------\n"+
-				"ConvolutionMode: %s\n"+
-				"DataType: %s\n"+
-				"Pad: %v\n"+
-				"Stride: %v\n"+
-				"Dilation: %v\n", errst, errst, errst, errst, errst)
 
+		return fmt.Sprintf("ConvolutionD{\nError\n}\n")
 	}
 	return fmt.Sprintf(
-		"DeConvolutionD Values\n"+
-			"---------------------\n"+
-			"ConvolutionMode: %s\n"+
-			"DataType: %s\n"+
-			"Pad: %v\n"+
-			"Stride: %v\n"+
-			"Dilation: %v\n"+
-			"Address: %p", cmode.String(), dtype.String(), pad, stride, dilation, c)
+		"ConvolutionD{\n%s\n%s\nPad: %v\nStride: %v\nDilation: %v\nAddress: %p\n}\n", cmode.String(), dtype.String(), pad, stride, dilation, c)
 
 }
 
@@ -784,15 +769,17 @@ func (c *ConvolutionMode) CrossCorrelation() ConvolutionMode {
 	return *c
 }
 func (c ConvolutionMode) String() string {
+	var x string
 	cflg := c
 	switch c {
 	case cflg.CrossCorrelation():
-		return "CrossCorrelation"
+		x = "CrossCorrelation"
 	case cflg.Convolution():
-		return "Convolution"
+		x = "Convolution"
 	default:
-		return "Unsupported Flag"
+		x = "Unsupported Flag"
 	}
+	return "ConvolutionMode: " + x
 }
 
 func (c ConvolutionMode) c() C.cudnnConvolutionMode_t { return C.cudnnConvolutionMode_t(c) }
@@ -1099,6 +1086,20 @@ func (r Reorder) c() C.cudnnReorderType_t {
 }
 func (r *Reorder) cptr() *C.cudnnReorderType_t {
 	return (*C.cudnnReorderType_t)(r)
+}
+func (r Reorder) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.Default():
+		x = "Default"
+	case f.NoReorder():
+		x = "NoReorder"
+	default:
+		x = "Unsupported Flag"
+
+	}
+	return "Reorder: " + x
 }
 
 /*

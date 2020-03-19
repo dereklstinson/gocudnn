@@ -16,10 +16,10 @@ type Status C.cudnnStatus_t
 // of the Status.error() method
 const StatusSuccess Status = 0
 
-//GetErrorString is the function that makes a human readable message
-func (status Status) GetErrorString() string {
+//String is the function that makes a human readable message
+func (status Status) String() string {
 	response := C.cudnnGetErrorString(C.cudnnStatus_t(status))
-	return C.GoString(response)
+	return "Cudnn Status: " + C.GoString(response)
 }
 
 //Error will return the error string if there was an error. If not it will return nil
@@ -28,7 +28,7 @@ func (status Status) error(comment string) error {
 		return nil
 	}
 	x := comment + ":"
-	return errors.New(x + "cudnn:" + status.GetErrorString())
+	return errors.New(x + status.String())
 }
 
 func (status Status) c() C.cudnnStatus_t {

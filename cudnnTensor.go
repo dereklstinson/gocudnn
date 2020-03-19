@@ -35,7 +35,7 @@ type TensorD struct {
 }
 
 func (t *TensorD) String() string {
-	return fmt.Sprintf("TensorDescriptor{\nFormat: %s\nType  : %s\nShape : %v\nStride: %v\n}\n", t.frmt.String(), t.dtype.String(), t.shape, t.stride)
+	return fmt.Sprintf("TensorDescriptor{\nFormat: %s\nType  : %s\nShape : %v,\nStride: %v,\n}\n", t.frmt.String(), t.dtype.String(), t.shape, t.stride)
 }
 
 //Dims returns the shape of the tensor
@@ -376,29 +376,31 @@ func (d *DataType) cptr() *C.cudnnDataType_t { return (*C.cudnnDataType_t)(d) }
 
 //ToString will return a human readable string that can be printed for debugging.
 func (d DataType) String() string {
+	var x string
 	var flg DataType
 	switch d {
 	case flg.Float():
-		return "Float"
+		x = "Float"
 	case flg.Double():
-		return "Double"
+		x = "Double"
 	case flg.Int8():
-		return "Int8"
+		x = "Int8"
 	case flg.Int32():
-		return "Int32"
+		x = "Int32"
 	case flg.Half():
-		return "Half"
+		x = "Half"
 	case flg.Int8x32():
-		return "Int8x32"
+		x = "Int8x32"
 	case flg.UInt8():
-		return "UInt8"
+		x = "UInt8"
 	case flg.Int8x4():
-		return "Int8x4"
+		x = "Int8x4"
 	case flg.UInt8x4():
-		return "UInt8x4"
-
+		x = "UInt8x4"
+	default:
+		x = "Unsupported Data Type"
 	}
-	return "ERROR no such flag"
+	return "DataType: " + x
 }
 
 /*
@@ -423,17 +425,22 @@ func (m *MathType) AllowConversion() MathType {
 	*m = MathType(C.CUDNN_TENSOR_OP_MATH_ALLOW_CONVERSION)
 	return *m
 }
-func (m *MathType) String() string {
-	flg := *m
-	switch *m {
+
+//String satisfies the stringer interface
+func (m MathType) String() string {
+	var x string
+	flg := m
+	switch m {
 	case flg.AllowConversion():
-		return "AllowConversion"
+		x = "AllowConversion"
 	case flg.Default():
-		return "Default"
+		x = "Default"
 	case flg.TensorOpMath():
-		return "TensorOpMath"
+		x = "TensorOpMath"
+	default:
+		x = "Unsupported MathType"
 	}
-	return "No Mathtype set"
+	return "MathType: " + x
 }
 func (m MathType) c() C.cudnnMathType_t      { return (C.cudnnMathType_t)(m) }
 func (m *MathType) cptr() *C.cudnnMathType_t { return (*C.cudnnMathType_t)(m) }
@@ -458,6 +465,20 @@ func (p *NANProp) Propigate() NANProp { *p = NANProp(C.CUDNN_PROPAGATE_NAN); ret
 func (p NANProp) c() C.cudnnNanPropagation_t      { return C.cudnnNanPropagation_t(p) }
 func (p *NANProp) cptr() *C.cudnnNanPropagation_t { return (*C.cudnnNanPropagation_t)(p) }
 
+//String satisfies stringer interface.
+func (p NANProp) String() string {
+	var x string
+	f := p
+	switch p {
+	case f.NotPropigate():
+		x = "NotPropigate"
+	case f.Propigate():
+		x = "Propigate"
+	}
+
+	return "NANProp: " + x
+}
+
 /*
 *
 *
@@ -478,12 +499,16 @@ func (d *Determinism) Non() Determinism { *d = Determinism(C.CUDNN_NON_DETERMINI
 //Deterministic sets d to Determinism(C.CUDNN_DETERMINISTIC) and returns the value
 func (d *Determinism) Deterministic() Determinism { *d = Determinism(C.CUDNN_DETERMINISTIC); return *d }
 
-//ToString outputs a string of the type
+//String outputs a string of the type
 func (d Determinism) String() string {
+	var x string
+
 	if d == Determinism(C.CUDNN_NON_DETERMINISTIC) {
-		return "Non-Deterministic"
+		x = "Non-Deterministic"
+	} else {
+		x = "Deterministic"
 	}
-	return "Deterministic "
+	return "Determinism: " + x
 }
 
 //TensorFormat is the type used for flags to set tensor format.
@@ -543,21 +568,23 @@ func (t *TensorFormat) cptr() *C.cudnnTensorFormat_t {
 
 //ToString will return a human readable string that can be printed for debugging.
 func (t TensorFormat) String() string {
+	var x string
 	var flg TensorFormat
 	switch t {
 	case flg.NCHW():
-		return "NCHW"
+		x = "NCHW"
 	case flg.NHWC():
-		return "NHWC"
+		x = "NHWC"
 	case flg.NCHWvectC():
-		return "NCHWvectC"
+		x = "NCHWvectC"
 	case flg.Strided():
-		return "Strided"
+		x = "Strided"
 	case flg.Unknown():
-		return "Unknown"
-
+		x = "Unknown"
+	default:
+		x = "Unsupported Tensor Format"
 	}
-	return "ERROR no such flag"
+	return "TensorFormat: " + x
 }
 
 /*

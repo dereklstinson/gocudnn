@@ -18,6 +18,20 @@ func (r *RNNClipMode) None() RNNClipMode { *r = RNNClipMode(C.CUDNN_RNN_CLIP_NON
 //MinMax sets r to and returns RNNClipMode(C.CUDNN_RNN_CLIP_MINMAX)
 func (r *RNNClipMode) MinMax() RNNClipMode { *r = RNNClipMode(C.CUDNN_RNN_CLIP_MINMAX); return *r }
 
+func (r RNNClipMode) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.MinMax():
+		x = "MinMax"
+	case f.None():
+		x = "None"
+	default:
+		x = "Unsupported Flag"
+	}
+	return "RNNClipMode" + x
+}
+
 //SetClip sets the clip mode into descriptor
 func (r *RNND) SetClip(h *Handle, mode RNNClipMode, nanprop NANProp, lclip, rclip float64) error {
 	return Status(C.cudnnRNNSetClip(h.x, r.descriptor, mode.c(), nanprop.c(), C.double(lclip), C.double(rclip))).error("SetClip")

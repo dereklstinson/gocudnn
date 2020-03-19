@@ -5,6 +5,7 @@ package gocudnn
 */
 import "C"
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -59,6 +60,15 @@ func (r *ReduceTensorD) Get() (reduceop ReduceTensorOp,
 	indicietype IndiciesType, err error) {
 	err = Status(C.cudnnGetReduceTensorDescriptor(r.tensorDesc, reduceop.cptr(), datatype.cptr(), nanprop.cptr(), reducetensorinds.cptr(), indicietype.cptr())).error("SetReduceTensorDescriptor")
 	return reduceop, datatype, nanprop, reducetensorinds, indicietype, err
+}
+
+//String satisfies stringer interface
+func (r *ReduceTensorD) String() string {
+	op, dtype, nanprop, indc, indctype, err := r.Get()
+	if err != nil {
+		return fmt.Sprintf("ReduceTensorD{\nError:%v,\n}\n", err)
+	}
+	return fmt.Sprintf("ReduceTensorD{\n%v,\n%v,\n%v,\n%v,\n%v,\n}\n", op, dtype, nanprop, indc, indctype)
 }
 
 //Destroy destroys the reducetensordescriptor
@@ -227,6 +237,35 @@ func (r *ReduceTensorOp) MulNoZeros() ReduceTensorOp {
 	return *r
 }
 
+//String satisfies stringer interface
+func (r ReduceTensorOp) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.Add():
+		x = "Add"
+	case f.Amax():
+		x = "Amax"
+	case f.Avg():
+		x = "Avg"
+	case f.Max():
+		x = "Max"
+	case f.Min():
+		x = "Min"
+	case f.Mul():
+		x = "Mul"
+	case f.MulNoZeros():
+		x = "MulNoZeros"
+	case f.Norm1():
+		x = "Norm1"
+	case f.Norm2():
+		x = "Norm2"
+	default:
+		x = "Unsupported Flag"
+	}
+	return "ReduceTensorOp: " + x
+}
+
 //ReduceTensorIndices are used for flags exposed by type's methods
 type ReduceTensorIndices C.cudnnReduceTensorIndices_t
 
@@ -249,6 +288,21 @@ func (r *ReduceTensorIndices) cptr() *C.cudnnReduceTensorIndices_t {
 	return (*C.cudnnReduceTensorIndices_t)(r)
 }
 
+//String satisfies stringer interface
+func (r ReduceTensorIndices) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.FlattenedIndicies():
+		x = "FlattenedIndicies"
+	case f.NoIndices():
+		x = "NoIndices"
+	default:
+		x = "Unsupported Flag"
+	}
+	return "ReduceTensorIndices: " + x
+}
+
 //IndiciesType are flags
 type IndiciesType C.cudnnIndicesType_t
 
@@ -265,6 +319,26 @@ func (i *IndiciesType) Type16Bit() IndiciesType { *i = IndiciesType(C.CUDNN_16BI
 func (i *IndiciesType) Type8Bit() IndiciesType      { *i = IndiciesType(C.CUDNN_8BIT_INDICES); return *i }
 func (i IndiciesType) c() C.cudnnIndicesType_t      { return C.cudnnIndicesType_t(i) }
 func (i *IndiciesType) cptr() *C.cudnnIndicesType_t { return (*C.cudnnIndicesType_t)(i) }
+
+//String satisfies stringer interface
+func (i IndiciesType) String() string {
+	var x string
+	f := i
+	switch i {
+	case f.Type16Bit():
+		x = "Type16Bit"
+	case f.Type32Bit():
+		x = "Type32Bit"
+	case f.Type64Bit():
+		x = "Type64Bit"
+	case f.Type8Bit():
+		x = "Type8Bit"
+	default:
+		x = "Unsupported Flag"
+	}
+	return "IndiciesType: " + x
+
+}
 
 /*
 //TensorOP returns the tensorop value for the ReduceTensor

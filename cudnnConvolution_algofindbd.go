@@ -38,14 +38,7 @@ func convertConvBwdDataAlgoPerformance(input C.cudnnConvolutionBwdDataAlgoPerf_t
 	return x
 }
 func (cb ConvBwdDataAlgoPerformance) String() string {
-	return fmt.Sprintf("Convolution Backward Data Algorithm Performance\n"+
-		"-------------------------------------------------\n"+
-		"Algo: %s\n"+
-		"Status: %s\n"+
-		"Time: %v\n"+
-		"Memory: %v\n"+
-		"Determinism %v\n"+
-		"MathType: %v\n", cb.Algo.String(), cb.Status.GetErrorString(), cb.Time, cb.Memory, cb.Determinism, cb.MathType)
+	return fmt.Sprintf("ConvBwdDataAlgoPerformance{\n%v,\n%v,\nTime: %v,\nMemory: %v,\n%v,\n%v,\n}\n", cb.Algo, cb.Status, cb.Time, cb.Memory, cb.Determinism, cb.MathType)
 }
 
 //Algo returns an Algorithm struct
@@ -260,24 +253,26 @@ func (c *ConvolutionD) GetBackwardDataAlgorithmV7(
 }
 
 func (c ConvBwdDataAlgo) String() string {
-
+	var x string
 	switch c {
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_0):
-		return fmt.Sprint("ConvBwdDataAlgo0")
+		x = "ConvBwdDataAlgo0"
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_1):
-		return fmt.Sprint("ConvBwdDataAlgo1")
+		x = "ConvBwdDataAlgo1"
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT):
-		return fmt.Sprint("ConvBwdDataAlgoFFT")
+		x = "ConvBwdDataAlgoFFT"
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING):
-		return fmt.Sprint("ConvBwdDataAlgoFFTTiling")
+		x = "ConvBwdDataAlgoFFTTiling"
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD):
-		return fmt.Sprint("ConvBwdDataAlgoWinograd")
+		x = "ConvBwdDataAlgoWinograd"
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED):
-		return fmt.Sprint("ConvBwdDataAlgoWinoGradNonFused")
+		x = "ConvBwdDataAlgoWinoGradNonFused"
 	case ConvBwdDataAlgo(C.CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT):
-		return fmt.Sprint("ConvBwdDataAlgoCount")
+		x = "ConvBwdDataAlgoCount"
 
 	default:
-		return fmt.Sprint("Not supported")
+		x = "Unsupported Flag"
 	}
+	return "ConvBwdDataAlgo: " + x
+
 }

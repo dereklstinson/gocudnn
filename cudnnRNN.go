@@ -879,6 +879,25 @@ func (r *RNNmode) Lstm() RNNmode { *r = RNNmode(C.CUDNN_RNN_RELU); return *r }
 //Gru  sets r to and returns RNNmode(C.CUDNN_GRU)
 func (r *RNNmode) Gru() RNNmode { *r = RNNmode(C.CUDNN_RNN_RELU); return *r }
 
+func (r RNNmode) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.Gru():
+		x = "Gru"
+	case f.Lstm():
+		x = "Lstm"
+	case f.Relu():
+		x = "Relu"
+	case f.Tanh():
+		x = "Tanh"
+	default:
+		x = "Unsupported Flag"
+
+	}
+	return "RNNmode: " + x
+}
+
 //DirectionMode is used for flags and exposes flags of type through types methods
 type DirectionMode C.cudnnDirectionMode_t
 
@@ -889,6 +908,20 @@ func (r *DirectionMode) Uni() DirectionMode { *r = DirectionMode(C.CUDNN_UNIDIRE
 
 //Bi sets r to and returns DirectionMode(C.CUDNN_BIDIRECTIONAL)
 func (r *DirectionMode) Bi() DirectionMode { *r = DirectionMode(C.CUDNN_BIDIRECTIONAL); return *r }
+func (r DirectionMode) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.Uni():
+		x = "Uni"
+	case f.Bi():
+		x = "Bi"
+	default:
+		x = "Unsupported Flag"
+
+	}
+	return "DirectionMode: " + x
+}
 
 /*
  *   RNN INPUT MODE FLAGS
@@ -903,6 +936,20 @@ func (r *RNNInputMode) Linear() RNNInputMode { *r = RNNInputMode(C.CUDNN_LINEAR_
 //Skip sets r to and returns RNNInputMode(C.CUDNN_SKIP_INPUT)
 func (r *RNNInputMode) Skip() RNNInputMode      { *r = RNNInputMode(C.CUDNN_SKIP_INPUT); return *r }
 func (r RNNInputMode) c() C.cudnnRNNInputMode_t { return C.cudnnRNNInputMode_t(r) }
+func (r RNNInputMode) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.Linear():
+		x = "Linear"
+	case f.Skip():
+		x = "Skip"
+	default:
+		x = "Unsupported Flag"
+
+	}
+	return "RNNInputMode: " + x
+}
 
 /*
  *   RNN ALGO FLAGS
@@ -924,3 +971,22 @@ func (r *RNNAlgo) PersistDynamic() RNNAlgo { *r = RNNAlgo(C.CUDNN_RNN_ALGO_PERSI
 func (r *RNNAlgo) Count() RNNAlgo { *r = RNNAlgo(C.CUDNN_RNN_ALGO_COUNT); return *r }
 
 func (r RNNAlgo) c() C.cudnnRNNAlgo_t { return C.cudnnRNNAlgo_t(r) }
+
+func (r RNNAlgo) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.Standard():
+		x = "Standard"
+	case f.PersistStatic():
+		x = "PersistStatic"
+	case f.PersistDynamic():
+		x = "PersistDynamic"
+	case f.Count():
+		x = "Count"
+	default:
+		x = "Unsupported Flag"
+
+	}
+	return "RNNAlgo: " + x
+}

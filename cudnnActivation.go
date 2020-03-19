@@ -5,6 +5,7 @@ package gocudnn
 */
 import "C"
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -15,6 +16,14 @@ import (
 type ActivationD struct {
 	descriptor C.cudnnActivationDescriptor_t
 	gogc       bool
+}
+
+func (a *ActivationD) String() string {
+	mode, nan, coef, err := a.Get()
+	if err != nil {
+		return fmt.Sprintf("Activation Descriptor{\nError: %s\n}", err)
+	}
+	return fmt.Sprintf("Activation Descriptor{\n%v,\n%v,\ncoef: %v,\n}", mode, nan, coef)
 }
 
 //CreateActivationDescriptor creates an activation descriptor
@@ -319,3 +328,24 @@ func (a *ActivationMode) Identity() ActivationMode {
 }
 func (a ActivationMode) c() C.cudnnActivationMode_t      { return C.cudnnActivationMode_t(a) }
 func (a *ActivationMode) cptr() *C.cudnnActivationMode_t { return (*C.cudnnActivationMode_t)(a) }
+func (a ActivationMode) String() string {
+	f := a
+	var x string
+	switch a {
+	case f.Identity():
+		x = "Identity"
+	case f.Elu():
+		x = "Elu"
+	case f.ClippedRelu():
+		x = "ClippedRelu\n"
+	case f.Tanh():
+		x = "Tanh"
+	case f.Relu():
+		x = "Relu"
+	case f.Sigmoid():
+		x = "Sigmoid"
+	default:
+		x = "Unsupported Format"
+	}
+	return "Activation Mode: " + x
+}

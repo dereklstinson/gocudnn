@@ -38,16 +38,7 @@ func convertConvFwdAlgoPerformance(input C.cudnnConvolutionFwdAlgoPerf_t) ConvFw
 	return x
 }
 func (cb ConvFwdAlgoPerformance) String() string {
-	return fmt.Sprintf(
-		"Convolution Forward Algorithm Performance\n"+
-			"-----------------------------------------\n"+
-			"Algo: %s\n"+
-			"Status: %s\n"+
-			"Time: %v\n"+
-			"Memory: %v\n"+
-			"Determinism %s\n"+
-			"MathType: %s\n",
-		cb.Algo.String(), cb.Status.GetErrorString(), cb.Time, cb.Memory, cb.Determinism.String(), cb.MathType.String())
+	return fmt.Sprintf("ConvFwdAlgoPerformance{\n%v,\n%v,\nTime: %v,\nMemory: %v,\n%v,\n%v,\n}\n", cb.Algo, cb.Status, cb.Time, cb.Memory, cb.Determinism, cb.MathType)
 }
 
 //Algo returns an Algorithm Struct

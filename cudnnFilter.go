@@ -27,7 +27,7 @@ func (f *FilterD) String() string {
 		return fmt.Sprintf("FilterDescriptor{error in pulling values")
 	}
 
-	return fmt.Sprintf("FilterDescriptor{\nFormat: %s\nType  : %s\nShape : %v\n}\n", frmt.String(), dtype.String(), dims)
+	return fmt.Sprintf("FilterDescriptor{\n%v,\n%v,\nShape : %v,\n}\n", frmt, dtype, dims)
 
 }
 

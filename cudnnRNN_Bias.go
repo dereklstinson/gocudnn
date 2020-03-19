@@ -20,6 +20,23 @@ func (b *RNNBiasMode) SingleINP() RNNBiasMode {
 	return *b
 }
 
+//String satisfies the stringer interface
+func (b RNNBiasMode) String() string {
+	var x string
+	f := b
+	switch b {
+	case f.NoBias():
+		x = "NoBias"
+	case f.SingleINP():
+		x = "SingleINP"
+	case f.SingleREC():
+		x = "SingleREC"
+	default:
+		x = "UnSupported Flag"
+	}
+	return "RNNBiasMode: " + x
+}
+
 //Double sets b to and returns RNNBiasMode(C.CUDNN_RNN_DOUBLE_BIAS)
 func (b *RNNBiasMode) Double() RNNBiasMode { *b = RNNBiasMode(C.CUDNN_RNN_DOUBLE_BIAS); return *b }
 

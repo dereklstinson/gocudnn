@@ -134,6 +134,22 @@ func (r *RNNDataLayout) BatchMajorUnPacked() RNNDataLayout {
 	return *r
 }
 
+func (r RNNDataLayout) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.BatchMajorUnPacked():
+		x = "BatchMajorUnPacked"
+	case f.SeqMajorPacked():
+		x = "SeqMajorPacked"
+	case f.SeqMajorUnPacked():
+		x = "SeqMajorUnPacked"
+	default:
+		x = "Unsupported Flag"
+	}
+	return "RNNDataLayout: " + x
+}
+
 //RNNPaddingMode is the padding mode flag
 type RNNPaddingMode C.cudnnRNNPaddingMode_t
 
@@ -154,6 +170,19 @@ func (r *RNNPaddingMode) Disabled() RNNPaddingMode {
 func (r *RNNPaddingMode) Enabled() RNNPaddingMode {
 	*r = RNNPaddingMode(C.CUDNN_RNN_PADDED_IO_ENABLED)
 	return *r
+}
+func (r RNNPaddingMode) String() string {
+	var x string
+	f := r
+	switch r {
+	case f.Disabled():
+		x = "Disabled"
+	case f.Enabled():
+		x = "Enabled"
+	default:
+		x = "Unsupported Flag"
+	}
+	return "RNNPaddingMode: " + x
 }
 
 //SetPaddingMode sets the padding mode with flag passed

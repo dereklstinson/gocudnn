@@ -43,6 +43,19 @@ func (f *FoldingDirection) UnFold() FoldingDirection {
 	return *f
 }
 
+//String satisfies the stringer interface
+func (f FoldingDirection) String() string {
+	var x string
+	flg := f
+	switch f {
+	case flg.Fold():
+		x = "Fold"
+	case flg.UnFold():
+		x = "UnFold"
+	}
+	return "FoldingDirection: " + x
+}
+
 //CreateTransformDescriptor creates a transform descriptor
 //
 //Needs to be Set with Set method.

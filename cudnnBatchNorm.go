@@ -40,10 +40,7 @@ func (b *BatchNormD) Get() (mode BatchNormMode, err error) {
 	return BatchNormMode(b.mode), nil
 }
 func (b *BatchNormD) String() string {
-	return fmt.Sprintf(
-		"BatchNormD Values\n"+
-			"-----------------\n"+
-			"BatchNormMode: %s\n", BatchNormMode(b.mode).String())
+	return fmt.Sprintf("BatchNormD{\n%v,\n}\n", BatchNormMode(b.mode))
 
 }
 
@@ -572,17 +569,19 @@ func (b *BatchNormOps) AddActivation() BatchNormOps {
 	return *b
 }
 func (b BatchNormOps) String() string {
+	var x string
 	bflg := b
 	switch b {
 	case bflg.Normal():
-		return "Normal"
+		x = "Normal"
 	case bflg.Activation():
-		return "Activation"
+		x = "Activation"
 	case bflg.AddActivation():
-		return "AddActivation"
+		x = "AddActivation"
 	default:
-		return "Unsupported Flag"
+		x = "Unsupported Flag"
 	}
+	return "BatchNormOps: " + x
 }
 
 //BatchNormMode used for BatchNormMode Flags
@@ -612,17 +611,20 @@ func (b *BatchNormMode) SpatialPersistent() BatchNormMode {
 	return *b
 }
 func (b BatchNormMode) String() string {
+	var x string
 	bflg := b
+
 	switch b {
 	case bflg.PerActivation():
-		return "PerActivation"
+		x = "PerActivation"
 	case bflg.Spatial():
-		return "Spatial"
+		x = "Spatial"
 	case bflg.SpatialPersistent():
-		return "SpatialPersistent"
+		x = "SpatialPersistent"
 	default:
-		return "Unsupported Flag"
+		x = "Unsupported Flag"
 	}
+	return "BatchNormMode: " + x
 }
 func (b BatchNormMode) c() C.cudnnBatchNormMode_t { return C.cudnnBatchNormMode_t(b) }
 
