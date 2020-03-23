@@ -12,6 +12,13 @@ import (
 	"github.com/dereklstinson/half"
 )
 
+var cudnndebugmode bool
+
+//DebugMode is for debugging code soley for these bindings.
+func DebugMode() {
+	cudnndebugmode = true
+}
+
 //DimMax is the max dims for tensors
 const DimMax = int32(C.CUDNN_DIM_MAX)
 

@@ -48,6 +48,8 @@ func CreateConcatEx(h *Handle) (c *ConcatEx, err error) {
 
 	return c, err
 }
+
+//GetOutputDimsFromInputDims gets the outputdims from inputdims passed
 func (c *ConcatEx) GetOutputDimsFromInputDims(srcs [][]int32, frmt gocudnn.TensorFormat) (outputdims []int32, err error) {
 	if srcs == nil {
 		return nil, errors.New("(c *ConcatEx) GetOutputDimsFromInputDims(srcs [][]int32, format gocudnn.TensorFormat) : srcs can't be nil")
@@ -156,7 +158,6 @@ func (c *ConcatEx) Op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, a
 
 		srcbatchvol := findvol(sdims[1:])
 		//	srctotalvol := findvol(sdims)
-		println("src chan offset:", srcchanoffset)
 		switch ddtype {
 		case dflg.Float():
 			a := float32(alpha)

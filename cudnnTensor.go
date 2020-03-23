@@ -290,8 +290,15 @@ func AddTensor(h *Handle, alpha float64, aD *TensorD, A cutil.Mem, beta float64,
 	a := cscalarbydatatype(aD.dtype, alpha)
 	b := cscalarbydatatype(aD.dtype, beta)
 	s := Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A.Ptr(), b.CPtr(), cD.descriptor, c.Ptr()))
+	err := s.error("AddTensor")
+	if cudnndebugmode {
+		if err != nil {
+			fmt.Printf("AddTensors:aD into cD There values:\n aD: %v, cD: %v", aD, cD)
+			return err
+		}
+	}
 
-	return s.error("AddTensor")
+	return nil
 }
 
 //AddTensorUS is like AddTensor but uses unsafe.Pointer instead of cutil.Mem

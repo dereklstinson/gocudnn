@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/GoCudnn/gocu"

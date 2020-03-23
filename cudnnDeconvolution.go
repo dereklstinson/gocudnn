@@ -490,20 +490,23 @@ func (c *DeConvolutionD) BackwardData(
 		err = Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), wD.descriptor, w.Ptr(),
 			c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspaceSIB), b.CPtr(), dxD.descriptor, dx.Ptr())).error(" (c *DeConvolutionD) BackwardData")
 	}
+	if cudnndebugmode {
+		if err != nil {
 
-	if err != nil {
-		fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", dyD, "\nx :", dy, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspaceSIB, "\nyD: ", dxD, "\ny: ", dx)
-		fdt, ftf, fdim, err1 := wD.Get()
-		fmt.Println("wD vals", fdt, ftf, fdim, err1)
+			fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", dyD, "\nx :", dy, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspaceSIB, "\nyD: ", dxD, "\ny: ", dx)
+			fdt, ftf, fdim, err1 := wD.Get()
+			fmt.Println("wD vals", fdt, ftf, fdim, err1)
 
-		cmode, cdtype, pad, stride, dilation, err1 := c.Get()
-		fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
-		fmt.Println("Algo Settings", algo)
-		actualwspacesize, err := c.GetBackwardWorkspaceSize(handle, wD, dyD, dxD, algo)
+			cmode, cdtype, pad, stride, dilation, err1 := c.Get()
+			fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
+			fmt.Println("Algo Settings", algo)
+			actualwspacesize, err := c.GetBackwardWorkspaceSize(handle, wD, dyD, dxD, algo)
 
-		fmt.Println("Workspace Size Compare passed/wanted:", wspaceSIB, actualwspacesize, err)
-		panic(err)
+			fmt.Println("Workspace Size Compare passed/wanted:", wspaceSIB, actualwspacesize, err)
+			panic(err)
+		}
 	}
+
 	return err
 }
 
@@ -522,21 +525,7 @@ func (c *DeConvolutionD) BackwardDataUS(
 
 	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy, wD.descriptor, w,
 		c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), dxD.descriptor, dx)).error(" (c *DeConvolutionD) BackwardDataUS")
-	/*
-		if err != nil {
-			fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
-			fdt, ftf, fdim, err1 := wD.Get()
-			fmt.Println("wD vals", fdt, ftf, fdim, err1)
 
-			cmode, cdtype, pad, stride, dilation, err1 := c.Get()
-			fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
-			fmt.Println("Algo Settings", algo.toString())
-			actualwspacesize, err := c.GetForwardWorkspaceSize(handle, xD, wD, yD, algo)
-
-			fmt.Println("Workspace Size Compare passed/wanted:", wspacesize, actualwspacesize, err)
-			panic(err)
-		}
-	*/
 	return err
 }
 
