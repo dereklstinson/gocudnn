@@ -172,7 +172,8 @@ func TestDeconvolution(t *testing.T) {
 	}
 	//Now the real test
 	var backwardfilterpref gocudnn.DeConvBwdFilterPref
-	bfconvalgo, err := cdesc.GetBackwardFilterAlgorithm(handle, output, input, filter, backwardfilterpref.NoWorkSpace(), 0)
+	fmt.Printf("%v,%v,%v", output, input, filter)
+	bfconvalgo, err := cdesc.GetBackwardFilterAlgorithm(handle, input, output, filter, backwardfilterpref.NoWorkSpace(), 0)
 	if err != nil {
 		t.Error(err)
 	}
