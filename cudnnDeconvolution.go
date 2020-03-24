@@ -174,33 +174,33 @@ func (c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32
 	flg := frmt
 	switch frmt {
 	case flg.NCHW():
-		neurons := fdims[0]
-		neuronchans := fdims[1]
-		batch := dims[0]
-		tensorchans := dims[1]
-		if neurons != tensorchans {
-			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): neurons != inputchannel size")
+
+		//Deconvolution does the reverse a CNHW should be the format
+		if fdims[0] != dims[1] {
+			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): fdims[0] != dims[1] size")
 		}
+		//	inputchanel := fdims[0]
+		outputchannel := fdims[1]
+		batch := dims[0]
 
 		outputdims := make([]int32, len(fdims))
 		outputdims[0] = batch
-		outputdims[1] = neuronchans
+		outputdims[1] = outputchannel
 		for i := 2; i < len(outputdims); i++ {
 			outputdims[i] = deconvoutputdim(dims[i], fdims[i], pad[i-2], stride[i-2], dilation[i-2])
 		}
 		return outputdims, nil
 	case flg.NHWC():
-		neurons := fdims[0]
-		neuronchans := fdims[len(fdims)-1]
-		batch := dims[0]
-		tensorchans := dims[len(dims)-1]
-		if neurons != tensorchans {
-			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): neurons != inputchannel size")
+		if fdims[0] != dims[len(dims)-1] {
+			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): NHWC: fdims[0] != dims[len(dims)-1]")
 		}
+		//	inputchanel := fdims[0]
+		outputchannel := fdims[len(fdims)-1]
+		batch := dims[0]
 
 		outputdims := make([]int32, len(fdims))
 		outputdims[0] = batch
-		outputdims[len(outputdims)-1] = neuronchans
+		outputdims[len(outputdims)-1] = outputchannel
 		for i := 1; i < len(outputdims)-1; i++ {
 			outputdims[i] = deconvoutputdim(dims[i], fdims[i], pad[i-1], stride[i-1], dilation[i-1])
 		}
@@ -234,17 +234,17 @@ func destroydeconvolutiondescriptor(c *DeConvolutionD) error {
 //GetForwardWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
 func (c *DeConvolutionD) GetForwardWorkspaceSize(
 	handle *Handle,
+	xD *TensorD,
 	wD *FilterD,
-	dyD *TensorD,
-	dxD *TensorD,
-	algo ConvBwdDataAlgo) (uint, error) {
+	yD *TensorD,
+	algo DeConvFwdAlgo) (uint, error) {
 	var sizebytes C.size_t
 	err := Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
 		handle.x,
 		wD.descriptor,
-		dyD.descriptor,
+		yD.descriptor,
 		c.descriptor,
-		dxD.descriptor,
+		xD.descriptor,
 		algo.c(),
 		&sizebytes)).error("GetConvolutionBackwardDataWorkspaceSize")
 
@@ -330,6 +330,29 @@ func (c *DeConvolutionD) ForwardUS(
 	)).error("ConvolutionBackwardData")
 }
 
+//GetBiasDims will return bias dims for the deconvolution.
+func (c *DeConvolutionD) GetBiasDims(w *FilterD) ([]int32, error) {
+	//	outputdims:=c.GetOutputDims(input,w)
+	_, frmt, fdims, err := w.Get()
+	if err != nil {
+		return nil, errors.New("(c *DeConvolutionD) GetBiasDims(w *FilterD): Error in getting filter info")
+	}
+	bias := make([]int32, len(fdims))
+	for i := range bias {
+		bias[i] = int32(1)
+	}
+	flg := frmt
+	switch frmt {
+	case flg.NCHW():
+		bias[1] = fdims[1] //Since the Deconvolution Channel tensor is the output tensor channels
+	case flg.NHWC():
+		bias[len(bias)-1] = fdims[len(bias)-1]
+	default:
+		return nil, errors.New("(c *DeConvolutionD) GetBiasDims(input *TensorD, w *FilterD): Unsupported Format")
+	}
+	return bias, nil
+}
+
 //BackwardBias is used to compute the bias gradient for batch convolution db is returned
 func (c *DeConvolutionD) BackwardBias(
 	handle *Handle,
@@ -366,12 +389,12 @@ func (c *DeConvolutionD) GetBackwardFilterWorkspaceSize(
 	var sizebytes C.size_t
 	err := Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
 		handle.x,
-		xD.descriptor,
 		dyD.descriptor,
+		xD.descriptor,
 		c.descriptor,
 		dwD.descriptor,
 		algo.c(),
-		&sizebytes)).error("GetConvolutionForwardWorkspaceSize")
+		&sizebytes)).error("(c *DeConvolutionD) GetBackwardFilterWorkspaceSize")
 
 	return uint(sizebytes), err
 }
@@ -394,10 +417,10 @@ func (c *DeConvolutionD) BackwardFilter(
 		return Status(C.cudnnConvolutionBackwardFilter(
 			handle.x,
 			a.CPtr(),
-			xD.descriptor,
-			x.Ptr(),
 			dyD.descriptor,
 			dy.Ptr(),
+			xD.descriptor,
+			x.Ptr(),
 			c.descriptor,
 			algo.c(),
 			nil,
@@ -412,10 +435,10 @@ func (c *DeConvolutionD) BackwardFilter(
 	return Status(C.cudnnConvolutionBackwardFilter(
 		handle.x,
 		a.CPtr(),
-		xD.descriptor,
-		x.Ptr(),
 		dyD.descriptor,
 		dy.Ptr(),
+		xD.descriptor,
+		x.Ptr(),
 		c.descriptor,
 		algo.c(),
 		wspace.Ptr(),
@@ -453,8 +476,8 @@ func (c *DeConvolutionD) BackwardFilterUS(
 	)).error("cudnnConvolutionBackwardFilter")
 }
 
-//GetBackwardWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
-func (c *DeConvolutionD) GetBackwardWorkspaceSize(
+//GetBackwardDataWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
+func (c *DeConvolutionD) GetBackwardDataWorkspaceSize(
 	handle *Handle,
 	wD *FilterD,
 	dyD *TensorD,
@@ -500,7 +523,7 @@ func (c *DeConvolutionD) BackwardData(
 			cmode, cdtype, pad, stride, dilation, err1 := c.Get()
 			fmt.Println("Pad Settings", cmode, cdtype, pad, stride, dilation, err1)
 			fmt.Println("Algo Settings", algo)
-			actualwspacesize, err := c.GetBackwardWorkspaceSize(handle, wD, dyD, dxD, algo)
+			actualwspacesize, err := c.GetBackwardDataWorkspaceSize(handle, wD, dyD, dxD, algo)
 
 			fmt.Println("Workspace Size Compare passed/wanted:", wspaceSIB, actualwspacesize, err)
 			panic(err)

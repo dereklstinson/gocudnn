@@ -447,7 +447,7 @@ func (c *ConvolutionD) GetBackwardFilterWorkspaceSize(
 		c.descriptor,
 		dwD.descriptor,
 		algo.c(),
-		&sizebytes)).error("GetConvolutionForwardWorkspaceSize")
+		&sizebytes)).error("(c *ConvolutionD) GetBackwardFilterWorkspaceSize")
 
 	return uint(sizebytes), err
 }
@@ -465,9 +465,12 @@ func (c *ConvolutionD) BackwardFilter(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
+	var err error
 	if wspace == nil {
-
-		return Status(C.cudnnConvolutionBackwardFilter(
+		if cudnndebugmode {
+			fmt.Println("wspace is nil")
+		}
+		err = Status(C.cudnnConvolutionBackwardFilter(
 			handle.x,
 			a.CPtr(),
 			xD.descriptor,
@@ -483,23 +486,57 @@ func (c *ConvolutionD) BackwardFilter(
 			dw.Ptr(),
 		)).error("cudnnConvolutionBackwardFilter")
 
+	} else {
+		if cudnndebugmode {
+			fmt.Println("is not nil")
+		}
+		err = Status(C.cudnnConvolutionBackwardFilter(
+			handle.x,
+			a.CPtr(),
+			xD.descriptor,
+			x.Ptr(),
+			dyD.descriptor,
+			dy.Ptr(),
+			c.descriptor,
+			algo.c(),
+			wspace.Ptr(),
+			C.size_t(wspacesize),
+			b.CPtr(),
+			dwD.descriptor,
+			dw.Ptr(),
+		)).error("cudnnConvolutionBackwardFilter")
 	}
+	if cudnndebugmode {
+		if err != nil {
+			fmt.Println("checking the addresses")
+			fmt.Println("handle.x", handle.x)
+			fmt.Println("a.CPtr()", a.CPtr())
+			fmt.Println("xD.descriptor", xD.descriptor)
+			fmt.Println("x.Ptr()", x.Ptr())
+			fmt.Println("dyD.descriptor", dyD.descriptor)
+			fmt.Println("dy.Ptr()", dy.Ptr())
+			fmt.Println("c.descriptor", c.descriptor)
+			fmt.Println("algo.c()", algo.c())
+			if wspace == nil {
+				fmt.Println("wspace", nil)
+			} else {
+				fmt.Println("wspace.Ptr()", wspace.Ptr())
+			}
+			fmt.Println("wspacesize", wspacesize)
+			fmt.Println("b.Cptr()", b.CPtr())
+			fmt.Println("dwD.descriptor", dwD.descriptor)
+			fmt.Println("dw.Ptr()", dw.Ptr())
 
-	return Status(C.cudnnConvolutionBackwardFilter(
-		handle.x,
-		a.CPtr(),
-		xD.descriptor,
-		x.Ptr(),
-		dyD.descriptor,
-		dy.Ptr(),
-		c.descriptor,
-		algo.c(),
-		wspace.Ptr(),
-		C.size_t(wspacesize),
-		b.CPtr(),
-		dwD.descriptor,
-		dw.Ptr(),
-	)).error("cudnnConvolutionBackwardFilter")
+			//going to check the output
+			fmt.Printf("\nAlgo: %v", algo)
+
+			fmt.Printf("\n%v,\nxD: %v,\ndyD: \n%v,\ndwD: %v", c, xD, dyD, dwD)
+
+			fmt.Println(c.GetOutputDims(xD, dwD))
+		}
+
+	}
+	return err
 }
 
 //BackwardFilterUS is like BackwardFilter but using unsafe.Pointer instead of cutil.Mem

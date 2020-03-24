@@ -28,7 +28,7 @@ func TestConvolution2(t *testing.T) {
 	var tfmt gocudnn.TensorFormat
 	inputdims := []int32{3, 3, 1000, 32, 32}
 
-	err = input.Set(tfmt.Strided(), dtype, inputdims, nil)
+	err = input.Set(tfmt.NCHW(), dtype, inputdims, nil)
 	if err != nil {
 		t.Error(err)
 	}

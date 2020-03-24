@@ -84,13 +84,15 @@ func (c *ConvolutionD) FindBackwardDataAlgorithm(
 		&actualalgocount,
 		&perfResults[0],
 	)).error("(c *ConvolutionD) FindBackwardDataAlgorithm")
-
+	if err != nil {
+		return nil, err
+	}
 	results := make([]ConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertConvBwdDataAlgoPerformance(perfResults[i])
 
 	}
-	return results, err
+	return results, nil
 }
 
 //FindBackwardDataAlgorithmEx finds some algorithms with memory
@@ -106,6 +108,16 @@ func (c *ConvolutionD) FindBackwardDataAlgorithmEx(
 	}
 	perfResults := make([]C.cudnnConvolutionBwdDataAlgoPerf_t, reqAlgoCount)
 	var actualalgocount C.int
+	if wspace == nil {
+		err = Status(C.cudnnFindConvolutionBackwardDataAlgorithmEx(
+			handle.x,
+			wD.descriptor, w.Ptr(),
+			dyD.descriptor, dy.Ptr(),
+			c.descriptor,
+			dxD.descriptor, dx.Ptr(),
+			C.int(reqAlgoCount), &actualalgocount,
+			&perfResults[0], nil, C.size_t(wspacesize))).error("(c *ConvolutionD) FindBackwardDataAlgorithmEx")
+	}
 	err = Status(C.cudnnFindConvolutionBackwardDataAlgorithmEx(
 		handle.x,
 		wD.descriptor, w.Ptr(),
@@ -114,14 +126,16 @@ func (c *ConvolutionD) FindBackwardDataAlgorithmEx(
 		dxD.descriptor, dx.Ptr(),
 		C.int(reqAlgoCount), &actualalgocount,
 		&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *ConvolutionD) FindBackwardDataAlgorithmEx")
-
+	if err != nil {
+		return nil, err
+	}
 	results := make([]ConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertConvBwdDataAlgoPerformance(perfResults[i])
 
 	}
 
-	return results, err
+	return results, nil
 }
 
 //FindBackwardDataAlgorithmExUS is just like FindBackwardDataAlgorithmEx but uses unsafe.Pointer instead of cutil.Mem
@@ -145,14 +159,16 @@ func (c *ConvolutionD) FindBackwardDataAlgorithmExUS(
 		dxD.descriptor, dx,
 		C.int(reqAlgoCount), &actualalgocount,
 		&perfResults[0], wspace, C.size_t(wspacesize))).error(" (c *ConvolutionD) FindBackwardDataAlgorithmExUS")
-
+	if err != nil {
+		return nil, err
+	}
 	results := make([]ConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertConvBwdDataAlgoPerformance(perfResults[i])
 
 	}
 
-	return results, err
+	return results, nil
 }
 
 //GetBackwardDataAlgorithm - This function serves as a heuristic for obtaining the best suited algorithm for (*ConvolutionD)BackwardData() for the given layer specifications.

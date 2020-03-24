@@ -94,14 +94,10 @@ func (c *ConvolutionD) FindForwardAlgorithm(
 //FindForwardAlgorithmEx finds some algorithms with memory
 func (c *ConvolutionD) FindForwardAlgorithmEx(
 	handle *Handle,
-	xD *TensorD,
-	x cutil.Mem,
-	wD *FilterD,
-	w cutil.Mem,
-	yD *TensorD,
-	y cutil.Mem,
-	wspace cutil.Mem,
-	wspacesize uint) ([]ConvFwdAlgoPerformance, error) {
+	xD *TensorD, x cutil.Mem,
+	wD *FilterD, w cutil.Mem,
+	yD *TensorD, y cutil.Mem,
+	wspace cutil.Mem, wspacesize uint) ([]ConvFwdAlgoPerformance, error) {
 	reqAlgoCount, err := c.getForwardAlgorithmMaxCount(handle)
 	if err != nil {
 		return nil, err
@@ -112,33 +108,22 @@ func (c *ConvolutionD) FindForwardAlgorithmEx(
 	if wspace == nil {
 		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
 			handle.x,
-			xD.descriptor,
-			x.Ptr(),
-			wD.descriptor,
-			w.Ptr(),
+			xD.descriptor, x.Ptr(),
+			wD.descriptor, w.Ptr(),
 			c.descriptor,
-			yD.descriptor,
-			y.Ptr(),
-			C.int(reqAlgoCount),
-			&actualalgocount,
-			&perfResults[0],
-			nil, C.size_t(0))).error("(c *ConvolutionD) FindForwardAlgorithmEx")
+			yD.descriptor, y.Ptr(),
+			C.int(reqAlgoCount), &actualalgocount,
+			&perfResults[0], nil, C.size_t(wspacesize))).error("(c *ConvolutionD) FindForwardAlgorithmEx")
 
 	} else {
 		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
 			handle.x,
-			xD.descriptor,
-			x.Ptr(),
-			wD.descriptor,
-			w.Ptr(),
+			xD.descriptor, x.Ptr(),
+			wD.descriptor, w.Ptr(),
 			c.descriptor,
-			yD.descriptor,
-			y.Ptr(),
-			C.int(reqAlgoCount),
-			&actualalgocount,
-			&perfResults[0],
-			wspace.Ptr(),
-			C.size_t(wspacesize))).error("(c *ConvolutionD) FindForwardAlgorithmEx")
+			yD.descriptor, y.Ptr(),
+			C.int(reqAlgoCount), &actualalgocount,
+			&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *ConvolutionD) FindForwardAlgorithmEx")
 
 	}
 
