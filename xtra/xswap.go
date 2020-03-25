@@ -33,6 +33,15 @@ func comparedimsswap(a, b []int32) error {
 //UpperLower swaps two different tensor batches. Either the upper half of both tensors or the lower half of both tensors
 //inverse is a holder variable. It doesn't do anything right now
 func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bdesc *gocudnn.TensorD, B cutil.Mem, Aupper, Bupper, inverse bool) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return s.upperLower(h, Adesc, A, Bdesc, B, Aupper, Bupper, inverse)
+		})
+	}
+	return s.upperLower(h, Adesc, A, Bdesc, B, Aupper, Bupper, inverse)
+}
+
+func (s *Swapper) upperLower(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bdesc *gocudnn.TensorD, B cutil.Mem, Aupper, Bupper, inverse bool) error {
 
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
@@ -79,6 +88,16 @@ func (s *Swapper) UpperLower(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bde
 
 //EveryOther swaps the two tensors by every other batch.  Even does the evens if not even then it does the ood.
 func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bdesc *gocudnn.TensorD, B cutil.Mem, start, stride int32) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return s.everyOther(h, Adesc, A, Bdesc, B, start, stride)
+		})
+	}
+	return s.everyOther(h, Adesc, A, Bdesc, B, start, stride)
+}
+
+//EveryOther swaps the two tensors by every other batch.  Even does the evens if not even then it does the ood.
+func (s *Swapper) everyOther(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bdesc *gocudnn.TensorD, B cutil.Mem, start, stride int32) error {
 	err := comparedimsswap(Adesc.Dims(), Bdesc.Dims())
 	if err != nil {
 		return err
@@ -112,8 +131,22 @@ func (s *Swapper) EveryOther(h *Handle, Adesc *gocudnn.TensorD, A cutil.Mem, Bde
 
 }
 
-//NewBatchSwapper makes a Swapper
+//NewBatchSwapper makes a Swapper. This is handy if image data is already in tensors in gpu mem.
 func NewBatchSwapper(h *Handle) (*Swapper, error) {
+	var err error
+	var swapper *Swapper
+	if h.w != nil {
+		h.w.Work(func() error {
+			swapper, err = newBatchSwapper(h)
+			return nil
+		})
+	} else {
+		swapper, err = newBatchSwapper(h)
+	}
+	return swapper, err
+}
+
+func newBatchSwapper(h *Handle) (*Swapper, error) {
 
 	swapeveryother, err := cuda.MakeKernel(kernels.XtraKerns{}.SwapEveryOther(), h.mod)
 	if err != nil {

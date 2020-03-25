@@ -3,10 +3,12 @@ package xtra
 import "C"
 import (
 	"errors"
+	"math"
+
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/half"
-	"math"
+
 	//"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/GoCudnn/kernels"
 	"github.com/dereklstinson/cutil"
@@ -175,6 +177,21 @@ func (t TrainingMode) tostring(datatype gocudnn.DataType) string {
 
 //NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
 func NewTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) (*TrainerD, error) {
+	var t *TrainerD
+	var err error
+	if h.w != nil {
+		h.w.Work(func() error {
+			t, err = newTrainingDescriptor(h, mode, data)
+			return nil
+		})
+	} else {
+		t, err = newTrainingDescriptor(h, mode, data)
+	}
+	return t, err
+}
+
+//NewTrainingDescriptor Creates and sets a TrainingD.  All modes get decay1, decay2, rate, -- all but vanilla get eps,
+func newTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) (*TrainerD, error) {
 	var ktf kernels.XtraKerns
 
 	regname := ktf.L1L2()
@@ -236,6 +253,17 @@ func (d *TrainerD) GetTrainingDescriptor() (TrainingMode, gocudnn.DataType) {
 
 //L1L2Regularization does the l1l2 regularization
 func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l1, l2 cutil.Mem, params RegParams) error {
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return d.l1L2Regularization(h, desc, dw, w, l1, l2, params)
+		})
+	}
+	return d.l1L2Regularization(h, desc, dw, w, l1, l2, params)
+}
+
+//L1L2Regularization does the l1l2 regularization
+func (d *TrainerD) l1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l1, l2 cutil.Mem, params RegParams) error {
 	var size int32
 	switch d.data {
 	case d.dtflg.Float():
@@ -277,6 +305,16 @@ func (d *TrainerD) L1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
 func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xsum cutil.Mem, params TrainingParams) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return d.trainValues(h, desc, dw, w, gsum, xsum, params)
+		})
+	}
+	return d.trainValues(h, desc, dw, w, gsum, xsum, params)
+}
+
+//TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
+func (d *TrainerD) trainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xsum cutil.Mem, params TrainingParams) error {
 	var size int32
 	var err error
 

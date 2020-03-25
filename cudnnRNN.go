@@ -84,7 +84,22 @@ func (r *RNND) Set(
 	data DataType,
 
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSetRNNDescriptor(
+				handle.x,
+				r.descriptor,
+				C.int(hiddenSize),
+				C.int(numLayers),
+				doD.descriptor,
+				inputmode.c(),
+				direction.c(),
+				rnnmode.c(),
+				rnnalg.c(),
+				data.c(),
+			)).error("(*RNND)Set")
+		})
+	}
 	return Status(C.cudnnSetRNNDescriptor(
 		handle.x,
 		r.descriptor,
@@ -105,13 +120,22 @@ func (r *RNND) SetProjectionLayers(
 	recProjsize int32,
 	outProjSize int32,
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSetRNNProjectionLayers(
+				handle.x,
+				r.descriptor,
+				C.int(recProjsize),
+				C.int(outProjSize),
+			)).error("(r *RNND) SetProjectionLayers")
+		})
+	}
 	return Status(C.cudnnSetRNNProjectionLayers(
 		handle.x,
 		r.descriptor,
 		C.int(recProjsize),
 		C.int(outProjSize),
-	)).error("SetProjectionLayers")
+	)).error("(r *RNND) SetProjectionLayers")
 }
 
 //GetProjectionLayers sets the rnnprojection layers
@@ -120,13 +144,25 @@ func (r *RNND) GetProjectionLayers(
 ) (int32, int32, error) {
 
 	var rec, out C.int
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNProjectionLayers(
+				handle.x,
+				r.descriptor,
+				&rec,
+				&out,
+			)).error("(r *RNND) GetProjectionLayers")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNProjectionLayers(
+			handle.x,
+			r.descriptor,
+			&rec,
+			&out,
+		)).error("(r *RNND) GetProjectionLayers")
+	}
 
-	err := Status(C.cudnnGetRNNProjectionLayers(
-		handle.x,
-		r.descriptor,
-		&rec,
-		&out,
-	)).error("GetProjectionLayers")
 	return int32(rec), int32(out), err
 }
 
@@ -135,8 +171,12 @@ func (r *RNND) SetAlgorithmDescriptor(
 	handle *Handle,
 	algo *AlgorithmD,
 ) error {
-
-	return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error("SetAlgorithmDescriptor")
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error(" (r *RNND) SetAlgorithmDescriptor")
+		})
+	}
+	return Status(C.cudnnSetRNNAlgorithmDescriptor(handle.x, r.descriptor, algo.descriptor)).error(" (r *RNND) SetAlgorithmDescriptor")
 }
 
 //Get gets RNND values that were set
@@ -151,19 +191,37 @@ func (r *RNND) Get(
 	var mode C.cudnnRNNMode_t
 	var algo C.cudnnRNNAlgo_t
 	var dataType C.cudnnDataType_t
-	err := Status(C.cudnnGetRNNDescriptor(
-		handle.x,
-		r.descriptor,
-		&hiddensize,
-		&numLayers,
-		&dropoutdescriptor,
-		&inputMode,
-		&direction,
-		&mode,
-		&algo,
-		&dataType,
-	)).error("GetRNNDescriptor")
+	var err error
 
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNDescriptor(
+				handle.x,
+				r.descriptor,
+				&hiddensize,
+				&numLayers,
+				&dropoutdescriptor,
+				&inputMode,
+				&direction,
+				&mode,
+				&algo,
+				&dataType,
+			)).error("(r *RNND) Get")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNDescriptor(
+			handle.x,
+			r.descriptor,
+			&hiddensize,
+			&numLayers,
+			&dropoutdescriptor,
+			&inputMode,
+			&direction,
+			&mode,
+			&algo,
+			&dataType,
+		)).error("(r *RNND) Get")
+	}
 	return int32(hiddensize), int32(numLayers), &DropOutD{descriptor: dropoutdescriptor},
 		RNNInputMode(inputMode), DirectionMode(direction), RNNmode(mode), RNNAlgo(algo), DataType(dataType), err
 }
@@ -192,13 +250,26 @@ func (r *RNND) GetWorkspaceSIB(
 ) (uint, error) {
 	tocxD := tensorDArrayToC(xD)
 	var sizeinbytes C.size_t
-	err := Status(C.cudnnGetRNNWorkspaceSize(
-		handle.x,
-		r.descriptor,
-		C.int(seqLength),
-		&tocxD[0],
-		&sizeinbytes,
-	)).error("GetRNNWorkspaceSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNWorkspaceSize(
+				handle.x,
+				r.descriptor,
+				C.int(seqLength),
+				&tocxD[0],
+				&sizeinbytes,
+			)).error("(r *RNND) GetWorkspaceSIB")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNWorkspaceSize(
+			handle.x,
+			r.descriptor,
+			C.int(seqLength),
+			&tocxD[0],
+			&sizeinbytes,
+		)).error("(r *RNND) GetWorkspaceSIB")
+	}
 
 	return uint(sizeinbytes), err
 }
@@ -211,13 +282,26 @@ func (r *RNND) GetReserveSIB(
 ) (uint, error) {
 	tocxD := tensorDArrayToC(xD)
 	var sizeinbytes C.size_t
-	err := Status(C.cudnnGetRNNTrainingReserveSize(
-		handle.x,
-		r.descriptor,
-		C.int(seqLength),
-		&tocxD[0],
-		&sizeinbytes,
-	)).error("GetRNNTrainingReserveSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNTrainingReserveSize(
+				handle.x,
+				r.descriptor,
+				C.int(seqLength),
+				&tocxD[0],
+				&sizeinbytes,
+			)).error("(r *RNND) GetReserveSIB")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNTrainingReserveSize(
+			handle.x,
+			r.descriptor,
+			C.int(seqLength),
+			&tocxD[0],
+			&sizeinbytes,
+		)).error("(r *RNND) GetReserveSIB")
+	}
 
 	return uint(sizeinbytes), err
 }
@@ -229,13 +313,26 @@ func (r *RNND) GetParamsSIB(
 	data DataType,
 ) (uint, error) {
 	var sizeinbytes C.size_t
-	err := Status(C.cudnnGetRNNParamsSize(
-		handle.x,
-		r.descriptor,
-		xD.descriptor,
-		&sizeinbytes,
-		data.c(),
-	)).error("GetRNNParamsSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNParamsSize(
+				handle.x,
+				r.descriptor,
+				xD.descriptor,
+				&sizeinbytes,
+				data.c(),
+			)).error("(r *RNND) GetParamsSIB")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNParamsSize(
+			handle.x,
+			r.descriptor,
+			xD.descriptor,
+			&sizeinbytes,
+			data.c(),
+		)).error("(r *RNND) GetParamsSIB")
+	}
 
 	return uint(sizeinbytes), err
 }
@@ -281,17 +378,34 @@ func (r *RNND) GetLinLayerMatrixParams(
 ) (FilterD, unsafe.Pointer, error) {
 	var linLayerMatDesc FilterD
 	var linLayerMat unsafe.Pointer
-	err := Status(C.cudnnGetRNNLinLayerMatrixParams(
-		handle.x,
-		r.descriptor,
-		C.int(pseudoLayer),
-		xD.descriptor,
-		wD.descriptor,
-		w.Ptr(),
-		C.int(linlayerID),
-		linLayerMatDesc.descriptor,
-		&linLayerMat,
-	)).error("GetRNNLinLayerMatrixParams")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNLinLayerMatrixParams(
+				handle.x,
+				r.descriptor,
+				C.int(pseudoLayer),
+				xD.descriptor,
+				wD.descriptor,
+				w.Ptr(),
+				C.int(linlayerID),
+				linLayerMatDesc.descriptor,
+				&linLayerMat,
+			)).error("(r *RNND) GetLinLayerMatrixParams")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNLinLayerMatrixParams(
+			handle.x,
+			r.descriptor,
+			C.int(pseudoLayer),
+			xD.descriptor,
+			wD.descriptor,
+			w.Ptr(),
+			C.int(linlayerID),
+			linLayerMatDesc.descriptor,
+			&linLayerMat,
+		)).error("(r *RNND) GetLinLayerMatrixParams")
+	}
 
 	return linLayerMatDesc, linLayerMat, err
 }
@@ -337,16 +451,32 @@ func (r *RNND) GetLinLayerMatrixParamsUS(
 ) (FilterD, cutil.Mem, error) {
 	var linLayerMatDesc FilterD
 	var linLayerMat unsafe.Pointer
-	err := Status(C.cudnnGetRNNLinLayerMatrixParams(
-		handle.x,
-		r.descriptor,
-		C.int(pseudoLayer),
-		xD.descriptor,
-		wD.descriptor, w,
-		C.int(linlayerID),
-		linLayerMatDesc.descriptor,
-		&linLayerMat,
-	)).error("GetRNNLinLayerMatrixParams")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNLinLayerMatrixParams(
+				handle.x,
+				r.descriptor,
+				C.int(pseudoLayer),
+				xD.descriptor,
+				wD.descriptor, w,
+				C.int(linlayerID),
+				linLayerMatDesc.descriptor,
+				&linLayerMat,
+			)).error("(r *RNND) GetLinLayerMatrixParamsUS")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNLinLayerMatrixParams(
+			handle.x,
+			r.descriptor,
+			C.int(pseudoLayer),
+			xD.descriptor,
+			wD.descriptor, w,
+			C.int(linlayerID),
+			linLayerMatDesc.descriptor,
+			&linLayerMat,
+		)).error("(r *RNND) GetLinLayerMatrixParamsUS")
+	}
 
 	return linLayerMatDesc, gocu.WrapUnsafe(linLayerMat), err
 }
@@ -396,17 +526,33 @@ func (r *RNND) GetRNNLinLayerBiasParams(
 		return nil, nil, err
 	}
 	Bias = new(gocu.CudaPtr)
-	err = Status(C.cudnnGetRNNLinLayerBiasParams(
-		handle.x,
-		r.descriptor,
-		C.int(pseudoLayer),
-		xD.descriptor,
-		wD.descriptor,
-		w.Ptr(),
-		C.int(linlayerID),
-		BiasD.descriptor,
-		Bias.DPtr(),
-	)).error("GetRNNLinLayerBiasParams")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNLinLayerBiasParams(
+				handle.x,
+				r.descriptor,
+				C.int(pseudoLayer),
+				xD.descriptor,
+				wD.descriptor,
+				w.Ptr(),
+				C.int(linlayerID),
+				BiasD.descriptor,
+				Bias.DPtr(),
+			)).error("(r *RNND) GetRNNLinLayerBiasParams")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNLinLayerBiasParams(
+			handle.x,
+			r.descriptor,
+			C.int(pseudoLayer),
+			xD.descriptor,
+			wD.descriptor,
+			w.Ptr(),
+			C.int(linlayerID),
+			BiasD.descriptor,
+			Bias.DPtr(),
+		)).error("(r *RNND) GetRNNLinLayerBiasParams")
+	}
 
 	return BiasD, Bias, err
 }
@@ -455,16 +601,34 @@ func (r *RNND) GetRNNLinLayerBiasParamsUS(
 	if err != nil {
 		return nil, nil, err
 	}
-	err = Status(C.cudnnGetRNNLinLayerBiasParams(
-		handle.x,
-		r.descriptor,
-		C.int(pseudoLayer),
-		xD.descriptor,
-		wD.descriptor, w,
-		C.int(linlayerID),
-		BiasD.descriptor,
-		&Bias,
-	)).error("GetRNNLinLayerBiasParams")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNLinLayerBiasParams(
+				handle.x,
+				r.descriptor,
+				C.int(pseudoLayer),
+				xD.descriptor,
+				wD.descriptor, w,
+				C.int(linlayerID),
+				BiasD.descriptor,
+				&Bias,
+			)).error("(r *RNND) GetRNNLinLayerBiasParamsUS")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNLinLayerBiasParams(
+			handle.x,
+			r.descriptor,
+			C.int(pseudoLayer),
+			xD.descriptor,
+			wD.descriptor, w,
+			C.int(linlayerID),
+			BiasD.descriptor,
+			&Bias,
+		)).error("(r *RNND) GetRNNLinLayerBiasParamsUS")
+	}
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return BiasD, Bias, err
 }
@@ -529,7 +693,39 @@ func (r *RNND) RNNForwardInference(
 	seqLength := len(xD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+				return Status(C.cudnnRNNForwardInference(
+					handle.x,
+					r.descriptor,
+					C.int(seqLength),
+					&tocxD[0], x.Ptr(),
+					hxD.descriptor, hx.Ptr(),
+					cxD.descriptor, cx.Ptr(),
+					wD.descriptor, w.Ptr(),
+					&tocyD[0], y.Ptr(),
+					hyD.descriptor, hy.Ptr(),
+					cyD.descriptor, cy.Ptr(),
+					nil,
+					C.size_t(0),
+				)).error("(r *RNND) RNNForwardInference")
+			}
+			return Status(C.cudnnRNNForwardInference(
+				handle.x,
+				r.descriptor,
+				C.int(seqLength),
+				&tocxD[0], x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				wD.descriptor, w.Ptr(),
+				&tocyD[0], y.Ptr(),
+				hyD.descriptor, hy.Ptr(),
+				cyD.descriptor, cy.Ptr(),
+				wspace.Ptr(), C.size_t(wspacesize),
+			)).error("(r *RNND) RNNForwardInference")
+		})
+	}
 	if wspace == nil {
 		return Status(C.cudnnRNNForwardInference(
 			handle.x,
@@ -544,7 +740,7 @@ func (r *RNND) RNNForwardInference(
 			cyD.descriptor, cy.Ptr(),
 			nil,
 			C.size_t(0),
-		)).error("RNNForwardInference")
+		)).error("(r *RNND) RNNForwardInference")
 	}
 	return Status(C.cudnnRNNForwardInference(
 		handle.x,
@@ -558,7 +754,7 @@ func (r *RNND) RNNForwardInference(
 		hyD.descriptor, hy.Ptr(),
 		cyD.descriptor, cy.Ptr(),
 		wspace.Ptr(), C.size_t(wspacesize),
-	)).error("RNNForwardInference")
+	)).error("(r *RNND) RNNForwardInference")
 }
 
 //RNNForwardInferenceUS is like RNNForwardInference but uses unsafe.Pointer instead of cutil.Mem
@@ -577,7 +773,23 @@ func (r *RNND) RNNForwardInferenceUS(
 	seqLength := len(xD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnRNNForwardInference(
+				handle.x,
+				r.descriptor,
+				C.int(seqLength),
+				&tocxD[0], x,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				wD.descriptor, w,
+				&tocyD[0], y,
+				hyD.descriptor, hy,
+				cyD.descriptor, cy,
+				wspace, C.size_t(wspacesize),
+			)).error("(r *RNND) RNNForwardInferenceUS")
+		})
+	}
 	return Status(C.cudnnRNNForwardInference(
 		handle.x,
 		r.descriptor,
@@ -590,7 +802,7 @@ func (r *RNND) RNNForwardInferenceUS(
 		hyD.descriptor, hy,
 		cyD.descriptor, cy,
 		wspace, C.size_t(wspacesize),
-	)).error("RNNForwardInference")
+	)).error("(r *RNND) RNNForwardInferenceUS")
 }
 
 //RNNForwardTraining is the forward algo for an RNN
@@ -609,6 +821,40 @@ func (r *RNND) RNNForwardTraining(
 	seqLen := len(xD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+				return Status(C.cudnnRNNForwardTraining(
+					handle.x,
+					r.descriptor,
+					C.int(seqLen),
+					&tocxD[0], x.Ptr(),
+					hxD.descriptor, hx.Ptr(),
+					cxD.descriptor, cx.Ptr(),
+					wD.descriptor, w.Ptr(),
+					&tocyD[0], y.Ptr(),
+					hyD.descriptor, hy.Ptr(),
+					cyD.descriptor, cy.Ptr(),
+					nil, C.size_t(0),
+					rspace.Ptr(), C.size_t(rspacesize),
+				)).error("(r *RNND) RNNForwardTraining")
+			}
+			return Status(C.cudnnRNNForwardTraining(
+				handle.x,
+				r.descriptor,
+				C.int(seqLen),
+				&tocxD[0], x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				wD.descriptor, w.Ptr(),
+				&tocyD[0], y.Ptr(),
+				hyD.descriptor, hy.Ptr(),
+				cyD.descriptor, cy.Ptr(),
+				wspace.Ptr(), C.size_t(wspacesize),
+				rspace.Ptr(), C.size_t(rspacesize),
+			)).error("(r *RNND) RNNForwardTraining")
+		})
+	}
 	if wspace == nil {
 		return Status(C.cudnnRNNForwardTraining(
 			handle.x,
@@ -623,7 +869,7 @@ func (r *RNND) RNNForwardTraining(
 			cyD.descriptor, cy.Ptr(),
 			nil, C.size_t(0),
 			rspace.Ptr(), C.size_t(rspacesize),
-		)).error("RNNForwardTraining")
+		)).error("(r *RNND) RNNForwardTraining")
 	}
 	return Status(C.cudnnRNNForwardTraining(
 		handle.x,
@@ -638,7 +884,7 @@ func (r *RNND) RNNForwardTraining(
 		cyD.descriptor, cy.Ptr(),
 		wspace.Ptr(), C.size_t(wspacesize),
 		rspace.Ptr(), C.size_t(rspacesize),
-	)).error("RNNForwardTraining")
+	)).error("(r *RNND) RNNForwardTraining")
 
 }
 
@@ -658,7 +904,24 @@ func (r *RNND) RNNForwardTrainingUS(
 	seqLen := len(xD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnRNNForwardTraining(
+				handle.x,
+				r.descriptor,
+				C.int(seqLen),
+				&tocxD[0], x,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				wD.descriptor, w,
+				&tocyD[0], y,
+				hyD.descriptor, hy,
+				cyD.descriptor, cy,
+				wspace, C.size_t(wspacesize),
+				rspace, C.size_t(rspacesize),
+			)).error("(r *RNND) RNNForwardTrainingUS")
+		})
+	}
 	return Status(C.cudnnRNNForwardTraining(
 		handle.x,
 		r.descriptor,
@@ -672,7 +935,7 @@ func (r *RNND) RNNForwardTrainingUS(
 		cyD.descriptor, cy,
 		wspace, C.size_t(wspacesize),
 		rspace, C.size_t(rspacesize),
-	)).error("RNNForwardTraining")
+	)).error("(r *RNND) RNNForwardTrainingUS")
 
 }
 
@@ -696,6 +959,48 @@ func (r *RNND) RNNBackwardData(
 	tocdxD := tensorDArrayToC(dxD)
 	tocdyD := tensorDArrayToC(dyD)
 	tocyD := tensorDArrayToC(yD)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+				return Status(C.cudnnRNNBackwardData(
+					handle.x,
+					r.descriptor,
+					C.int(seqLen),
+					&tocyD[0], y.Ptr(),
+					&tocdyD[0], dy.Ptr(),
+					dhyD.descriptor, dhy.Ptr(),
+					dcyD.descriptor, dcy.Ptr(),
+					wD.descriptor, w.Ptr(),
+					hxD.descriptor, hx.Ptr(),
+					cxD.descriptor, cx.Ptr(),
+					&tocdxD[0], dx.Ptr(),
+					dhxD.descriptor, dhx.Ptr(),
+					dcxD.descriptor, dcx.Ptr(),
+					nil, C.size_t(wspacesize),
+					rspace.Ptr(), C.size_t(rspacesize),
+				)).error("(r *RNND) RNNBackwardData")
+
+			}
+			return Status(C.cudnnRNNBackwardData(
+				handle.x,
+				r.descriptor,
+				C.int(seqLen),
+				&tocyD[0], y.Ptr(),
+				&tocdyD[0], dy.Ptr(),
+				dhyD.descriptor, dhy.Ptr(),
+				dcyD.descriptor, dcy.Ptr(),
+				wD.descriptor, w.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				&tocdxD[0], dx.Ptr(),
+				dhxD.descriptor, dhx.Ptr(),
+				dcxD.descriptor, dcx.Ptr(),
+				wspace.Ptr(), C.size_t(wspacesize),
+				rspace.Ptr(), C.size_t(rspacesize),
+			)).error("(r *RNND) RNNBackwardData")
+
+		})
+	}
 	if wspace == nil {
 		return Status(C.cudnnRNNBackwardData(
 			handle.x,
@@ -713,7 +1018,7 @@ func (r *RNND) RNNBackwardData(
 			dcxD.descriptor, dcx.Ptr(),
 			nil, C.size_t(wspacesize),
 			rspace.Ptr(), C.size_t(rspacesize),
-		)).error("RNNBackwardData")
+		)).error("(r *RNND) RNNBackwardData")
 
 	}
 	return Status(C.cudnnRNNBackwardData(
@@ -732,7 +1037,7 @@ func (r *RNND) RNNBackwardData(
 		dcxD.descriptor, dcx.Ptr(),
 		wspace.Ptr(), C.size_t(wspacesize),
 		rspace.Ptr(), C.size_t(rspacesize),
-	)).error("RNNBackwardData")
+	)).error("(r *RNND) RNNBackwardData")
 
 }
 
@@ -756,7 +1061,27 @@ func (r *RNND) RNNBackwardDataUS(
 	tocdxD := tensorDArrayToC(dxD)
 	tocdyD := tensorDArrayToC(dyD)
 	tocyD := tensorDArrayToC(yD)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnRNNBackwardData(
+				handle.x,
+				r.descriptor,
+				C.int(seqLen),
+				&tocyD[0], y,
+				&tocdyD[0], dy,
+				dhyD.descriptor, dhy,
+				dcyD.descriptor, dcy,
+				wD.descriptor, w,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				&tocdxD[0], dx,
+				dhxD.descriptor, dhx,
+				dcxD.descriptor, dcx,
+				wspace, C.size_t(wspacesize),
+				rspace, C.size_t(rspacesize),
+			)).error("(r *RNND) RNNBackwardDataUS")
+		})
+	}
 	return Status(C.cudnnRNNBackwardData(
 		handle.x,
 		r.descriptor,
@@ -773,7 +1098,7 @@ func (r *RNND) RNNBackwardDataUS(
 		dcxD.descriptor, dcx,
 		wspace, C.size_t(wspacesize),
 		rspace, C.size_t(rspacesize),
-	)).error("RNNBackwardData")
+	)).error("(r *RNND) RNNBackwardDataUS")
 
 }
 
@@ -790,6 +1115,36 @@ func (r *RNND) BackwardWeights(
 	seqLen := len(yD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+
+				return Status(C.cudnnRNNBackwardWeights(
+					handle.x,
+					r.descriptor,
+					C.int(seqLen),
+					&tocxD[0], x.Ptr(),
+					hxD.descriptor, hx.Ptr(),
+					&tocyD[0], y.Ptr(),
+					nil, C.size_t(0),
+					dwD.descriptor, dw.Ptr(),
+					rspace.Ptr(), C.size_t(rspacesize),
+				)).error("(r *RNND) BackwardWeights")
+
+			}
+			return Status(C.cudnnRNNBackwardWeights(
+				handle.x,
+				r.descriptor,
+				C.int(seqLen),
+				&tocxD[0], x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				&tocyD[0], y.Ptr(),
+				wspace.Ptr(), C.size_t(wspacesize),
+				dwD.descriptor, dw.Ptr(),
+				rspace.Ptr(), C.size_t(rspacesize),
+			)).error("(r *RNND) BackwardWeights")
+		})
+	}
 	if wspace == nil {
 
 		return Status(C.cudnnRNNBackwardWeights(
@@ -802,7 +1157,7 @@ func (r *RNND) BackwardWeights(
 			nil, C.size_t(0),
 			dwD.descriptor, dw.Ptr(),
 			rspace.Ptr(), C.size_t(rspacesize),
-		)).error("BackwardWeights")
+		)).error("(r *RNND) BackwardWeights")
 
 	}
 	return Status(C.cudnnRNNBackwardWeights(
@@ -815,7 +1170,7 @@ func (r *RNND) BackwardWeights(
 		wspace.Ptr(), C.size_t(wspacesize),
 		dwD.descriptor, dw.Ptr(),
 		rspace.Ptr(), C.size_t(rspacesize),
-	)).error("BackwardWeights")
+	)).error("(r *RNND) BackwardWeights")
 
 }
 
@@ -832,6 +1187,21 @@ func (r *RNND) BackwardWeightsUS(
 	seqLen := len(yD)
 	tocxD := tensorDArrayToC(xD)
 	tocyD := tensorDArrayToC(yD)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnRNNBackwardWeights(
+				handle.x,
+				r.descriptor,
+				C.int(seqLen),
+				&tocxD[0], x,
+				hxD.descriptor, hx,
+				&tocyD[0], y,
+				wspace, C.size_t(wspacesize),
+				dwD.descriptor, dw,
+				rspace, C.size_t(rspacesize),
+			)).error("(r *RNND) BackwardWeightsUS")
+		})
+	}
 
 	return Status(C.cudnnRNNBackwardWeights(
 		handle.x,
@@ -843,7 +1213,7 @@ func (r *RNND) BackwardWeightsUS(
 		wspace, C.size_t(wspacesize),
 		dwD.descriptor, dw,
 		rspace, C.size_t(rspacesize),
-	)).error("BackwardWeights")
+	)).error("(r *RNND) BackwardWeightsUS")
 
 }
 

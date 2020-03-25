@@ -31,7 +31,7 @@ type DeConvolutionD struct {
 //CreateDeConvolutionDescriptor creates a deconvolution descriptor
 func CreateDeConvolutionDescriptor() (*DeConvolutionD, error) {
 	d := new(DeConvolutionD)
-	err := Status(C.cudnnCreateConvolutionDescriptor(&d.descriptor)).error("NewConvolution2dDescriptor-create")
+	err := Status(C.cudnnCreateConvolutionDescriptor(&d.descriptor)).error("CreateDeConvolutionDescriptor()")
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (c *DeConvolutionD) Set(mode ConvolutionMode, data DataType, pad, stride, d
 	cstride := int32Tocint(stride)
 	cdilation := int32Tocint(dilation)
 	c.dims = C.int(len(pad))
-	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, c.dims, &cpad[0], &cstride[0], &cdilation[0], cmode, cdata)).error("NewConvolutionNdDescriptor-set")
+	return Status(C.cudnnSetConvolutionNdDescriptor(c.descriptor, c.dims, &cpad[0], &cstride[0], &cdilation[0], cmode, cdata)).error("(c *DeConvolutionD) Set()")
 
 }
 
@@ -84,7 +84,7 @@ func (c *DeConvolutionD) Get() (mode ConvolutionMode, data DataType, pad []int32
 	var moded C.cudnnConvolutionMode_t
 	var dtype C.cudnnDataType_t
 
-	err = Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &padding[0], &striding[0], &dilationing[0], &moded, &dtype)).error("GetndDescriptor")
+	err = Status(C.cudnnGetConvolutionNdDescriptor(c.descriptor, c.dims, &actual, &padding[0], &striding[0], &dilationing[0], &moded, &dtype)).error("(c *DeConvolutionD) Get()")
 	c.dims = actual
 	return ConvolutionMode(moded), DataType(dtype), cintToint32(padding[:actual]), cintToint32(striding[:actual]), cintToint32(dilationing[:actual]), err
 
@@ -119,7 +119,7 @@ func (c *DeConvolutionD) String() string {
 //SetGroupCount sets the Group Count
 func (c *DeConvolutionD) SetGroupCount(groupCount int32) error {
 
-	err := Status(C.cudnnSetConvolutionGroupCount(c.descriptor, C.int(groupCount))).error("SetGroupCountandMathtype-Group")
+	err := Status(C.cudnnSetConvolutionGroupCount(c.descriptor, C.int(groupCount))).error("(c *DeConvolutionD) SetGroupCount(groupCount int32)")
 
 	return err
 
@@ -127,12 +127,12 @@ func (c *DeConvolutionD) SetGroupCount(groupCount int32) error {
 
 //SetReorderType sets the reorder type
 func (c *DeConvolutionD) SetReorderType(r Reorder) error {
-	return Status(C.cudnnSetConvolutionReorderType(c.descriptor, r.c())).error("SetReorderType")
+	return Status(C.cudnnSetConvolutionReorderType(c.descriptor, r.c())).error("(c *DeConvolutionD) SetReorderType(r Reorder) ")
 }
 
 //GetReorderType gets the reorder type
 func (c *DeConvolutionD) GetReorderType() (r Reorder, err error) {
-	err = Status(C.cudnnGetConvolutionReorderType(c.descriptor, r.cptr())).error("GetReorderType")
+	err = Status(C.cudnnGetConvolutionReorderType(c.descriptor, r.cptr())).error("(c *DeConvolutionD) GetReorderType()")
 	return r, err
 }
 
@@ -141,13 +141,13 @@ func (c *DeConvolutionD) SetMathType(mathtype MathType) error {
 
 	x := Status(C.cudnnSetConvolutionMathType(c.descriptor, C.cudnnMathType_t(mathtype)))
 
-	return x.error("SetGroupCountandMathtype-Math")
+	return x.error("(c *DeConvolutionD) SetMathType(mathtype MathType)")
 }
 
-//GetOutputDims is a helper function to give the size of the output of of a COnvolutionNDForward
+//GetOutputDims is a helper function to give the size of the output of of a DeConvolutionNDForward
 //Each dimension of the (nbDims-2)-D images of the output tensor is computed as followed:
 //
-//    outputDim = 1 + ( inputDim + 2*pad - (((filterDim-1)*dilation)+1) )/convolutionStride;
+//    outputDim = (inputDim-1)*convolutionStride -2*pad + (((filterDim-1)*dilation)+1)
 //
 // DeConvolution works differently than a convolution.
 //
@@ -177,7 +177,7 @@ func (c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32
 
 		//Deconvolution does the reverse a CNHW should be the format
 		if fdims[0] != dims[1] {
-			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): fdims[0] != dims[1] size")
+			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(): fdims[0] != dims[1]")
 		}
 		//	inputchanel := fdims[0]
 		outputchannel := fdims[1]
@@ -192,7 +192,7 @@ func (c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32
 		return outputdims, nil
 	case flg.NHWC():
 		if fdims[0] != dims[len(dims)-1] {
-			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): NHWC: fdims[0] != dims[len(dims)-1]")
+			return nil, errors.New("(c *DeConvolutionD) GetOutputDims(): NHWC: fdims[0] != dims[len(dims)-1]")
 		}
 		//	inputchanel := fdims[0]
 		outputchannel := fdims[len(fdims)-1]
@@ -206,7 +206,7 @@ func (c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32
 		}
 		return outputdims, nil
 	default:
-		return nil, errors.New("(c *DeConvolutionD) GetOutputDims(input *TensorD, filter *FilterD): Unsupported Format")
+		return nil, errors.New("(c *DeConvolutionD) GetOutputDims(): Unsupported Format")
 	}
 
 }
@@ -228,7 +228,7 @@ func (c *DeConvolutionD) Destroy() error {
 	return destroydeconvolutiondescriptor(c)
 }
 func destroydeconvolutiondescriptor(c *DeConvolutionD) error {
-	return Status(C.cudnnDestroyConvolutionDescriptor(c.descriptor)).error("DestroyConvolutionDescriptor")
+	return Status(C.cudnnDestroyConvolutionDescriptor(c.descriptor)).error("destroydeconvolutiondescriptor(c *DeConvolutionD)")
 }
 
 //GetForwardWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
@@ -239,14 +239,28 @@ func (c *DeConvolutionD) GetForwardWorkspaceSize(
 	yD *TensorD,
 	algo DeConvFwdAlgo) (uint, error) {
 	var sizebytes C.size_t
-	err := Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
-		handle.x,
-		wD.descriptor,
-		yD.descriptor,
-		c.descriptor,
-		xD.descriptor,
-		algo.c(),
-		&sizebytes)).error("GetConvolutionBackwardDataWorkspaceSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
+				handle.x,
+				wD.descriptor,
+				yD.descriptor,
+				c.descriptor,
+				xD.descriptor,
+				algo.c(),
+				&sizebytes)).error("(c *DeConvolutionD) GetForwardWorkspaceSize")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
+			handle.x,
+			wD.descriptor,
+			yD.descriptor,
+			c.descriptor,
+			xD.descriptor,
+			algo.c(),
+			&sizebytes)).error("(c *DeConvolutionD) GetForwardWorkspaceSize")
+	}
 
 	return uint(sizebytes), err
 }
@@ -268,6 +282,44 @@ func (c *DeConvolutionD) Forward(
 	yD *TensorD, y cutil.Mem) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+
+				return Status(C.cudnnConvolutionBackwardData(
+					handle.x,
+					a.CPtr(),
+					wD.descriptor,
+					w.Ptr(),
+					xD.descriptor,
+					x.Ptr(),
+					c.descriptor,
+					algo.c(),
+					nil,
+					(C.size_t)(wspaceSIB),
+					b.CPtr(),
+					yD.descriptor,
+					y.Ptr(),
+				)).error("(c *DeConvolutionD) Forward")
+			}
+
+			return Status(C.cudnnConvolutionBackwardData(
+				handle.x,
+				a.CPtr(),
+				wD.descriptor,
+				w.Ptr(),
+				xD.descriptor,
+				x.Ptr(),
+				c.descriptor,
+				algo.c(),
+				wspace.Ptr(),
+				(C.size_t)(wspaceSIB),
+				b.CPtr(),
+				yD.descriptor,
+				y.Ptr(),
+			)).error("(c *DeConvolutionD) Forward")
+		})
+	}
 	if wspace == nil {
 
 		return Status(C.cudnnConvolutionBackwardData(
@@ -284,7 +336,7 @@ func (c *DeConvolutionD) Forward(
 			b.CPtr(),
 			yD.descriptor,
 			y.Ptr(),
-		)).error("ConvolutionBackwardData")
+		)).error("(c *DeConvolutionD) Forward")
 	}
 
 	return Status(C.cudnnConvolutionBackwardData(
@@ -301,7 +353,7 @@ func (c *DeConvolutionD) Forward(
 		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
-	)).error("ConvolutionBackwardData")
+	)).error("(c *DeConvolutionD) Forward")
 }
 
 //ForwardUS is like BackwardData but uses unsafe.Pointer instead of cutil.Mem
@@ -316,7 +368,21 @@ func (c *DeConvolutionD) ForwardUS(
 	yD *TensorD, y unsafe.Pointer) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardData(
+				handle.x,
+				a.CPtr(),
+				wD.descriptor, w,
+				xD.descriptor, x,
+				c.descriptor,
+				algo.c(),
+				wspace, (C.size_t)(wspacesize),
+				b.CPtr(),
+				yD.descriptor, y,
+			)).error("ConvolutionBackwardData")
+		})
+	}
 	return Status(C.cudnnConvolutionBackwardData(
 		handle.x,
 		a.CPtr(),
@@ -330,12 +396,12 @@ func (c *DeConvolutionD) ForwardUS(
 	)).error("ConvolutionBackwardData")
 }
 
-//GetBiasDims will return bias dims for the deconvolution.
+//GetBiasDims will return bias dims for the deconvolution.  Ony supports NCHW and NHWC formats
 func (c *DeConvolutionD) GetBiasDims(w *FilterD) ([]int32, error) {
 	//	outputdims:=c.GetOutputDims(input,w)
 	_, frmt, fdims, err := w.Get()
 	if err != nil {
-		return nil, errors.New("(c *DeConvolutionD) GetBiasDims(w *FilterD): Error in getting filter info")
+		return nil, errors.New("(c *DeConvolutionD) GetBiasDims(): Error in getting filter info")
 	}
 	bias := make([]int32, len(fdims))
 	for i := range bias {
@@ -348,7 +414,7 @@ func (c *DeConvolutionD) GetBiasDims(w *FilterD) ([]int32, error) {
 	case flg.NHWC():
 		bias[len(bias)-1] = fdims[len(bias)-1]
 	default:
-		return nil, errors.New("(c *DeConvolutionD) GetBiasDims(input *TensorD, w *FilterD): Unsupported Format")
+		return nil, errors.New("(c *DeConvolutionD) GetBiasDims(): Unsupported Format")
 	}
 	return bias, nil
 }
@@ -364,7 +430,13 @@ func (c *DeConvolutionD) BackwardBias(
 	db cutil.Mem) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
-	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("(c *DeConvolutionD) BackwardBias")
+
+		})
+	}
+	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("(c *DeConvolutionD) BackwardBias")
 }
 
 //BackwardBiasUS is like BackwardBias but using unsafe.Pointer instead of cutil.Mem
@@ -376,7 +448,12 @@ func (c *DeConvolutionD) BackwardBiasUS(
 	dbD *TensorD, db unsafe.Pointer) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
-	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy, b.CPtr(), dbD.descriptor, db)).error("ConvolutionBackwardBias")
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy, b.CPtr(), dbD.descriptor, db)).error("(c *DeConvolutionD) BackwardBiasUS")
+		})
+	}
+	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy, b.CPtr(), dbD.descriptor, db)).error("(c *DeConvolutionD) BackwardBiasUS")
 }
 
 //GetBackwardFilterWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
@@ -387,7 +464,20 @@ func (c *DeConvolutionD) GetBackwardFilterWorkspaceSize(
 	dwD *FilterD,
 	algo DeConvBwdFiltAlgo) (uint, error) {
 	var sizebytes C.size_t
-	err := Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
+				handle.x,
+				dyD.descriptor,
+				xD.descriptor,
+				c.descriptor,
+				dwD.descriptor,
+				algo.c(),
+				&sizebytes)).error("(c *DeConvolutionD) GetBackwardFilterWorkspaceSize")
+		})
+	}
+	err = Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
 		handle.x,
 		dyD.descriptor,
 		xD.descriptor,
@@ -399,7 +489,7 @@ func (c *DeConvolutionD) GetBackwardFilterWorkspaceSize(
 	return uint(sizebytes), err
 }
 
-//BackwardFilter does the backwards convolution
+//BackwardFilter does the backwards deconvolution filter
 func (c *DeConvolutionD) BackwardFilter(
 	handle *Handle,
 	alpha float64,
@@ -412,6 +502,45 @@ func (c *DeConvolutionD) BackwardFilter(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+
+				return Status(C.cudnnConvolutionBackwardFilter(
+					handle.x,
+					a.CPtr(),
+					dyD.descriptor,
+					dy.Ptr(),
+					xD.descriptor,
+					x.Ptr(),
+					c.descriptor,
+					algo.c(),
+					nil,
+					C.size_t(wspacesize),
+					b.CPtr(),
+					dwD.descriptor,
+					dw.Ptr(),
+				)).error("(c *DeConvolutionD) BackwardFilte")
+
+			}
+
+			return Status(C.cudnnConvolutionBackwardFilter(
+				handle.x,
+				a.CPtr(),
+				dyD.descriptor,
+				dy.Ptr(),
+				xD.descriptor,
+				x.Ptr(),
+				c.descriptor,
+				algo.c(),
+				wspace.Ptr(),
+				C.size_t(wspacesize),
+				b.CPtr(),
+				dwD.descriptor,
+				dw.Ptr(),
+			)).error("(c *DeConvolutionD) BackwardFilte")
+		})
+	}
 	if wspace == nil {
 
 		return Status(C.cudnnConvolutionBackwardFilter(
@@ -428,7 +557,7 @@ func (c *DeConvolutionD) BackwardFilter(
 			b.CPtr(),
 			dwD.descriptor,
 			dw.Ptr(),
-		)).error("cudnnConvolutionBackwardFilter")
+		)).error("(c *DeConvolutionD) BackwardFilte")
 
 	}
 
@@ -446,7 +575,7 @@ func (c *DeConvolutionD) BackwardFilter(
 		b.CPtr(),
 		dwD.descriptor,
 		dw.Ptr(),
-	)).error("cudnnConvolutionBackwardFilter")
+	)).error("(c *DeConvolutionD) BackwardFilte")
 }
 
 //BackwardFilterUS is like BackwardFilter but using unsafe.Pointer instead of cutil.Mem
@@ -462,7 +591,21 @@ func (c *DeConvolutionD) BackwardFilterUS(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardFilter(
+				handle.x,
+				a.CPtr(),
+				xD.descriptor, x,
+				dyD.descriptor, dy,
+				c.descriptor,
+				algo.c(),
+				wspace, C.size_t(wspacesize),
+				b.CPtr(),
+				dwD.descriptor, dw,
+			)).error("(c *DeConvolutionD) BackwardFilterUS")
+		})
+	}
 	return Status(C.cudnnConvolutionBackwardFilter(
 		handle.x,
 		a.CPtr(),
@@ -473,7 +616,7 @@ func (c *DeConvolutionD) BackwardFilterUS(
 		wspace, C.size_t(wspacesize),
 		b.CPtr(),
 		dwD.descriptor, dw,
-	)).error("cudnnConvolutionBackwardFilter")
+	)).error("(c *DeConvolutionD) BackwardFilterUS")
 }
 
 //GetBackwardDataWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
@@ -483,8 +626,14 @@ func (c *DeConvolutionD) GetBackwardDataWorkspaceSize(
 	dyD *TensorD,
 	dxD *TensorD,
 	algo DeConvBwdDataAlgo) (uint, error) {
+	var err error
 	var sizebytes C.size_t
-	err := Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, dyD.descriptor, wD.descriptor, c.descriptor, dxD.descriptor, algo.c(), &sizebytes)).error("GetConvolutionForwardWorkspaceSize")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, dyD.descriptor, wD.descriptor, c.descriptor, dxD.descriptor, algo.c(), &sizebytes)).error("(c *DeConvolutionD) GetBackwardDataWorkspaceSize")
+		})
+	}
+	err = Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, dyD.descriptor, wD.descriptor, c.descriptor, dxD.descriptor, algo.c(), &sizebytes)).error("(c *DeConvolutionD) GetBackwardDataWorkspaceSize")
 
 	return uint(sizebytes), err
 }
@@ -504,15 +653,29 @@ func (c *DeConvolutionD) BackwardData(
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
 	var err error
-	if wspace == nil {
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			if wspace == nil {
 
-		err = Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), wD.descriptor, w.Ptr(),
-			c.descriptor, algo.c(), nil, C.size_t(wspaceSIB), b.CPtr(), dxD.descriptor, dx.Ptr())).error(" (c *DeConvolutionD) BackwardData")
+				return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), wD.descriptor, w.Ptr(),
+					c.descriptor, algo.c(), nil, C.size_t(wspaceSIB), b.CPtr(), dxD.descriptor, dx.Ptr())).error(" (c *DeConvolutionD) BackwardData")
 
+			}
+			return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), wD.descriptor, w.Ptr(),
+				c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspaceSIB), b.CPtr(), dxD.descriptor, dx.Ptr())).error(" (c *DeConvolutionD) BackwardData")
+		})
 	} else {
-		err = Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), wD.descriptor, w.Ptr(),
-			c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspaceSIB), b.CPtr(), dxD.descriptor, dx.Ptr())).error(" (c *DeConvolutionD) BackwardData")
+		if wspace == nil {
+
+			err = Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), wD.descriptor, w.Ptr(),
+				c.descriptor, algo.c(), nil, C.size_t(wspaceSIB), b.CPtr(), dxD.descriptor, dx.Ptr())).error(" (c *DeConvolutionD) BackwardData")
+
+		} else {
+			err = Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), wD.descriptor, w.Ptr(),
+				c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspaceSIB), b.CPtr(), dxD.descriptor, dx.Ptr())).error(" (c *DeConvolutionD) BackwardData")
+		}
 	}
+
 	if cudnndebugmode {
 		if err != nil {
 
@@ -545,11 +708,16 @@ func (c *DeConvolutionD) BackwardDataUS(
 	dxD *TensorD, dx unsafe.Pointer) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy, wD.descriptor, w,
+				c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), dxD.descriptor, dx)).error(" (c *DeConvolutionD) BackwardDataUS")
 
-	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy, wD.descriptor, w,
+		})
+	}
+	return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), dyD.descriptor, dy, wD.descriptor, w,
 		c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), dxD.descriptor, dx)).error(" (c *DeConvolutionD) BackwardDataUS")
 
-	return err
 }
 
 /*

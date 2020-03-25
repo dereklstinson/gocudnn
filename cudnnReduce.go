@@ -26,7 +26,7 @@ type ReduceTensorD struct {
 //CreateReduceTensorDescriptor creates an empry Reduce Tensor Descriptor
 func CreateReduceTensorDescriptor() (*ReduceTensorD, error) {
 	rt := new(ReduceTensorD)
-	err := Status(C.cudnnCreateReduceTensorDescriptor(&rt.tensorDesc)).error("CreateReduceTensorDescriptor-create")
+	err := Status(C.cudnnCreateReduceTensorDescriptor(&rt.tensorDesc)).error("CreateReduceTensorDescriptor()")
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (r *ReduceTensorD) Set(reduceop ReduceTensorOp,
 	//	r.tensorNanOpt = nanprop.c()
 	//	r.tensorIndices = reducetensorinds.c()
 	//	r.tensorIndicesType = indicietype.c()
-	return Status(C.cudnnSetReduceTensorDescriptor(r.tensorDesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("SetReduceTensorDescriptor")
+	return Status(C.cudnnSetReduceTensorDescriptor(r.tensorDesc, reduceop.c(), datatype.c(), nanprop.c(), reducetensorinds.c(), indicietype.c())).error("(r *ReduceTensorD) Set")
 }
 
 //Get values that were set for r in set
@@ -58,7 +58,7 @@ func (r *ReduceTensorD) Get() (reduceop ReduceTensorOp,
 	nanprop NANProp,
 	reducetensorinds ReduceTensorIndices,
 	indicietype IndiciesType, err error) {
-	err = Status(C.cudnnGetReduceTensorDescriptor(r.tensorDesc, reduceop.cptr(), datatype.cptr(), nanprop.cptr(), reducetensorinds.cptr(), indicietype.cptr())).error("SetReduceTensorDescriptor")
+	err = Status(C.cudnnGetReduceTensorDescriptor(r.tensorDesc, reduceop.cptr(), datatype.cptr(), nanprop.cptr(), reducetensorinds.cptr(), indicietype.cptr())).error("(r *ReduceTensorD) Get()")
 	return reduceop, datatype, nanprop, reducetensorinds, indicietype, err
 }
 
@@ -80,7 +80,7 @@ func (r *ReduceTensorD) Destroy() error {
 }
 func cudnnDestroyReduceTensorDescriptor(reduce *ReduceTensorD) error {
 	x := C.cudnnDestroyReduceTensorDescriptor(reduce.tensorDesc)
-	err := Status(x).error("DestroyTensorDescriptor")
+	err := Status(x).error("cudnnDestroyReduceTensorDescriptor(reduce *ReduceTensorD)")
 
 	return err
 }
@@ -89,10 +89,17 @@ func cudnnDestroyReduceTensorDescriptor(reduce *ReduceTensorD) error {
 func (r *ReduceTensorD) GetIndiciesSize(
 	handle *Handle,
 	aDesc, cDesc *TensorD) (uint, error) {
+	var err error
 	var sizeinbytes C.size_t
-	x := C.cudnnGetReductionIndicesSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetReductionIndicesSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)).error("(r *ReduceTensorD) GetIndiciesSize")
+		})
+	} else {
+		err = Status(C.cudnnGetReductionIndicesSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)).error("(r *ReduceTensorD) GetIndiciesSize")
+	}
 
-	return uint(sizeinbytes), Status(x).error("GetReductionIndicesSize")
+	return uint(sizeinbytes), err
 
 }
 
@@ -101,10 +108,18 @@ func (r *ReduceTensorD) GetWorkSpaceSize(
 	handle *Handle,
 	aDesc, cDesc *TensorD) (uint, error) {
 	var sizeinbytes C.size_t
-	x := C.cudnnGetReductionWorkspaceSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetReductionWorkspaceSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)).error("(r *ReduceTensorD) GetWorkSpaceSize")
 
-	return uint(sizeinbytes), Status(x).error("GetReductionWorkspaceSize")
+		})
+	} else {
+		err = Status(C.cudnnGetReductionWorkspaceSize(handle.x, r.tensorDesc, aDesc.descriptor, cDesc.descriptor, &sizeinbytes)).error("(r *ReduceTensorD) GetWorkSpaceSize")
 
+	}
+
+	return uint(sizeinbytes), err
 }
 
 //ReduceTensorOp Tensor operation : C = reduce op( alpha * A ) + beta * C */
@@ -124,29 +139,54 @@ func (r *ReduceTensorD) ReduceTensorOp(
 	Ce cutil.Mem) error {
 	a := cscalarbydatatype(aDesc.dtype, alpha)
 	b := cscalarbydatatype(cDesc.dtype, beta)
-	var x C.cudnnStatus_t
-	if indices == nil && wspace != nil {
-		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
-			C.size_t(0), wspace.Ptr(), C.size_t(wspacesize),
-			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
-	} else if indices != nil && wspace == nil {
-		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
-			C.size_t(indiciessize), nil, C.size_t(0),
-			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
 
-	} else if indices == nil && wspace == nil {
-		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
-			C.size_t(0), nil, C.size_t(0),
-			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			if indices == nil && wspace != nil {
+				return Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
+					C.size_t(0), wspace.Ptr(), C.size_t(wspacesize),
+					a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
+			} else if indices != nil && wspace == nil {
+				return Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
+					C.size_t(indiciessize), nil, C.size_t(0),
+					a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
 
+			} else if indices == nil && wspace == nil {
+				return Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
+					C.size_t(0), nil, C.size_t(0),
+					a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
+
+			}
+			return Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
+				C.size_t(indiciessize), wspace.Ptr(), C.size_t(wspacesize),
+				a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
+
+		})
 	} else {
-		x = C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
-			C.size_t(indiciessize), wspace.Ptr(), C.size_t(wspacesize),
-			a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())
+		if indices == nil && wspace != nil {
+			err = Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
+				C.size_t(0), wspace.Ptr(), C.size_t(wspacesize),
+				a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
+		} else if indices != nil && wspace == nil {
+			err = Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
+				C.size_t(indiciessize), nil, C.size_t(0),
+				a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
 
+		} else if indices == nil && wspace == nil {
+			err = Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, nil,
+				C.size_t(0), nil, C.size_t(0),
+				a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
+
+		} else {
+			err = Status(C.cudnnReduceTensor(handle.x, r.tensorDesc, indices.Ptr(),
+				C.size_t(indiciessize), wspace.Ptr(), C.size_t(wspacesize),
+				a.CPtr(), aDesc.descriptor, A.Ptr(), b.CPtr(), cDesc.descriptor, Ce.Ptr())).error("(r *ReduceTensorD) ReduceTensorOp")
+
+		}
 	}
 
-	return Status(x).error("ReduceTensor")
+	return err
 }
 
 //ReduceTensorOpUS is like ReduceTensorOp but uses unsafe.Pointer instead of cutil.Mem
@@ -160,17 +200,26 @@ func (r *ReduceTensorD) ReduceTensorOpUS(
 	cDesc *TensorD, Ce unsafe.Pointer) error {
 	a := cscalarbydatatype(aDesc.dtype, alpha)
 	b := cscalarbydatatype(cDesc.dtype, beta)
-	var x C.cudnnStatus_t
 
-	x = C.cudnnReduceTensor(handle.x, r.tensorDesc,
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnReduceTensor(handle.x, r.tensorDesc,
+				indices, C.size_t(indiciessize),
+				wspace, C.size_t(wspacesize),
+				a.CPtr(),
+				aDesc.descriptor, A,
+				b.CPtr(),
+				cDesc.descriptor, Ce)).error("(r *ReduceTensorD) ReduceTensorOpUS")
+		})
+	}
+
+	return Status(C.cudnnReduceTensor(handle.x, r.tensorDesc,
 		indices, C.size_t(indiciessize),
 		wspace, C.size_t(wspacesize),
 		a.CPtr(),
 		aDesc.descriptor, A,
 		b.CPtr(),
-		cDesc.descriptor, Ce)
-
-	return Status(x).error("ReduceTensor")
+		cDesc.descriptor, Ce)).error("(r *ReduceTensorD) ReduceTensorOpUS")
 }
 
 //ReduceTensorOp used for flags for reduce tensor functions

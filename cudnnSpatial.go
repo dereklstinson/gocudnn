@@ -27,13 +27,22 @@ func (s *SpatialTransformerD) GridGeneratorForward(
 	second coordinate is y*/
 
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfGridGeneratorForward(
+				handle.x,
+				s.descriptor,
+				theta.Ptr(),
+				grid.Ptr(),
+			)).error("(s *SpatialTransformerD) GridGeneratorForward")
+		})
+	}
 	return Status(C.cudnnSpatialTfGridGeneratorForward(
 		handle.x,
 		s.descriptor,
 		theta.Ptr(),
 		grid.Ptr(),
-	)).error("SpatialTfGridGeneratorForward")
+	)).error("(s *SpatialTransformerD) GridGeneratorForward")
 }
 
 //GridGeneratorForwardUS is like GridGeneratorForward but uses unsafe.Pointer instead of cutil.Mem
@@ -45,13 +54,23 @@ func (s *SpatialTransformerD) GridGeneratorForwardUS(
 	second coordinate is y*/
 
 ) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfGridGeneratorForward(
+				handle.x,
+				s.descriptor,
+				theta,
+				grid,
+			)).error("(s *SpatialTransformerD) GridGeneratorForwardUS")
 
+		})
+	}
 	return Status(C.cudnnSpatialTfGridGeneratorForward(
 		handle.x,
 		s.descriptor,
 		theta,
 		grid,
-	)).error("SpatialTfGridGeneratorForward")
+	)).error("(s *SpatialTransformerD) GridGeneratorForwardUS")
 }
 
 //GridGeneratorBackward - This function generates a grid of coordinates in the input tensor corresponding to each pixel from the output tensor.
@@ -60,13 +79,22 @@ func (s *SpatialTransformerD) GridGeneratorBackward(
 	grid cutil.Mem,
 	theta cutil.Mem,
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfGridGeneratorBackward(
+				handle.x,
+				s.descriptor,
+				grid.Ptr(),
+				theta.Ptr(),
+			)).error("(s *SpatialTransformerD) GridGeneratorBackward")
+		})
+	}
 	return Status(C.cudnnSpatialTfGridGeneratorBackward(
 		handle.x,
 		s.descriptor,
 		grid.Ptr(),
 		theta.Ptr(),
-	)).error("SpatialTfGridGeneratorBackward")
+	)).error("(s *SpatialTransformerD) GridGeneratorBackward")
 }
 
 //GridGeneratorBackwardUS is like GridGeneratorBackward but uses unsafe.Pointer instead of cutil.Mem
@@ -75,13 +103,22 @@ func (s *SpatialTransformerD) GridGeneratorBackwardUS(
 	grid unsafe.Pointer,
 	theta unsafe.Pointer,
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfGridGeneratorBackward(
+				handle.x,
+				s.descriptor,
+				grid,
+				theta,
+			)).error("(s *SpatialTransformerD) GridGeneratorBackwardUS(")
+		})
+	}
 	return Status(C.cudnnSpatialTfGridGeneratorBackward(
 		handle.x,
 		s.descriptor,
 		grid,
 		theta,
-	)).error("SpatialTfGridGeneratorBackward")
+	)).error("(s *SpatialTransformerD) GridGeneratorBackwardUS(")
 }
 
 //SamplerForward performs the spatialtfsampleforward
@@ -95,7 +132,21 @@ func (s *SpatialTransformerD) SamplerForward(
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfSamplerForward(
+				handle.x,
+				s.descriptor,
+				a.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				grid.Ptr(),
+				b.CPtr(),
+				yD.descriptor,
+				y.Ptr(),
+			)).error("(s *SpatialTransformerD) SamplerForward")
+		})
+	}
 	return Status(C.cudnnSpatialTfSamplerForward(
 		handle.x,
 		s.descriptor,
@@ -106,7 +157,7 @@ func (s *SpatialTransformerD) SamplerForward(
 		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
-	)).error("SpatialTfSamplerForward")
+	)).error("(s *SpatialTransformerD) SamplerForward")
 }
 
 //SamplerForwardUS is like SamplerForward but uses unsafe.Pointer instead of cutil.Mem
@@ -120,7 +171,19 @@ func (s *SpatialTransformerD) SamplerForwardUS(
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfSamplerForward(
+				handle.x,
+				s.descriptor,
+				a.CPtr(),
+				xD.descriptor, x,
+				grid,
+				b.CPtr(),
+				yD.descriptor, y,
+			)).error("(s *SpatialTransformerD) SamplerForwardUS")
+		})
+	}
 	return Status(C.cudnnSpatialTfSamplerForward(
 		handle.x,
 		s.descriptor,
@@ -129,7 +192,7 @@ func (s *SpatialTransformerD) SamplerForwardUS(
 		grid,
 		b.CPtr(),
 		yD.descriptor, y,
-	)).error("SpatialTfSamplerForward")
+	)).error("(s *SpatialTransformerD) SamplerForwardUS")
 }
 
 //SamplerBackward does the spatial Tranform Sample Backward
@@ -149,6 +212,23 @@ func (s *SpatialTransformerD) SamplerBackward(
 	b := cscalarbydatatype(dxD.dtype, beta)
 	ad := cscalarbydatatype(xD.dtype, alphaDgrid)
 	bd := cscalarbydatatype(dxD.dtype, betaDgrid)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfSamplerBackward(
+				handle.x,
+				s.descriptor,
+				a.CPtr(),
+				xD.descriptor, x.Ptr(),
+				b.CPtr(),
+				dxD.descriptor, dx.Ptr(),
+				ad.CPtr(),
+				dyD.descriptor, dy.Ptr(),
+				grid.Ptr(),
+				bd.CPtr(),
+				dGrid.Ptr(),
+			)).error("(s *SpatialTransformerD) SamplerBackward")
+		})
+	}
 	return Status(C.cudnnSpatialTfSamplerBackward(
 		handle.x,
 		s.descriptor,
@@ -161,7 +241,7 @@ func (s *SpatialTransformerD) SamplerBackward(
 		grid.Ptr(),
 		bd.CPtr(),
 		dGrid.Ptr(),
-	)).error("SpatialTfSamplerBackward")
+	)).error("(s *SpatialTransformerD) SamplerBackward")
 }
 
 //SamplerBackwardUS is like SamplerBackward but uses unsafe.Pointer instead of cutil.Mem
@@ -181,6 +261,23 @@ func (s *SpatialTransformerD) SamplerBackwardUS(
 	b := cscalarbydatatype(dxD.dtype, beta)
 	ad := cscalarbydatatype(xD.dtype, alphaDgrid)
 	bd := cscalarbydatatype(dxD.dtype, betaDgrid)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSpatialTfSamplerBackward(
+				handle.x,
+				s.descriptor,
+				a.CPtr(),
+				xD.descriptor, x,
+				b.CPtr(),
+				dxD.descriptor, dx,
+				ad.CPtr(),
+				dyD.descriptor, dy,
+				grid,
+				bd.CPtr(),
+				dGrid,
+			)).error("(s *SpatialTransformerD) SamplerBackwardUS")
+		})
+	}
 	return Status(C.cudnnSpatialTfSamplerBackward(
 		handle.x,
 		s.descriptor,
@@ -193,7 +290,7 @@ func (s *SpatialTransformerD) SamplerBackwardUS(
 		grid,
 		bd.CPtr(),
 		dGrid,
-	)).error("SpatialTfSamplerBackward")
+	)).error("(s *SpatialTransformerD) SamplerBackwardUS")
 }
 
 /* APIs for spatial transformer network*/
@@ -203,21 +300,31 @@ type SamplerType C.cudnnSamplerType_t
 
 //Bilinear sets s to  SamplerType(C.CUDNN_SAMPLER_BILINEAR) and returns new value of s
 func (s *SamplerType) Bilinear() SamplerType { *s = SamplerType(C.CUDNN_SAMPLER_BILINEAR); return *s }
-
+func (s SamplerType) String() string {
+	f := s
+	var st string
+	switch s {
+	case f.Bilinear():
+		st = "Bilinear"
+	default:
+		st = "Unssuported Type"
+	}
+	return "SamplerType" + st
+}
 func (s SamplerType) c() C.cudnnSamplerType_t { return C.cudnnSamplerType_t(s) }
 
 //CreateSpatialTransformerDescriptor creates the spacial tesnor
 func CreateSpatialTransformerDescriptor() (*SpatialTransformerD, error) {
 	x := new(SpatialTransformerD)
-	err := Status(C.cudnnCreateSpatialTransformerDescriptor(&x.descriptor)).error("NewSpatialTransformerNdDescriptor-create")
+	err := Status(C.cudnnCreateSpatialTransformerDescriptor(&x.descriptor)).error("CreateSpatialTransformerDescriptor()")
 	if setfinalizer {
 		runtime.SetFinalizer(x, cudnnDestroySpatialTransformerDescriptor)
 	}
 	return x, err
 }
 
-//SetND sets spacial to nd descriptor.
-func (s *SpatialTransformerD) SetND(sampler SamplerType, data DataType, dimA []int32) error {
+//Set sets spacial to nd descriptor.
+func (s *SpatialTransformerD) Set(sampler SamplerType, data DataType, dimA []int32) error {
 	dims := C.int(len(dimA))
 	cdimA := int32Tocint(dimA)
 	return Status(C.cudnnSetSpatialTransformerNdDescriptor(
@@ -226,7 +333,7 @@ func (s *SpatialTransformerD) SetND(sampler SamplerType, data DataType, dimA []i
 		data.c(),
 		dims,
 		&cdimA[0],
-	)).error("NewSpatialTransformerNdDescriptor-Set")
+	)).error("(s *SpatialTransformerD) Set")
 }
 
 //Destroy destroys the spatial Transformer Desctiptor.  If GC is enable this function won't delete transformer. It will only return nil

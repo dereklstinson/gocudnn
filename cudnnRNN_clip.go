@@ -34,7 +34,12 @@ func (r RNNClipMode) String() string {
 
 //SetClip sets the clip mode into descriptor
 func (r *RNND) SetClip(h *Handle, mode RNNClipMode, nanprop NANProp, lclip, rclip float64) error {
-	return Status(C.cudnnRNNSetClip(h.x, r.descriptor, mode.c(), nanprop.c(), C.double(lclip), C.double(rclip))).error("SetClip")
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNSetClip(h.x, r.descriptor, mode.c(), nanprop.c(), C.double(lclip), C.double(rclip))).error("(r *RNND) SetClip")
+		})
+	}
+	return Status(C.cudnnRNNSetClip(h.x, r.descriptor, mode.c(), nanprop.c(), C.double(lclip), C.double(rclip))).error("(r *RNND) SetClip")
 }
 
 //GetClip returns the clip settings for the descriptor
@@ -45,7 +50,14 @@ func (r *RNND) GetClip(h *Handle) (mode RNNClipMode, nanprop NANProp, lclip, rcl
 		lt  C.double
 		rt  C.double
 	)
-	err = Status(C.cudnnRNNGetClip(h.x, r.descriptor, &m, &nan, &lt, &rt)).error("SetClip")
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			return Status(C.cudnnRNNGetClip(h.x, r.descriptor, &m, &nan, &lt, &rt)).error("SetClip")
+		})
+	} else {
+		err = Status(C.cudnnRNNGetClip(h.x, r.descriptor, &m, &nan, &lt, &rt)).error("SetClip")
+	}
+
 	mode = RNNClipMode(m)
 	nanprop = NANProp(nan)
 	lclip = float64(lt)

@@ -3,6 +3,7 @@ package xtra
 import "C"
 import (
 	"errors"
+
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/kernels"
@@ -121,6 +122,26 @@ type leakyspecials struct {
 //Note: Only trainable activations will be trained.  tmode will be ignored for unsupported activations
 //Note: Only functions requiring coef will get it.  coef will be ignored for unsupported activations
 func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.DataType, nanprop gocudnn.NANProp, coef float64) (*XActivationD, error) {
+	var xact *XActivationD
+	var err error
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			xact, err = newXActivationDescriptor(h, amode, dtype, nanprop, coef)
+			return err
+		})
+	} else {
+		xact, err = newXActivationDescriptor(h, amode, dtype, nanprop, coef)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return xact, err
+}
+
+//NewXActivationDescriptor - Creates a descriptor for the xtra functions made for gocudnn.
+//Note: Only trainable activations will be trained.  tmode will be ignored for unsupported activations
+//Note: Only functions requiring coef will get it.  coef will be ignored for unsupported activations
+func newXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.DataType, nanprop gocudnn.NANProp, coef float64) (*XActivationD, error) {
 	var nanflg gocudnn.NANProp
 	var nan int32
 	if nanflg.NotPropigate() == nanprop {
@@ -218,6 +239,15 @@ func NewXActivationDescriptor(h *Handle, amode XActivationMode, dtype gocudnn.Da
 //Threshhold uses coefs and coefs1 for y[i]=x[i]*coefs[i] where x[i]>thres[i] else y[i]=x[i]*coefs1[i]
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
 func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, yD *gocudnn.TensorD, y cutil.Mem, coefs, thresh, coefs1 cutil.Mem, alpha, beta float64) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return xA.forwardProp(h, xD, x, yD, y, coefs, thresh, coefs1, alpha, beta)
+		})
+	}
+	return xA.forwardProp(h, xD, x, yD, y, coefs, thresh, coefs1, alpha, beta)
+}
+
+func (xA *XActivationD) forwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, yD *gocudnn.TensorD, y cutil.Mem, coefs, thresh, coefs1 cutil.Mem, alpha, beta float64) error {
 	_, dtype, dims, _, err := xD.Get()
 	if err != nil {
 		return err
@@ -284,6 +314,14 @@ func (xA *XActivationD) ForwardProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem,
 //Threshhold uses coefs and coefs1 thresh, dcoefs,dthresh,and dcoefs1 for dx[i]=dy[i]*coefs[i] where x[i]<thresh[i] else dx[i]=coefs1[i]*dy[i]. and dcoefs[i]+=x[i]*dy[i] same for dcoefs1
 //The function will only use values that it is used to perform the calculation.  It will ignore the ones that are not used for the function
 func (xA *XActivationD) BackProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1 cutil.Mem, alpha, beta float64) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return xA.backProp(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1, alpha, beta)
+		})
+	}
+	return xA.backProp(h, xD, x, dxD, dx, dyD, dy, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1, alpha, beta)
+}
+func (xA *XActivationD) backProp(h *Handle, xD *gocudnn.TensorD, x cutil.Mem, dxD *gocudnn.TensorD, dx cutil.Mem, dyD *gocudnn.TensorD, dy cutil.Mem, coefs, dcoefs, thresh, dthresh, coefs1, dcoefs1 cutil.Mem, alpha, beta float64) error {
 	var xaflg XActivationMode
 	switch xA.amode {
 	case xaflg.Leaky():

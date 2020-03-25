@@ -47,13 +47,25 @@ func (s *SoftMaxD) String() string {
 //Input/Output: y
 func (s *SoftMaxD) Forward(
 	handle *Handle,
-
 	alpha float64,
 	xD *TensorD, x cutil.Mem,
 	beta float64,
 	yD *TensorD, y cutil.Mem) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSoftmaxForward(
+				handle.x,
+				s.algo,
+				s.mode,
+				a.CPtr(),
+				xD.descriptor, x.Ptr(),
+				b.CPtr(),
+				yD.descriptor, y.Ptr(),
+			)).error("(s *SoftMaxD) Forward")
+		})
+	}
 	return Status(C.cudnnSoftmaxForward(
 		handle.x,
 		s.algo,
@@ -62,7 +74,7 @@ func (s *SoftMaxD) Forward(
 		xD.descriptor, x.Ptr(),
 		b.CPtr(),
 		yD.descriptor, y.Ptr(),
-	)).error("SoftMaxForward")
+	)).error("(s *SoftMaxD) Forward")
 }
 
 //Backward performs the backward softmax
@@ -78,6 +90,20 @@ func (s *SoftMaxD) Backward(
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(dxD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSoftmaxBackward(
+				handle.x,
+				s.algo,
+				s.mode,
+				a.CPtr(),
+				yD.descriptor, y.Ptr(),
+				dyD.descriptor, dy.Ptr(),
+				b.CPtr(),
+				dxD.descriptor, dx.Ptr(),
+			)).error("(s *SoftMaxD) Backward")
+		})
+	}
 	return Status(C.cudnnSoftmaxBackward(
 		handle.x,
 		s.algo,
@@ -87,19 +113,31 @@ func (s *SoftMaxD) Backward(
 		dyD.descriptor, dy.Ptr(),
 		b.CPtr(),
 		dxD.descriptor, dx.Ptr(),
-	)).error("SoftMaxBackward")
+	)).error("(s *SoftMaxD) Backward")
 }
 
 //ForwardUS is like Forward but uses unsafe.Pointer instead of cutil.Mem
 func (s *SoftMaxD) ForwardUS(
 	handle *Handle,
-
 	alpha float64,
 	xD *TensorD, x unsafe.Pointer,
 	beta float64,
 	yD *TensorD, y unsafe.Pointer) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSoftmaxForward(
+				handle.x,
+				s.algo,
+				s.mode,
+				a.CPtr(),
+				xD.descriptor, x,
+				b.CPtr(),
+				yD.descriptor, y,
+			)).error("(s *SoftMaxD) ForwardUS")
+		})
+	}
 	return Status(C.cudnnSoftmaxForward(
 		handle.x,
 		s.algo,
@@ -108,7 +146,7 @@ func (s *SoftMaxD) ForwardUS(
 		xD.descriptor, x,
 		b.CPtr(),
 		yD.descriptor, y,
-	)).error("SoftMaxForward")
+	)).error("(s *SoftMaxD) ForwardUS")
 }
 
 //BackwardUS is like Backward but uses unsafe.Pointer instead of cutil.Mem
@@ -122,6 +160,20 @@ func (s *SoftMaxD) BackwardUS(
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(dxD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSoftmaxBackward(
+				handle.x,
+				s.algo,
+				s.mode,
+				a.CPtr(),
+				yD.descriptor, y,
+				dyD.descriptor, dy,
+				b.CPtr(),
+				dxD.descriptor, dx,
+			)).error("(s *SoftMaxD) BackwardUS")
+		})
+	}
 	return Status(C.cudnnSoftmaxBackward(
 		handle.x,
 		s.algo,
@@ -131,7 +183,7 @@ func (s *SoftMaxD) BackwardUS(
 		dyD.descriptor, dy,
 		b.CPtr(),
 		dxD.descriptor, dx,
-	)).error("SoftMaxBackward")
+	)).error("(s *SoftMaxD) BackwardUS")
 }
 
 //SoftMaxAlgorithm is used for flags and are exposed through its methods
@@ -190,7 +242,7 @@ func (s SoftMaxMode) c() C.cudnnSoftmaxMode_t { return C.cudnnSoftmaxMode_t(s) }
 func (s SoftMaxMode) String() string {
 	var x string
 	f := s
-	switch s{
+	switch s {
 	case f.Channel():
 		x = "Channel"
 	case f.Instance():

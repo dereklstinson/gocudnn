@@ -43,6 +43,21 @@ type XLossMode int
 
 //NewLossDescriptor creates a loss destriptor to calculate loss
 func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
+	var loss *XLossD
+	var err error
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			loss, err = newLossDescriptor(h, mode)
+			return err
+		})
+	} else {
+		loss, err = newLossDescriptor(h, mode)
+	}
+
+	return loss, err
+}
+
+func newLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 	var ktf kernels.XtraKerns
 	var flg XLossModeFlag
 	var memflg cudart.MemcpyKind
@@ -97,6 +112,27 @@ func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {
 //CalculateErrorAndLoss calculates the error going back and the loss going forward dxD yD dyD need to have the same dims and size
 //and right now they can only be datatype float
 func (l *XLossD) CalculateErrorAndLoss(h *Handle,
+	dxD *gocudnn.TensorD, //output -errors going back
+	dx cutil.Mem, // output -errors going back
+	yD *gocudnn.TensorD, //input - target values
+	y cutil.Mem, //input -target values
+	dyD *gocudnn.TensorD, //input network output values
+	dy cutil.Mem, //input network output values
+	alpha, beta float64,
+) (float32, error) {
+	var loss float32
+	var err error
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			loss, err = l.calculateErrorAndLoss(h, dxD, dx, yD, y, dyD, dy, alpha, beta)
+			return err
+		})
+	} else {
+		loss, err = l.calculateErrorAndLoss(h, dxD, dx, yD, y, dyD, dy, alpha, beta)
+	}
+	return loss, err
+}
+func (l *XLossD) calculateErrorAndLoss(h *Handle,
 	dxD *gocudnn.TensorD, //output -errors going back
 	dx cutil.Mem, // output -errors going back
 	yD *gocudnn.TensorD, //input - target values

@@ -50,6 +50,9 @@ The gocu folder contains interfaces that interconnect the different sub packages
     
 
 ```
+## cudart/crtutil folder
+
+This folder has a ReadWriter in it.  That fulfills the io.Reader and io.Writer interface.
 
 ## Back into alpha
 
@@ -102,7 +105,7 @@ The go bindings will be very similar to how cudnn is coded.
 
 A few exceptions though:.  
 1. Most descriptors will be handled with methods after they are created.
-2. All of the "get" functions will return multiple values \(some of them don't right now, but that will change\).
+2. All of the "get" functions will return multiple values.
 
 ## A little more on flag handling
 
@@ -112,13 +115,17 @@ If you don't set the flag with a method. It will default with the initialized va
 
 ## Note on Handles.
 
-This is not thread safe.  You have to lock the host thread in any go routine that you use.  If you get this running on a mac. Then your functions will need to be sent to the main thread.  
+CreateHandle() is not thread safe.  Lock the thread using runtime.LockOSThread().  If you get this running on a mac. Then your functions will need to be sent to the main thread.
+
+CreateHandleEX() is designed for multiple gpu use.  It takes a gocu.Worker and any function that takes the handle will pass that function to the worker.  This is still not thread safe, because any
+gpu memory that the functions use (for the most part) need to be created on that worker.  Also, before any memory is created the handle needs to be made.  
+
+To parallelize gpus you will need separate handles.  Check out parallel_test.go
+
+
+
 
 ## CUBLAS and CUDA additions
-
-There will be no cublas. Fully connected neural networks can be made when the weights feature map dims == the input feature map dims.
-I added nvjpeg, and some npp.  If DALI ever gets a C api then I will add that too, but I don't see that happening in the near future.
-
 
 ## Other Notes
 

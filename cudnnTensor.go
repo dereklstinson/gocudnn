@@ -259,23 +259,29 @@ func TransformTensor(h *Handle,
 	beta float64,
 	yD *TensorD, y cutil.Mem) error {
 
-	var s Status
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	s = Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr()))
-
-	return s.error("TransformTensor")
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("TransformTensor")
+		})
+	}
+	return Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("TransformTensor")
 }
 
 //TransformTensorUS is like TransformTensor but it uses unsafe.Pointer instead of cutil.Mem
 func TransformTensorUS(h *Handle, alpha float64, xD *TensorD, x unsafe.Pointer, beta float64, yD *TensorD, y unsafe.Pointer) error {
 
-	var s Status
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	s = Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y))
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y)).error("TransformTensorUS")
 
-	return s.error("TransformTensor")
+		})
+	}
+	return Status(C.cudnnTransformTensor(h.x, a.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y)).error("TransformTensorUS")
+
 }
 
 //AddTensor Tensor Bias addition : C = alpha * A + beta * C // c is both the input and output
@@ -289,37 +295,55 @@ In the latter case, the same value from the bias tensor for those dimensions wil
 func AddTensor(h *Handle, alpha float64, aD *TensorD, A cutil.Mem, beta float64, cD *TensorD, c cutil.Mem) error {
 	a := cscalarbydatatype(aD.dtype, alpha)
 	b := cscalarbydatatype(aD.dtype, beta)
-	s := Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A.Ptr(), b.CPtr(), cD.descriptor, c.Ptr()))
-	err := s.error("AddTensor")
+	var err error
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			return Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A.Ptr(), b.CPtr(), cD.descriptor, c.Ptr())).error("AddTensor")
+		})
+	}
+	err = Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A.Ptr(), b.CPtr(), cD.descriptor, c.Ptr())).error("AddTensor")
 	if cudnndebugmode {
 		if err != nil {
 			fmt.Printf("AddTensors:aD into cD There values:\n aD: %v, cD: %v", aD, cD)
 			return err
 		}
 	}
-
-	return nil
+	return err
 }
 
 //AddTensorUS is like AddTensor but uses unsafe.Pointer instead of cutil.Mem
 func AddTensorUS(h *Handle, alpha float64, aD *TensorD, A unsafe.Pointer, beta float64, cD *TensorD, c unsafe.Pointer) error {
 	a := cscalarbydatatype(aD.dtype, alpha)
 	b := cscalarbydatatype(aD.dtype, beta)
-	s := Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A, b.CPtr(), cD.descriptor, c))
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A, b.CPtr(), cD.descriptor, c)).error("AddTensorUS")
+		})
+	}
+	return Status(C.cudnnAddTensor(h.x, a.CPtr(), aD.descriptor, A, b.CPtr(), cD.descriptor, c)).error("AddTensorUS")
 
-	return s.error("AddTensor")
 }
 
 //ScaleTensor - Scale all values of a tensor by a given factor : y[i] = alpha * y[i]
 func ScaleTensor(h *Handle, yD *TensorD, y cutil.Mem, alpha float64) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), a.CPtr())).error("ScaleTensor")
+		})
+	}
 	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y.Ptr(), a.CPtr())).error("ScaleTensor")
 }
 
 //ScaleTensorUS is like ScaleTensor but it uses unsafe.Pointer instead of cutil.Mem
 func ScaleTensorUS(h *Handle, yD *TensorD, y unsafe.Pointer, alpha float64) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
-	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y, a.CPtr())).error("ScaleTensor")
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y, a.CPtr())).error("ScaleTensorUS")
+		})
+	}
+	return Status(C.cudnnScaleTensor(h.x, yD.descriptor, y, a.CPtr())).error("ScaleTensorUS")
 }
 
 //SetTensor -  Set all values of a tensor to a given value : y[i] = value[0]
@@ -327,7 +351,11 @@ func SetTensor(h *Handle, yD *TensorD, y cutil.Mem, v float64) error {
 
 	vc := cscalarbydatatypeforsettensor(yD.dtype, v)
 	x := C.cudnnSetTensor(h.x, yD.descriptor, y.Ptr(), vc.CPtr())
-
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(x).error("SetTensor")
+		})
+	}
 	return Status(x).error("SetTensor")
 }
 
@@ -336,8 +364,12 @@ func SetTensorUS(h *Handle, yD *TensorD, y unsafe.Pointer, v float64) error {
 
 	vc := cscalarbydatatypeforsettensor(yD.dtype, v)
 	x := C.cudnnSetTensor(h.x, yD.descriptor, y, vc.CPtr())
-
-	return Status(x).error("SetTensor")
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(x).error("SetTensorUS")
+		})
+	}
+	return Status(x).error("SetTensorUS")
 }
 
 /*
@@ -593,117 +625,3 @@ func (t TensorFormat) String() string {
 	}
 	return "TensorFormat: " + x
 }
-
-/*
-//NewTensor4dDescriptor Creates and Sets a Tensor 4d Descriptor.
-func NewTensor4dDescriptor(data DataType, format TensorFormat, shape []int32) (*TensorD, error) {
-
-	stride := stridecalc(shape)
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	err = Status(C.cudnnSetTensor4dDescriptor(descriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), C.int(shape[0]), C.int(shape[1]), C.int(shape[2]), C.int(shape[3]))).error("NewTensor4dDescriptor-set")
-	if err != nil {
-		return nil, err
-	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: C.int(4), flag: t4d}
-	if setfinalizer {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
-
-	return x, nil
-
-}
-
-//NewTensor4dDescriptorEx Creates and Sets A Tensor 4d Descriptor EX
-func NewTensor4dDescriptorEx(data DataType, shape, stride []int32) (*TensorD, error) {
-	if len(shape) != 4 || len(stride) != 4 {
-		return nil, errors.New("len(shape) = " + strconv.Itoa(len(shape)) + " len(stride) = " + strconv.Itoa(len(stride)) + " .. both have to equal 4")
-	}
-	var tflg TensorFormat
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensor4dDescriptorEx-create")
-	if err != nil {
-		return nil, err
-	}
-	err = Status(C.cudnnSetTensor4dDescriptorEx(descriptor, C.cudnnDataType_t(data), C.int(shape[0]), C.int(shape[1]), C.int(shape[2]), C.int(shape[3]), C.int(stride[0]), C.int(stride[1]), C.int(stride[2]), C.int(stride[3]))).error("NewTensor4dDescriptorEX-set")
-	if err != nil {
-		return nil, err
-	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, stride: stride, frmt: tflg.Strided(), dims: C.int(4), flag: t4dex}
-	if setfinalizer == true {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
-
-	return x, nil
-
-}
-
-//NewTensorNdDescriptor creates and sets an nd descriptor
-func NewTensorNdDescriptor(data DataType, shape, stride []int32) (*TensorD, error) {
-	if len(shape) != len(stride) {
-		return nil, errors.New("len(shape) must equal len(stride)")
-	}
-	if len(stride) < 4 || len(stride) > 8 {
-		return nil, errors.New("length of arrays need to be >4 or <8")
-	}
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensorNdDescriptor-create")
-	if err != nil {
-		return nil, err
-	}
-	dims := C.int(len(shape))
-	shapecint := int32Tocint(shape)
-	stridecint := int32Tocint(stride)
-	err = Status(C.cudnnSetTensorNdDescriptor(descriptor, C.cudnnDataType_t(data), dims, &shapecint[0], &stridecint[0])).error("cudnnSetTensorNdDescriptor")
-	if err != nil {
-		return nil, err
-	}
-	var tflg TensorFormat
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: tflg.Strided(), stride: stride, dims: dims, flag: tnd}
-	if setfinalizer == true {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
-	return x, nil
-}
-
-//NewTensorNdDescriptorEx creates and sets an ND descriptor ex
-func NewTensorNdDescriptorEx(format TensorFormat, data DataType, shape []int32) (*TensorD, error) {
-	if len(shape) < 4 {
-		return nil, errors.New("Shape array has to be greater than  4")
-	}
-
-	stride := stridecalc(shape)
-	var descriptor C.cudnnTensorDescriptor_t
-	err := Status(C.cudnnCreateTensorDescriptor(&descriptor)).error("NewTensorNdDescriptorEx-create")
-	if err != nil {
-		return nil, err
-	}
-	dims := C.int(len(shape))
-	shapecint := int32Tocint(shape)
-
-	err = Status(C.cudnnSetTensorNdDescriptorEx(descriptor, C.cudnnTensorFormat_t(format), C.cudnnDataType_t(data), dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
-	if err != nil {
-		return nil, err
-	}
-	x := &TensorD{descriptor: descriptor, dimsarray: shape, frmt: format, stride: stride, dims: dims, flag: tndex}
-	if setfinalizer == true {
-		runtime.SetFinalizer(x, destroytensordescriptor)
-	}
-	return x, nil
-
-}
-*/
-
-/*
-//GetFormat returns the format of the tensor error will return if tensor supports slide//
-func (t *TensorD) GetFormat() TensorFormat {
-	if t.descriptor != nil {
-		return t.frmt
-	}
-	return t.frmt.Unknown()
-
-}
-*/

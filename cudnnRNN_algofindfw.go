@@ -40,23 +40,47 @@ func (r *RNND) FindRNNForwardInferenceAlgorithmEx(
 	var retactAlgoCount C.int
 	perfResults := make([]C.cudnnAlgorithmPerformance_t, algocount)
 
-	err = Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		seqLength,
-		&tocxD[0], x.Ptr(),
-		hxD.descriptor, hx.Ptr(),
-		cxD.descriptor, cx.Ptr(),
-		wD.descriptor, w.Ptr(),
-		&tocyD[0], y.Ptr(),
-		hyD.descriptor, hy.Ptr(),
-		cyD.descriptor, cy.Ptr(),
-		C.float(findIntensity),
-		(C.int)(algocount),
-		&retactAlgoCount,
-		&perfResults[0],
-		wspace.Ptr(), C.size_t(wspacesize),
-	)).error("FindRNNForwardInferenceAlgorithmEx")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLength,
+				&tocxD[0], x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				wD.descriptor, w.Ptr(),
+				&tocyD[0], y.Ptr(),
+				hyD.descriptor, hy.Ptr(),
+				cyD.descriptor, cy.Ptr(),
+				C.float(findIntensity),
+				(C.int)(algocount),
+				&retactAlgoCount,
+				&perfResults[0],
+				wspace.Ptr(), C.size_t(wspacesize),
+			)).error("(r *RNND) FindRNNForwardInferenceAlgorithmEx")
+
+		})
+	} else {
+		err = Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
+			handle.x,
+			r.descriptor,
+			seqLength,
+			&tocxD[0], x.Ptr(),
+			hxD.descriptor, hx.Ptr(),
+			cxD.descriptor, cx.Ptr(),
+			wD.descriptor, w.Ptr(),
+			&tocyD[0], y.Ptr(),
+			hyD.descriptor, hy.Ptr(),
+			cyD.descriptor, cy.Ptr(),
+			C.float(findIntensity),
+			(C.int)(algocount),
+			&retactAlgoCount,
+			&perfResults[0],
+			wspace.Ptr(), C.size_t(wspacesize),
+		)).error("(r *RNND) FindRNNForwardInferenceAlgorithmEx")
+
+	}
 
 	return calgoperftogoarray(perfResults, setfinalizer), err
 }
@@ -91,36 +115,68 @@ func (r *RNND) FindRNNForwardInferenceAlgorithmExUS(
 	var retactAlgoCount C.int
 	perfResults := make([]C.cudnnAlgorithmPerformance_t, reqcount)
 
-	err = Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		seqLength,
-		&tocxD[0], x,
-		hxD.descriptor, hx,
-		cxD.descriptor, cx,
-		wD.descriptor, w,
-		&tocyD[0], y,
-		hyD.descriptor, hy,
-		cyD.descriptor, cy,
-		C.float(findIntensity),
-		(C.int)(reqcount),
-		&retactAlgoCount,
-		&perfResults[0],
-		wspace, C.size_t(wspacesize),
-	)).error("FindRNNForwardInferenceAlgorithmEx")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLength,
+				&tocxD[0], x,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				wD.descriptor, w,
+				&tocyD[0], y,
+				hyD.descriptor, hy,
+				cyD.descriptor, cy,
+				C.float(findIntensity),
+				(C.int)(reqcount),
+				&retactAlgoCount,
+				&perfResults[0],
+				wspace, C.size_t(wspacesize),
+			)).error(" (r *RNND) FindRNNForwardInferenceAlgorithmExUS")
+		})
+	} else {
+		err = Status(C.cudnnFindRNNForwardInferenceAlgorithmEx(
+			handle.x,
+			r.descriptor,
+			seqLength,
+			&tocxD[0], x,
+			hxD.descriptor, hx,
+			cxD.descriptor, cx,
+			wD.descriptor, w,
+			&tocyD[0], y,
+			hyD.descriptor, hy,
+			cyD.descriptor, cy,
+			C.float(findIntensity),
+			(C.int)(reqcount),
+			&retactAlgoCount,
+			&perfResults[0],
+			wspace, C.size_t(wspacesize),
+		)).error(" (r *RNND) FindRNNForwardInferenceAlgorithmExUS")
+	}
 
 	return calgoperftogoarray(perfResults, setfinalizer), err
 }
 
 //GetRNNForwardTrainingAlgorithmMaxCount gets the max number of algorithms for rnnforward training algo
-func (r *RNND) GetRNNForwardTrainingAlgorithmMaxCount(handle *Handle) (int32, error) {
+func (r *RNND) getRNNForwardTrainingAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
-	stat := C.cudnnGetRNNForwardTrainingAlgorithmMaxCount(
-		handle.x,
-		r.descriptor,
-		&count)
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNForwardTrainingAlgorithmMaxCount(
+				handle.x,
+				r.descriptor,
+				&count)).error("(r *RNND) GetRNNForwardTrainingAlgorithmMaxCount")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNForwardTrainingAlgorithmMaxCount(
+			handle.x,
+			r.descriptor,
+			&count)).error("(r *RNND) GetRNNForwardTrainingAlgorithmMaxCount")
+	}
 
-	return int32(count), Status(stat).error("GetRNNForwardTrainingAlgorithmMaxCount")
+	return int32(count), err
 }
 
 //FindRNNForwardTrainingAlgorithmEx finds and orders the performance of rnn Algorithm for training returns that list with an error
@@ -148,7 +204,7 @@ func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 	rspacesize uint,
 
 ) ([]AlgorithmPerformance, error) {
-	reqcount, err := r.getRNNForwardInferenceAlgorithmMaxCount(handle)
+	reqcount, err := r.getRNNForwardTrainingAlgorithmMaxCount(handle)
 	if err != nil {
 		return nil, err
 	}
@@ -158,54 +214,111 @@ func (r *RNND) FindRNNForwardTrainingAlgorithmEx(
 
 	var actualcount C.int
 	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
-	if wspace == nil {
-		err = Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
-			handle.x,
-			r.descriptor,
-			seqLength,
-			&tocxD[0],
-			x.Ptr(),
-			hxD.descriptor,
-			hx.Ptr(),
-			cxD.descriptor,
-			cx.Ptr(),
-			wD.descriptor,
-			w.Ptr(),
-			&tocyD[0],
-			y.Ptr(),
-			hyD.descriptor,
-			hy.Ptr(),
-			cyD.descriptor,
-			cy.Ptr(),
-			C.float(findIntensity),
-			C.int(reqcount),
-			&actualcount,
-			&perfresults[0],
-			nil,
-			C.size_t(0),
-			rspace.Ptr(),
-			C.size_t(rspacesize),
-		)).error("FindRNNForwardTrainingAlgorithmEx")
 
-		return calgoperftogoarray(perfresults, handle.gogc), err
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			if wspace == nil {
+				return Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
+					handle.x,
+					r.descriptor,
+					seqLength,
+					&tocxD[0],
+					x.Ptr(),
+					hxD.descriptor,
+					hx.Ptr(),
+					cxD.descriptor,
+					cx.Ptr(),
+					wD.descriptor,
+					w.Ptr(),
+					&tocyD[0],
+					y.Ptr(),
+					hyD.descriptor,
+					hy.Ptr(),
+					cyD.descriptor,
+					cy.Ptr(),
+					C.float(findIntensity),
+					C.int(reqcount),
+					&actualcount,
+					&perfresults[0],
+					nil,
+					C.size_t(0),
+					rspace.Ptr(),
+					C.size_t(rspacesize),
+				)).error("(r *RNND) FindRNNForwardTrainingAlgorithmEx")
+
+			}
+			return Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLength,
+				&tocxD[0], x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				wD.descriptor, w.Ptr(),
+				&tocyD[0], y.Ptr(),
+				hyD.descriptor, hy.Ptr(),
+				cyD.descriptor, cy.Ptr(),
+				C.float(findIntensity),
+				C.int(reqcount),
+				&actualcount, &perfresults[0],
+				wspace.Ptr(), C.size_t(wspacesize),
+				rspace.Ptr(), C.size_t(rspacesize),
+			)).error("(r *RNND) FindRNNForwardTrainingAlgorithmEx")
+		})
+	} else {
+		if wspace == nil {
+			err = Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLength,
+				&tocxD[0],
+				x.Ptr(),
+				hxD.descriptor,
+				hx.Ptr(),
+				cxD.descriptor,
+				cx.Ptr(),
+				wD.descriptor,
+				w.Ptr(),
+				&tocyD[0],
+				y.Ptr(),
+				hyD.descriptor,
+				hy.Ptr(),
+				cyD.descriptor,
+				cy.Ptr(),
+				C.float(findIntensity),
+				C.int(reqcount),
+				&actualcount,
+				&perfresults[0],
+				nil,
+				C.size_t(0),
+				rspace.Ptr(),
+				C.size_t(rspacesize),
+			)).error("(r *RNND) FindRNNForwardTrainingAlgorithmEx")
+
+		} else {
+			err = Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLength,
+				&tocxD[0], x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				wD.descriptor, w.Ptr(),
+				&tocyD[0], y.Ptr(),
+				hyD.descriptor, hy.Ptr(),
+				cyD.descriptor, cy.Ptr(),
+				C.float(findIntensity),
+				C.int(reqcount),
+				&actualcount, &perfresults[0],
+				wspace.Ptr(), C.size_t(wspacesize),
+				rspace.Ptr(), C.size_t(rspacesize),
+			)).error("(r *RNND) FindRNNForwardTrainingAlgorithmEx")
+		}
+
 	}
-	err = Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		seqLength,
-		&tocxD[0], x.Ptr(),
-		hxD.descriptor, hx.Ptr(),
-		cxD.descriptor, cx.Ptr(),
-		wD.descriptor, w.Ptr(),
-		&tocyD[0], y.Ptr(),
-		hyD.descriptor, hy.Ptr(),
-		cyD.descriptor, cy.Ptr(),
-		C.float(findIntensity),
-		C.int(reqcount),
-		&actualcount, &perfresults[0],
-		wspace.Ptr(), C.size_t(wspacesize),
-		rspace.Ptr(), C.size_t(rspacesize),
-	)).error("FindRNNForwardTrainingAlgorithmEx")
+	if err != nil {
+		return nil, err
+	}
 
 	return calgoperftogoarray(perfresults, handle.gogc), err
 }
@@ -225,7 +338,7 @@ func (r *RNND) FindRNNForwardTrainingAlgorithmExUS(
 	rspace unsafe.Pointer, rspacesize uint,
 
 ) ([]AlgorithmPerformance, error) {
-	reqcount, err := r.getRNNForwardInferenceAlgorithmMaxCount(handle)
+	reqcount, err := r.getRNNForwardTrainingAlgorithmMaxCount(handle)
 	if err != nil {
 		return nil, err
 	}
@@ -236,24 +349,47 @@ func (r *RNND) FindRNNForwardTrainingAlgorithmExUS(
 	var actualcount C.int
 	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqcount)
 
-	err = Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		seqLength,
-		&tocxD[0], x,
-		hxD.descriptor, hx,
-		cxD.descriptor, cx,
-		wD.descriptor, w,
-		&tocyD[0], y,
-		hyD.descriptor, hy,
-		cyD.descriptor, cy,
-		C.float(findIntensity),
-		C.int(reqcount),
-		&actualcount,
-		&perfresults[0],
-		wspace, C.size_t(0),
-		rspace, C.size_t(rspacesize),
-	)).error("FindRNNForwardTrainingAlgorithmEx")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLength,
+				&tocxD[0], x,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				wD.descriptor, w,
+				&tocyD[0], y,
+				hyD.descriptor, hy,
+				cyD.descriptor, cy,
+				C.float(findIntensity),
+				C.int(reqcount),
+				&actualcount,
+				&perfresults[0],
+				wspace, C.size_t(0),
+				rspace, C.size_t(rspacesize),
+			)).error("(r *RNND) FindRNNForwardTrainingAlgorithmExUS")
+		})
+	} else {
+		err = Status(C.cudnnFindRNNForwardTrainingAlgorithmEx(
+			handle.x,
+			r.descriptor,
+			seqLength,
+			&tocxD[0], x,
+			hxD.descriptor, hx,
+			cxD.descriptor, cx,
+			wD.descriptor, w,
+			&tocyD[0], y,
+			hyD.descriptor, hy,
+			cyD.descriptor, cy,
+			C.float(findIntensity),
+			C.int(reqcount),
+			&actualcount,
+			&perfresults[0],
+			wspace, C.size_t(0),
+			rspace, C.size_t(rspacesize),
+		)).error("(r *RNND) FindRNNForwardTrainingAlgorithmExUS")
+	}
 
 	return calgoperftogoarray(perfresults, handle.gogc), err
 }
@@ -263,11 +399,22 @@ func (r *RNND) getRNNForwardInferenceAlgorithmMaxCount(
 	handle *Handle,
 ) (int32, error) {
 	var count C.int
-	err := Status(C.cudnnGetRNNForwardInferenceAlgorithmMaxCount(
-		handle.x,
-		r.descriptor,
-		&count,
-	)).error("GetRNNForwardInferenceAlgorithmMaxCount")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNForwardInferenceAlgorithmMaxCount(
+				handle.x,
+				r.descriptor,
+				&count,
+			)).error("GetRNNForwardInferenceAlgorithmMaxCount")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNForwardInferenceAlgorithmMaxCount(
+			handle.x,
+			r.descriptor,
+			&count,
+		)).error("GetRNNForwardInferenceAlgorithmMaxCount")
+	}
 
 	return int32(count), err
 }

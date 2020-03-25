@@ -119,7 +119,15 @@ func (handle *Handle) QueryRuntimeError(mode ErrQueryMode, tag *RuntimeTag) (Sta
 	var rstatus C.cudnnStatus_t
 
 	if tag == nil {
-		err := Status(C.cudnnQueryRuntimeError(handle.x, &rstatus, C.cudnnErrQueryMode_t(mode), nil)).error("QueryRuntimeError")
+		var err error
+		if handle.w != nil {
+			err = handle.w.Work(func() error {
+				return Status(C.cudnnQueryRuntimeError(handle.x, &rstatus, C.cudnnErrQueryMode_t(mode), nil)).error("QueryRuntimeError")
+			})
+
+		} else {
+			err = Status(C.cudnnQueryRuntimeError(handle.x, &rstatus, C.cudnnErrQueryMode_t(mode), nil)).error("QueryRuntimeError")
+		}
 
 		return Status(rstatus), err
 	}

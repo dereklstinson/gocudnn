@@ -143,7 +143,15 @@ func (a *ActivationD) Forward(
 	yD *TensorD, y cutil.Mem) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error("ActivationForward")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error(" (a *ActivationD) Forward")
+		})
+	} else {
+		err = Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x.Ptr(), b.CPtr(), yD.descriptor, y.Ptr())).error(" (a *ActivationD) Forward")
+	}
+	return err
 }
 
 //ForwardUS is just like Forward but it takes unsafe.Pointers instead of cutil.Mem
@@ -155,7 +163,16 @@ func (a *ActivationD) ForwardUS(
 	yD *TensorD, y unsafe.Pointer) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y)).error("ActivationForward")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y)).error("(a *ActivationD) ForwardUS")
+		})
+	} else {
+		err = Status(C.cudnnActivationForward(handle.x, a.descriptor, a1.CPtr(), xD.descriptor, x, b.CPtr(), yD.descriptor, y)).error("(a *ActivationD) ForwardUS")
+	}
+
+	return err
 }
 
 //Backward does the activation backward method
@@ -260,7 +277,15 @@ func (a *ActivationD) Backward(
 	dxD *TensorD, dx cutil.Mem) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("ActivationBackward")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("(a *ActivationD) Backward")
+		})
+	} else {
+		err = Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y.Ptr(), dyD.descriptor, dy.Ptr(), xD.descriptor, x.Ptr(), b.CPtr(), dxD.descriptor, dx.Ptr())).error("(a *ActivationD) Backward")
+	}
+	return err
 }
 
 //BackwardUS is just like Backward but it takes unsafe.Pointers instead of cutil.Mem
@@ -274,7 +299,15 @@ func (a *ActivationD) BackwardUS(
 	dxD *TensorD, dx unsafe.Pointer) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y, dyD.descriptor, dy, xD.descriptor, x, b.CPtr(), dxD.descriptor, dx)).error("ActivationBackward")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y, dyD.descriptor, dy, xD.descriptor, x, b.CPtr(), dxD.descriptor, dx)).error("(a *ActivationD) BackwardUS")
+		})
+	} else {
+		err = Status(C.cudnnActivationBackward(handle.x, a.descriptor, a1.CPtr(), yD.descriptor, y, dyD.descriptor, dy, xD.descriptor, x, b.CPtr(), dxD.descriptor, dx)).error("(a *ActivationD) BackwardUS")
+	}
+	return err
 }
 
 //ActivationMode is used for activation discriptor flags flags are obtained through type's methods
@@ -337,7 +370,7 @@ func (a ActivationMode) String() string {
 	case f.Elu():
 		x = "Elu"
 	case f.ClippedRelu():
-		x = "ClippedRelu\n"
+		x = "ClippedRelu"
 	case f.Tanh():
 		x = "Tanh"
 	case f.Relu():

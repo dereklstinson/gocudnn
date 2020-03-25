@@ -13,11 +13,22 @@ import (
 //GetRNNBackwardDataAlgorithmMaxCount gets the max number of algorithms for the back prop rnn
 func (r *RNND) getRNNBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
-	err := Status(C.cudnnGetRNNBackwardDataAlgorithmMaxCount(
-		handle.x,
-		r.descriptor,
-		&count,
-	)).error("GetRNNBackwardDataAlgorithmMaxCount")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetRNNBackwardDataAlgorithmMaxCount(
+				handle.x,
+				r.descriptor,
+				&count,
+			)).error("(r *RNND) getRNNBackwardDataAlgorithmMaxCount")
+		})
+	} else {
+		err = Status(C.cudnnGetRNNBackwardDataAlgorithmMaxCount(
+			handle.x,
+			r.descriptor,
+			&count,
+		)).error("(r *RNND) getRNNBackwardDataAlgorithmMaxCount")
+	}
 
 	return int32(count), err
 }
@@ -50,52 +61,106 @@ func (r *RNND) FindRNNBackwardDataAlgorithmEx(
 	cdxD := tensorDArrayToC(dxD)
 	var actualcount C.int
 	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
-	if wspace == nil {
-		err := Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
-			handle.x,
-			r.descriptor,
-			seqLen,
-			&cyD[0], y.Ptr(),
-			&cdyD[0], dy.Ptr(),
-			dhyD.descriptor, dhy.Ptr(),
-			dcyD.descriptor, dcy.Ptr(),
-			wD.descriptor, w.Ptr(),
-			hxD.descriptor, hx.Ptr(),
-			cxD.descriptor, cx.Ptr(),
-			&cdxD[0], dx.Ptr(),
-			dhxD.descriptor, dhx.Ptr(),
-			dcxD.descriptor, dcx.Ptr(),
-			C.float(findIntensity),
-			C.int(reqAlgocount),
-			&actualcount,
-			&perfresults[0],
-			nil,
-			C.size_t(0),
-			rspace.Ptr(), C.size_t(rspacesize), //31 total?
-		)).error("FindRNNBackwardDataAlgorithmEx")
-		return calgoperftogoarray(perfresults, handle.gogc), err
+
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			if wspace == nil {
+				return Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
+					handle.x,
+					r.descriptor,
+					seqLen,
+					&cyD[0], y.Ptr(),
+					&cdyD[0], dy.Ptr(),
+					dhyD.descriptor, dhy.Ptr(),
+					dcyD.descriptor, dcy.Ptr(),
+					wD.descriptor, w.Ptr(),
+					hxD.descriptor, hx.Ptr(),
+					cxD.descriptor, cx.Ptr(),
+					&cdxD[0], dx.Ptr(),
+					dhxD.descriptor, dhx.Ptr(),
+					dcxD.descriptor, dcx.Ptr(),
+					C.float(findIntensity),
+					C.int(reqAlgocount),
+					&actualcount,
+					&perfresults[0],
+					nil,
+					C.size_t(0),
+					rspace.Ptr(), C.size_t(rspacesize), //31 total?
+				)).error("(r *RNND) FindRNNBackwardDataAlgorithmEx")
+
+			}
+			return Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLen,
+				&cyD[0], y.Ptr(),
+				&cdyD[0], dy.Ptr(),
+				dhyD.descriptor, dhy.Ptr(),
+				dcyD.descriptor, dcy.Ptr(),
+				wD.descriptor, w.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				&cdxD[0], dx.Ptr(),
+				dhxD.descriptor, dhx.Ptr(),
+				dcxD.descriptor, dcx.Ptr(),
+				C.float(findIntensity),
+				C.int(reqAlgocount),
+				&actualcount,
+				&perfresults[0],
+				wspace.Ptr(), C.size_t(wspacesize),
+				rspace.Ptr(), C.size_t(rspacesize),
+			)).error("(r *RNND) FindRNNBackwardDataAlgorithmEx")
+		})
+	} else {
+		if wspace == nil {
+			err = Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLen,
+				&cyD[0], y.Ptr(),
+				&cdyD[0], dy.Ptr(),
+				dhyD.descriptor, dhy.Ptr(),
+				dcyD.descriptor, dcy.Ptr(),
+				wD.descriptor, w.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				&cdxD[0], dx.Ptr(),
+				dhxD.descriptor, dhx.Ptr(),
+				dcxD.descriptor, dcx.Ptr(),
+				C.float(findIntensity),
+				C.int(reqAlgocount),
+				&actualcount,
+				&perfresults[0],
+				nil,
+				C.size_t(0),
+				rspace.Ptr(), C.size_t(rspacesize), //31 total?
+			)).error("(r *RNND) FindRNNBackwardDataAlgorithmEx")
+		} else {
+			err = Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLen,
+				&cyD[0], y.Ptr(),
+				&cdyD[0], dy.Ptr(),
+				dhyD.descriptor, dhy.Ptr(),
+				dcyD.descriptor, dcy.Ptr(),
+				wD.descriptor, w.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				&cdxD[0], dx.Ptr(),
+				dhxD.descriptor, dhx.Ptr(),
+				dcxD.descriptor, dcx.Ptr(),
+				C.float(findIntensity),
+				C.int(reqAlgocount),
+				&actualcount,
+				&perfresults[0],
+				wspace.Ptr(), C.size_t(wspacesize),
+				rspace.Ptr(), C.size_t(rspacesize),
+			)).error("(r *RNND) FindRNNBackwardDataAlgorithmEx")
+		}
+
 	}
-	err = Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		seqLen,
-		&cyD[0], y.Ptr(),
-		&cdyD[0], dy.Ptr(),
-		dhyD.descriptor, dhy.Ptr(),
-		dcyD.descriptor, dcy.Ptr(),
-		wD.descriptor, w.Ptr(),
-		hxD.descriptor, hx.Ptr(),
-		cxD.descriptor, cx.Ptr(),
-		&cdxD[0], dx.Ptr(),
-		dhxD.descriptor, dhx.Ptr(),
-		dcxD.descriptor, dcx.Ptr(),
-		C.float(findIntensity),
-		C.int(reqAlgocount),
-		&actualcount,
-		&perfresults[0],
-		wspace.Ptr(), C.size_t(wspacesize),
-		rspace.Ptr(), C.size_t(rspacesize),
-	)).error("FindRNNBackwardDataAlgorithmEx")
+
 	return calgoperftogoarray(perfresults, handle.gogc), err
 }
 
@@ -128,27 +193,55 @@ func (r *RNND) FindRNNBackwardDataAlgorithmExUS(
 	var actualcount C.int
 	perfresults := make([]C.cudnnAlgorithmPerformance_t, reqAlgocount)
 
-	err = Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
-		handle.x,
-		r.descriptor,
-		seqLen,
-		&cyD[0], y,
-		&cdyD[0], dy,
-		dhyD.descriptor, dhy,
-		dcyD.descriptor, dcy,
-		wD.descriptor, w,
-		hxD.descriptor, hx,
-		cxD.descriptor, cx,
-		&cdxD[0], dx,
-		dhxD.descriptor, dhx,
-		dcxD.descriptor, dcx,
-		C.float(findIntensity),
-		C.int(reqAlgocount),
-		&actualcount,
-		&perfresults[0],
-		wspace, C.size_t(wspacesize),
-		rspace, C.size_t(rspacesize),
-		//31 total?
-	)).error("FindRNNBackwardDataAlgorithmExUS")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
+				handle.x,
+				r.descriptor,
+				seqLen,
+				&cyD[0], y,
+				&cdyD[0], dy,
+				dhyD.descriptor, dhy,
+				dcyD.descriptor, dcy,
+				wD.descriptor, w,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				&cdxD[0], dx,
+				dhxD.descriptor, dhx,
+				dcxD.descriptor, dcx,
+				C.float(findIntensity),
+				C.int(reqAlgocount),
+				&actualcount,
+				&perfresults[0],
+				wspace, C.size_t(wspacesize),
+				rspace, C.size_t(rspacesize),
+				//31 total?
+			)).error("(r *RNND) FindRNNBackwardDataAlgorithmExUS")
+		})
+	} else {
+		err = Status(C.cudnnFindRNNBackwardDataAlgorithmEx(
+			handle.x,
+			r.descriptor,
+			seqLen,
+			&cyD[0], y,
+			&cdyD[0], dy,
+			dhyD.descriptor, dhy,
+			dcyD.descriptor, dcy,
+			wD.descriptor, w,
+			hxD.descriptor, hx,
+			cxD.descriptor, cx,
+			&cdxD[0], dx,
+			dhxD.descriptor, dhx,
+			dcxD.descriptor, dcx,
+			C.float(findIntensity),
+			C.int(reqAlgocount),
+			&actualcount,
+			&perfresults[0],
+			wspace, C.size_t(wspacesize),
+			rspace, C.size_t(rspacesize),
+			//31 total?
+		)).error("(r *RNND) FindRNNBackwardDataAlgorithmExUS")
+	}
+
 	return calgoperftogoarray(perfresults, handle.gogc), err
 }

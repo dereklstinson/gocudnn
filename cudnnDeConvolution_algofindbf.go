@@ -19,8 +19,16 @@ func (c DeConvBwdFiltAlgo) Algo() Algorithm {
 //GetBackwardFilterAlgorithmMaxCount returns the max number of Algorithm
 func (c *DeConvolutionD) getBackwardFilterAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
-	x := Status(C.cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle.x, &count)).error("GetConvolutionForwardAlgorithmMaxCount")
-	return int32(count), x
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle.x, &count)).error("(c *DeConvolutionD) getBackwardFilterAlgorithmMaxCount")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(handle.x, &count)).error("(c *DeConvolutionD) getBackwardFilterAlgorithmMaxCount")
+	}
+
+	return int32(count), err
 }
 
 //FindBackwardFilterAlgorithm will find the top performing algoriths and return the best algorithms in accending order they are limited to the number passed in requestedAlgoCount.
@@ -37,16 +45,35 @@ func (c *DeConvolutionD) FindBackwardFilterAlgorithm(
 	}
 	perfResults := make([]C.cudnnConvolutionBwdFilterAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnFindConvolutionBackwardFilterAlgorithm(
-		handle.x,
-		dyD.descriptor,
-		xD.descriptor,
-		c.descriptor,
-		dwD.descriptor,
-		C.int(requestedAlgoCount),
-		&actualalgocount,
-		&perfResults[0],
-	)).error("FindConvolutionBackwardFilterAlgorithm")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindConvolutionBackwardFilterAlgorithm(
+				handle.x,
+				dyD.descriptor,
+				xD.descriptor,
+				c.descriptor,
+				dwD.descriptor,
+				C.int(requestedAlgoCount),
+				&actualalgocount,
+				&perfResults[0],
+			)).error("(c *DeConvolutionD) FindBackwardFilterAlgorithm")
+		})
+	} else {
+		err = Status(C.cudnnFindConvolutionBackwardFilterAlgorithm(
+			handle.x,
+			dyD.descriptor,
+			xD.descriptor,
+			c.descriptor,
+			dwD.descriptor,
+			C.int(requestedAlgoCount),
+			&actualalgocount,
+			&perfResults[0],
+		)).error("(c *DeConvolutionD) FindBackwardFilterAlgorithm")
+	}
+
+	if err != nil {
+		return nil, err
+	}
 
 	results := make([]DeConvBwdFiltAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -69,14 +96,30 @@ func (c *DeConvolutionD) FindBackwardFilterAlgorithmEx(
 	}
 	perfResults := make([]C.cudnnConvolutionBwdFilterAlgoPerf_t, reqAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnFindConvolutionBackwardFilterAlgorithmEx(
-		handle.x,
-		dyD.descriptor, dy.Ptr(),
-		xD.descriptor, x.Ptr(),
-		c.descriptor,
-		dwD.descriptor, dw.Ptr(),
-		C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("FindConvolutionBackwardFilterAlgorithmEx")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindConvolutionBackwardFilterAlgorithmEx(
+				handle.x,
+				dyD.descriptor, dy.Ptr(),
+				xD.descriptor, x.Ptr(),
+				c.descriptor,
+				dwD.descriptor, dw.Ptr(),
+				C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardFilterAlgorithmEx")
+		})
+	} else {
 
+		err = Status(C.cudnnFindConvolutionBackwardFilterAlgorithmEx(
+			handle.x,
+			dyD.descriptor, dy.Ptr(),
+			xD.descriptor, x.Ptr(),
+			c.descriptor,
+			dwD.descriptor, dw.Ptr(),
+			C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardFilterAlgorithmEx")
+
+	}
+	if err != nil {
+		return nil, err
+	}
 	results := make([]DeConvBwdFiltAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertDeConvBwdFiltAlgoPerformance(perfResults[i])
@@ -98,14 +141,31 @@ func (c *DeConvolutionD) FindBackwardFilterAlgorithmExUS(
 	}
 	perfResults := make([]C.cudnnConvolutionBwdFilterAlgoPerf_t, reqAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnFindConvolutionBackwardFilterAlgorithmEx(
-		handle.x,
-		dyD.descriptor, dy,
-		xD.descriptor, x,
-		c.descriptor,
-		dwD.descriptor, dw,
-		C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace, C.size_t(wspacesize))).error("FindConvolutionBackwardFilterAlgorithmEx")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindConvolutionBackwardFilterAlgorithmEx(
+				handle.x,
+				dyD.descriptor, dy,
+				xD.descriptor, x,
+				c.descriptor,
+				dwD.descriptor, dw,
+				C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardFilterAlgorithmExUS")
 
+		})
+	} else {
+		err = Status(C.cudnnFindConvolutionBackwardFilterAlgorithmEx(
+			handle.x,
+			dyD.descriptor, dy,
+			xD.descriptor, x,
+			c.descriptor,
+			dwD.descriptor, dw,
+			C.int(reqAlgoCount), &actualalgocount, &perfResults[0], wspace, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardFilterAlgorithmExUS")
+
+	}
+
+	if err != nil {
+		return nil, err
+	}
 	results := make([]DeConvBwdFiltAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertDeConvBwdFiltAlgoPerformance(perfResults[i])
@@ -128,15 +188,33 @@ func (c *DeConvolutionD) GetBackwardFilterAlgorithmV7(
 	}
 	perfResults := make([]C.cudnnConvolutionBwdFilterAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnGetConvolutionBackwardFilterAlgorithm_v7(
-		handle.x,
-		dyD.descriptor,
-		xD.descriptor,
-		c.descriptor,
-		dwD.descriptor,
-		C.int(requestedAlgoCount),
-		&actualalgocount,
-		&perfResults[0])).error("GetConvolutionBackwardFilterAlgorithm_v7")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionBackwardFilterAlgorithm_v7(
+				handle.x,
+				dyD.descriptor,
+				xD.descriptor,
+				c.descriptor,
+				dwD.descriptor,
+				C.int(requestedAlgoCount),
+				&actualalgocount,
+				&perfResults[0])).error("GetConvolutionBackwardFilterAlgorithm_v7")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionBackwardFilterAlgorithm_v7(
+			handle.x,
+			dyD.descriptor,
+			xD.descriptor,
+			c.descriptor,
+			dwD.descriptor,
+			C.int(requestedAlgoCount),
+			&actualalgocount,
+			&perfResults[0])).error("GetConvolutionBackwardFilterAlgorithm_v7")
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	results := make([]DeConvBwdFiltAlgoPerformance, int32(actualalgocount))
 
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -154,13 +232,26 @@ func (c *DeConvolutionD) GetBackwardFilterAlgorithm(
 	dwD *FilterD,
 	pref DeConvBwdFilterPref, wsmemlimit uint) (DeConvBwdFiltAlgo, error) {
 	var algo C.cudnnConvolutionBwdFilterAlgo_t
-	err := Status(C.cudnnGetConvolutionBackwardFilterAlgorithm(
-		handle.x,
-		dyD.descriptor,
-		xD.descriptor,
-		c.descriptor,
-		dwD.descriptor,
-		pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionBackwardFilterAlgorithm")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionBackwardFilterAlgorithm(
+				handle.x,
+				dyD.descriptor,
+				xD.descriptor,
+				c.descriptor,
+				dwD.descriptor,
+				pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionBackwardFilterAlgorithm")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionBackwardFilterAlgorithm(
+			handle.x,
+			dyD.descriptor,
+			xD.descriptor,
+			c.descriptor,
+			dwD.descriptor,
+			pref.c(), C.size_t(wsmemlimit), &algo)).error("GetConvolutionBackwardFilterAlgorithm")
+	}
 
 	return DeConvBwdFiltAlgo(algo), err
 }

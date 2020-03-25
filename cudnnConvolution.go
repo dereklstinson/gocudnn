@@ -29,7 +29,6 @@ type ConvolutionD struct {
 
 const convolutionnd2dtestflag = true
 
-//String satisfies fmt Stringer interface.
 func (c *ConvolutionD) String() string {
 	cmode, dtype, pad, stride, dilation, err := c.Get()
 	if err != nil {
@@ -163,14 +162,28 @@ func (c *ConvolutionD) GetBackwardDataWorkspaceSize(
 	dxD *TensorD,
 	algo ConvBwdDataAlgo) (uint, error) {
 	var sizebytes C.size_t
-	err := Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
-		handle.x,
-		wD.descriptor,
-		dyD.descriptor,
-		c.descriptor,
-		dxD.descriptor,
-		algo.c(),
-		&sizebytes)).error("GetConvolutionBackwardDataWorkspaceSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
+				handle.x,
+				wD.descriptor,
+				dyD.descriptor,
+				c.descriptor,
+				dxD.descriptor,
+				algo.c(),
+				&sizebytes)).error("(c *ConvolutionD) GetBackwardDataWorkspaceSize")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionBackwardDataWorkspaceSize(
+			handle.x,
+			wD.descriptor,
+			dyD.descriptor,
+			c.descriptor,
+			dxD.descriptor,
+			algo.c(),
+			&sizebytes)).error("(c *ConvolutionD) GetBackwardDataWorkspaceSize")
+	}
 
 	return uint(sizebytes), err
 }
@@ -307,6 +320,44 @@ func (c *ConvolutionD) BackwardData(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+
+				return Status(C.cudnnConvolutionBackwardData(
+					handle.x,
+					a.CPtr(),
+					wD.descriptor,
+					w.Ptr(),
+					dyD.descriptor,
+					dy.Ptr(),
+					c.descriptor,
+					algo.c(),
+					nil,
+					(C.size_t)(wspaceSIB),
+					b.CPtr(),
+					dxD.descriptor,
+					dx.Ptr(),
+				)).error("(c *ConvolutionD) BackwardData")
+			}
+
+			return Status(C.cudnnConvolutionBackwardData(
+				handle.x,
+				a.CPtr(),
+				wD.descriptor,
+				w.Ptr(),
+				dyD.descriptor,
+				dy.Ptr(),
+				c.descriptor,
+				algo.c(),
+				wspace.Ptr(),
+				(C.size_t)(wspaceSIB),
+				b.CPtr(),
+				dxD.descriptor,
+				dx.Ptr(),
+			)).error("(c *ConvolutionD) BackwardData")
+		})
+	}
 	if wspace == nil {
 
 		return Status(C.cudnnConvolutionBackwardData(
@@ -323,7 +374,7 @@ func (c *ConvolutionD) BackwardData(
 			b.CPtr(),
 			dxD.descriptor,
 			dx.Ptr(),
-		)).error("ConvolutionBackwardData")
+		)).error("(c *ConvolutionD) BackwardData")
 	}
 
 	return Status(C.cudnnConvolutionBackwardData(
@@ -340,7 +391,7 @@ func (c *ConvolutionD) BackwardData(
 		b.CPtr(),
 		dxD.descriptor,
 		dx.Ptr(),
-	)).error("ConvolutionBackwardData")
+	)).error("(c *ConvolutionD) BackwardData")
 }
 
 //BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of cutil.Mem
@@ -356,7 +407,21 @@ func (c *ConvolutionD) BackwardDataUS(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardData(
+				handle.x,
+				a.CPtr(),
+				wD.descriptor, w,
+				dyD.descriptor, dy,
+				c.descriptor,
+				algo.c(),
+				wspace, (C.size_t)(wspacesize),
+				b.CPtr(),
+				dxD.descriptor, dx,
+			)).error("(c *ConvolutionD) BackwardDataUS")
+		})
+	}
 	return Status(C.cudnnConvolutionBackwardData(
 		handle.x,
 		a.CPtr(),
@@ -367,7 +432,7 @@ func (c *ConvolutionD) BackwardDataUS(
 		wspace, (C.size_t)(wspacesize),
 		b.CPtr(),
 		dxD.descriptor, dx,
-	)).error("ConvolutionBackwardData")
+	)).error("(c *ConvolutionD) BackwardDataUS")
 }
 
 //Im2Col transformes the multiDim tensors into 2d tensors for speed up in calculation at the cost of memory.
@@ -378,7 +443,18 @@ func (c *ConvolutionD) Im2Col(
 	wD *FilterD,
 	buffer cutil.Mem,
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnIm2Col(
+				handle.x,
+				xD.descriptor,
+				x.Ptr(),
+				wD.descriptor,
+				c.descriptor,
+				buffer.Ptr(),
+			)).error("(c *ConvolutionD) Im2Col")
+		})
+	}
 	return Status(C.cudnnIm2Col(
 		handle.x,
 		xD.descriptor,
@@ -386,7 +462,7 @@ func (c *ConvolutionD) Im2Col(
 		wD.descriptor,
 		c.descriptor,
 		buffer.Ptr(),
-	)).error("Im2Col")
+	)).error("(c *ConvolutionD) Im2Col")
 }
 
 //Im2ColUS is like IN2Col but using unsafe.Pointer instead of cutil.Mem
@@ -396,14 +472,24 @@ func (c *ConvolutionD) Im2ColUS(
 	wD *FilterD,
 	buffer unsafe.Pointer,
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnIm2Col(
+				handle.x,
+				xD.descriptor, x,
+				wD.descriptor,
+				c.descriptor,
+				buffer,
+			)).error("(c *ConvolutionD) Im2ColUS")
+		})
+	}
 	return Status(C.cudnnIm2Col(
 		handle.x,
 		xD.descriptor, x,
 		wD.descriptor,
 		c.descriptor,
 		buffer,
-	)).error("Im2Col")
+	)).error("(c *ConvolutionD) Im2ColUS")
 }
 
 //BackwardBias is used to compute the bias gradient for batch convolution db is returned
@@ -417,7 +503,12 @@ func (c *ConvolutionD) BackwardBias(
 	db cutil.Mem) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
-	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("ConvolutionBackwardBias")
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("(c *ConvolutionD) BackwardBias")
+		})
+	}
+	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy.Ptr(), b.CPtr(), dbD.descriptor, db.Ptr())).error("(c *ConvolutionD) BackwardBias")
 }
 
 //BackwardBiasUS is like BackwardBias but using unsafe.Pointer instead of cutil.Mem
@@ -429,7 +520,12 @@ func (c *ConvolutionD) BackwardBiasUS(
 	dbD *TensorD, db unsafe.Pointer) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
-	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy, b.CPtr(), dbD.descriptor, db)).error("ConvolutionBackwardBias")
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy, b.CPtr(), dbD.descriptor, db)).error(" (c *ConvolutionD) BackwardBiasUS")
+		})
+	}
+	return Status(C.cudnnConvolutionBackwardBias(handle.x, a.CPtr(), dyD.descriptor, dy, b.CPtr(), dbD.descriptor, db)).error(" (c *ConvolutionD) BackwardBiasUS")
 }
 
 //GetBackwardFilterWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
@@ -439,15 +535,29 @@ func (c *ConvolutionD) GetBackwardFilterWorkspaceSize(
 	dyD *TensorD,
 	dwD *FilterD,
 	algo ConvBwdFiltAlgo) (uint, error) {
+	var err error
 	var sizebytes C.size_t
-	err := Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
-		handle.x,
-		xD.descriptor,
-		dyD.descriptor,
-		c.descriptor,
-		dwD.descriptor,
-		algo.c(),
-		&sizebytes)).error("(c *ConvolutionD) GetBackwardFilterWorkspaceSize")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
+				handle.x,
+				xD.descriptor,
+				dyD.descriptor,
+				c.descriptor,
+				dwD.descriptor,
+				algo.c(),
+				&sizebytes)).error("(c *ConvolutionD) GetBackwardFilterWorkspaceSize")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionBackwardFilterWorkspaceSize(
+			handle.x,
+			xD.descriptor,
+			dyD.descriptor,
+			c.descriptor,
+			dwD.descriptor,
+			algo.c(),
+			&sizebytes)).error("(c *ConvolutionD) GetBackwardFilterWorkspaceSize")
+	}
 
 	return uint(sizebytes), err
 }
@@ -466,45 +576,91 @@ func (c *ConvolutionD) BackwardFilter(
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
 	var err error
-	if wspace == nil {
-		if cudnndebugmode {
-			fmt.Println("wspace is nil")
-		}
-		err = Status(C.cudnnConvolutionBackwardFilter(
-			handle.x,
-			a.CPtr(),
-			xD.descriptor,
-			x.Ptr(),
-			dyD.descriptor,
-			dy.Ptr(),
-			c.descriptor,
-			algo.c(),
-			nil,
-			C.size_t(wspacesize),
-			b.CPtr(),
-			dwD.descriptor,
-			dw.Ptr(),
-		)).error("cudnnConvolutionBackwardFilter")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			if wspace == nil {
+				if cudnndebugmode {
+					fmt.Println("wspace is nil")
+				}
+				return Status(C.cudnnConvolutionBackwardFilter(
+					handle.x,
+					a.CPtr(),
+					xD.descriptor,
+					x.Ptr(),
+					dyD.descriptor,
+					dy.Ptr(),
+					c.descriptor,
+					algo.c(),
+					nil,
+					C.size_t(wspacesize),
+					b.CPtr(),
+					dwD.descriptor,
+					dw.Ptr(),
+				)).error("(c *ConvolutionD) BackwardFilter")
 
+			}
+			if cudnndebugmode {
+				fmt.Println("is not nil")
+			}
+			return Status(C.cudnnConvolutionBackwardFilter(
+				handle.x,
+				a.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				dyD.descriptor,
+				dy.Ptr(),
+				c.descriptor,
+				algo.c(),
+				wspace.Ptr(),
+				C.size_t(wspacesize),
+				b.CPtr(),
+				dwD.descriptor,
+				dw.Ptr(),
+			)).error("(c *ConvolutionD) BackwardFilter")
+
+		})
 	} else {
-		if cudnndebugmode {
-			fmt.Println("is not nil")
+		if wspace == nil {
+			if cudnndebugmode {
+				fmt.Println("wspace is nil")
+			}
+			err = Status(C.cudnnConvolutionBackwardFilter(
+				handle.x,
+				a.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				dyD.descriptor,
+				dy.Ptr(),
+				c.descriptor,
+				algo.c(),
+				nil,
+				C.size_t(wspacesize),
+				b.CPtr(),
+				dwD.descriptor,
+				dw.Ptr(),
+			)).error("(c *ConvolutionD) BackwardFilter")
+
+		} else {
+			if cudnndebugmode {
+				fmt.Println("is not nil")
+			}
+			err = Status(C.cudnnConvolutionBackwardFilter(
+				handle.x,
+				a.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				dyD.descriptor,
+				dy.Ptr(),
+				c.descriptor,
+				algo.c(),
+				wspace.Ptr(),
+				C.size_t(wspacesize),
+				b.CPtr(),
+				dwD.descriptor,
+				dw.Ptr(),
+			)).error("(c *ConvolutionD) BackwardFilter")
 		}
-		err = Status(C.cudnnConvolutionBackwardFilter(
-			handle.x,
-			a.CPtr(),
-			xD.descriptor,
-			x.Ptr(),
-			dyD.descriptor,
-			dy.Ptr(),
-			c.descriptor,
-			algo.c(),
-			wspace.Ptr(),
-			C.size_t(wspacesize),
-			b.CPtr(),
-			dwD.descriptor,
-			dw.Ptr(),
-		)).error("cudnnConvolutionBackwardFilter")
+
 	}
 	if cudnndebugmode {
 		if err != nil {
@@ -526,12 +682,9 @@ func (c *ConvolutionD) BackwardFilter(
 			fmt.Println("b.Cptr()", b.CPtr())
 			fmt.Println("dwD.descriptor", dwD.descriptor)
 			fmt.Println("dw.Ptr()", dw.Ptr())
-
 			//going to check the output
 			fmt.Printf("\nAlgo: %v", algo)
-
 			fmt.Printf("\n%v,\nxD: %v,\ndyD: \n%v,\ndwD: %v", c, xD, dyD, dwD)
-
 			fmt.Println(c.GetOutputDims(xD, dwD))
 		}
 
@@ -552,7 +705,21 @@ func (c *ConvolutionD) BackwardFilterUS(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionBackwardFilter(
+				handle.x,
+				a.CPtr(),
+				xD.descriptor, x,
+				dyD.descriptor, dy,
+				c.descriptor,
+				algo.c(),
+				wspace, C.size_t(wspacesize),
+				b.CPtr(),
+				dwD.descriptor, dw,
+			)).error("(c *ConvolutionD) BackwardFilterUS")
+		})
+	}
 	return Status(C.cudnnConvolutionBackwardFilter(
 		handle.x,
 		a.CPtr(),
@@ -563,7 +730,7 @@ func (c *ConvolutionD) BackwardFilterUS(
 		wspace, C.size_t(wspacesize),
 		b.CPtr(),
 		dwD.descriptor, dw,
-	)).error("cudnnConvolutionBackwardFilter")
+	)).error("(c *ConvolutionD) BackwardFilterUS")
 }
 
 //GetForwardWorkspaceSize is a helper function that will return the minimum Size of the workspace to be passed by the convolution given an algo.
@@ -574,8 +741,15 @@ func (c *ConvolutionD) GetForwardWorkspaceSize(
 	yD *TensorD,
 	algo ConvFwdAlgo) (uint, error) {
 	var sizebytes C.size_t
-	err := Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, algo.c(), &sizebytes)).error("GetConvolutionForwardWorkspaceSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, algo.c(), &sizebytes)).error("(c *ConvolutionD) GetForwardWorkspaceSize")
+		})
 
+	} else {
+		err = Status(C.cudnnGetConvolutionForwardWorkspaceSize(handle.x, xD.descriptor, wD.descriptor, c.descriptor, yD.descriptor, algo.c(), &sizebytes)).error("(c *ConvolutionD) GetForwardWorkspaceSize")
+	}
 	return uint(sizebytes), err
 }
 
@@ -593,14 +767,29 @@ func (c *ConvolutionD) Forward(
 	yD *TensorD, y cutil.Mem) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
-	if wspace == nil {
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			if wspace == nil {
 
-		return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
-			c.descriptor, algo.c(), nil, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
+				return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
+					c.descriptor, algo.c(), nil, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("(c *ConvolutionD) Forward")
+			}
+
+			return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
+				c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("(c *ConvolutionD) Forward")
+		})
+	} else {
+		if wspace == nil {
+
+			err = Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
+				c.descriptor, algo.c(), nil, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("(c *ConvolutionD) Forward")
+		}
+
+		err = Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
+			c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("(c *ConvolutionD) Forward")
 	}
 
-	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x.Ptr(), wD.descriptor, w.Ptr(),
-		c.descriptor, algo.c(), wspace.Ptr(), C.size_t(wspacesize), b.CPtr(), yD.descriptor, y.Ptr())).error("ConvolutionForward")
 	if cudnndebugmode {
 		if err != nil {
 			fmt.Println("\nError for ConvForward\n", "alpha: ", a, "\nbeta: ", b, "\nxD: ", xD, "\nx :", x, "\nwD :", wD, "\nw: ", w, "\nwspace: ", wspace, "\nwspacesize: ", wspacesize, "\nyD: ", yD, "\ny: ", y)
@@ -630,11 +819,15 @@ func (c *ConvolutionD) ForwardUS(
 	yD *TensorD, y unsafe.Pointer) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x, wD.descriptor, w,
+				c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y)).error("(c *ConvolutionD) ForwardUS")
+		})
+	}
+	return Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x, wD.descriptor, w,
+		c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y)).error("(c *ConvolutionD) ForwardUS")
 
-	err := Status(C.cudnnConvolutionForward(handle.x, a.CPtr(), xD.descriptor, x, wD.descriptor, w,
-		c.descriptor, algo.c(), wspace, C.size_t(wspacesize), b.CPtr(), yD.descriptor, y)).error("ConvolutionForward")
-
-	return err
 }
 
 //BiasActivationForward info can be found at:
@@ -658,7 +851,56 @@ func (c *ConvolutionD) BiasActivationForward(
 ) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha1)
 	a2 := cscalarbydatatype(yD.dtype, alpha2)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
 
+				return Status(
+					C.cudnnConvolutionBiasActivationForward(
+						handle.x,
+						a1.CPtr(),
+						xD.descriptor,
+						x.Ptr(),
+						wD.descriptor,
+						w.Ptr(),
+						c.descriptor,
+						algo.c(),
+						nil,
+						C.size_t(wspacesize),
+						a2.CPtr(),
+						zD.descriptor,
+						z.Ptr(),
+						biasD.descriptor,
+						bias.Ptr(),
+						aD.descriptor,
+						yD.descriptor,
+						y.Ptr(),
+					)).error("(c *ConvolutionD) BiasActivationForward")
+			}
+
+			return Status(
+				C.cudnnConvolutionBiasActivationForward(
+					handle.x,
+					a1.CPtr(),
+					xD.descriptor,
+					x.Ptr(),
+					wD.descriptor,
+					w.Ptr(),
+					c.descriptor,
+					algo.c(),
+					wspace.Ptr(),
+					C.size_t(wspacesize),
+					a2.CPtr(),
+					zD.descriptor,
+					z.Ptr(),
+					biasD.descriptor,
+					bias.Ptr(),
+					aD.descriptor,
+					yD.descriptor,
+					y.Ptr(),
+				)).error("(c *ConvolutionD) BiasActivationForward")
+		})
+	}
 	if wspace == nil {
 
 		return Status(
@@ -681,7 +923,7 @@ func (c *ConvolutionD) BiasActivationForward(
 				aD.descriptor,
 				yD.descriptor,
 				y.Ptr(),
-			)).error("ConvolutionBiasActivationForward")
+			)).error("(c *ConvolutionD) BiasActivationForward")
 	}
 
 	return Status(
@@ -704,7 +946,7 @@ func (c *ConvolutionD) BiasActivationForward(
 			aD.descriptor,
 			yD.descriptor,
 			y.Ptr(),
-		)).error("ConvolutionBiasActivationForward")
+		)).error("(c *ConvolutionD) BiasActivationForward")
 }
 
 //BiasActivationForwardUS is like BiasActivationForward but using unsafe.Pointer instead of cutil.Mem
@@ -723,7 +965,25 @@ func (c *ConvolutionD) BiasActivationForwardUS(
 ) error {
 	a1 := cscalarbydatatype(yD.dtype, alpha1)
 	a2 := cscalarbydatatype(yD.dtype, alpha2)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(
+				C.cudnnConvolutionBiasActivationForward(
+					handle.x,
+					a1.CPtr(),
+					xD.descriptor, x,
+					wD.descriptor, w,
+					c.descriptor,
+					algo.c(),
+					wspace, C.size_t(wspacesize),
+					a2.CPtr(),
+					zD.descriptor, z,
+					biasD.descriptor, bias,
+					aD.descriptor,
+					yD.descriptor, y,
+				)).error("(c *ConvolutionD) BiasActivationForwardUS")
+		})
+	}
 	return Status(
 		C.cudnnConvolutionBiasActivationForward(
 			handle.x,
@@ -738,7 +998,7 @@ func (c *ConvolutionD) BiasActivationForwardUS(
 			biasD.descriptor, bias,
 			aD.descriptor,
 			yD.descriptor, y,
-		)).error("ConvolutionBiasActivationForward")
+		)).error("(c *ConvolutionD) BiasActivationForwardUS")
 }
 
 /*

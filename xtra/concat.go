@@ -28,20 +28,47 @@ func CreateConcatEx(h *Handle) (c *ConcatEx, err error) {
 	c.fp32 = new(concat)
 	c.fp16 = new(concat)
 	var ktf kernels.XtraKerns
-	c.fp32.nhwc, err = cuda.MakeKernel(ktf.ConcatNHWCEX(), h.mod)
-	if err != nil {
-		return nil, err
-	}
-	c.fp32.nchw, err = cuda.MakeKernel(ktf.ConcatNCHWEX(), h.mod)
-	if err != nil {
-		return nil, err
-	}
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			c.fp32.nhwc, err = cuda.MakeKernel(ktf.ConcatNHWCEX(), h.mod)
+			if err != nil {
+				return err
+			}
+			c.fp32.nchw, err = cuda.MakeKernel(ktf.ConcatNCHWEX(), h.mod)
+			if err != nil {
+				return err
+			}
 
-	c.fp16.nhwc, err = cuda.MakeKernel(ktf.ConcatNHWCEXHalf(), h.mod)
-	if err != nil {
-		return nil, err
+			c.fp16.nhwc, err = cuda.MakeKernel(ktf.ConcatNHWCEXHalf(), h.mod)
+			if err != nil {
+				return err
+			}
+			c.fp16.nchw, err = cuda.MakeKernel(ktf.ConcatNCHWEXHalf(), h.mod)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+
+	} else {
+		c.fp32.nhwc, err = cuda.MakeKernel(ktf.ConcatNHWCEX(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		c.fp32.nchw, err = cuda.MakeKernel(ktf.ConcatNCHWEX(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+
+		c.fp16.nhwc, err = cuda.MakeKernel(ktf.ConcatNHWCEXHalf(), h.mod)
+		if err != nil {
+			return nil, err
+		}
+		c.fp16.nchw, err = cuda.MakeKernel(ktf.ConcatNCHWEXHalf(), h.mod)
+		if err != nil {
+			return nil, err
+		}
 	}
-	c.fp16.nchw, err = cuda.MakeKernel(ktf.ConcatNCHWEXHalf(), h.mod)
 	if err != nil {
 		return nil, err
 	}
@@ -137,6 +164,16 @@ func (c *ConcatEx) GetOutputdims(srcs []*gocudnn.TensorD) (outdims []int32, err 
 
 //Op takes all the values in the srcs and concats them together into dest
 func (c *ConcatEx) Op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, alpha float64, dest *gocudnn.TensorD, destmem cutil.Mem, beta float64, forward bool) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return c.op(h, srcs, srcsmem, alpha, dest, destmem, beta, forward)
+		})
+	}
+	return c.op(h, srcs, srcsmem, alpha, dest, destmem, beta, forward)
+}
+
+//Op takes all the values in the srcs and concats them together into dest
+func (c *ConcatEx) op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, alpha float64, dest *gocudnn.TensorD, destmem cutil.Mem, beta float64, forward bool) error {
 
 	dfrmt, ddtype, ddims, _, err := dest.Get()
 	dflg := ddtype

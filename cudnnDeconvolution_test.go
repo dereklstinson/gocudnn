@@ -2,14 +2,29 @@ package gocudnn_test
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cudart"
+	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
 func TestDeconvolution(t *testing.T) {
-	handle := gocudnn.CreateHandle(true)
+	runtime.LockOSThread()
+	var err error
+	dev := cudart.CreateDevice(0)
+
+	worker := gocu.NewWorker(dev)
+	handle := gocudnn.CreateHandleEX(worker, true)
+	allocator, err := cudart.CreateMemManager(worker)
+	if err != nil {
+		t.Error(err)
+	}
+	stream, err := cudart.CreateBlockingStream()
+	if err != nil {
+		t.Error(err)
+	}
 	cdesc, err := gocudnn.CreateDeConvolutionDescriptor()
 	if err != nil {
 		t.Error(err)
@@ -75,18 +90,7 @@ func TestDeconvolution(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	stream, err := cudart.CreateBlockingStream()
-	if err != nil {
-		t.Error(err)
-	}
-	dev, err := cudart.CreateDevice(0)
-	if err != nil {
-		t.Error(err)
-	}
-	allocator, err := cudart.CreateMemManager(dev)
-	if err != nil {
-		t.Error(err)
-	}
+
 	inputSIB, err := input.GetSizeInBytes()
 	if err != nil {
 		t.Error(err)

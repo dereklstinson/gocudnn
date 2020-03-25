@@ -163,29 +163,60 @@ func calgoperftogoarray(input []C.cudnnAlgorithmPerformance_t, gogc bool) []Algo
 //GetAlgorithmSpaceSize gets the size in bytes of the algorithm
 func (a *AlgorithmD) GetAlgorithmSpaceSize(handle *Handle) (uint, error) {
 	var sizet C.size_t
-	err := Status(C.cudnnGetAlgorithmSpaceSize(handle.x, a.descriptor, &sizet)).error("GetAlgorithmSpaceSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetAlgorithmSpaceSize(handle.x, a.descriptor, &sizet)).error("(a *AlgorithmD) GetAlgorithmSpaceSize(handle *Handle)")
+		})
+	} else {
+		err = Status(C.cudnnGetAlgorithmSpaceSize(handle.x, a.descriptor, &sizet)).error("(a *AlgorithmD) GetAlgorithmSpaceSize(handle *Handle)")
+	}
 
 	return uint(sizet), err
 }
 
 //SaveAlgorithm saves the algorithm to host
 func (a *AlgorithmD) SaveAlgorithm(handle *Handle, algoSpace cutil.Mem, sizeinbytes uint) error {
-
-	return Status(C.cudnnSaveAlgorithm(
-		handle.x,
-		a.descriptor,
-		algoSpace.Ptr(),
-		C.size_t(sizeinbytes),
-	)).error("SaveAlgorithm")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnSaveAlgorithm(
+				handle.x,
+				a.descriptor,
+				algoSpace.Ptr(),
+				C.size_t(sizeinbytes),
+			)).error("SaveAlgorithm")
+		})
+	} else {
+		err = Status(C.cudnnSaveAlgorithm(
+			handle.x,
+			a.descriptor,
+			algoSpace.Ptr(),
+			C.size_t(sizeinbytes),
+		)).error("SaveAlgorithm")
+	}
+	return err
 }
 
 //RestoreAlgorithm from host
 func (a *AlgorithmD) RestoreAlgorithm(handle *Handle, algoSpace cutil.Mem, sizeinbytes uint) error {
-
-	return Status(C.cudnnRestoreAlgorithm(
-		handle.x,
-		algoSpace.Ptr(),
-		C.size_t(sizeinbytes),
-		a.descriptor,
-	)).error("RestoreAlgorithm")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnRestoreAlgorithm(
+				handle.x,
+				algoSpace.Ptr(),
+				C.size_t(sizeinbytes),
+				a.descriptor,
+			)).error("RestoreAlgorithm")
+		})
+	} else {
+		err = Status(C.cudnnRestoreAlgorithm(
+			handle.x,
+			algoSpace.Ptr(),
+			C.size_t(sizeinbytes),
+			a.descriptor,
+		)).error("RestoreAlgorithm")
+	}
+	return err
 }

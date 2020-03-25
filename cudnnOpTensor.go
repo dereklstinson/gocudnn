@@ -5,6 +5,7 @@ package gocudnn
 */
 import "C"
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -20,7 +21,7 @@ type OPTensorD struct {
 //CreateOpTensorDescriptor creates and sets an OpTensor
 func CreateOpTensorDescriptor() (*OPTensorD, error) {
 	desc := new(OPTensorD)
-	err := Status(C.cudnnCreateOpTensorDescriptor(&desc.descriptor)).error("NewOpTensorDescriptor-Create")
+	err := Status(C.cudnnCreateOpTensorDescriptor(&desc.descriptor)).error("CreateOpTensorDescriptor() ")
 	if setfinalizer {
 		desc.gogc = true
 		runtime.SetFinalizer(desc, destroyopdesc)
@@ -31,20 +32,27 @@ func CreateOpTensorDescriptor() (*OPTensorD, error) {
 
 //Set sets the OPTensorD.
 func (t *OPTensorD) Set(op OpTensorOp, dtype DataType, nan NANProp) error {
-	return Status(C.cudnnSetOpTensorDescriptor(t.descriptor, op.c(), dtype.c(), nan.c())).error("NewOpTensorDescriptor-set")
+	return Status(C.cudnnSetOpTensorDescriptor(t.descriptor, op.c(), dtype.c(), nan.c())).error("(t *OPTensorD) Set")
 
 }
 
 //Get returns the descriptor information with error
 func (t *OPTensorD) Get() (op OpTensorOp, dtype DataType, nan NANProp, err error) {
 
-	err = Status(C.cudnnGetOpTensorDescriptor(t.descriptor, op.cptr(), dtype.cptr(), nan.cptr())).error("GetOpTensorDescriptor")
+	err = Status(C.cudnnGetOpTensorDescriptor(t.descriptor, op.cptr(), dtype.cptr(), nan.cptr())).error("(t *OPTensorD) Get()")
 
 	return op, dtype, nan, err
 
 }
+func (t *OPTensorD) String() string {
+	op, dtype, nan, err := t.Get()
+	if err != nil {
+		return fmt.Sprintf("OPTensorD{\nError: %v\n}\n", err)
+	}
+	return fmt.Sprintf("OPTensorD{\n%v,\n%v,\n%v\n}\n", op, dtype, nan)
+}
 func destroyopdesc(t *OPTensorD) error {
-	return Status(C.cudnnDestroyOpTensorDescriptor(t.descriptor)).error("destroyoptensor")
+	return Status(C.cudnnDestroyOpTensorDescriptor(t.descriptor)).error(" destroyopdesc(t *OPTensorD)")
 }
 
 //Destroy destroys the descriptor
@@ -67,7 +75,20 @@ func (t *OPTensorD) OpTensor(
 	a1 := cscalarbydatatype(aD.dtype, alpha1)
 	a2 := cscalarbydatatype(bD.dtype, alpha2)
 	b := cscalarbydatatype(cD.dtype, beta)
-	x := C.cudnnOpTensor(
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnOpTensor(
+				handle.x,
+				t.descriptor,
+				a1.CPtr(),
+				aD.descriptor, A.Ptr(),
+				a2.CPtr(),
+				bD.descriptor, B.Ptr(),
+				b.CPtr(),
+				cD.descriptor, cmem.Ptr())).error("(t *OPTensorD) OpTensor")
+		})
+	}
+	return Status(C.cudnnOpTensor(
 		handle.x,
 		t.descriptor,
 		a1.CPtr(),
@@ -75,9 +96,8 @@ func (t *OPTensorD) OpTensor(
 		a2.CPtr(),
 		bD.descriptor, B.Ptr(),
 		b.CPtr(),
-		cD.descriptor, cmem.Ptr())
+		cD.descriptor, cmem.Ptr())).error("(t *OPTensorD) OpTensor")
 
-	return Status(x).error("OpTensor")
 }
 
 //OpTensorUS is like OpTensor but uses unsafe.Pointer instead of cutil.Mem
@@ -92,7 +112,20 @@ func (t *OPTensorD) OpTensorUS(
 	a1 := cscalarbydatatype(aD.dtype, alpha1)
 	a2 := cscalarbydatatype(bD.dtype, alpha2)
 	b := cscalarbydatatype(cD.dtype, beta)
-	x := C.cudnnOpTensor(
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnOpTensor(
+				handle.x,
+				t.descriptor,
+				a1.CPtr(),
+				aD.descriptor, A,
+				a2.CPtr(),
+				bD.descriptor, B,
+				b.CPtr(),
+				cD.descriptor, cmem)).error("(t *OPTensorD) OpTensorUS")
+		})
+	}
+	return Status(C.cudnnOpTensor(
 		handle.x,
 		t.descriptor,
 		a1.CPtr(),
@@ -100,9 +133,8 @@ func (t *OPTensorD) OpTensorUS(
 		a2.CPtr(),
 		bD.descriptor, B,
 		b.CPtr(),
-		cD.descriptor, cmem)
+		cD.descriptor, cmem)).error("(t *OPTensorD) OpTensorUS")
 
-	return Status(x).error("OpTensor")
 }
 
 //OpTensorOp is used for flags for the Optensor functions

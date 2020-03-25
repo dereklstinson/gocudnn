@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/dereklstinson/GoCudnn/cudart"
+	"github.com/dereklstinson/GoCudnn/gocu"
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
 )
@@ -59,11 +60,10 @@ func TestConvolution2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	dev, err := cudart.CreateDevice(0)
-	if err != nil {
-		t.Error(err)
-	}
-	allocator, err := cudart.CreateMemManager(dev)
+	dev := cudart.CreateDevice(0)
+
+	worker := gocu.NewWorker(dev)
+	allocator, err := cudart.CreateMemManager(worker)
 	if err != nil {
 		t.Error(err)
 	}
@@ -153,11 +153,10 @@ func TestConvolution(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	dev, err := cudart.CreateDevice(0)
-	if err != nil {
-		t.Error(err)
-	}
-	allocator, err := cudart.CreateMemManager(dev)
+	dev := cudart.CreateDevice(0)
+
+	worker := gocu.NewWorker(dev)
+	allocator, err := cudart.CreateMemManager(worker)
 	if err != nil {
 		t.Error(err)
 	}

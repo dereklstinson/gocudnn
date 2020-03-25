@@ -53,7 +53,7 @@ func CreateSeqDataDescriptor() (*SeqDataD, error) {
 }
 func cudnnCreateSeqDataDescriptor() (seqdata *SeqDataD, err error) {
 	seqdata = new(SeqDataD)
-	err = Status(C.cudnnCreateSeqDataDescriptor(&seqdata.descriptor)).error("cudnnCreateSeqDataDescriptor")
+	err = Status(C.cudnnCreateSeqDataDescriptor(&seqdata.descriptor)).error("CreateSeqDataDescriptor()")
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func cudnnCreateSeqDataDescriptor() (seqdata *SeqDataD, err error) {
 }
 func cudnnDestroySeqDataDescriptor(s *SeqDataD) error {
 
-	err := Status(C.cudnnDestroySeqDataDescriptor(s.descriptor)).error("cudnnDestroySeqDataDescriptor")
+	err := Status(C.cudnnDestroySeqDataDescriptor(s.descriptor)).error("udnnDestroySeqDataDescriptor(s *SeqDataD)")
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (s *SeqDataD) Set(dtype DataType, dimsA []int32, axes []SeqDataAxis, seqLen
 	s.nbDims = (C.int)(len(dimsA))
 	s.seqlenarraysize = (C.size_t)(len(seqLengthArray))
 	s.padding = paddingfill
-	return Status(C.cudnnSetSeqDataDescriptor(s.descriptor, dtype.c(), s.nbDims, (*C.int)(&dimsA[0]), (*C.cudnnSeqDataAxis_t)(&axes[0]), s.seqlenarraysize, (*C.int)(&seqLengthArray[0]), pf.CPtr())).error("cudnnSetSeqDataDescriptor")
+	return Status(C.cudnnSetSeqDataDescriptor(s.descriptor, dtype.c(), s.nbDims, (*C.int)(&dimsA[0]), (*C.cudnnSeqDataAxis_t)(&axes[0]), s.seqlenarraysize, (*C.int)(&seqLengthArray[0]), pf.CPtr())).error("(s *SeqDataD) Set")
 }
 
 //Get gets values used in setting up s
@@ -131,7 +131,7 @@ func (s *SeqDataD) Get() (dtype DataType, dimsA []int32, axes []SeqDataAxis, seq
 	actualseq := s.seqlenarraysize
 	holder := 0.0
 	pf := cscalarbydatatype(dtype, holder)
-	err = Status(C.cudnnGetSeqDataDescriptor(s.descriptor, (*C.cudnnDataType_t)(&dtype), &actualnb, s.nbDims, (*C.int)(&dimsA[0]), (*C.cudnnSeqDataAxis_t)(&axes[0]), &actualseq, s.seqlenarraysize, (*C.int)(&seqLengthArray[0]), pf.CPtr())).error("cudnnSetSeqDataDescriptor")
+	err = Status(C.cudnnGetSeqDataDescriptor(s.descriptor, (*C.cudnnDataType_t)(&dtype), &actualnb, s.nbDims, (*C.int)(&dimsA[0]), (*C.cudnnSeqDataAxis_t)(&axes[0]), &actualseq, s.seqlenarraysize, (*C.int)(&seqLengthArray[0]), pf.CPtr())).error("(s *SeqDataD) Get()")
 
 	paddingfill = s.padding
 	return

@@ -22,7 +22,7 @@ type DropOutD struct {
 func CreateDropOutDescriptor() (*DropOutD, error) {
 	dod := new(DropOutD)
 
-	err := Status(C.cudnnCreateDropoutDescriptor(&dod.descriptor)).error("CreateDropoutDescriptor")
+	err := Status(C.cudnnCreateDropoutDescriptor(&dod.descriptor)).error("CreateDropOutDescriptor()")
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +35,18 @@ func CreateDropOutDescriptor() (*DropOutD, error) {
 
 //Set sets the drop out descriptor
 func (d *DropOutD) Set(handle *Handle, dropout float32, states cutil.Mem, bytes uint, seed uint64) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSetDropoutDescriptor(
+				d.descriptor,
+				handle.x,
+				C.float(dropout),
+				states.Ptr(),
+				C.size_t(bytes),
+				C.ulonglong(seed),
+			)).error("(d *DropOutD) Set")
+		})
+	}
 	return Status(C.cudnnSetDropoutDescriptor(
 		d.descriptor,
 		handle.x,
@@ -42,18 +54,29 @@ func (d *DropOutD) Set(handle *Handle, dropout float32, states cutil.Mem, bytes 
 		states.Ptr(),
 		C.size_t(bytes),
 		C.ulonglong(seed),
-	)).error("SetDropoutDescriptor")
+	)).error("(d *DropOutD) Set")
 }
 
 //SetUS is like Set but uses unsafe.Pointer instead of cutil.Mem
 func (d *DropOutD) SetUS(handle *Handle, dropout float32, states unsafe.Pointer, bytes uint, seed uint64) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSetDropoutDescriptor(
+				d.descriptor,
+				handle.x,
+				C.float(dropout), states,
+				C.size_t(bytes),
+				C.ulonglong(seed),
+			)).error("(d *DropOutD) SetUS")
+		})
+	}
 	return Status(C.cudnnSetDropoutDescriptor(
 		d.descriptor,
 		handle.x,
 		C.float(dropout), states,
 		C.size_t(bytes),
 		C.ulonglong(seed),
-	)).error("SetDropoutDescriptor")
+	)).error("(d *DropOutD) SetUS")
 }
 
 //Destroy destroys the dropout descriptor unless the the finalizer flag was set.
@@ -64,7 +87,7 @@ func (d *DropOutD) Destroy() error {
 	return destroydropoutdescriptor(d)
 }
 func destroydropoutdescriptor(d *DropOutD) error {
-	return Status(C.cudnnDestroyDropoutDescriptor(d.descriptor)).error("DestroyDescriptor")
+	return Status(C.cudnnDestroyDropoutDescriptor(d.descriptor)).error("destroydropoutdescriptor(d *DropOutD)")
 }
 
 //Restore restores the descriptor to a previously saved-off state
@@ -75,7 +98,18 @@ func (d *DropOutD) Restore(
 	bytes uint,
 	seed uint64,
 ) error {
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnRestoreDropoutDescriptor(
+				d.descriptor,
+				handle.x,
+				C.float(dropout),
+				states.Ptr(),
+				C.size_t(bytes),
+				C.ulonglong(seed),
+			)).error("(d *DropOutD) Restore")
+		})
+	}
 	return Status(C.cudnnRestoreDropoutDescriptor(
 		d.descriptor,
 		handle.x,
@@ -83,7 +117,7 @@ func (d *DropOutD) Restore(
 		states.Ptr(),
 		C.size_t(bytes),
 		C.ulonglong(seed),
-	)).error("RestoreDropoutDescriptor")
+	)).error("(d *DropOutD) Restore")
 }
 
 //RestoreUS is like Restore but uses unsafe.Pointer instead of cutil.Mem
@@ -94,6 +128,18 @@ func (d *DropOutD) RestoreUS(
 	bytes uint,
 	seed uint64,
 ) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnRestoreDropoutDescriptor(
+				d.descriptor,
+				handle.x,
+				C.float(dropout),
+				states,
+				C.size_t(bytes),
+				C.ulonglong(seed),
+			)).error("(d *DropOutD) RestoreUS")
+		})
+	}
 
 	return Status(C.cudnnRestoreDropoutDescriptor(
 		d.descriptor,
@@ -102,7 +148,7 @@ func (d *DropOutD) RestoreUS(
 		states,
 		C.size_t(bytes),
 		C.ulonglong(seed),
-	)).error("RestoreDropoutDescriptor")
+	)).error("(d *DropOutD) RestoreUS")
 }
 
 //Get gets the descriptor to a previously saved-off state
@@ -112,13 +158,26 @@ func (d *DropOutD) Get(
 	var seed C.ulonglong
 	var dropout C.float
 	var x unsafe.Pointer
-	err := Status(C.cudnnGetDropoutDescriptor(
-		d.descriptor,
-		handle.x,
-		&dropout,
-		&x,
-		&seed,
-	)).error("GetDropoutDescriptor")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetDropoutDescriptor(
+				d.descriptor,
+				handle.x,
+				&dropout,
+				&x,
+				&seed,
+			)).error("(d *DropOutD) Get")
+		})
+	} else {
+		err = Status(C.cudnnGetDropoutDescriptor(
+			d.descriptor,
+			handle.x,
+			&dropout,
+			&x,
+			&seed,
+		)).error("(d *DropOutD) Get")
+	}
 
 	return float32(dropout), gocu.WrapUnsafe(x), uint64(seed), err
 }
@@ -128,13 +187,26 @@ func (d *DropOutD) GetUS(handle *Handle) (float32, unsafe.Pointer, uint64, error
 	var seed C.ulonglong
 	var dropout C.float
 	var x unsafe.Pointer
-	err := Status(C.cudnnGetDropoutDescriptor(
-		d.descriptor,
-		handle.x,
-		&dropout,
-		&x,
-		&seed,
-	)).error("GetDropoutDescriptor")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetDropoutDescriptor(
+				d.descriptor,
+				handle.x,
+				&dropout,
+				&x,
+				&seed,
+			)).error("(d *DropOutD) GetUS")
+		})
+	} else {
+		err = Status(C.cudnnGetDropoutDescriptor(
+			d.descriptor,
+			handle.x,
+			&dropout,
+			&x,
+			&seed,
+		)).error("(d *DropOutD) GetUS")
+	}
 
 	return float32(dropout), x, uint64(seed), err
 }
@@ -144,7 +216,14 @@ func (d *DropOutD) GetUS(handle *Handle) (float32, unsafe.Pointer, uint64, error
 //used to get the size the cutil.Mem, or unsafe.Pointer needs to for state.
 func (d *DropOutD) GetStateSize(handle *Handle) (uint, error) {
 	var size C.size_t
-	err := Status(C.cudnnDropoutGetStatesSize(handle.x, &size)).error("DropoutGetStateSize")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnDropoutGetStatesSize(handle.x, &size)).error("(d *DropOutD) GetStateSize")
+		})
+	} else {
+		err = Status(C.cudnnDropoutGetStatesSize(handle.x, &size)).error("(d *DropOutD) GetStateSize")
+	}
 
 	return uint(size), err
 }
@@ -153,7 +232,7 @@ func (d *DropOutD) GetStateSize(handle *Handle) (uint, error) {
 //use the DropOutD, but function is releveant to the DropOut operation
 func (d *DropOutD) GetReserveSpaceSize(t *TensorD) (uint, error) {
 	var size C.size_t
-	err := Status(C.cudnnDropoutGetReserveSpaceSize(t.descriptor, &size)).error("DropoutGetReserveSpaceSize")
+	err := Status(C.cudnnDropoutGetReserveSpaceSize(t.descriptor, &size)).error("(d *DropOutD) GetReserveSpaceSize")
 	return uint(size), err
 }
 
@@ -169,6 +248,21 @@ func (d *DropOutD) Forward(
 	reserveSpace cutil.Mem, //input/output
 	reservesize uint,
 ) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDropoutForward(
+				handle.x,
+				d.descriptor,
+				xD.descriptor,
+				x.Ptr(),
+				yD.descriptor,
+				y.Ptr(),
+				reserveSpace.Ptr(),
+				C.size_t(reservesize),
+			)).error("(d *DropOutD) Forward")
+
+		})
+	}
 
 	return Status(C.cudnnDropoutForward(
 		handle.x,
@@ -179,7 +273,7 @@ func (d *DropOutD) Forward(
 		y.Ptr(),
 		reserveSpace.Ptr(),
 		C.size_t(reservesize),
-	)).error("DropoutForward")
+	)).error("(d *DropOutD) Forward")
 }
 
 //ForwardUS is like Forward but uses unsafe.Pointer instead of cutil.Mem
@@ -189,6 +283,18 @@ func (d *DropOutD) ForwardUS(
 	yD *TensorD, y unsafe.Pointer, //input/output
 	reserveSpace unsafe.Pointer, reservesize uint,
 ) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDropoutForward(
+				handle.x,
+				d.descriptor,
+				xD.descriptor, x,
+				yD.descriptor, y,
+				reserveSpace,
+				C.size_t(reservesize),
+			)).error(" (d *DropOutD) ForwardUS")
+		})
+	}
 
 	return Status(C.cudnnDropoutForward(
 		handle.x,
@@ -197,7 +303,7 @@ func (d *DropOutD) ForwardUS(
 		yD.descriptor, y,
 		reserveSpace,
 		C.size_t(reservesize),
-	)).error("DropoutForward")
+	)).error(" (d *DropOutD) ForwardUS")
 }
 
 //Backward performs the dropoutForward
@@ -212,6 +318,20 @@ func (d *DropOutD) Backward(
 	reserveSpace cutil.Mem, //input/output
 	reservesize uint,
 ) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDropoutBackward(
+				handle.x,
+				d.descriptor,
+				dyD.descriptor,
+				dy.Ptr(),
+				dxD.descriptor,
+				dx.Ptr(),
+				reserveSpace.Ptr(),
+				C.size_t(reservesize),
+			)).error("(d *DropOutD) Backward")
+		})
+	}
 
 	return Status(C.cudnnDropoutBackward(
 		handle.x,
@@ -222,7 +342,7 @@ func (d *DropOutD) Backward(
 		dx.Ptr(),
 		reserveSpace.Ptr(),
 		C.size_t(reservesize),
-	)).error("DropoutBackward")
+	)).error("(d *DropOutD) Backward")
 }
 
 //BackwardUS is like Backward but uses unsafe.Pointer instead of cutil.Mem
@@ -235,6 +355,17 @@ func (d *DropOutD) BackwardUS(
 	reserveSpace unsafe.Pointer, //input/output
 	reservesize uint,
 ) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDropoutBackward(
+				handle.x,
+				d.descriptor,
+				dyD.descriptor, dy,
+				dxD.descriptor, dx,
+				reserveSpace, C.size_t(reservesize),
+			)).error("(d *DropOutD) BackwardUS")
+		})
+	}
 
 	return Status(C.cudnnDropoutBackward(
 		handle.x,
@@ -242,5 +373,5 @@ func (d *DropOutD) BackwardUS(
 		dyD.descriptor, dy,
 		dxD.descriptor, dx,
 		reserveSpace, C.size_t(reservesize),
-	)).error("DropoutBackward")
+	)).error("(d *DropOutD) BackwardUS")
 }

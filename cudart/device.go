@@ -95,13 +95,9 @@ func (d Device) Set() error {
 	return newErrorRuntime("Set", C.cudaSetDevice(d.c()))
 }
 
-//CreateDevice sets the device on the current host thread.
-//Be sure when starting a goroutine lock the thread before calling this.
-func CreateDevice(device int32) (Device, error) {
-	var x Device
-	x = (Device)(device)
-	err := x.Set()
-	return x, err
+//CreateDevice just creates a device it doesn't set it
+func CreateDevice(device int32) Device {
+	return (Device)(device)
 
 }
 

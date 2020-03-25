@@ -287,7 +287,31 @@ func (r *RNND) ForwardTrainingEx(h *Handle,
 	cyD *TensorD, cy cutil.Mem,
 	wspace cutil.Mem, wspacesib uint,
 	rspace cutil.Mem, rspacesib uint) error {
-
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNForwardTrainingEx(h.x,
+				r.descriptor,
+				xD.d, x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				wD.descriptor, w.Ptr(),
+				yD.d, y.Ptr(),
+				hyD.descriptor, hy.Ptr(),
+				cyD.descriptor, cy.Ptr(),
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				wspace.Ptr(),
+				C.size_t(wspacesib),
+				rspace.Ptr(),
+				C.size_t(rspacesib))).error("(r *RNND) ForwardTrainingEx")
+		})
+	}
 	return Status(C.cudnnRNNForwardTrainingEx(h.x,
 		r.descriptor,
 		xD.d, x.Ptr(),
@@ -308,7 +332,7 @@ func (r *RNND) ForwardTrainingEx(h *Handle,
 		wspace.Ptr(),
 		C.size_t(wspacesib),
 		rspace.Ptr(),
-		C.size_t(rspacesib))).error("ForwardTrainingEx")
+		C.size_t(rspacesib))).error("(r *RNND) ForwardTrainingEx")
 
 }
 
@@ -323,7 +347,29 @@ func (r *RNND) ForwardTrainingExUS(h *Handle,
 	cyD *TensorD, cy unsafe.Pointer,
 	wspace unsafe.Pointer, wspacesib uint,
 	rspace unsafe.Pointer, rspacesib uint) error {
-
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNForwardTrainingEx(h.x,
+				r.descriptor,
+				xD.d, x,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				wD.descriptor, w,
+				yD.d, y,
+				hyD.descriptor, hy,
+				cyD.descriptor, cy,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				wspace, C.size_t(wspacesib),
+				rspace, C.size_t(rspacesib))).error("(r *RNND) ForwardTrainingExUS")
+		})
+	}
 	return Status(C.cudnnRNNForwardTrainingEx(h.x,
 		r.descriptor,
 		xD.d, x,
@@ -342,7 +388,7 @@ func (r *RNND) ForwardTrainingExUS(h *Handle,
 		nil,
 		nil,
 		wspace, C.size_t(wspacesib),
-		rspace, C.size_t(rspacesib))).error("ForwardTrainingExUS")
+		rspace, C.size_t(rspacesib))).error("(r *RNND) ForwardTrainingExUS")
 
 }
 
@@ -423,6 +469,28 @@ func (r *RNND) ForwardInferenceEx(
 	cyD *TensorD, cy cutil.Mem,
 	wspace cutil.Mem, wspacesib uint,
 ) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNForwardInferenceEx(h.x,
+				r.descriptor,
+				xD.d, x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				wD.descriptor, w.Ptr(),
+				yD.d, y.Ptr(),
+				hyD.descriptor, hy.Ptr(),
+				cyD.descriptor, cy.Ptr(),
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				wspace.Ptr(), C.size_t(wspacesib))).error(" (r *RNND) ForwardInferenceEx")
+		})
+	}
 	return Status(C.cudnnRNNForwardInferenceEx(h.x,
 		r.descriptor,
 		xD.d, x.Ptr(),
@@ -440,7 +508,7 @@ func (r *RNND) ForwardInferenceEx(
 		nil,
 		nil,
 		nil,
-		wspace.Ptr(), C.size_t(wspacesib))).error("ForwardInferenceEx")
+		wspace.Ptr(), C.size_t(wspacesib))).error(" (r *RNND) ForwardInferenceEx")
 
 }
 
@@ -456,6 +524,28 @@ func (r *RNND) ForwardInferenceExUS(
 	cyD *TensorD, cy unsafe.Pointer,
 	wspace unsafe.Pointer, wspacesib uint,
 ) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNForwardInferenceEx(h.x,
+				r.descriptor,
+				xD.d, x,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				wD.descriptor, w,
+				yD.d, y,
+				hyD.descriptor, hy,
+				cyD.descriptor, cy,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				nil,
+				wspace, C.size_t(wspacesib))).error("(r *RNND) ForwardInferenceExUS")
+		})
+	}
 	return Status(C.cudnnRNNForwardInferenceEx(h.x,
 		r.descriptor,
 		xD.d, x,
@@ -473,7 +563,7 @@ func (r *RNND) ForwardInferenceExUS(
 		nil,
 		nil,
 		nil,
-		wspace, C.size_t(wspacesib))).error("ForwardInferenceEx")
+		wspace, C.size_t(wspacesib))).error("(r *RNND) ForwardInferenceExUS")
 
 }
 
@@ -575,7 +665,27 @@ func (r *RNND) BackwardDataEx(h *Handle,
 	dcxD *TensorD, dcx cutil.Mem,
 	wspace cutil.Mem, wspacesib uint,
 	rspace cutil.Mem, rspacesib uint) error {
-
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNBackwardDataEx(h.x,
+				r.descriptor,
+				yD.d, y.Ptr(),
+				dyD.d, dy.Ptr(),
+				nil, nil,
+				dhyD.descriptor, dhy.Ptr(),
+				dcyD.descriptor, dcy.Ptr(),
+				wD.descriptor, w.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				cxD.descriptor, cx.Ptr(),
+				dxD.d, dx.Ptr(),
+				dhxD.descriptor, dhx.Ptr(),
+				dcxD.descriptor, dcx.Ptr(),
+				nil,
+				nil,
+				wspace.Ptr(), C.size_t(wspacesib),
+				rspace.Ptr(), C.size_t(rspacesib))).error("(r *RNND) BackwardDataEx")
+		})
+	}
 	return Status(C.cudnnRNNBackwardDataEx(h.x,
 		r.descriptor,
 		yD.d, y.Ptr(),
@@ -592,7 +702,7 @@ func (r *RNND) BackwardDataEx(h *Handle,
 		nil,
 		nil,
 		wspace.Ptr(), C.size_t(wspacesib),
-		rspace.Ptr(), C.size_t(rspacesib))).error("BackwardDataEx")
+		rspace.Ptr(), C.size_t(rspacesib))).error("(r *RNND) BackwardDataEx")
 
 }
 
@@ -610,7 +720,27 @@ func (r *RNND) BackwardDataExUS(h *Handle,
 	dcxD *TensorD, dcx unsafe.Pointer,
 	wspace unsafe.Pointer, wspacesib uint,
 	rspace unsafe.Pointer, rspacesib uint) error {
-
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNBackwardDataEx(h.x,
+				r.descriptor,
+				yD.d, y,
+				dyD.d, dy,
+				nil, nil,
+				dhyD.descriptor, dhy,
+				dcyD.descriptor, dcy,
+				wD.descriptor, w,
+				hxD.descriptor, hx,
+				cxD.descriptor, cx,
+				dxD.d, dx,
+				dhxD.descriptor, dhx,
+				dcxD.descriptor, dcx,
+				nil,
+				nil,
+				wspace, C.size_t(wspacesib),
+				rspace, C.size_t(rspacesib))).error("(r *RNND) BackwardDataExUS")
+		})
+	}
 	return Status(C.cudnnRNNBackwardDataEx(h.x,
 		r.descriptor,
 		yD.d, y,
@@ -627,7 +757,7 @@ func (r *RNND) BackwardDataExUS(h *Handle,
 		nil,
 		nil,
 		wspace, C.size_t(wspacesib),
-		rspace, C.size_t(rspacesib))).error("BackwardDataEx")
+		rspace, C.size_t(rspacesib))).error("(r *RNND) BackwardDataExUS")
 
 }
 
@@ -687,6 +817,20 @@ func (r *RNND) BackwardWeightsEx(h *Handle,
 	dwD *FilterD, dw cutil.Mem,
 	rspace cutil.Mem, rspacesib uint,
 ) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNBackwardWeightsEx(
+				h.x,
+				r.descriptor,
+				xD.d, x.Ptr(),
+				hxD.descriptor, hx.Ptr(),
+				yD.d, y.Ptr(),
+				wspace.Ptr(), C.size_t(wspacesib),
+				dwD.descriptor, dw.Ptr(),
+				rspace.Ptr(), C.size_t(rspacesib),
+			)).error("(r *RNND) BackwardWeightsEx")
+		})
+	}
 	return Status(C.cudnnRNNBackwardWeightsEx(
 		h.x,
 		r.descriptor,
@@ -696,7 +840,7 @@ func (r *RNND) BackwardWeightsEx(h *Handle,
 		wspace.Ptr(), C.size_t(wspacesib),
 		dwD.descriptor, dw.Ptr(),
 		rspace.Ptr(), C.size_t(rspacesib),
-	)).error("BackwardWeightsEx")
+	)).error("(r *RNND) BackwardWeightsEx")
 
 }
 
@@ -709,6 +853,20 @@ func (r *RNND) BackwardWeightsExUS(h *Handle,
 	dwD *FilterD, dw unsafe.Pointer,
 	rspace unsafe.Pointer, rspacesib uint,
 ) error {
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnRNNBackwardWeightsEx(
+				h.x,
+				r.descriptor,
+				xD.d, x,
+				hxD.descriptor, hx,
+				yD.d, y,
+				wspace, C.size_t(wspacesib),
+				dwD.descriptor, dw,
+				rspace, C.size_t(rspacesib),
+			)).error("(r *RNND) BackwardWeightsExUS")
+		})
+	}
 	return Status(C.cudnnRNNBackwardWeightsEx(
 		h.x,
 		r.descriptor,
@@ -718,6 +876,6 @@ func (r *RNND) BackwardWeightsExUS(h *Handle,
 		wspace, C.size_t(wspacesib),
 		dwD.descriptor, dw,
 		rspace, C.size_t(rspacesib),
-	)).error("BackwardWeightsEx")
+	)).error("(r *RNND) BackwardWeightsExUS")
 
 }

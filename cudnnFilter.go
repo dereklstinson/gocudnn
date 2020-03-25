@@ -42,7 +42,7 @@ func (f *FilterD) TensorD() *TensorD {
 //CreateFilterDescriptor creates a filter distriptor
 func CreateFilterDescriptor() (*FilterD, error) {
 	flt := new(FilterD)
-	err := Status(C.cudnnCreateFilterDescriptor(&flt.descriptor)).error("NewFilter4dDescriptor-create-Filter")
+	err := Status(C.cudnnCreateFilterDescriptor(&flt.descriptor)).error("CreateFilterDescriptor()")
 	if setfinalizer || flt.gogc {
 		runtime.SetFinalizer(flt, destroyfilterdescriptor)
 	}
@@ -77,7 +77,7 @@ func (f *FilterD) Set(dtype DataType, format TensorFormat, shape []int32) error 
 	cshape := int32Tocint(shape)
 	f.dims = (C.int)(len(shape))
 
-	return Status(C.cudnnSetFilterNdDescriptor(f.descriptor, dtype.c(), format.c(), f.dims, &cshape[0])).error("(*FilterD)SetND")
+	return Status(C.cudnnSetFilterNdDescriptor(f.descriptor, dtype.c(), format.c(), f.dims, &cshape[0])).error(" (f *FilterD) Set")
 }
 
 //Get returns a copy of the ConvolutionD
@@ -86,13 +86,13 @@ func (f *FilterD) Get() (dtype DataType, frmt TensorFormat, shape []int32, err e
 		f.dims = C.CUDNN_DIM_MAX
 		shape = make([]int32, f.dims)
 		var actual C.int
-		err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &actual, (*C.int)(&shape[0]))).error("cudnnGetFilterNdDescriptor")
+		err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &actual, (*C.int)(&shape[0]))).error(" (f *FilterD) Get()")
 		f.dims = actual
 		return dtype, frmt, shape[:f.dims], err
 	}
 	var holder C.int
 	shape = make([]int32, f.dims)
-	err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error("cudnnGetFilterNdDescriptor")
+	err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error(" (f *FilterD) Get()")
 	return dtype, frmt, shape, err
 }
 
@@ -115,7 +115,7 @@ func (f *FilterD) Destroy() error {
 
 func destroyfilterdescriptor(f *FilterD) error {
 
-	err := Status(C.cudnnDestroyFilterDescriptor(f.descriptor)).error("DestroyDescriptor-filt")
+	err := Status(C.cudnnDestroyFilterDescriptor(f.descriptor)).error(" destroyfilterdescriptor(f *FilterD)")
 	if err != nil {
 		return err
 	}
@@ -142,9 +142,16 @@ func (f *FilterD) ReorderFilterBias(h *Handle,
 	if reorderbias {
 		robias = 1
 	}
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnReorderFilterAndBias(h.x, f.descriptor,
+				r.c(), filtersrc.Ptr(), reorderfilterdest.Ptr(),
+				robias, biassrc.Ptr(), reorderbiasdest.Ptr())).error("(f *FilterD) ReorderFilterBias")
+		})
+	}
 	return Status(C.cudnnReorderFilterAndBias(h.x, f.descriptor,
 		r.c(), filtersrc.Ptr(), reorderfilterdest.Ptr(),
-		robias, biassrc.Ptr(), reorderbiasdest.Ptr())).error("ReorderFilterBias")
+		robias, biassrc.Ptr(), reorderbiasdest.Ptr())).error("(f *FilterD) ReorderFilterBias")
 
 }
 

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/dereklstinson/GoCudnn/gocu"
+
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/cutil"
@@ -13,22 +15,25 @@ import (
 
 func TestCreateConcatEx(t *testing.T) {
 	runtime.LockOSThread()
-	handle := gocudnn.CreateHandle(false)
 	check := func(err error) {
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
-	s, err := cudart.CreateBlockingStream()
-	check(err)
-	check(handle.SetStream(s))
 	dev, err := cudart.GetDevice()
 	check(err)
 	check(dev.Set())
+	worker := gocu.NewWorker(dev)
+	handle := gocudnn.CreateHandleEX(worker, false)
+
+	s, err := cudart.CreateBlockingStream()
+	check(err)
+	check(handle.SetStream(s))
+	h, err := MakeHandleEx(worker, true)
+	check(err)
 	alpha := float64(1)
 	beta := float64(0)
-	h, err := MakeHandle(dev, true)
-	check(err)
+
 	op, err := CreateConcatEx(h)
 	check(err)
 	offset := 1
@@ -43,7 +48,7 @@ func TestCreateConcatEx(t *testing.T) {
 	frmt.NCHW()
 	dtype.Float()
 	nbatch, hheight, width := int32(3), int32(3), int32(3)
-	memmanger, err := cudart.CreateMemManager(dev)
+	memmanger, err := cudart.CreateMemManager(worker)
 
 	check(err)
 	for i := range srcds {
@@ -134,4 +139,5 @@ func TestCreateConcatEx(t *testing.T) {
 		}
 
 	}
+
 }

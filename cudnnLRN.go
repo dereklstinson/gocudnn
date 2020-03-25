@@ -6,6 +6,7 @@ package gocudnn
 import "C"
 import (
 	"errors"
+	"fmt"
 	"runtime"
 	"strconv"
 	"unsafe"
@@ -51,7 +52,7 @@ func (l LRND) MinBeta() float64 {
 //CreateLRNDescriptor creates an RND descriptor
 func CreateLRNDescriptor() (*LRND, error) {
 	x := new(LRND)
-	err := Status(C.cudnnCreateLRNDescriptor(&x.descriptor)).error("NewLRNDecriptor-create")
+	err := Status(C.cudnnCreateLRNDescriptor(&x.descriptor)).error("CreateLRNDescriptor()")
 	if err != nil {
 		return nil, err
 	}
@@ -78,23 +79,30 @@ func (l *LRND) Set(lrnN uint32,
 		C.double(lrnAlpha),
 		C.double(lrnBeta),
 		C.double(lrnK),
-	)).error("NewLRNDecriptor-set")
+	)).error("(l *LRND) Set")
 }
 
 //Get returns the descriptor values that were set with set
-func (l *LRND) Get() (uint32, float64, float64, float64, error) {
+func (l *LRND) Get() (lrnN uint32, lrnAlpha float64, lrnBeta float64, lrnK float64, err error) {
 	var N C.unsigned
 	var Al, Bet, K C.double
 
-	err := Status(C.cudnnGetLRNDescriptor(
+	err = Status(C.cudnnGetLRNDescriptor(
 		l.descriptor,
 		&N,
 		&Al,
 		&Bet,
 		&K,
-	)).error("GetDescriptor-LRN")
-
-	return uint32(N), float64(Al), float64(Bet), float64(K), err
+	)).error("(l *LRND) Get()")
+	lrnN, lrnAlpha, lrnBeta, lrnK = uint32(N), float64(Al), float64(Bet), float64(K)
+	return lrnN, lrnAlpha, lrnBeta, lrnK, err
+}
+func (l *LRND) String() string {
+	lrnN, lrnAlpha, lrnBeta, lrnK, err := l.Get()
+	if err != nil {
+		return fmt.Sprintf("LRND{\nError\n}\n")
+	}
+	return fmt.Sprintf("LRND{\nN: %v,\nAlpha: %v,\nBeta: %v\n,K: %v\n}\n", lrnN, lrnAlpha, lrnBeta, lrnK)
 }
 
 //Destroy destroys the descriptor if not using gc it will just return nil if not on.
@@ -106,7 +114,7 @@ func (l *LRND) Destroy() error {
 	return destroylrndescriptor(l)
 }
 func destroylrndescriptor(l *LRND) error {
-	return Status(C.cudnnDestroyLRNDescriptor(l.descriptor)).error("DestroyDescriptor")
+	return Status(C.cudnnDestroyLRNDescriptor(l.descriptor)).error("destroylrndescriptor(l *LRND)")
 }
 
 /* LRN functions: output = alpha * normalize(x) + beta * old_y */
@@ -122,6 +130,20 @@ func (l *LRND) LRNCrossChannelForward(
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnLRNCrossChannelForward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				xD.descriptor, x.Ptr(),
+				b.CPtr(),
+				yD.descriptor, y.Ptr(),
+			)).error("(l *LRND) LRNCrossChannelForward")
+
+		})
+	}
 	return Status(C.cudnnLRNCrossChannelForward(
 		handle.x,
 		l.descriptor,
@@ -130,7 +152,7 @@ func (l *LRND) LRNCrossChannelForward(
 		xD.descriptor, x.Ptr(),
 		b.CPtr(),
 		yD.descriptor, y.Ptr(),
-	)).error("LRNCrossChannelForward")
+	)).error("(l *LRND) LRNCrossChannelForward")
 }
 
 //LRNCrossChannelForwardUS is like LRNCrossChannelForward but using unsafe.Pointer instead of cutil.Mem
@@ -144,6 +166,19 @@ func (l *LRND) LRNCrossChannelForwardUS(
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnLRNCrossChannelForward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				xD.descriptor, x,
+				b.CPtr(),
+				yD.descriptor, y,
+			)).error("(l *LRND) LRNCrossChannelForwardUS")
+		})
+	}
 	return Status(C.cudnnLRNCrossChannelForward(
 		handle.x,
 		l.descriptor,
@@ -152,7 +187,7 @@ func (l *LRND) LRNCrossChannelForwardUS(
 		xD.descriptor, x,
 		b.CPtr(),
 		yD.descriptor, y,
-	)).error("LRNCrossChannelForward")
+	)).error("(l *LRND) LRNCrossChannelForwardUS")
 }
 
 //LRNCrossChannelBackward  LRN cross-channel backward computation. Double parameters cast to tensor data type
@@ -168,6 +203,21 @@ func (l *LRND) LRNCrossChannelBackward(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnLRNCrossChannelBackward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				yD.descriptor, y.Ptr(),
+				dyD.descriptor, dy.Ptr(),
+				xD.descriptor, x.Ptr(),
+				b.CPtr(),
+				dxD.descriptor, dx.Ptr(),
+			)).error(" (l *LRND) LRNCrossChannelBackward")
+		})
+	}
 	return Status(C.cudnnLRNCrossChannelBackward(
 		handle.x,
 		l.descriptor,
@@ -178,7 +228,7 @@ func (l *LRND) LRNCrossChannelBackward(
 		xD.descriptor, x.Ptr(),
 		b.CPtr(),
 		dxD.descriptor, dx.Ptr(),
-	)).error("LRNCrossChannelForward")
+	)).error(" (l *LRND) LRNCrossChannelBackward")
 }
 
 //LRNCrossChannelBackwardUS is like LRNCrossChannelBackward but using unsafe.Pointer instead of cutil.Mem
@@ -194,6 +244,21 @@ func (l *LRND) LRNCrossChannelBackwardUS(
 ) error {
 	a := cscalarbydatatype(dyD.dtype, alpha)
 	b := cscalarbydatatype(dyD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnLRNCrossChannelBackward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				yD.descriptor, y,
+				dyD.descriptor, dy,
+				xD.descriptor, x,
+				b.CPtr(),
+				dxD.descriptor, dx,
+			)).error("(l *LRND) LRNCrossChannelBackwardUS")
+		})
+	}
 	return Status(C.cudnnLRNCrossChannelBackward(
 		handle.x,
 		l.descriptor,
@@ -204,7 +269,7 @@ func (l *LRND) LRNCrossChannelBackwardUS(
 		xD.descriptor, x,
 		b.CPtr(),
 		dxD.descriptor, dx,
-	)).error("LRNCrossChannelForward")
+	)).error("(l *LRND) LRNCrossChannelBackwardUS")
 }
 
 //DivisiveNormalizationForward   LCN/divisive normalization functions: y = alpha * normalize(x) + beta * y
@@ -218,6 +283,24 @@ func (l *LRND) DivisiveNormalizationForward(
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDivisiveNormalizationForward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				means.Ptr(),
+				temp.Ptr(),
+				temp2.Ptr(),
+				b.CPtr(),
+				yD.descriptor,
+				y.Ptr(),
+			)).error("(l *LRND) DivisiveNormalizationForward")
+		})
+	}
 	return Status(C.cudnnDivisiveNormalizationForward(
 		handle.x,
 		l.descriptor,
@@ -231,7 +314,7 @@ func (l *LRND) DivisiveNormalizationForward(
 		b.CPtr(),
 		yD.descriptor,
 		y.Ptr(),
-	)).error("DivisiveNormalizationForward")
+	)).error("(l *LRND) DivisiveNormalizationForward")
 }
 
 //DivisiveNormalizationForwardUS is like DivisiveNormalizationForward but using unsafe.Pointer instead of cutil.Mem
@@ -245,6 +328,19 @@ func (l *LRND) DivisiveNormalizationForwardUS(
 ) error {
 	a := cscalarbydatatype(yD.dtype, alpha)
 	b := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDivisiveNormalizationForward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				xD.descriptor, x, means, temp, temp2,
+				b.CPtr(),
+				yD.descriptor, y,
+			)).error(" (l *LRND) DivisiveNormalizationForwardUS")
+		})
+	}
 	return Status(C.cudnnDivisiveNormalizationForward(
 		handle.x,
 		l.descriptor,
@@ -253,7 +349,7 @@ func (l *LRND) DivisiveNormalizationForwardUS(
 		xD.descriptor, x, means, temp, temp2,
 		b.CPtr(),
 		yD.descriptor, y,
-	)).error("DivisiveNormalizationForward")
+	)).error(" (l *LRND) DivisiveNormalizationForwardUS")
 }
 
 //DivisiveNormalizationBackward  LRN cross-channel backward computation. Double parameters cast to tensor data type
@@ -267,6 +363,19 @@ func (l *LRND) DivisiveNormalizationBackward(
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(xD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDivisiveNormalizationBackward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				xD.descriptor, x.Ptr(), means.Ptr(), dy.Ptr(), temp.Ptr(), temp2.Ptr(),
+				b.CPtr(),
+				dXdMeansDesc.descriptor, dx.Ptr(), dMeans.Ptr(),
+			)).error("(l *LRND) DivisiveNormalizationBackward")
+		})
+	}
 	return Status(C.cudnnDivisiveNormalizationBackward(
 		handle.x,
 		l.descriptor,
@@ -275,7 +384,7 @@ func (l *LRND) DivisiveNormalizationBackward(
 		xD.descriptor, x.Ptr(), means.Ptr(), dy.Ptr(), temp.Ptr(), temp2.Ptr(),
 		b.CPtr(),
 		dXdMeansDesc.descriptor, dx.Ptr(), dMeans.Ptr(),
-	)).error("DivisiveNormalizationBackward")
+	)).error("(l *LRND) DivisiveNormalizationBackward")
 }
 
 //DivisiveNormalizationBackwardUS is like DivisiveNormalizationBackward but using unsafe.Pointer instead of cutil.Mem
@@ -289,6 +398,19 @@ func (l *LRND) DivisiveNormalizationBackwardUS(
 ) error {
 	a := cscalarbydatatype(xD.dtype, alpha)
 	b := cscalarbydatatype(xD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnDivisiveNormalizationBackward(
+				handle.x,
+				l.descriptor,
+				mode.c(),
+				a.CPtr(),
+				xD.descriptor, x, means, dy, temp, temp2,
+				b.CPtr(),
+				dXdMeansDesc.descriptor, dx, dMeans,
+			)).error("(l *LRND) DivisiveNormalizationBackwardUS")
+		})
+	}
 	return Status(C.cudnnDivisiveNormalizationBackward(
 		handle.x,
 		l.descriptor,
@@ -297,7 +419,7 @@ func (l *LRND) DivisiveNormalizationBackwardUS(
 		xD.descriptor, x, means, dy, temp, temp2,
 		b.CPtr(),
 		dXdMeansDesc.descriptor, dx, dMeans,
-	)).error("DivisiveNormalizationBackward")
+	)).error("(l *LRND) DivisiveNormalizationBackwardUS")
 }
 
 //LRNmode is used for the flags in LRNmode
@@ -307,6 +429,15 @@ func (l LRNmode) c() C.cudnnLRNMode_t { return C.cudnnLRNMode_t(l) }
 
 //CrossChanelDim1 sets l to and returns LRNmode( C.CUDNN_LRN_CROSS_CHANNEL_DIM1)
 func (l *LRNmode) CrossChanelDim1() LRNmode { *l = LRNmode(C.CUDNN_LRN_CROSS_CHANNEL_DIM1); return *l }
+func (l LRNmode) String() string {
+	flg := l
+	var s string
+	switch l {
+	case flg.CrossChanelDim1():
+		s = "CrossChanelDim1"
+	}
+	return "LRNmode: " + s
+}
 
 //DivNormMode is usde for C.cudnnDivNormMode_t flags
 type DivNormMode C.cudnnDivNormMode_t
@@ -316,5 +447,13 @@ func (d *DivNormMode) PrecomputedMeans() DivNormMode {
 	*d = DivNormMode(C.CUDNN_DIVNORM_PRECOMPUTED_MEANS)
 	return *d
 }
-
+func (d DivNormMode) String() string {
+	flg := d
+	var s string
+	switch d {
+	case flg.PrecomputedMeans():
+		s = "PrecomputedMeans"
+	}
+	return "DivNormMode: " + s
+}
 func (d DivNormMode) c() C.cudnnDivNormMode_t { return C.cudnnDivNormMode_t(d) }

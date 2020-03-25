@@ -139,10 +139,28 @@ func (b *BatchNormD) ForwardInference(
 
 ) error {
 	if !b.set {
-		return errors.New("BatchNormD not set")
+		return errors.New("(b *BatchNormD) ForwardInference: BatchNormD not set")
 	}
 	a := cscalarbydatatype(yD.dtype, alpha)
 	be := cscalarbydatatype(yD.dtype, beta)
+
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnBatchNormalizationForwardInference(
+				handle.x,
+				b.mode,
+				a.CPtr(),
+				be.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				yD.descriptor,
+				y.Ptr(),
+				ScaleBiasMeanVarDesc.descriptor,
+				scale.Ptr(), bias.Ptr(), estimatedMean.Ptr(), estimatedVariance.Ptr(),
+				C.double(epsilon),
+			)).error("(b *BatchNormD) ForwardInference")
+		})
+	}
 	return Status(C.cudnnBatchNormalizationForwardInference(
 		handle.x,
 		b.mode,
@@ -155,7 +173,7 @@ func (b *BatchNormD) ForwardInference(
 		ScaleBiasMeanVarDesc.descriptor,
 		scale.Ptr(), bias.Ptr(), estimatedMean.Ptr(), estimatedVariance.Ptr(),
 		C.double(epsilon),
-	)).error("BatchNormalizationForwardInference")
+	)).error("(b *BatchNormD) ForwardInference")
 }
 
 //ForwardInferenceUS is like ForwardInference but uses unsafe.Pointers instead of cutil.Mems
@@ -173,6 +191,21 @@ func (b *BatchNormD) ForwardInferenceUS(
 	}
 	a := cscalarbydatatype(yD.dtype, alpha)
 	be := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnBatchNormalizationForwardInference(
+				handle.x,
+				b.mode,
+				a.CPtr(),
+				be.CPtr(),
+				xD.descriptor, x,
+				yD.descriptor, y,
+				ScaleBiasMeanVarDesc.descriptor,
+				scale, bias, estimatedMean, estimatedVariance,
+				C.double(epsilon),
+			)).error("(b *BatchNormD) ForwardInferenceUS")
+		})
+	}
 	return Status(C.cudnnBatchNormalizationForwardInference(
 		handle.x,
 		b.mode,
@@ -183,7 +216,7 @@ func (b *BatchNormD) ForwardInferenceUS(
 		ScaleBiasMeanVarDesc.descriptor,
 		scale, bias, estimatedMean, estimatedVariance,
 		C.double(epsilon),
-	)).error("BatchNormalizationForwardInference")
+	)).error("(b *BatchNormD) ForwardInferenceUS")
 }
 
 //Backward - Performs backward pass of Batch Normalization layer.
@@ -225,7 +258,25 @@ func (b *BatchNormD) Backward(
 	} else {
 		sinvptr = nil
 	}
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnBatchNormalizationBackward(
+				handle.x,
+				b.mode,
+				a.CPtr(), be.CPtr(), ap.CPtr(), bp.CPtr(),
+				xD.descriptor, x.Ptr(),
+				dyD.descriptor, dy.Ptr(),
+				dxD.descriptor, dx.Ptr(),
+				dBnScaleBiasDesc.descriptor,
+				scale.Ptr(),
+				dscale.Ptr(),
+				dbias.Ptr(),
+				C.double(epsilon),
+				smptr,
+				sinvptr,
+			)).error("(b *BatchNormD) Backward")
+		})
+	}
 	return Status(C.cudnnBatchNormalizationBackward(
 		handle.x,
 		b.mode,
@@ -240,7 +291,7 @@ func (b *BatchNormD) Backward(
 		C.double(epsilon),
 		smptr,
 		sinvptr,
-	)).error("BatchNormalizationBackward")
+	)).error("(b *BatchNormD) Backward")
 }
 
 //BackwardUS is like Backward but uses unsafe.Pointers instead of cutil.Mem
@@ -262,7 +313,25 @@ func (b *BatchNormD) BackwardUS(
 	be := cscalarbydatatype(xD.dtype, betadata)
 	ap := cscalarbydatatype(xD.dtype, alphaparam)
 	bp := cscalarbydatatype(xD.dtype, betaparam)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnBatchNormalizationBackward(
+				handle.x,
+				b.mode,
+				a.CPtr(), be.CPtr(), ap.CPtr(), bp.CPtr(),
+				xD.descriptor, x,
+				dyD.descriptor, dy,
+				dxD.descriptor, dx,
+				dBnScaleBiasDesc.descriptor,
+				scale,
+				dscale,
+				dbias,
+				C.double(epsilon),
+				savedMean,
+				savedInvVariance,
+			)).error("(b *BatchNormD) BackwardUS")
+		})
+	}
 	return Status(C.cudnnBatchNormalizationBackward(
 		handle.x,
 		b.mode,
@@ -277,7 +346,7 @@ func (b *BatchNormD) BackwardUS(
 		C.double(epsilon),
 		savedMean,
 		savedInvVariance,
-	)).error("BatchNormalizationBackward")
+	)).error("(b *BatchNormD) BackwardUS")
 }
 
 //MinEpsilon is the Minimum Epsilon required.  It is now zero, but it used to be 1e-5
@@ -420,6 +489,45 @@ func (b *BatchNormD) ForwardTraining(
 	}
 	a := cscalarbydatatype(yD.dtype, alpha)
 	be := cscalarbydatatype(yD.dtype, beta)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if resultSaveInvVariance == nil || resultSaveMean == nil {
+				return Status(C.cudnnBatchNormalizationForwardTraining(
+					handle.x,
+					b.mode,
+					a.CPtr(),
+					be.CPtr(),
+					xD.descriptor,
+					x.Ptr(),
+					yD.descriptor,
+					y.Ptr(),
+					bnScaleBiasMeanVar.descriptor,
+					scale.Ptr(), bias.Ptr(),
+					C.double(expAveFactor),
+					resultrunningmean.Ptr(), resultRunningVariance.Ptr(),
+					C.double(epsilon),
+					nil, nil,
+				)).error("(b *BatchNormD) ForwardTraining")
+			}
+			return Status(C.cudnnBatchNormalizationForwardTraining(
+				handle.x,
+				b.mode,
+				a.CPtr(),
+				be.CPtr(),
+				xD.descriptor,
+				x.Ptr(),
+				yD.descriptor,
+				y.Ptr(),
+				bnScaleBiasMeanVar.descriptor,
+				scale.Ptr(),
+				bias.Ptr(),
+				C.double(expAveFactor),
+				resultrunningmean.Ptr(), resultRunningVariance.Ptr(),
+				C.double(epsilon),
+				resultSaveMean.Ptr(), resultSaveInvVariance.Ptr(),
+			)).error("(b *BatchNormD) ForwardTraining")
+		})
+	}
 	if resultSaveInvVariance == nil || resultSaveMean == nil {
 		return Status(C.cudnnBatchNormalizationForwardTraining(
 			handle.x,
@@ -436,7 +544,7 @@ func (b *BatchNormD) ForwardTraining(
 			resultrunningmean.Ptr(), resultRunningVariance.Ptr(),
 			C.double(epsilon),
 			nil, nil,
-		)).error("BatchNormalizationForwardTraining")
+		)).error("(b *BatchNormD) ForwardTraining")
 	}
 	return Status(C.cudnnBatchNormalizationForwardTraining(
 		handle.x,
@@ -454,7 +562,7 @@ func (b *BatchNormD) ForwardTraining(
 		resultrunningmean.Ptr(), resultRunningVariance.Ptr(),
 		C.double(epsilon),
 		resultSaveMean.Ptr(), resultSaveInvVariance.Ptr(),
-	)).error("BatchNormalizationForwardTraining")
+	)).error("(b *BatchNormD) ForwardTraining")
 }
 
 //ForwardTrainingUS is just like ForwardTraining but uses unsafe.Pointers.
@@ -502,7 +610,25 @@ func (b *BatchNormD) ForwardTrainingUS(
 	}
 	a := cscalarbydatatype(yD.dtype, alpha)
 	be := cscalarbydatatype(yD.dtype, beta)
-
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnBatchNormalizationForwardTraining(
+				handle.x,
+				b.mode,
+				a.CPtr(),
+				be.CPtr(),
+				xD.descriptor, x,
+				yD.descriptor, y,
+				bnScaleBiasMeanVar.descriptor,
+				scale,
+				bias,
+				C.double(expAveFactor),
+				resultrunningmean, resultRunningVariance,
+				C.double(epsilon),
+				resultSaveMean, resultSaveInvVariance,
+			)).error("b *BatchNormD) ForwardTrainingUS")
+		})
+	}
 	return Status(C.cudnnBatchNormalizationForwardTraining(
 		handle.x,
 		b.mode,
@@ -517,7 +643,7 @@ func (b *BatchNormD) ForwardTrainingUS(
 		resultrunningmean, resultRunningVariance,
 		C.double(epsilon),
 		resultSaveMean, resultSaveInvVariance,
-	)).error("BatchNormalizationForwardTraining")
+	)).error("b *BatchNormD) ForwardTrainingUS")
 }
 
 /*

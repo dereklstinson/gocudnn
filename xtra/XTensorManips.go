@@ -189,6 +189,22 @@ type XResizeD struct {
 
 //CreateResizeDesc creates a descriptor that holds the reshpaes
 func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
+	var rsze *XResizeD
+	var err error
+	if handle.w != nil {
+		handle.w.Work(func() error {
+			rsze, err = createResizeDesc(handle, aligncorners)
+			return nil
+		})
+
+	} else {
+		rsze, err = createResizeDesc(handle, aligncorners)
+	}
+	return rsze, err
+}
+
+//CreateResizeDesc creates a descriptor that holds the reshpaes
+func createResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 	nearestfwdnhwc, err := cuda.MakeKernel("NearestNeighborNHWC", handle.mod)
 	if err != nil {
 		return nil, err
@@ -236,6 +252,15 @@ func CreateResizeDesc(handle *Handle, aligncorners bool) (*XResizeD, error) {
 
 //ResizeForward does the reshape operation
 func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil.Mem, ydesc *gocudnn.TensorD, y cutil.Mem) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return s.resizeForward(handle, xdesc, x, ydesc, y)
+		})
+	}
+	return s.resizeForward(handle, xdesc, x, ydesc, y)
+}
+
+func (s *XResizeD) resizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil.Mem, ydesc *gocudnn.TensorD, y cutil.Mem) error {
 
 	frmtx, dtypex, dimsx, _, err := xdesc.Get()
 	if err != nil {
@@ -296,6 +321,15 @@ func (s *XResizeD) ResizeForward(handle *Handle, xdesc *gocudnn.TensorD, x cutil
 
 //ResizeBackward does a reshape backwards but it will add the errors on the backprop.
 func (s *XResizeD) ResizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cutil.Mem, dydesc *gocudnn.TensorD, dy cutil.Mem) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return s.resizeBackward(handle, dxdesc, dx, dydesc, dy)
+		})
+	}
+	return s.resizeBackward(handle, dxdesc, dx, dydesc, dy)
+}
+
+func (s *XResizeD) resizeBackward(handle *Handle, dxdesc *gocudnn.TensorD, dx cutil.Mem, dydesc *gocudnn.TensorD, dy cutil.Mem) error {
 	frmtx, dtypex, dimsx, _, err := dxdesc.Get()
 	if err != nil {
 		return err
@@ -371,6 +405,19 @@ type XShapetoBatchD struct {
 
 //CreateShapetoBatchDesc creates a shape to batch desc
 func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
+	var xstbd *XShapetoBatchD
+	var err error
+	if handle.w != nil {
+		handle.w.Work(func() error {
+			xstbd, err = createShapetoBatchDesc(handle)
+			return nil
+		})
+	} else {
+		xstbd, err = createShapetoBatchDesc(handle)
+	}
+	return xstbd, err
+}
+func createShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 	nhwc, err := cuda.MakeKernel("ShapetoBatch4DNHWC", handle.mod)
 	if err != nil {
 		return nil, err
@@ -396,6 +443,15 @@ func CreateShapetoBatchDesc(handle *Handle) (*XShapetoBatchD, error) {
 //Any values that don't fit will get the zero value
 //To get the y tensor please use FindShapetoBatchoutputTensor.
 func (s *XShapetoBatchD) ShapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, x cutil.Mem, yDesc *gocudnn.TensorD, y cutil.Mem, hstride int32, wstride int32, S2B bool) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return s.shapeToBatch4d(handle, xDesc, x, yDesc, y, hstride, wstride, S2B)
+		})
+	}
+	return s.shapeToBatch4d(handle, xDesc, x, yDesc, y, hstride, wstride, S2B)
+}
+
+func (s *XShapetoBatchD) shapeToBatch4d(handle *Handle, xDesc *gocudnn.TensorD, x cutil.Mem, yDesc *gocudnn.TensorD, y cutil.Mem, hstride int32, wstride int32, S2B bool) error {
 
 	frmt, dtype, xdims, _, err := xDesc.Get()
 	var dflag gocudnn.DataType

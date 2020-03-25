@@ -19,6 +19,7 @@ import (
 type Handle struct {
 	x    C.cudnnHandle_t
 	gogc bool
+	w    *gocu.Worker
 }
 
 //Pointer is a pointer to the handle
@@ -45,7 +46,7 @@ func (handle *Handle) Pointer() unsafe.Pointer {
 func CreateHandle(usegogc bool) *Handle {
 
 	handle := new(Handle)
-	err := Status(C.cudnnCreate(&handle.x)).error("NewHandle")
+	err := Status(C.cudnnCreate(&handle.x)).error("CreateHandle")
 	if err != nil {
 		panic(err)
 	}
@@ -63,6 +64,39 @@ func CreateHandle(usegogc bool) *Handle {
 	return handle
 }
 
+//CreateHandleEX creates a handle like CreateHandle, but gocudnn functions that pass the handle will pass the operations to the worker.
+//if w is nil the handle will function just like a handle created with CreateHandle()
+func CreateHandleEX(w *gocu.Worker, usegogc bool) *Handle {
+	handle := new(Handle)
+	if w == nil {
+		return CreateHandle(usegogc)
+	}
+	handle.w = w
+
+	err := handle.w.Work(func() error {
+		err := Status(C.cudnnCreate(&handle.x)).error("CreateHandleEX(w *gocu.Worker, usegogc bool)")
+		if err != nil {
+			return err
+		}
+		if setfinalizer {
+			handle.gogc = true
+			runtime.SetFinalizer(handle, destroycudnnhandle)
+		} else {
+			if usegogc {
+				handle.gogc = true
+				runtime.SetFinalizer(handle, destroycudnnhandle)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		panic(err)
+	}
+	return handle
+
+}
+
 //Destroy destroys the handle if GC is being use it won't do anything.
 func (handle *Handle) Destroy() error {
 	if setfinalizer || handle.gogc {
@@ -71,26 +105,40 @@ func (handle *Handle) Destroy() error {
 	return destroycudnnhandle(handle)
 }
 func destroycudnnhandle(handle *Handle) error {
+	if handle.w != nil {
+		err := handle.w.Work(func() error {
+
+			return Status(C.cudnnDestroy(handle.x)).error("(*Handle).Destroy")
+		})
+		handle.w.Close()
+		return err
+	}
 	return Status(C.cudnnDestroy(handle.x)).error("(*Handle).Destroy")
 }
 
 //SetStream passes a stream to sent in the cuda handle
 func (handle *Handle) SetStream(s gocu.Streamer) error {
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnSetStream(handle.x, C.cudaStream_t(s.Ptr()))).error("(*Handle).SetStream")
+		})
+	}
 
-	y := C.cudnnSetStream(handle.x, C.cudaStream_t(s.Ptr()))
-
-	return Status(y).error("(*Handle).SetStream")
+	return Status(C.cudnnSetStream(handle.x, C.cudaStream_t(s.Ptr()))).error("(*Handle).SetStream")
 }
 
 //GetStream will return a stream that the handle is using
 func (handle *Handle) GetStream() (gocu.Streamer, error) {
-
 	var s C.cudaStream_t
-	//var some *C.cudaStream_t
-	//x := C.cudnnHandle_t(handle.Pointer())
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetStream(handle.x, &s)).error("*Handle).GetStream")
+		})
 
-	err := Status(C.cudnnGetStream(handle.x, &s)).error("*Handle).GetStream")
-	//	s.stream = *some
+	} else {
+		err = Status(C.cudnnGetStream(handle.x, &s)).error("*Handle).GetStream")
+	}
 
 	return cudart.ExternalWrapper(unsafe.Pointer(s)), err
 }

@@ -52,7 +52,7 @@ type AttentionD struct {
 //CreateAttnDescriptor creates an Attention Descriptor
 func CreateAttnDescriptor() (*AttentionD, error) {
 	d := new(AttentionD)
-	err := Status(C.cudnnCreateAttnDescriptor(&d.descriptor)).error("NewAttnDescriptor-cudnnCreateAttnDescriptor")
+	err := Status(C.cudnnCreateAttnDescriptor(&d.descriptor)).error(" CreateAttnDescriptor()")
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (a *AttentionD) Set(
 		x(qSize), x(keySize), x(vSize),
 		x(qProjSize), x(keyProjSize), x(vProjSize), x(oProjSize),
 		x(qoMaxSeqLen), x(kvMaxSeqLen), x(maxBatchSize), x(maxBeamSize),
-	)).error("NewAttnDescriptor-cudnnSetAttnDescriptor")
+	)).error("(a *AttentionD) Set")
 }
 
 //Destroy will destroy the descriptor if not on GC if it is on gc it will do nothing but return nil
@@ -140,7 +140,7 @@ func (a *AttentionD) Get() (
 	var mt C.cudnnMathType_t
 	attn = new(DropOutD)
 	post = new(DropOutD)
-	err = Status(C.cudnnGetAttnDescriptor(a.descriptor, &qm, &nh, &sms, &dt, &cp, &mt, &attn.descriptor, &post.descriptor, &qs, &ks, &vs, &qps, &kps, &vps, &ops, &qom, &kvm, &mbas, &mbes)).error("cudnnGetAttnDescriptor")
+	err = Status(C.cudnnGetAttnDescriptor(a.descriptor, &qm, &nh, &sms, &dt, &cp, &mt, &attn.descriptor, &post.descriptor, &qs, &ks, &vs, &qps, &kps, &vps, &ops, &qom, &kvm, &mbas, &mbes)).error("(a *AttentionD) Get()")
 	if err != nil {
 		return
 	}
@@ -155,7 +155,14 @@ func (a *AttentionD) Get() (
 //GetMultiHeadBuffers returns the Size In Bytes (SIB) needed for allocation for operation.
 func (a *AttentionD) GetMultiHeadBuffers(h *Handle) (weightbuffSIB, wspaceSIB, rspaceSIB uint, err error) {
 	var weight, wspace, rspace C.size_t
-	err = Status(C.cudnnGetMultiHeadAttnBuffers(h.x, a.descriptor, &weight, &wspace, &rspace)).error("cudnnGetMultiHeadAttnBuffers")
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			return Status(C.cudnnGetMultiHeadAttnBuffers(h.x, a.descriptor, &weight, &wspace, &rspace)).error("(a *AttentionD) GetMultiHeadBuffers(h *Handle)")
+		})
+	} else {
+		err = Status(C.cudnnGetMultiHeadAttnBuffers(h.x, a.descriptor, &weight, &wspace, &rspace)).error("(a *AttentionD) GetMultiHeadBuffers(h *Handle)")
+	}
+
 	if err != nil {
 		return
 	}
@@ -219,13 +226,19 @@ func (a *AttentionD) GetMultiHeadAttnWeights(h *Handle, wkind MultiHeadAttnWeigh
 	if err != nil {
 		return nil, nil, err
 	}
-	err = Status(C.cudnnGetMultiHeadAttnWeights(h.x, a.descriptor, wkind.c(), C.size_t(wbuffSIB), w.Ptr(), wD.descriptor, w.DPtr())).error("cudnnGetMultiHeadAttnWeights")
+
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			return Status(C.cudnnGetMultiHeadAttnWeights(h.x, a.descriptor, wkind.c(), C.size_t(wbuffSIB), w.Ptr(), wD.descriptor, w.DPtr())).error(" (a *AttentionD) GetMultiHeadAttnWeights")
+		})
+	} else {
+		err = Status(C.cudnnGetMultiHeadAttnWeights(h.x, a.descriptor, wkind.c(), C.size_t(wbuffSIB), w.Ptr(), wD.descriptor, w.DPtr())).error(" (a *AttentionD) GetMultiHeadAttnWeights")
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
-	if err != nil {
-		return
-	}
+
 	return wD, w, err
 }
 
@@ -249,9 +262,17 @@ func (a *AttentionD) Forward(
 	hi := int32Tocint(hiWinIdx)
 	QRO := int32Tocint(seqLengthArrayQRO)
 	KV := int32Tocint(seqLengthArrayKV)
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnMultiHeadAttnForward(h.x, a.descriptor, (C.int)(currIdx), &lo[0], &hi[0], &QRO[0], &KV[0],
+				qrDesc.descriptor, queries.Ptr(), residuals.Ptr(), keyDesc.descriptor, keys.Ptr(), vDesc.descriptor, values.Ptr(), oDesc.descriptor, out.Ptr(),
+				(C.size_t)(wbuffSIB), wbuff.Ptr(), (C.size_t)(wspaceSIB), wspace.Ptr(), (C.size_t)(rspaceSIB), rspace.Ptr())).error("(a *AttentionD) Forward")
+		})
+	}
 	return Status(C.cudnnMultiHeadAttnForward(h.x, a.descriptor, (C.int)(currIdx), &lo[0], &hi[0], &QRO[0], &KV[0],
 		qrDesc.descriptor, queries.Ptr(), residuals.Ptr(), keyDesc.descriptor, keys.Ptr(), vDesc.descriptor, values.Ptr(), oDesc.descriptor, out.Ptr(),
-		(C.size_t)(wbuffSIB), wbuff.Ptr(), (C.size_t)(wspaceSIB), wspace.Ptr(), (C.size_t)(rspaceSIB), rspace.Ptr())).error("Forward")
+		(C.size_t)(wbuffSIB), wbuff.Ptr(), (C.size_t)(wspaceSIB), wspace.Ptr(), (C.size_t)(rspaceSIB), rspace.Ptr())).error("(a *AttentionD) Forward")
 
 }
 
@@ -274,9 +295,18 @@ func (a *AttentionD) ForwardUS(
 	hi := int32Tocint(hiWinIdx)
 	QRO := int32Tocint(seqLengthArrayQRO)
 	KV := int32Tocint(seqLengthArrayKV)
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnMultiHeadAttnForward(h.x, a.descriptor, (C.int)(currIdx), &lo[0], &hi[0], &QRO[0], &KV[0],
+				qrDesc.descriptor, queries, residuals, keyDesc.descriptor, keys, vDesc.descriptor, values, oDesc.descriptor, out,
+				(C.size_t)(wbuffSIB), wbuff, (C.size_t)(wspaceSIB), wspace, (C.size_t)(rspaceSIB), rspace)).error("(a *AttentionD) ForwardUS")
+
+		})
+	}
 	return Status(C.cudnnMultiHeadAttnForward(h.x, a.descriptor, (C.int)(currIdx), &lo[0], &hi[0], &QRO[0], &KV[0],
 		qrDesc.descriptor, queries, residuals, keyDesc.descriptor, keys, vDesc.descriptor, values, oDesc.descriptor, out,
-		(C.size_t)(wbuffSIB), wbuff, (C.size_t)(wspaceSIB), wspace, (C.size_t)(rspaceSIB), rspace)).error("Forward")
+		(C.size_t)(wbuffSIB), wbuff, (C.size_t)(wspaceSIB), wspace, (C.size_t)(rspaceSIB), rspace)).error("(a *AttentionD) ForwardUS")
 
 }
 
@@ -296,6 +326,19 @@ func (a *AttentionD) BackwardData(
 	hi := int32Tocint(hiWinIdx)
 	DQDO := int32Tocint(seqLengthArrayDQDO)
 	DKDV := int32Tocint(seqLengthArrayDKDV)
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnMultiHeadAttnBackwardData(h.x, a.descriptor, &lo[0], &hi[0], &DQDO[0], &DKDV[0],
+				doDesc.descriptor, dout.Ptr(),
+				dqDesc.descriptor, dqueries.Ptr(), queries.Ptr(),
+				dkDesc.descriptor, dkeys.Ptr(), keys.Ptr(),
+				dvDesc.descriptor, dvalues.Ptr(), values.Ptr(),
+				(C.size_t)(wbuffSIB), wbuff.Ptr(),
+				(C.size_t)(wspaceSIB), wspace.Ptr(),
+				(C.size_t)(rspaceSIB), rspace.Ptr())).error(" (a *AttentionD) BackwardData")
+		})
+	}
 	return Status(C.cudnnMultiHeadAttnBackwardData(h.x, a.descriptor, &lo[0], &hi[0], &DQDO[0], &DKDV[0],
 		doDesc.descriptor, dout.Ptr(),
 		dqDesc.descriptor, dqueries.Ptr(), queries.Ptr(),
@@ -303,7 +346,7 @@ func (a *AttentionD) BackwardData(
 		dvDesc.descriptor, dvalues.Ptr(), values.Ptr(),
 		(C.size_t)(wbuffSIB), wbuff.Ptr(),
 		(C.size_t)(wspaceSIB), wspace.Ptr(),
-		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
+		(C.size_t)(rspaceSIB), rspace.Ptr())).error(" (a *AttentionD) BackwardData")
 }
 
 //BackwardDataUS is like BackwardData but uses unsafe.Pointer instead of cutil.Mem
@@ -322,6 +365,19 @@ func (a *AttentionD) BackwardDataUS(
 	hi := int32Tocint(hiWinIdx)
 	DQDO := int32Tocint(seqLengthArrayDQDO)
 	DKDV := int32Tocint(seqLengthArrayDKDV)
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnMultiHeadAttnBackwardData(h.x, a.descriptor, &lo[0], &hi[0], &DQDO[0], &DKDV[0],
+				doDesc.descriptor, dout,
+				dqDesc.descriptor, dqueries, queries,
+				dkDesc.descriptor, dkeys, keys,
+				dvDesc.descriptor, dvalues, values,
+				(C.size_t)(wbuffSIB), wbuff,
+				(C.size_t)(wspaceSIB), wspace,
+				(C.size_t)(rspaceSIB), rspace)).error("(a *AttentionD) BackwardDataUS")
+		})
+	}
 	return Status(C.cudnnMultiHeadAttnBackwardData(h.x, a.descriptor, &lo[0], &hi[0], &DQDO[0], &DKDV[0],
 		doDesc.descriptor, dout,
 		dqDesc.descriptor, dqueries, queries,
@@ -329,7 +385,7 @@ func (a *AttentionD) BackwardDataUS(
 		dvDesc.descriptor, dvalues, values,
 		(C.size_t)(wbuffSIB), wbuff,
 		(C.size_t)(wspaceSIB), wspace,
-		(C.size_t)(rspaceSIB), rspace)).error("BackwardData")
+		(C.size_t)(rspaceSIB), rspace)).error("(a *AttentionD) BackwardDataUS")
 }
 
 //WgradMode is used for flags and can be changed through methods
@@ -362,6 +418,18 @@ func (a *AttentionD) BackwardWeights(
 	wbuffSIB uint, wbuff, dwbuff cutil.Mem,
 	wspaceSIB uint, wspace cutil.Mem, rspaceSIB uint, rspace cutil.Mem) error {
 
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
+				qDesc.descriptor, queries.Ptr(),
+				keyDesc.descriptor, keys.Ptr(),
+				vDesc.descriptor, values.Ptr(),
+				doDesc.descriptor, dout.Ptr(),
+				(C.size_t)(wbuffSIB), wbuff.Ptr(), dwbuff.Ptr(),
+				(C.size_t)(wspaceSIB), wspace.Ptr(),
+				(C.size_t)(rspaceSIB), rspace.Ptr())).error("(a *AttentionD) BackwardWeights")
+		})
+	}
 	return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
 		qDesc.descriptor, queries.Ptr(),
 		keyDesc.descriptor, keys.Ptr(),
@@ -369,7 +437,7 @@ func (a *AttentionD) BackwardWeights(
 		doDesc.descriptor, dout.Ptr(),
 		(C.size_t)(wbuffSIB), wbuff.Ptr(), dwbuff.Ptr(),
 		(C.size_t)(wspaceSIB), wspace.Ptr(),
-		(C.size_t)(rspaceSIB), rspace.Ptr())).error("BackwardData")
+		(C.size_t)(rspaceSIB), rspace.Ptr())).error("(a *AttentionD) BackwardWeights")
 }
 
 //BackwardWeightsUS is like BackwardWeightsUS but uses unsafe.Pointer instead of cutil.Mem
@@ -383,6 +451,18 @@ func (a *AttentionD) BackwardWeightsUS(
 	wbuffSIB uint, wbuff, dwbuff unsafe.Pointer,
 	wspaceSIB uint, wspace unsafe.Pointer, rspaceSIB uint, rspace unsafe.Pointer) error {
 
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
+				qDesc.descriptor, queries,
+				keyDesc.descriptor, keys,
+				vDesc.descriptor, values,
+				doDesc.descriptor, dout,
+				(C.size_t)(wbuffSIB), wbuff, dwbuff,
+				(C.size_t)(wspaceSIB), wspace,
+				(C.size_t)(rspaceSIB), rspace)).error("(a *AttentionD) BackwardWeightsUS")
+		})
+	}
 	return Status(C.cudnnMultiHeadAttnBackwardWeights(h.x, a.descriptor, wgmode.c(),
 		qDesc.descriptor, queries,
 		keyDesc.descriptor, keys,
@@ -390,5 +470,5 @@ func (a *AttentionD) BackwardWeightsUS(
 		doDesc.descriptor, dout,
 		(C.size_t)(wbuffSIB), wbuff, dwbuff,
 		(C.size_t)(wspaceSIB), wspace,
-		(C.size_t)(rspaceSIB), rspace)).error("BackwardData")
+		(C.size_t)(rspaceSIB), rspace)).error("(a *AttentionD) BackwardWeightsUS")
 }

@@ -40,9 +40,16 @@ func (c DeConvBwdDataAlgo) Algo() Algorithm {
 //GetBackwardDataAlgorithmMaxCount returns the max number of Algorithm
 func (c *DeConvolutionD) getBackwardDataAlgorithmMaxCount(handle *Handle) (int32, error) {
 	var count C.int
-	x := Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("(c *DeConvolutionD) getBackwardDataAlgorithmMaxCount(handle *Handle)")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("(c *DeConvolutionD) getBackwardDataAlgorithmMaxCount(handle *Handle)")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionForwardAlgorithmMaxCount(handle.x, &count)).error("(c *DeConvolutionD) getBackwardDataAlgorithmMaxCount(handle *Handle)")
+	}
 
-	return int32(count), x
+	return int32(count), err
 
 }
 
@@ -59,14 +66,28 @@ func (c *DeConvolutionD) FindBackwardDataAlgorithm(
 	}
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x,
-		dy.descriptor,
-		w.descriptor,
-		c.descriptor,
-		dx.descriptor,
-		C.int(requestedAlgoCount),
-		&actualalgocount,
-		&perfResults[0])).error("(c *DeConvolutionD) FindBackwardDataAlgorithm")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x,
+				dy.descriptor,
+				w.descriptor,
+				c.descriptor,
+				dx.descriptor,
+				C.int(requestedAlgoCount),
+				&actualalgocount,
+				&perfResults[0])).error("(c *DeConvolutionD) FindBackwardDataAlgorithm")
+		})
+	} else {
+		err = Status(C.cudnnFindConvolutionForwardAlgorithm(handle.x,
+			dy.descriptor,
+			w.descriptor,
+			c.descriptor,
+			dx.descriptor,
+			C.int(requestedAlgoCount),
+			&actualalgocount,
+			&perfResults[0])).error("(c *DeConvolutionD) FindBackwardDataAlgorithm")
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -91,25 +112,53 @@ func (c *DeConvolutionD) FindBackwardDataAlgorithmEx(
 	}
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, reqAlgoCount)
 	var actualalgocount C.int
-	if wspace == nil {
-		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
-			handle.x,
-			dyD.descriptor, dy.Ptr(),
-			wD.descriptor, w.Ptr(), c.descriptor,
-			dxD.descriptor, dx.Ptr(),
-			C.int(reqAlgoCount), &actualalgocount,
-			&perfResults[0], nil, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmEx")
 
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			if wspace == nil {
+				return Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+					handle.x,
+					dyD.descriptor, dy.Ptr(),
+					wD.descriptor, w.Ptr(), c.descriptor,
+					dxD.descriptor, dx.Ptr(),
+					C.int(reqAlgoCount), &actualalgocount,
+					&perfResults[0], nil, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmEx")
+
+			}
+			return Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+				handle.x,
+				dyD.descriptor, dy.Ptr(),
+				wD.descriptor, w.Ptr(),
+				c.descriptor,
+				dxD.descriptor, dx.Ptr(),
+				C.int(reqAlgoCount), &actualalgocount,
+				&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmEx")
+
+		})
 	} else {
-		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
-			handle.x,
-			dyD.descriptor, dy.Ptr(),
-			wD.descriptor, w.Ptr(),
-			c.descriptor,
-			dxD.descriptor, dx.Ptr(),
-			C.int(reqAlgoCount), &actualalgocount,
-			&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmEx")
+		if wspace == nil {
+			err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+				handle.x,
+				dyD.descriptor, dy.Ptr(),
+				wD.descriptor, w.Ptr(), c.descriptor,
+				dxD.descriptor, dx.Ptr(),
+				C.int(reqAlgoCount), &actualalgocount,
+				&perfResults[0], nil, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmEx")
 
+		} else {
+			err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+				handle.x,
+				dyD.descriptor, dy.Ptr(),
+				wD.descriptor, w.Ptr(),
+				c.descriptor,
+				dxD.descriptor, dx.Ptr(),
+				C.int(reqAlgoCount), &actualalgocount,
+				&perfResults[0], wspace.Ptr(), C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmEx")
+
+		}
+	}
+	if err != nil {
+		return nil, err
 	}
 	results := make([]DeConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
@@ -131,18 +180,37 @@ func (c *DeConvolutionD) FindBackwardDataAlgorithmExUS(
 	if err != nil {
 		return nil, err
 	}
+
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, reqAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
-		handle.x,
-		dyD.descriptor, dy,
-		wD.descriptor, w,
-		c.descriptor,
-		dxD.descriptor, dx,
-		C.int(reqAlgoCount), &actualalgocount,
-		&perfResults[0],
-		wspace, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmExUS")
 
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+				handle.x,
+				dyD.descriptor, dy,
+				wD.descriptor, w,
+				c.descriptor,
+				dxD.descriptor, dx,
+				C.int(reqAlgoCount), &actualalgocount,
+				&perfResults[0],
+				wspace, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmExUS")
+		})
+	} else {
+		err = Status(C.cudnnFindConvolutionForwardAlgorithmEx(
+			handle.x,
+			dyD.descriptor, dy,
+			wD.descriptor, w,
+			c.descriptor,
+			dxD.descriptor, dx,
+			C.int(reqAlgoCount), &actualalgocount,
+			&perfResults[0],
+			wspace, C.size_t(wspacesize))).error("(c *DeConvolutionD) FindBackwardDataAlgorithmExUS")
+
+	}
+	if err != nil {
+		return nil, err
+	}
 	results := make([]DeConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertDeConvBwdDataAlgoPerformance(perfResults[i])
@@ -160,14 +228,29 @@ func (c *DeConvolutionD) GetBackwardDataAlgorithm(
 	dxD *TensorD,
 	pref DeConvBwdDataPref, wspaceSIBlimit uint) (DeConvBwdDataAlgo, error) {
 	var algo C.cudnnConvolutionFwdAlgo_t
-	err := Status(C.cudnnGetConvolutionForwardAlgorithm(
-		handle.x,
-		dyD.descriptor,
-		wD.descriptor,
-		c.descriptor,
-		dxD.descriptor,
-		pref.c(),
-		C.size_t(wspaceSIBlimit), &algo)).error("(c *DeConvolutionD) GetBackwardDataAlgorithm")
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionForwardAlgorithm(
+				handle.x,
+				dyD.descriptor,
+				wD.descriptor,
+				c.descriptor,
+				dxD.descriptor,
+				pref.c(),
+				C.size_t(wspaceSIBlimit), &algo)).error("(c *DeConvolutionD) GetBackwardDataAlgorithm")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionForwardAlgorithm(
+			handle.x,
+			dyD.descriptor,
+			wD.descriptor,
+			c.descriptor,
+			dxD.descriptor,
+			pref.c(),
+			C.size_t(wspaceSIBlimit), &algo)).error("(c *DeConvolutionD) GetBackwardDataAlgorithm")
+
+	}
 
 	return DeConvBwdDataAlgo(algo), err
 }
@@ -187,15 +270,33 @@ func (c *DeConvolutionD) GetBackwardDataAlgorithmV7(
 	}
 	perfResults := make([]C.cudnnConvolutionFwdAlgoPerf_t, requestedAlgoCount)
 	var actualalgocount C.int
-	err = Status(C.cudnnGetConvolutionForwardAlgorithm_v7(
-		handle.x,
-		dyD.descriptor,
-		wD.descriptor,
-		c.descriptor,
-		dxD.descriptor,
-		C.int(requestedAlgoCount),
-		&actualalgocount,
-		&perfResults[0])).error("(c *ConvolutionD) GetBackwardDataAlgorithmV7")
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetConvolutionForwardAlgorithm_v7(
+				handle.x,
+				dyD.descriptor,
+				wD.descriptor,
+				c.descriptor,
+				dxD.descriptor,
+				C.int(requestedAlgoCount),
+				&actualalgocount,
+				&perfResults[0])).error("(c *ConvolutionD) GetBackwardDataAlgorithmV7")
+		})
+	} else {
+		err = Status(C.cudnnGetConvolutionForwardAlgorithm_v7(
+			handle.x,
+			dyD.descriptor,
+			wD.descriptor,
+			c.descriptor,
+			dxD.descriptor,
+			C.int(requestedAlgoCount),
+			&actualalgocount,
+			&perfResults[0])).error("(c *ConvolutionD) GetBackwardDataAlgorithmV7")
+	}
+
+	if err != nil {
+		return nil, err
+	}
 	results := make([]DeConvBwdDataAlgoPerformance, int32(actualalgocount))
 	for i := int32(0); i < int32(actualalgocount); i++ {
 		results[i] = convertDeConvBwdDataAlgoPerformance(perfResults[i])

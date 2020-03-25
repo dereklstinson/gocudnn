@@ -7,6 +7,7 @@ package gocudnn
 */
 import "C"
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -105,6 +106,13 @@ func (t *TransformD) Get() (destFormat TensorFormat, padBefore, padAfter []int32
 	fold = (*C.uint32_t)(&foldA[0])
 	err = Status(C.cudnnGetTensorTransformDescriptor(t.descriptor, t.nbdims, destFormat.cptr(), pbefore, pafter, fold, direction.cptr())).error("cudnnGetTensorTransformDescriptor")
 	return
+}
+func (t *TransformD) String() string {
+	destformat, padbf, padaft, foldA, direct, err := t.Get()
+	if err != nil {
+		return fmt.Sprintf("TransformD{\nError: %v\n}\n", err)
+	}
+	return fmt.Sprintf("TransformD{\n%v\nPad Before: %v,\nPad After: %v,\nFold: %v,\n%v\n}\n", destformat, padbf, padaft, foldA, direct)
 
 }
 
@@ -120,6 +128,12 @@ func (t *TransformD) TransformFilter(h *Handle, alpha float64, srcD *FilterD, sr
 	}
 	a := cscalarbydatatype(sdtype, alpha)
 	b := cscalarbydatatype(ddtye, beta)
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnTransformFilter(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformFilter")
+		})
+	}
 	return Status(C.cudnnTransformFilter(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformFilter")
 }
 
@@ -147,13 +161,25 @@ func (t *TransformD) TransformTensor(h *Handle, alpha float64, srcD *TensorD, sr
 
 	a := cscalarbydatatype(srcD.dtype, alpha)
 	b := cscalarbydatatype(destD.dtype, beta)
-	return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformTensorEx")
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformTensor")
+		})
+	}
+	return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src.Ptr(), b.CPtr(), destD.descriptor, dest.Ptr())).error("TransformTensor")
 }
 
 //TransformTensorUS is like TransformTensor but uses unsafe.Pointer instead of cutil.Mem
 func (t *TransformD) TransformTensorUS(h *Handle, alpha float64, srcD *TensorD, src unsafe.Pointer, beta float64, destD *TensorD, dest unsafe.Pointer) error {
 	a := cscalarbydatatype(srcD.dtype, alpha)
 	b := cscalarbydatatype(destD.dtype, beta)
+
+	if h.w != nil {
+		return h.w.Work(func() error {
+			return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src, b.CPtr(), destD.descriptor, dest)).error("TransformTensorEx")
+		})
+	}
 	return Status(C.cudnnTransformTensorEx(h.x, t.descriptor, a.CPtr(), srcD.descriptor, src, b.CPtr(), destD.descriptor, dest)).error("TransformTensorEx")
 }
 
@@ -189,21 +215,43 @@ func GetFoldedConvBackwardDataDescriptors(h *Handle,
 	diffpad = new(TransformD)
 	gradfold = new(TransformD)
 	gradunfold = new(TransformD)
-	err = Status(C.cudnnGetFoldedConvBackwardDataDescriptors(h.x,
-		filter.descriptor,
-		diff.descriptor,
-		conv.descriptor,
-		grad.descriptor,
-		transform.c(),
-		foldedfilter.descriptor,
-		paddeddiff.descriptor,
-		foldedConv.descriptor,
-		foldedgrad.descriptor,
-		filterfold.descriptor,
-		diffpad.descriptor,
-		gradfold.descriptor,
-		gradunfold.descriptor,
-	)).error("GetFoldedConvBackwardDataDescriptors")
+
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			return Status(C.cudnnGetFoldedConvBackwardDataDescriptors(h.x,
+				filter.descriptor,
+				diff.descriptor,
+				conv.descriptor,
+				grad.descriptor,
+				transform.c(),
+				foldedfilter.descriptor,
+				paddeddiff.descriptor,
+				foldedConv.descriptor,
+				foldedgrad.descriptor,
+				filterfold.descriptor,
+				diffpad.descriptor,
+				gradfold.descriptor,
+				gradunfold.descriptor,
+			)).error("GetFoldedConvBackwardDataDescriptors")
+		})
+	} else {
+		err = Status(C.cudnnGetFoldedConvBackwardDataDescriptors(h.x,
+			filter.descriptor,
+			diff.descriptor,
+			conv.descriptor,
+			grad.descriptor,
+			transform.c(),
+			foldedfilter.descriptor,
+			paddeddiff.descriptor,
+			foldedConv.descriptor,
+			foldedgrad.descriptor,
+			filterfold.descriptor,
+			diffpad.descriptor,
+			gradfold.descriptor,
+			gradunfold.descriptor,
+		)).error("GetFoldedConvBackwardDataDescriptors")
+	}
+
 	runtime.SetFinalizer(foldedfilter, destroyfilterdescriptor)
 	runtime.SetFinalizer(paddeddiff, destroytensordescriptor)
 	runtime.SetFinalizer(foldedConv, destroyconvolutiondescriptor)

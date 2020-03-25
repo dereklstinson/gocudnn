@@ -10,13 +10,15 @@ import (
 	"runtime"
 	"unsafe"
 
+	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/cutil"
 )
 
-//MallocManagedHost uses the Unified memory mangement system and starts it off in the host
+//MallocManagedHost uses the Unified memory mangement system and starts it off in the host. Memory is set to 0.
 //It will also set a finalizer on the memory for GC
 func MallocManagedHost(mem cutil.Mem, size uint) error {
-	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachHost))
+	var err error
+	err = newErrorRuntime("MallocManagedHost()", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachHost))
 	if err != nil {
 		return err
 	}
@@ -24,8 +26,33 @@ func MallocManagedHost(mem cutil.Mem, size uint) error {
 	if err != nil {
 		return err
 	}
-	runtime.SetFinalizer(mem, hostfreemem)
 
+	return nil
+}
+
+//MallocManagedHostEx is like MallocManagedHost but it takes a worker and memory allocated to mem will be allocated to the context being used on that host thread. If w is nil then it will behave like MallocManagedHost
+func MallocManagedHostEx(w *gocu.Worker, mem cutil.Mem, size uint) error {
+	var err error
+	if w != nil {
+		err = w.Work(func() error {
+			err = newErrorRuntime("MallocManagedHostEx()", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachHost))
+			if err != nil {
+				return err
+			}
+			return Memset(mem, 0, (size))
+		})
+	} else {
+		err = newErrorRuntime("MallocManagedHostEx()", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachHost))
+		if err != nil {
+			return err
+		}
+		err = Memset(mem, 0, (size))
+
+	}
+	if err != nil {
+		return err
+	}
+	runtime.SetFinalizer(mem, hostfreemem)
 	return nil
 }
 
@@ -42,9 +69,44 @@ func MallocManagedHostUS(mem unsafe.Pointer, size uint) error {
 //MallocManagedGlobal uses the Unified memory mangement system and starts it off in the Device
 //It will also set a finalizer on the memory for GC
 func MallocManagedGlobal(mem cutil.Mem, size uint) error {
-	err := newErrorRuntime("MallocManaged", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachGlobal))
+	err := newErrorRuntime("MallocManagedGlobal", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachGlobal))
+	if err != nil {
+		return err
+	}
+	err = Memset(mem, 0, (size))
+	if err != nil {
+		return err
+	}
 	runtime.SetFinalizer(mem, devicefreemem)
-	return err
+	return nil
+}
+
+//MallocManagedGlobalEx is like MallocManagedGlobal but it takes a worker and memory allocated
+//to mem will be allocated to the context being used on that host thread.
+//If w is nil then it will behave like MallocManagedGlobal
+func MallocManagedGlobalEx(w *gocu.Worker, mem cutil.Mem, size uint) error {
+	var err error
+	if w != nil {
+		err = w.Work(func() error {
+			err = newErrorRuntime("MallocManagedGlobalEx", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachGlobal))
+			if err != nil {
+				return err
+			}
+			return Memset(mem, 0, (size))
+		})
+	} else {
+		err = newErrorRuntime("MallocManagedGlobalEx", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachGlobal))
+		if err != nil {
+			return err
+		}
+		err = Memset(mem, 0, (size))
+	}
+
+	if err != nil {
+		return err
+	}
+	runtime.SetFinalizer(mem, devicefreemem)
+	return nil
 }
 
 /*
@@ -71,14 +133,72 @@ func Malloc(mem cutil.Mem, sizet uint) error {
 	return nil
 }
 
+//MallocEx is like Malloc but it takes a worker and memory allocated
+//to mem will be allocated to the context being used on that host thread.
+//If w is nil then it will behave like Malloc
+func MallocEx(w *gocu.Worker, mem cutil.Mem, sizet uint) error {
+	var err error
+	if w != nil {
+		err = w.Work(func() error {
+			err = newErrorRuntime("MallocEx", C.cudaMalloc(mem.DPtr(), C.size_t(sizet)))
+			if err != nil {
+				return err
+			}
+			return Memset(mem, 0, (sizet))
+		})
+	} else {
+		err = newErrorRuntime("MallocEx", C.cudaMalloc(mem.DPtr(), C.size_t(sizet)))
+		if err != nil {
+			return err
+		}
+		err = Memset(mem, 0, (sizet))
+	}
+
+	if err != nil {
+		return err
+	}
+	runtime.SetFinalizer(mem, devicefreemem)
+	return nil
+
+}
+
 //MallocHost will allocate memory on the host for cuda use.
 //
 func MallocHost(mem cutil.Mem, sizet uint) error {
-	err := newErrorRuntime("Malloc", C.cudaMalloc(mem.DPtr(), C.size_t(sizet)))
+	err := newErrorRuntime("MallocHost", C.cudaMalloc(mem.DPtr(), C.size_t(sizet)))
 	if err != nil {
 		return err
 	}
 	err = Memset(mem, 0, (sizet))
+	if err != nil {
+		return err
+	}
+	runtime.SetFinalizer(mem, hostfreemem)
+	return err
+}
+
+//MallocHostEx is like MallocHost but it takes a worker and memory allocated
+//to mem will be allocated to the context being used on that host thread.
+//If w is nil then it will behave like MallocHost
+func MallocHostEx(w *gocu.Worker, mem cutil.Mem, sizet uint) error {
+
+	var err error
+	if w != nil {
+		err = w.Work(func() error {
+			err = newErrorRuntime("MallocHostEx", C.cudaMallocHost(mem.DPtr(), C.size_t(sizet)))
+			if err != nil {
+				return err
+			}
+			return Memset(mem, 0, (sizet))
+		})
+	} else {
+		err = newErrorRuntime("MallocHostEx", C.cudaMallocHost(mem.DPtr(), C.size_t(sizet)))
+		if err != nil {
+			return err
+		}
+		err = Memset(mem, 0, (sizet))
+	}
+
 	if err != nil {
 		return err
 	}

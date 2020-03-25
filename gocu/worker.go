@@ -5,6 +5,8 @@ import (
 )
 
 //Device is a cuda device that can be set on the host thread
+//Major is the major compute capability
+//Minor is the minor compute capability
 type Device interface {
 	Set() error
 }
@@ -26,6 +28,7 @@ func NewWorker(d Device) (w *Worker) {
 	go w.start()
 	return w
 }
+
 func (w *Worker) start() {
 	runtime.LockOSThread()
 	if w.d != nil {

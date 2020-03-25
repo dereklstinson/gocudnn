@@ -3,6 +3,7 @@ package xtra
 import (
 	"errors"
 	"fmt"
+
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/cudart"
 	"github.com/dereklstinson/GoCudnn/gocu"
@@ -26,6 +27,7 @@ func (xtra *Xtra) KernelLocation(kernalfilelocation string) {
 //A RTX2080ti I will do something about that. heh heh heh
 type Handle struct {
 	mod                          *cuda.Module
+	w                            *gocu.Worker
 	ptx                          string
 	s                            gocu.Streamer
 	maxblockthreads              int32
@@ -48,19 +50,30 @@ func (x *Handle) SetDevice() error {
 	return x.device.Set()
 }
 
-/*
+//MakeHandleEx makes a handle that uses a worker to feed the gpu functions
+func MakeHandleEx(w *gocu.Worker, unified bool) (*Handle, error) {
+	var h *Handle
 
-//MakeHandleV2 takes the kernel directory already made and in kernels and returns a Handle
-func (xtra Xtra) MakeHandleV2(dev *cuda.Device) (*Handle, error) {
-	directory := "__default__"
-	if xtra.notdefaultkernallocation == true {
-		directory = xtra.kernellocation
+	workerr := w.Work(func() error {
+
+		dev, err := cudart.GetDevice()
+		if err != nil {
+			return err
+		}
+		h, err = MakeHandle(dev, unified)
+		if err != nil {
+			return err
+		}
+		h.w = w
+		return nil
+	})
+	if workerr != nil {
+		return nil, workerr
 	}
-	return xtra.MakeHandle(directory, dev)
+	return h, nil
 }
-*/
 
-//MakeHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn. You use MakeHandleV2 if you want to use the default location
+//MakeHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn.
 func MakeHandle(dev cudart.Device, unified bool) (*Handle, error) {
 
 	//x := kernels.MakeMakeFile(trainingfloatdir, "gocudnnxtra", dev)

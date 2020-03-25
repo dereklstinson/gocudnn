@@ -31,6 +31,8 @@ func (b RNNBiasMode) String() string {
 		x = "SingleINP"
 	case f.SingleREC():
 		x = "SingleREC"
+	case f.Double():
+		x = "Double"
 	default:
 		x = "UnSupported Flag"
 	}

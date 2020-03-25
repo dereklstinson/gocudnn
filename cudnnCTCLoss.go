@@ -16,7 +16,7 @@ import (
 	"github.com/dereklstinson/cutil"
 )
 
-//Algo returns al algo
+//Algo returns an algo
 func (c CTCLossAlgo) Algo() Algorithm {
 	var algo C.cudnnAlgorithm_t
 	C.MakeAlgorithmforCTCL(&algo, c.c())
@@ -83,12 +83,22 @@ func (c *CTCLossAlgo) NonDeterministic() CTCLossAlgo {
 	*c = CTCLossAlgo(C.CUDNN_CTC_LOSS_ALGO_NON_DETERMINISTIC)
 	return *c
 }
-
+func (c CTCLossAlgo) String() string {
+	flg := c
+	var s string
+	switch c {
+	case flg.Deterministic():
+		s = "Deterministic"
+	case flg.NonDeterministic():
+		s = "NonDeterministic"
+	default:
+		s = "Unsupported Flag"
+	}
+	return "CTCLossAlgo: " + s
+}
 func (c CTCLossAlgo) c() C.cudnnCTCLossAlgo_t {
 	return C.cudnnCTCLossAlgo_t(c)
 }
-
-//Need to finish this
 
 //CTCLoss calculates loss
 func (c *CTCLossD) CTCLoss(
@@ -108,6 +118,42 @@ func (c *CTCLossD) CTCLoss(
 	toclabels := int32Tocint(labels)
 	toclablen := int32Tocint(labelLengths)
 	tocinlen := int32Tocint(inputLengths)
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			if wspace == nil {
+				return Status(C.cudnnCTCLoss(
+					handle.x,
+					probsD.descriptor,
+					probs.Ptr(),
+					&toclabels[0],
+					&toclablen[0],
+					&tocinlen[0],
+					costs.Ptr(),
+					gradientsD.descriptor,
+					gradients.Ptr(),
+					algo.c(),
+					c.descriptor,
+					nil,
+					C.size_t(0),
+				)).error("(c *CTCLossD) CTCLoss")
+			}
+			return Status(C.cudnnCTCLoss(
+				handle.x,
+				probsD.descriptor,
+				probs.Ptr(),
+				&toclabels[0],
+				&toclablen[0],
+				&tocinlen[0],
+				costs.Ptr(),
+				gradientsD.descriptor,
+				gradients.Ptr(),
+				algo.c(),
+				c.descriptor,
+				wspace.Ptr(),
+				C.size_t(wspacesize),
+			)).error("(c *CTCLossD) CTCLoss")
+		})
+	}
 	if wspace == nil {
 		return Status(C.cudnnCTCLoss(
 			handle.x,
@@ -123,9 +169,9 @@ func (c *CTCLossD) CTCLoss(
 			c.descriptor,
 			nil,
 			C.size_t(0),
-		)).error("CTCLoss")
+		)).error("(c *CTCLossD) CTCLoss")
 	}
-	err := Status(C.cudnnCTCLoss(
+	return Status(C.cudnnCTCLoss(
 		handle.x,
 		probsD.descriptor,
 		probs.Ptr(),
@@ -139,9 +185,8 @@ func (c *CTCLossD) CTCLoss(
 		c.descriptor,
 		wspace.Ptr(),
 		C.size_t(wspacesize),
-	)).error("CTCLoss")
+	)).error("(c *CTCLossD) CTCLoss")
 
-	return err
 }
 
 //CTCLossUS is like CTCLoss but uses unsafe.Pointer instead of cutil.Mem
@@ -159,7 +204,27 @@ func (c *CTCLossD) CTCLossUS(
 	toclabels := int32Tocint(labels)
 	toclablen := int32Tocint(labelLengths)
 	tocinlen := int32Tocint(inputLengths)
-	err := Status(C.cudnnCTCLoss(
+
+	if handle.w != nil {
+		return handle.w.Work(func() error {
+			return Status(C.cudnnCTCLoss(
+				handle.x,
+				probsD.descriptor,
+				probs,
+				&toclabels[0],
+				&toclablen[0],
+				&tocinlen[0],
+				costs,
+				gradientsD.descriptor,
+				gradients,
+				algo.c(),
+				c.descriptor,
+				wspace,
+				C.size_t(wspacesize),
+			)).error(" (c *CTCLossD) CTCLossUS")
+		})
+	}
+	return Status(C.cudnnCTCLoss(
 		handle.x,
 		probsD.descriptor,
 		probs,
@@ -173,9 +238,8 @@ func (c *CTCLossD) CTCLossUS(
 		c.descriptor,
 		wspace,
 		C.size_t(wspacesize),
-	)).error("CTCLoss")
+	)).error(" (c *CTCLossD) CTCLossUS")
 
-	return err
 }
 
 //GetWorkspaceSize calculates workspace size
@@ -192,7 +256,23 @@ func (c *CTCLossD) GetWorkspaceSize(
 	toclablen := int32Tocint(labelLengths)
 	tocinlen := int32Tocint(inputLengths)
 	var bsize C.size_t
-	err := Status(C.cudnnGetCTCLossWorkspaceSize(
+	var err error
+	if handle.w != nil {
+		err = handle.w.Work(func() error {
+			return Status(C.cudnnGetCTCLossWorkspaceSize(
+				handle.x,
+				probsD.descriptor,
+				gradientsD.descriptor,
+				&toclabels[0],
+				&toclablen[0],
+				&tocinlen[0],
+				algo.c(),
+				c.descriptor,
+				&bsize,
+			)).error("(c *CTCLossD) GetWorkspaceSize")
+		})
+	}
+	err = Status(C.cudnnGetCTCLossWorkspaceSize(
 		handle.x,
 		probsD.descriptor,
 		gradientsD.descriptor,
@@ -202,7 +282,7 @@ func (c *CTCLossD) GetWorkspaceSize(
 		algo.c(),
 		c.descriptor,
 		&bsize,
-	)).error("GetCTCLossWorkspaceSize")
+	)).error("(c *CTCLossD) GetWorkspaceSize")
 
 	return uint(bsize), err
 }

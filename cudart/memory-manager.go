@@ -7,29 +7,22 @@ import (
 	"github.com/dereklstinson/cutil"
 )
 
-//MemManager allocates memory to cuda under the unified memory management,
+//MemManager allocates memory to a cuda context/device under the unified memory management,
 //and handles memory copies between memory under the unified memory mangement, and copies to and from Go memory.
 type MemManager struct {
-	//s      *Stream
-	//d      Device
+	w      *gocu.Worker
 	flg    MemcpyKind
 	onhost bool
 }
 
 //CreateMemManager creates an allocator that is bounded to cudas unified memory management.
-func CreateMemManager(d Device) (*MemManager, error) {
-
-	major, err := d.Major()
-	if err != nil {
-		return nil, err
-	}
-	if major < 6 {
-		return nil, errors.New("Only Supported on Devices that are Compute Major 6 and up")
+func CreateMemManager(w *gocu.Worker) (*MemManager, error) {
+	if w == nil {
+		return nil, errors.New("CreateMemManager(): w is nil")
 	}
 	var flg MemcpyKind
 	return &MemManager{
-		//	s:   s,
-		//	d:   d,
+		w:   w,
 		flg: flg.Default(),
 	}, nil
 }
@@ -45,28 +38,34 @@ func (m *MemManager) SetHost(onhost bool) {
 //Malloc allocates memory to either the host or the device. sib = size in bytes
 func (m *MemManager) Malloc(sib uint) (cuda cutil.Mem, err error) {
 	cuda = new(gocu.CudaPtr)
-	if m.onhost {
-		err = MallocManagedHost(cuda, sib)
-		return cuda, err
-	}
-	//err = m.d.Set()
-	//if err != nil {
-	//	return cuda, err
-	//}
-	err = MallocManagedGlobal(cuda, sib)
+
+	err = m.w.Work(func() error {
+		if m.onhost {
+			return MallocManagedHost(cuda, sib)
+
+		}
+		return MallocManagedGlobal(cuda, sib)
+
+	})
 	if err != nil {
 		return nil, err
 	}
 	return cuda, err
+
 }
 
 //Copy copies memory with amount of bytes passed in sib from src to dest
 func (m *MemManager) Copy(dest, src cutil.Pointer, sib uint) error {
-	return MemCpy(dest, src, sib, m.flg)
+	return m.w.Work(func() error {
+		return MemCpy(dest, src, sib, m.flg)
+	})
 
 }
 
 //AsyncCopy does an AsyncCopy with the mem manager.
 func (m *MemManager) AsyncCopy(dest, src cutil.Pointer, sib uint, s gocu.Streamer) error {
-	return MemcpyAsync(dest, src, sib, m.flg, s)
+	return m.w.Work(func() error {
+		return MemcpyAsync(dest, src, sib, m.flg, s)
+	})
+
 }

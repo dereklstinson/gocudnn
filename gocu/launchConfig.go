@@ -68,6 +68,7 @@ func CreateConfigHelper(device Attributes) (*ConfigHelper, error) {
 	}, nil
 }
 
+//CreateLaunchConfig creates a launch configurator.  It is used when launching kernels
 func (l *ConfigHelper) CreateLaunchConfig(x, y, z int32) (launch Config) {
 
 	if x > 1 && y == 1 && z == 1 {
