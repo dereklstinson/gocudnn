@@ -1,27 +1,23 @@
 # GoCudnn [![Coverage Status](https://coveralls.io/repos/github/dereklstinson/GoCudnn/badge.svg?branch=master)](https://coveralls.io/github/dereklstinson/GoCudnn?branch=master)
 <p><img alt="Gopher" title="GoCu" src="GoCu.png" width="500"/></p>
 
-V0.1_75_101 is compiling.  It is cudnn 7.5 w/ cuda 10.1, There might be bugs. Let me know.  
-
-This is an api breaking update.  Flags are being used completely differently.  Now flags have methods that change value of the type, but also return that changed value.  Also, I am trimming out all non "ND" functions.
-This will make less under the hood things that I was adding to get this binding to work. I noticed no performance hit when everything was switched to ND.
-
-That being said. It shouldn't be a much of a change since I was using arrays as inputs to the functions even if it was a 4D functions. 
-
-I got rid of New....Descriptor.  It is now Create...Descriptor.  The descriptors will now need to be set. with (type)Set(....flags). I tried to change every GetDescriptor() to Get(). So, that it will be streamlined.
-
-Got got rid (or getting rid) of the empty structs used to handle the operations.  I moved the methods of those empty structs (or will move them if I find any more) to the appropriate descriptor. Even if the method didn't use the descriptor.
-extra cudnn:
+V0.1_75_101 is compiling.  It is cudnn 7.5 w/ cuda 10.1, There might be bugs. Send me a pull request. 
 
 I made a BatchNormalD descriptor and BatchNormDEx descriptor.  You will call this with a "Create" function. and set it like the other descriptors.  
 
-I also made a deconvoltuion descriptor.  It hasn't been tested yet.  Deconvolution works like a convolution except backward data is forward and forward is backward data.  
-I tried giving giving them there own algo finders and all.  The thing with a deconvolution is that the filter channels will be the output channel, and the filter neurons must match the input channels.
+I also made a deconvoltuion descriptor.  It should work.  At least I don't receive any errors when doing the operations.  Deconvolution works like a convolution except backward data is forward and forward is backward data.  
+The thing with a deconvolution is that the filter channels will be the output channel, and the filter neurons must match the input channels.
 
+Convolution(Input{N,C,H,W}, Filter{P,C,R,S},Output{N,P,_,_}) 
+
+Deconvolution(Input{N,C,H,W}, Filter{C,Q,R,S}, Output{N,Q,_,_})
 
 ## gocu folder
 
-The gocu folder contains interfaces that interconnect the different sub packages.  To help parallelize your code use the type Worker.  It contains the method work. Where it takes a function at sends it to to be worked on a dedicated thread host thread.  Like if you wanted to make a new Context to handle gpu management.
+The gocu folder contains interfaces that interconnect the different sub packages.  
+To help parallelize your code use the type Worker.
+It contains the method work. Where it takes a function at sends it to to be worked 
+on a dedicated thread host thread.  Like if you wanted to make a new Context to handle gpu management.
 
 ```text
     type GPUcontext struct{
@@ -54,13 +50,9 @@ The gocu folder contains interfaces that interconnect the different sub packages
 
 This folder has a ReadWriter in it.  That fulfills the io.Reader and io.Writer interface.
 
-## Back into alpha
+## Beta
 
-I am making the code more like an actual binding. I have separated the different libraries into their own packages.  
-I would have liked to not use cuda.h, but it is needed to run the kernels.  Its that or you would have to make a shared library every time you make a new kernel.  
-I am adding some NPP library stuff where it would be appropriate with gocudnn.
-I've added nvjpeg, but that was before the 10.1 update.  So, I will upgrade to 10.1 (cuda) and 7.5 (cudnn) and start a new branch.
-Any subpackage library bindings I include will most likely only be made to supplement cudnn.
+I don't forsee any code breaking changes.  Any changes will be new functions.  There will be bugs.  Report them or send me a pull request.
 
 ## Some required packages
 
@@ -72,11 +64,11 @@ If I ever go to modules. These will be placed in there.
 
 ## Setup
 
-cuDNN 7.5.0 found at or around [https://developer.nvidia.com/cudnn](https://developer.nvidia.com/cudnn)
+cuDNN 7.5 found at or around [https://developer.nvidia.com/cudnn](https://developer.nvidia.com/cudnn)
 
 CUDA 10.1 Toolkit found at or around [https://developer.nvidia.com/cuda-downloads](https://developer.nvidia.com/cuda-downloads)
 
-Golang V1.12 found at or around [https://golang.org/dl/](https://golang.org/dl/)
+Golang V1.13 found at or around [https://golang.org/dl/](https://golang.org/dl/)
 
 
 Will need to set the environmental variables to something along the lines as below.
@@ -94,9 +86,6 @@ I would also like to get this to work on windows, also, but I am finding that wi
 
 ## Warnings/Notes
 
-1. Callbacks at this time are not going to be implemented \(maybe never\)
-
-
 Documentation For cudnn can be found at [https://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html](https://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html)
 
 Take a good look at chapter 2 to get an idea on how the cudnn library works.
@@ -109,7 +98,7 @@ A few exceptions though:.
 
 ## A little more on flag handling
 
-Flags are handled through methods.  You must be careful. The methods used with flags will change the flag value.  
+Flags are handled through methods.  You must be careful. The methods used with flags will change the flag value. 
 If you don't set the flag with a method. It will default with the initialized value (0). That may or may not be a flag option with cudnn or any of the other packages.
 
 
