@@ -35,7 +35,7 @@ type TensorD struct {
 }
 
 func (t *TensorD) String() string {
-	return fmt.Sprintf("TensorDescriptor{\nFormat: %s\nType  : %s\nShape : %v,\nStride: %v,\n}\n", t.frmt.String(), t.dtype.String(), t.shape, t.stride)
+	return fmt.Sprintf("TensorDescriptor {\n%v,\n%v,\nShape : %v,\nStride: %v\n}\n", t.frmt, t.dtype, t.shape, t.stride)
 }
 
 //Dims returns the shape of the tensor
