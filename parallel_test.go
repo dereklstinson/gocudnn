@@ -1,6 +1,7 @@
 package gocudnn_test
 
 import (
+	"sync"
 	"testing"
 
 	gocudnn "github.com/dereklstinson/GoCudnn"
@@ -20,12 +21,18 @@ func TestParrallel(t *testing.T) {
 	handles := make([]*gocudnn.Handle, ndevs)
 	workers := make([]*gocu.Worker, ndevs)
 	MemManager := make([]*cudart.MemManager, ndevs)
+	var wg sync.WaitGroup
 	for i := range handles {
-		workers[i] = gocu.NewWorker(cudart.CreateDevice(int32(i)))
-		handles[i] = gocudnn.CreateHandleEX(workers[i], true)
-		MemManager[i], err = cudart.CreateMemManager(workers[i])
-		check(err)
+		wg.Add(1)
+		go func(i int, err error) {
+			workers[i] = gocu.NewWorker(cudart.CreateDevice(int32(i)))
+			handles[i] = gocudnn.CreateHandleEX(workers[i], true)
+			MemManager[i], err = cudart.CreateMemManager(workers[i])
+			check(err)
+			wg.Done()
+		}(i, err)
 	}
+	wg.Wait()
 	var cmode gocudnn.ConvolutionMode //Creating Flags
 	var frmt gocudnn.TensorFormat     //Creating Flags
 	var dtype gocudnn.DataType        //Creating Flags
@@ -66,27 +73,38 @@ func TestParrallel(t *testing.T) {
 	biasMEM := make([]cutil.Mem, len(MemManager))
 	outputMEM := make([]cutil.Mem, len(MemManager))
 	for i, m := range MemManager {
-		inputMEM[i], err = m.Malloc(insib)
-		check(err)
-		filterMEM[i], err = m.Malloc(fsib)
-		check(err)
-		biasMEM[i], err = m.Malloc(bsib)
-		check(err)
-		outputMEM[i], err = m.Malloc(outsib)
-		check(err)
+		wg.Add(1)
+		go func(i int, m *cudart.MemManager, err error) {
+			inputMEM[i], err = m.Malloc(insib)
+			check(err)
+			filterMEM[i], err = m.Malloc(fsib)
+			check(err)
+			biasMEM[i], err = m.Malloc(bsib)
+			check(err)
+			outputMEM[i], err = m.Malloc(outsib)
+			check(err)
+			wg.Done()
+		}(i, m, err)
 	}
+	wg.Wait()
 	var algopref gocudnn.ConvolutionForwardPref
 	algopref.PreferFastest()
 
 	for i, h := range handles {
-		algo, err := convD.GetForwardAlgorithm(h, inputD, filterD, outputD, algopref, 0)
-		check(err)
-		wspacesib, err := convD.GetForwardWorkspaceSize(h, inputD, filterD, outputD, algo)
-		check(err)
+		wg.Add(1)
+		go func(i int, h *gocudnn.Handle, err error) {
 
-		wspacemem, err := MemManager[i].Malloc(wspacesib)
-		check(err)
-		go check(convD.Forward(h, 1, inputD, inputMEM[i], filterD, filterMEM[i], algo, wspacemem, wspacesib, 0, outputD, outputMEM[i]))
+			algo, err := convD.GetForwardAlgorithm(h, inputD, filterD, outputD, algopref, 0)
+			check(err)
+			wspacesib, err := convD.GetForwardWorkspaceSize(h, inputD, filterD, outputD, algo)
+			check(err)
+
+			wspacemem, err := MemManager[i].Malloc(wspacesib)
+			check(err)
+			check(convD.Forward(h, 1, inputD, inputMEM[i], filterD, filterMEM[i], algo, wspacemem, wspacesib, 0, outputD, outputMEM[i]))
+			wg.Done()
+		}(i, h, err)
 	}
+	wg.Wait()
 
 }
