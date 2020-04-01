@@ -41,7 +41,7 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	var frmt TensorFormat
 	dtype.Float()
 	flg := frmt
-	frmt.NHWC()
+	frmt.NCHW()
 	var dims []int32
 	var xvals []float32
 	switch frmt {
@@ -106,8 +106,20 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	stream.Sync()
-	t.Error("Look at output")
-	fmt.Println(yvals)
-	fmt.Println(xvals)
+	err = stream.Sync()
+	if err != nil {
+		t.Error(err)
+	}
+
+	var yadder float32
+	for _, yval := range yvals {
+		yadder = yadder + yval
+	}
+
+	if yadder > 4 {
+		t.Error("yadder greater than 4")
+		fmt.Println(yvals)
+		fmt.Println(xvals)
+	}
+
 }
