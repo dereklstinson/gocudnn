@@ -2217,3 +2217,143 @@ extern "C" __global__ void MSELossFP16(const int n,
     
 }
 #endif
+/*
+extern "C" __global__ void SoftMaxErrAndLoss(const int xthreads, const int ntargets, const float *target, const float *softmaxoutput, float *loss, float * inputerrors){
+    const float fntargets=(float)(ntargets);
+    CUDA_GRID_LOOP_X(xIdx,xthreads){
+        if (target[xIdx]>0){
+            atomicAdd(&loss[xIdx],-log10(softmaxoutput[xIdx]/fntargets));
+        }
+    }
+}
+*/
+extern "C" __global__ void SoftMaxAverageLoss(const int xthreads, const int ntargets, const float *target, const float *softmaxoutput, float *loss){
+     const float fntargets = (float)(ntargets);
+    CUDA_GRID_LOOP_X(xIdx,xthreads){
+        if (target[xIdx]>0){
+            atomicAdd(&loss[0],-log10(softmaxoutput[xIdx])/fntargets);
+        }
+    }
+}
+/*
+extern "C" __global__ void SoftMaxLossPerBatch(const int xthreads,const int ythreads, const int ntargetsperbatch,  const float *target, const float *softmaxoutput,float *loss)
+{
+    const float npbtargs = (float)(ntargetsperbatch);
+    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    {       
+            const int offset=ythreads*xIdx;
+            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            {  
+                if (target[offset+yIdx]>0){
+                    atomicAdd(&loss[xIdx],-log10(softmaxoutput[offset+yIdx])/npbtargs);
+                }
+            
+            }
+    }
+}
+*/
+
+/*
+#if __CUDA_ARCH__ >= 750
+extern "C" __global__ void MSELossbyBatchesFP16(const int xthreads,
+const int ythreads,
+ __half *errors, 
+ const __half *target, 
+ const __half *networkout, 
+ __half *loss)
+{
+  const __half htwo= __float2half(2.0);
+    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    {
+        const int i=ythreads*xIdx;
+            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            {  
+                const __half y = __hsub(networkout[i] , target[i]);
+        errors[i] = y;
+             atomicAdd(&loss[xIdx], __hdiv(__hmul(y , y) , htwo));
+            }
+    }
+}
+extern "C" __global__ void MSELossFP16(const int n, 
+                            __half *errors, 
+                            const __half *target,
+                            const __half *networkout, 
+                            __half *loss,
+                            const __half alpha,
+                            const __half beta)
+{
+    StartAxis(stx,x)
+    int n2=n/2;
+     __half2 *errors2=(__half2*)errors, *target2=(__half2*)target, *networkout2=(__half2*)networkout, *loss2=(__half2*)loss;
+ //  const __half2 alpha2=__halves2half2(alpha), beta2=__halves2half2(beta);
+    const __half2 htwo2=__halves2half2(__float2half(2.0),__float2half(2.0));
+     const __half htwo= __float2half(2.0);
+    loss[0]=0;
+    CUDA_GRID_LOOP_X(i, n2)
+    {
+        const __half2 y = __hsub2(networkout2[i] , target2[i]);
+        errors2[i] = y;
+        atomicAdd(loss2, __h2div(__hmul2(y , y) ,htwo2));
+    }
+    if (stx==0 && (n%2)){
+       const int i=n-1;
+        const __half y = __hsub(networkout[i] , target[i]);
+        errors[i] = y;
+        atomicAdd(loss, __hdiv(__hmul(y , y) , htwo));
+    }
+      
+
+   
+}
+#else  
+extern "C" __global__ void MSELossbyBatchesFP16(
+const int xthreads,
+const int batches,
+ __half2 *errors, 
+ const __half2 *target, 
+ const __half2 *networkout, 
+ __half *loss)
+{
+  const __half htwo= __float2half(2.0);
+  const __half2 htwo2 =__halves2half2(htwo,htwo);
+  const int n=xthreads/2;
+  __shared__ __half2 *loss2;
+  for (int i=0; i<batches;i++){
+      loss2[i]=__floats2half2_rn(0.0,0.0);
+ CUDA_GRID_AXIS_LOOP(xIdx,n,x)
+    {
+       const __half2 y = __hsub2(networkout[i*n+xIdx] , target[i*n+xIdx]);
+       errors[i] = y;
+       atomicAdd(&loss2[i], __h2div(__hmul2(y , y) , htwo2));
+    }
+  loss[i]=__hadd(__low2half(loss2[i]),__high2half(loss2[i]));
+  }
+   
+}
+extern "C" __global__ void MSELossFP16(const int n, 
+                            __half2 *errors, 
+                            const __half2 *target,
+                            const __half2 *networkout, 
+                            __half *loss,
+                            const __half alpha,
+                            const __half beta)
+{
+//    StartAxis(stx,x)
+    int n2=n/2;
+ //  const __half2 alpha2=__halves2half2(alpha), beta2=__halves2half2(beta);
+    const __half2 htwo2=__halves2half2(__float2half(2.0),__float2half(2.0));
+   //  const __half htwo= __float2half(2.0);
+      __shared__ __half2 *loss2;
+      loss2[0]= __halves2half2(__float2half(0.0),__float2half(0.0));
+   
+    CUDA_GRID_LOOP_X(i, n2)
+    {
+        const __half2 y = __hsub2(networkout[i] , target[i]);
+        errors[i] = y;
+        atomicAdd(loss2, __h2div(__hmul2(y , y) ,htwo2));
+    }
+    loss[0]=__hadd(__low2half(loss2[0]),__high2half(loss2[0]));
+    
+}
+#endif
+*/

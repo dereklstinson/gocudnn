@@ -24,6 +24,11 @@ func (t XtraKerns) ConcatNCHWEXHalf() string {
 	return "ConcatNCHWEXHalf"
 }
 
+//SoftMaxAverageLoss
+func (t XtraKerns) SoftMaxAverageLoss() string {
+	return "SoftMaxAverageLoss"
+}
+
 //MSELoss Mean Squared Error Loss
 func (t XtraKerns) MSELoss() string {
 	return "MSELoss"

@@ -8062,4 +8062,105 @@ BB58_7:
 	ret;
 }
 
+	// .globl	SoftMaxAverageLoss
+.visible .entry SoftMaxAverageLoss(
+	.param .u32 SoftMaxAverageLoss_param_0,
+	.param .u32 SoftMaxAverageLoss_param_1,
+	.param .u64 SoftMaxAverageLoss_param_2,
+	.param .u64 SoftMaxAverageLoss_param_3,
+	.param .u64 SoftMaxAverageLoss_param_4
+)
+{
+	.reg .pred 	%p<7>;
+	.reg .f32 	%f<41>;
+	.reg .b32 	%r<17>;
+	.reg .b64 	%rd<12>;
+
+
+	ld.param.u32 	%r6, [SoftMaxAverageLoss_param_0];
+	ld.param.u32 	%r7, [SoftMaxAverageLoss_param_1];
+	ld.param.u64 	%rd5, [SoftMaxAverageLoss_param_2];
+	ld.param.u64 	%rd6, [SoftMaxAverageLoss_param_3];
+	ld.param.u64 	%rd7, [SoftMaxAverageLoss_param_4];
+	mov.u32 	%r1, %ntid.x;
+	mov.u32 	%r8, %ctaid.x;
+	mov.u32 	%r9, %tid.x;
+	mad.lo.s32 	%r16, %r1, %r8, %r9;
+	setp.ge.s32	%p1, %r16, %r6;
+	@%p1 bra 	BB59_7;
+
+	cvta.to.global.u64 	%rd1, %rd6;
+	cvta.to.global.u64 	%rd2, %rd5;
+	mov.u32 	%r10, %nctaid.x;
+	mul.lo.s32 	%r3, %r10, %r1;
+	cvt.rn.f32.s32	%f1, %r7;
+	cvta.to.global.u64 	%rd3, %rd7;
+
+BB59_2:
+	cvt.s64.s32	%rd4, %r16;
+	mul.wide.s32 	%rd8, %r16, 4;
+	add.s64 	%rd9, %rd2, %rd8;
+	ld.global.f32 	%f6, [%rd9];
+	setp.leu.f32	%p2, %f6, 0f00000000;
+	@%p2 bra 	BB59_6;
+
+	add.s64 	%rd11, %rd1, %rd8;
+	ld.global.f32 	%f7, [%rd11];
+	setp.lt.f32	%p3, %f7, 0f00800000;
+	mul.f32 	%f8, %f7, 0f4B000000;
+	selp.f32	%f2, %f8, %f7, %p3;
+	selp.f32	%f9, 0fC1B80000, 0f00000000, %p3;
+	mov.b32 	 %r11, %f2;
+	add.s32 	%r12, %r11, -1059760811;
+	and.b32  	%r13, %r12, -8388608;
+	sub.s32 	%r14, %r11, %r13;
+	mov.b32 	 %f10, %r14;
+	cvt.rn.f32.s32	%f11, %r13;
+	mov.f32 	%f12, 0f34000000;
+	fma.rn.f32 	%f13, %f11, %f12, %f9;
+	add.f32 	%f14, %f10, 0fBF800000;
+	mov.f32 	%f15, 0f3E1039F6;
+	mov.f32 	%f16, 0fBE055027;
+	fma.rn.f32 	%f17, %f16, %f14, %f15;
+	mov.f32 	%f18, 0fBDF8CDCC;
+	fma.rn.f32 	%f19, %f17, %f14, %f18;
+	mov.f32 	%f20, 0f3E0F2955;
+	fma.rn.f32 	%f21, %f19, %f14, %f20;
+	mov.f32 	%f22, 0fBE2AD8B9;
+	fma.rn.f32 	%f23, %f21, %f14, %f22;
+	mov.f32 	%f24, 0f3E4CED0B;
+	fma.rn.f32 	%f25, %f23, %f14, %f24;
+	mov.f32 	%f26, 0fBE7FFF22;
+	fma.rn.f32 	%f27, %f25, %f14, %f26;
+	mov.f32 	%f28, 0f3EAAAA78;
+	fma.rn.f32 	%f29, %f27, %f14, %f28;
+	mov.f32 	%f30, 0fBF000000;
+	fma.rn.f32 	%f31, %f29, %f14, %f30;
+	mul.f32 	%f32, %f14, %f31;
+	fma.rn.f32 	%f33, %f32, %f14, %f14;
+	mov.f32 	%f34, 0f3F317218;
+	fma.rn.f32 	%f40, %f13, %f34, %f33;
+	setp.lt.u32	%p4, %r11, 2139095040;
+	@%p4 bra 	BB59_5;
+
+	mov.f32 	%f35, 0f7F800000;
+	fma.rn.f32 	%f40, %f2, %f35, %f35;
+
+BB59_5:
+	mul.f32 	%f36, %f40, 0fBEDE5BD9;
+	setp.eq.f32	%p5, %f2, 0f00000000;
+	selp.f32	%f37, 0f7F800000, %f36, %p5;
+	div.rn.f32 	%f38, %f37, %f1;
+	atom.global.add.f32 	%f39, [%rd3], %f38;
+
+BB59_6:
+	cvt.u32.u64	%r15, %rd4;
+	add.s32 	%r16, %r3, %r15;
+	setp.lt.s32	%p6, %r16, %r6;
+	@%p6 bra 	BB59_2;
+
+BB59_7:
+	ret;
+}
+
 

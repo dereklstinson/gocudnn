@@ -4,6 +4,8 @@ import (
 	"C"
 	"errors"
 
+	"github.com/dereklstinson/GoCuNets/utils"
+
 	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cuda"
 	"github.com/dereklstinson/GoCudnn/cudart"
@@ -38,8 +40,126 @@ func (x XLossModeFlag) MSE() XLossMode {
 	return XLossMode(1)
 }
 
+/*
+//SoftMaxAverage does the average -log loss for the output
+func (x XLossModeFlag) SoftMaxAverage() XLossMode {
+	return XLossMode(2)
+}
+*/
+
 //XLossMode are the flags for XLoss
 type XLossMode int
+
+//SofMaxLogLoss holds the function needed to do the log loss of the soft max function
+type SofMaxLogLoss struct {
+	cpuloss     []float32
+	cpulossptr  cutil.Mem
+	gpuloss     *gocu.CudaPtr
+	smloss      *cuda.Kernel
+	memcopykind cudart.MemcpyKind
+}
+
+//NewSoftMaxNegLogLoss creates a softmaxlogloss handler.
+func NewSoftMaxNegLogLoss(h *Handle) (*SofMaxLogLoss, error) {
+	var err error
+	smll := new(SofMaxLogLoss)
+	smll.cpuloss = make([]float32, 1)
+	smll.cpulossptr, err = gocu.MakeGoMem(smll.cpuloss)
+	smll.memcopykind.DeviceToHost()
+	var ktf kernels.XtraKerns
+	if err != nil {
+		return nil, err
+	}
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			var err error
+			smll.smloss, err = cuda.MakeKernel(ktf.SoftMaxAverageLoss(), h.mod)
+			if err != nil {
+				return err
+			}
+
+			smll.gpuloss = new(gocu.CudaPtr)
+			err = cudart.MallocManagedGlobal(smll.gpuloss, 4)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		return smll, nil
+	}
+
+	smll.smloss, err = cuda.MakeKernel(ktf.SoftMaxAverageLoss(), h.mod)
+	if err != nil {
+		return nil, err
+	}
+
+	smll.gpuloss = new(gocu.CudaPtr)
+	err = cudart.MallocManagedGlobal(smll.gpuloss, 4)
+	if err != nil {
+		return nil, err
+	}
+	return smll, nil
+
+}
+
+//FindAverageLogLoss returns the average log loss
+func (s *SofMaxLogLoss) FindAverageLogLoss(h *Handle,
+	yD *gocudnn.TensorD, y cutil.Mem,
+	targetD *gocudnn.TensorD, target cutil.Mem) (loss float32, err error) {
+	frmt, dtype, dims, stride, err := yD.Get()
+	if err != nil {
+		return -1, err
+	}
+	fflg := frmt
+	var ntarget int32
+
+	switch frmt {
+	case fflg.NCHW():
+		//the target values are found on the channel dim.
+		// So the number of targets will be a multipe of the batches and other spacial dims.
+		// So you can find the by taking the volume of the tensor and divide it by the number of channels
+		ntarget = utils.FindVolumeInt32(dims, stride) / dims[1]
+
+	case fflg.NHWC():
+		//the target values are found on the channel dim.
+		// So the number of targets will be a multipe of the batches and other spacial dims.
+		// So you can find the by taking the volume of the tensor and divide it by the number of channels
+		ntarget = utils.FindVolumeInt32(dims, stride) / dims[len(dims)-1]
+	default:
+		return -1, errors.New("(s *SofMaxLogLoss) FindAverageLogLoss Unsupported Format")
+	}
+	dflg := dtype
+	switch dtype {
+
+	case dflg.Float():
+		length := utils.FindVolumeInt32(dims, stride)
+		config := h.LaunchConfig(int32(length))
+		err = s.smloss.Launch(config.BlockCount, 1, 1, config.ThreadPerBlock, 1, 1, 0, h.s, config.Elements, ntarget, target, y, s.gpuloss)
+		if err != nil {
+			return -1, err
+		}
+		err = h.s.Sync()
+		if err != nil {
+			return -1, err
+		}
+
+		err = cudart.MemCpy(s.cpulossptr, s.gpuloss, 4, s.memcopykind)
+		if err != nil {
+			return -1, err
+		}
+		err = h.s.Sync()
+		if err != nil {
+			return -1, err
+		}
+		return s.cpuloss[0], nil
+	default:
+		return -1, errors.New("(s *SofMaxLogLoss) FindAverageLogLoss: Unsupported Tensor Type ")
+	}
+
+}
 
 //NewLossDescriptor creates a loss destriptor to calculate loss
 func NewLossDescriptor(h *Handle, mode XLossMode) (*XLossD, error) {

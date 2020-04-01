@@ -41,15 +41,15 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	var frmt TensorFormat
 	dtype.Float()
 	flg := frmt
-	frmt.NCHW()
+	frmt.NHWC()
 	var dims []int32
 	var xvals []float32
 	switch frmt {
 	case flg.NHWC():
-		dims = []int32{1, 2, 2, 3}
+		dims = []int32{1, 1, 1, 3}
 		xvals = []float32{
-			/*0,0*/ 1, -1, -2 /*0,1*/, 2, -1, -2,
-			/*1,0*/ 3, -1, -2 /*1,1*/, 4, -1, -2,
+			1, -1, -2, //2, -1, -2,
+			//3, -1, -2 , 4, -1, -2,
 		} //[1 -1 -2 2 -1 -2 3 -1 -2 4 -1 -2]
 	case flg.NCHW():
 		dims = []int32{1, 3, 2, 2}
