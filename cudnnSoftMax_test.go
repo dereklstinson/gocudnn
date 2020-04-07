@@ -126,11 +126,10 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 		yadder = yadder + yval
 	}
 
-	if yadder > 4 {
+	if yadder > 1 {
 		t.Error("yadder greater than 4")
 		fmt.Println(yvals)
 		fmt.Println(xvals)
 	}
-	t.Error(yvals)
 
 }

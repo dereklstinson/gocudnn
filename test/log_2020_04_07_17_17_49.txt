@@ -1,0 +1,136 @@
+
+I! CuDNN (v7605) function cudnnCreate() called:
+i! Time: 2020-04-07T17:17:49.824577 (0d+0h+0m+0s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnSetStream() called:
+i!     handle: type=cudnnHandle_t; streamId=(nil) (defaultStream);
+i!     streamId: type=cudaStream_t; streamId=0x26e30120;
+i! Time: 2020-04-07T17:17:51.089207 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=0; Handle=0x1a8bb70; StreamId=(nil) (defaultStream).
+
+
+I! CuDNN (v7605) function cudnnCreateTensorDescriptor() called:
+i! Time: 2020-04-07T17:17:51.089300 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnCreateTensorDescriptor() called:
+i! Time: 2020-04-07T17:17:51.089340 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnSetTensorNdDescriptorEx() called:
+i!     format: type=cudnnTensorFormat_t; val=CUDNN_TENSOR_NHWC (1);
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!     nbDims: type=int; val=4;
+i!     dimA: type=int; val=[1,1,1,3];
+i! Time: 2020-04-07T17:17:51.089372 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnSetTensorNdDescriptorEx() called:
+i!     format: type=cudnnTensorFormat_t; val=CUDNN_TENSOR_NHWC (1);
+i!     dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!     nbDims: type=int; val=4;
+i!     dimA: type=int; val=[1,1,1,3];
+i! Time: 2020-04-07T17:17:51.089390 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnGetTensorSizeInBytes() called:
+i!     tensorDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i! Time: 2020-04-07T17:17:51.089410 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnSoftmaxForward() called:
+i!     handle: type=cudnnHandle_t; streamId=0x26e30120;
+i!     algorithm: type=cudnnSoftmaxAlgorithm_t; val=CUDNN_SOFTMAX_ACCURATE (1);
+i!     mode: type=cudnnSoftmaxMode_t; val=CUDNN_SOFTMAX_MODE_CHANNEL (1);
+i!     alpha: type=CUDNN_DATA_FLOAT; val=1.000000;
+i!     srcDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i!     srcData: location=dev; addr=0x7f2f2e000000;
+i!     beta: type=CUDNN_DATA_FLOAT; val=0.000000;
+i!     destDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i!     destData: location=dev; addr=0x7f2f2e000200;
+i! Time: 2020-04-07T17:17:51.090227 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=0; Handle=0x1a8bb70; StreamId=0x26e30120.
+
+
+I! CuDNN (v7605) function cudnnGetTensorNdDescriptor() called:
+i!     tensorDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i!     nbDimsRequested: type=int; val=4;
+i! Time: 2020-04-07T17:17:51.090401 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnGetTensorNdDescriptor() called:
+i!     tensorDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i!     nbDimsRequested: type=int; val=4;
+i! Time: 2020-04-07T17:17:51.090427 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnGetTensorNdDescriptor() called:
+i!     tensorDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i!     nbDimsRequested: type=int; val=4;
+i! Time: 2020-04-07T17:17:51.090473 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnGetTensorSizeInBytes() called:
+i!     tensorDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i! Time: 2020-04-07T17:17:51.090492 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnGetTensorNdDescriptor() called:
+i!     tensorDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i!     nbDimsRequested: type=int; val=4;
+i! Time: 2020-04-07T17:17:51.090642 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+
+
+I! CuDNN (v7605) function cudnnGetTensorSizeInBytes() called:
+i!     tensorDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,1,1,3];
+i!         strideA: type=int; val=[3,1,3,1];
+i! Time: 2020-04-07T17:17:51.090667 (0d+0h+0m+2s since start)
+i! Process=26710; Thread=26710; GPU=NULL; Handle=NULL; StreamId=NULL.
+

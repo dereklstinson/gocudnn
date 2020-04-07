@@ -130,11 +130,12 @@ func main() {
 	for _, yval := range yvals {
 		yadder = yadder + yval
 	}
-
-	if yadder > 4 {
-
-		fmt.Println(yvals)
-		fmt.Println(xvals)
+	fmt.Println("Added Channels: ", yadder)
+	inputstringer, err := gocudnn.GetStringer(xD, x)
+	outputstringer, err := gocudnn.GetStringer(yD, y)
+	if err != nil {
+		panic(err)
 	}
-	fmt.Println(yvals)
+	fmt.Println("Input", inputstringer)
+	fmt.Println("Output", outputstringer)
 }
