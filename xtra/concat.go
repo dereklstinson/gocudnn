@@ -93,11 +93,13 @@ func (c *ConcatEx) GetOutputDimsFromInputDims(srcs [][]int32, frmt gocudnn.Tenso
 			switch frmt {
 			case fflg.NCHW():
 				if checkminuschanneldim(dims, pdims, 1) {
+					fmt.Println("dims", dims, "pdims", pdims)
 					return nil, errors.New("(c *ConcatEx) GetOutputDimsFromInputDims(srcs [][]int32, frmt gocudnn.TensorFormat) : dims excluding the channel dim are not the same")
 				}
 				outputdims[1] += dims[1]
 			case fflg.NHWC():
 				if checkminuschanneldim(dims, pdims, len(dims)-1) {
+					fmt.Println("dims", dims, "pdims", pdims)
 					return nil, errors.New("(c *ConcatEx) GetOutputDimsFromInputDims(srcs [][]int32, frmt gocudnn.TensorFormat) : dims excluding the channel dim are not the same")
 				}
 				outputdims[len(dims)-1] += dims[len(dims)-1]
@@ -213,7 +215,6 @@ func (c *ConcatEx) op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, a
 
 			case fflg.NHWC():
 				config := h.LaunchConfig3d(sdims[1], sdims[2], sdims[3])
-				fmt.Println(sdims[1], sdims[2], sdims[3])
 				err = c.fp32.nhwc.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
 					config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
 					config.Dimx, config.Dimy, config.Dimz,
