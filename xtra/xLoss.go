@@ -52,43 +52,28 @@ type XLossMode int
 
 //SofMaxLogLoss holds the function needed to do the log loss of the soft max function
 type SofMaxLogLoss struct {
-	cpuloss     []float32
-	cpulossptr  cutil.Mem
-	gpuloss     *gocu.CudaPtr
-	smloss      *cuda.Kernel
-	memcopykind cudart.MemcpyKind
+	previouscpuloss float32
+	cpuloss         []float32
+	cpulossptr      cutil.Mem
+	gpuloss         *gocu.CudaPtr
+	smloss          *cuda.Kernel
+	memcopykind     cudart.MemcpyKind
 }
 
-//NewSoftMaxNegLogLoss creates a softmaxlogloss handler.
-func NewSoftMaxNegLogLoss(h *Handle) (*SofMaxLogLoss, error) {
-	var err error
-	smll := new(SofMaxLogLoss)
-	smll.cpuloss = make([]float32, 1)
-	smll.cpulossptr, err = gocu.MakeGoMem(smll.cpuloss)
-	smll.memcopykind.DeviceToHost()
+func newsofmaxneglogloss(h *Handle) (smll *SofMaxLogLoss, err error) {
+
 	var ktf kernels.XtraKerns
+	smll = new(SofMaxLogLoss)
+	smll.memcopykind.Default()
+	smll.cpuloss = make([]float32, 1)
+	smll.gpuloss = new(gocu.CudaPtr)
+	smll.cpulossptr, err = gocu.MakeGoMem(smll.cpuloss)
 	if err != nil {
 		return nil, err
 	}
-	if h.w != nil {
-		err = h.w.Work(func() error {
-			var err error
-			smll.smloss, err = cuda.MakeKernel(ktf.SoftMaxAverageLoss(), h.mod)
-			if err != nil {
-				return err
-			}
-
-			smll.gpuloss = new(gocu.CudaPtr)
-			err = cudart.MallocManagedGlobal(smll.gpuloss, 4)
-			if err != nil {
-				return err
-			}
-			return nil
-		})
-		if err != nil {
-			return nil, err
-		}
-		return smll, nil
+	err = cudart.MallocManagedGlobal(smll.gpuloss, 4)
+	if err != nil {
+		return nil, err
 	}
 
 	smll.smloss, err = cuda.MakeKernel(ktf.SoftMaxAverageLoss(), h.mod)
@@ -96,19 +81,45 @@ func NewSoftMaxNegLogLoss(h *Handle) (*SofMaxLogLoss, error) {
 		return nil, err
 	}
 
-	smll.gpuloss = new(gocu.CudaPtr)
-	err = cudart.MallocManagedGlobal(smll.gpuloss, 4)
-	if err != nil {
-		return nil, err
+	return smll, nil
+
+}
+
+//NewSoftMaxNegLogLoss creates a softmaxlogloss handler.
+func NewSoftMaxNegLogLoss(h *Handle) (*SofMaxLogLoss, error) {
+	var smll *SofMaxLogLoss
+	var err error
+	if h.w != nil {
+		err = h.w.Work(func() error {
+			var werr error
+			smll, werr = newsofmaxneglogloss(h)
+			if werr != nil {
+				return werr
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		smll, err = newsofmaxneglogloss(h)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return smll, nil
 
 }
 
 //FindAverageLogLoss returns the average log loss
-func (s *SofMaxLogLoss) FindAverageLogLoss(h *Handle,
-	yD *gocudnn.TensorD, y cutil.Mem,
+func (s *SofMaxLogLoss) FindAverageLogLoss(h *Handle, alpha float64,
+	yD *gocudnn.TensorD, y cutil.Mem, beta float64,
 	targetD *gocudnn.TensorD, target cutil.Mem) (loss float32, err error) {
+	s.previouscpuloss = s.cpuloss[0]
+	err = cudart.Memset(s.gpuloss, 0, 4)
+	if err != nil {
+		return -1, errors.New("(s *SofMaxLogLoss) FindAverageLogLoss(): GPU mem not set")
+	}
 	frmt, dtype, dims, stride, err := yD.Get()
 	if err != nil {
 		return -1, err
@@ -141,19 +152,35 @@ func (s *SofMaxLogLoss) FindAverageLogLoss(h *Handle,
 		if err != nil {
 			return -1, err
 		}
-		err = h.s.Sync()
-		if err != nil {
-			return -1, err
+		if h.s != nil {
+			err = h.s.Sync()
+			if err != nil {
+				return -1, err
+			}
+		} else {
+			err = cudart.SyncNillStream()
+			if err != nil {
+				return -1, nil
+			}
 		}
 
 		err = cudart.MemCpy(s.cpulossptr, s.gpuloss, 4, s.memcopykind)
 		if err != nil {
 			return -1, err
 		}
-		err = h.s.Sync()
-		if err != nil {
-			return -1, err
+		if h.s != nil {
+			err = h.s.Sync()
+			if err != nil {
+				return -1, err
+			}
+		} else {
+			err = cudart.SyncNillStream()
+			if err != nil {
+				return -1, nil
+			}
 		}
+		s.cpuloss[0] = s.cpuloss[0]*float32(alpha) + s.previouscpuloss*float32(beta)
+		err = cudart.MemCpy(s.gpuloss, s.cpulossptr, 4, s.memcopykind)
 		return s.cpuloss[0], nil
 	default:
 		return -1, errors.New("(s *SofMaxLogLoss) FindAverageLogLoss: Unsupported Tensor Type ")

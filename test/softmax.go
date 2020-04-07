@@ -1,50 +1,58 @@
-package gocudnn
+package main
 
 import (
 	"fmt"
 	"runtime"
-	"testing"
 
+	gocudnn "github.com/dereklstinson/GoCudnn"
 	"github.com/dereklstinson/GoCudnn/cudart"
-
 	"github.com/dereklstinson/GoCudnn/gocu"
 )
 
-func TestCreateSoftMaxDescriptor(t *testing.T) {
+//softmax
+func main() {
 	runtime.LockOSThread()
-
-	var smmode SoftMaxMode
-	var smalgo SoftMaxAlgorithm
-	var dtype DataType
-	var frmt TensorFormat
+	var smmode gocudnn.SoftMaxMode
+	var smalgo gocudnn.SoftMaxAlgorithm
+	var dtype gocudnn.DataType
+	var frmt gocudnn.TensorFormat
 	smmode.Channel()
 	smalgo.Accurate()
 	dtype.Float()
 	frmt.NHWC()
 	var crtmcpykind cudart.MemcpyKind
 	crtmcpykind.Default()
-	h := CreateHandle(true)
+	h := gocudnn.CreateHandle(true)
+	//	file, err := os.Create("softmaxcallback")
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	defer file.Close()
+	//err = gocudnn.SetCallBack(nil, file)
+	//if err != nil {
+	//	panic(err)
+	//}
 	stream, err := cudart.CreateBlockingStream()
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	err = h.SetStream(stream)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
-	smd := CreateSoftMaxDescriptor()
+	smd := gocudnn.CreateSoftMaxDescriptor()
 
 	err = smd.Set(smalgo, smmode)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
-	xD, err := CreateTensorDescriptor()
+	xD, err := gocudnn.CreateTensorDescriptor()
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
-	yD, err := CreateTensorDescriptor()
+	yD, err := gocudnn.CreateTensorDescriptor()
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 
 	var dims []int32
@@ -53,10 +61,7 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	switch frmt {
 	case flg.NHWC():
 		dims = []int32{1, 1, 1, 3}
-		xvals = []float32{
-			1, -1, -2, //2, -1, -2,
-			//3, -1, -2 , 4, -1, -2,
-		} //[1 -1 -2 2 -1 -2 3 -1 -2 4 -1 -2]
+		xvals = []float32{1, -1, -2}
 	case flg.NCHW():
 		dims = []int32{1, 3, 2, 2}
 		xvals = []float32{
@@ -74,26 +79,26 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	yvals := make([]float32, len(xvals))
 	xvptr, err := gocu.MakeGoMem(xvals)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 
 	yvptr, err := gocu.MakeGoMem(yvals)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	err = xD.Set(frmt, dtype, dims, nil)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	err = yD.Set(frmt, dtype, dims, nil)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	x := new(gocu.CudaPtr)
 	y := new(gocu.CudaPtr)
 	xyDsib, err := xD.GetSizeInBytes()
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 
 	err = cudart.MallocManagedGlobal(x, xyDsib)
@@ -102,7 +107,7 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 
 	err = smd.Forward(h, 1.0, xD, x, 0.0, yD, y)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	stream.Sync()
 	for i := range xvals {
@@ -110,15 +115,15 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	}
 	err = cudart.MemCpy(yvptr, y, xyDsib, crtmcpykind)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	err = cudart.MemCpy(xvptr, x, xyDsib, crtmcpykind)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	err = stream.Sync()
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
 
 	var yadder float32
@@ -127,10 +132,9 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	}
 
 	if yadder > 4 {
-		t.Error("yadder greater than 4")
+
 		fmt.Println(yvals)
 		fmt.Println(xvals)
 	}
-	t.Error(yvals)
-
+	fmt.Println(yvals)
 }

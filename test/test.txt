@@ -1,0 +1,5 @@
+
+I! CuDNN (v7605) function cudnnCreate() called:
+i! Time: 2020-04-07T16:50:11.677016 (0d+0h+0m+0s since start)
+i! Process=9092; Thread=9092; GPU=NULL; Handle=NULL; StreamId=NULL.
+
