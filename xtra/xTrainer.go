@@ -31,12 +31,12 @@ Written in the style of cudnn/GoCudnn. This is an added set of functions to calc
 
 //TrainerD is the descriptor of the trainer
 type TrainerD struct {
-	data    gocudnn.DataType
-	mode    TrainingMode
-	counter uint32
-	kmode   *cuda.Kernel
-	kreg    *cuda.Kernel
-	dtflg   gocudnn.DataType
+	data gocudnn.DataType
+	mode TrainingMode
+	//	counter uint32
+	kmode *cuda.Kernel
+	kreg  *cuda.Kernel
+	dtflg gocudnn.DataType
 }
 
 //RegParams holds the regulator paramaters
@@ -238,11 +238,11 @@ func newTrainingDescriptor(h *Handle, mode TrainingMode, data gocudnn.DataType) 
 		return nil, err
 	}
 	return &TrainerD{ //all true then we will set TrainerD
-		mode:    mode,
-		data:    data,
-		kmode:   kmode,
-		kreg:    kreg,
-		counter: uint32(1),
+		mode:  mode,
+		data:  data,
+		kmode: kmode,
+		kreg:  kreg,
+		//		counter: uint32(0),
 	}, nil
 }
 
@@ -304,17 +304,20 @@ func (d *TrainerD) l1L2Regularization(h *Handle, desc *gocudnn.TensorD, dw, w, l
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xsum cutil.Mem, params TrainingParams) error {
+//
+//Counter is for adam.  Counter starts at zero.  Counter can be anything.
+//Mostly, It is used to count epochs number of times weights have been trained.  Maybe having a pso control it would give interesting results.
+func (d *TrainerD) TrainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xsum cutil.Mem, params TrainingParams, counter int32) error {
 	if h.w != nil {
 		return h.w.Work(func() error {
-			return d.trainValues(h, desc, dw, w, gsum, xsum, params)
+			return d.trainValues(h, desc, dw, w, gsum, xsum, params, counter)
 		})
 	}
-	return d.trainValues(h, desc, dw, w, gsum, xsum, params)
+	return d.trainValues(h, desc, dw, w, gsum, xsum, params, counter)
 }
 
 //TrainValues  Adagrad requires gsum, but not xsum.  If Adagrad is used then  nil can be passed for xsum.
-func (d *TrainerD) trainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xsum cutil.Mem, params TrainingParams) error {
+func (d *TrainerD) trainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xsum cutil.Mem, params TrainingParams, counter int32) error {
 	var size int32
 	var err error
 
@@ -332,15 +335,18 @@ func (d *TrainerD) trainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xs
 		}
 		size = int32(sizeinbytes / 2)
 	default:
-		return errors.New("Unsupported Type")
+		return errors.New("(d *TrainerD) TrainValues Unsupported Type")
 	}
 
 	config := h.LaunchConfig(size)
 
 	switch d.mode {
 	case TrainingModeFlag{}.Adam():
-		denombeta1 := 1.0 - (float32)(math.Pow(float64(params.beta1), float64(d.counter)))
-		denombeta2 := 1.0 - (float32)(math.Pow(float64(params.beta2), float64(d.counter)))
+		denombeta1 := 1.0 - (float32)(math.Pow(float64(params.beta1), float64(counter+1)))
+		denombeta2 := 1.0 - (float32)(math.Pow(float64(params.beta2), float64(counter+1)))
+		if denombeta1 == 0 || denombeta2 == 0 {
+			panic("Adam Training denombeta1 ||denombet2==0")
+		}
 		switch d.data {
 		case d.dtflg.Float():
 			err = d.kmode.Launch(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, denombeta1, denombeta2, params.dwalpha)
@@ -359,10 +365,6 @@ func (d *TrainerD) trainValues(h *Handle, desc *gocudnn.TensorD, dw, w, gsum, xs
 		//err = d.adam(config.BlockCount, uint32(1), uint32(1), config.ThreadPerBlock, uint32(1), uint32(1), 0, h.s, config.Elements, w, gsum, xsum, dw, params.rate, params.beta1, params.beta2, params.eps, , params.dwalpha)
 		if err != nil {
 			return err
-		}
-		d.counter++
-		if d.counter < 1 {
-			d.counter = 1
 		}
 
 		return nil

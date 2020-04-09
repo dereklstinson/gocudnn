@@ -180,7 +180,10 @@ func (s *SofMaxLogLoss) FindAverageLogLoss(h *Handle, alpha float64,
 			}
 		}
 		s.cpuloss[0] = s.cpuloss[0]*float32(alpha) + s.previouscpuloss*float32(beta)
-		err = cudart.MemCpy(s.gpuloss, s.cpulossptr, 4, s.memcopykind)
+		//	err = cudart.MemCpy(s.gpuloss, s.cpulossptr, 4, s.memcopykind)
+		//	if err != nil {
+		//		return -1, err
+		//	}
 		return s.cpuloss[0], nil
 	default:
 		return -1, errors.New("(s *SofMaxLogLoss) FindAverageLogLoss: Unsupported Tensor Type ")
