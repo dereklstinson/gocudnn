@@ -250,7 +250,7 @@ func (c *ConcatEx) op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, a
 				srcchanoffset += sdims[len(sdims)-1]
 			}
 		default:
-			return errors.New("(c *ConcatEx) Forward -- unsupported datatype")
+			return errors.New("(c *ConcatEx) Forward --unsupported TensorFormat")
 		}
 	}
 
