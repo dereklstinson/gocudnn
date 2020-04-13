@@ -17,7 +17,7 @@ package cudart
                   cudaExternalMemoryHandleTypeNvSciBuf         = 8
               } cudaExternalMemoryHandleType;
 */
-import "C"
+//import "C"
 
 /*
 //ExternalMemory is a handle to an external memory object

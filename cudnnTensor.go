@@ -35,6 +35,7 @@ type TensorD struct {
 }
 
 func (t *TensorD) String() string {
+
 	return fmt.Sprintf("TensorDescriptor {\n%v,\n%v,\nShape : %v,\nStride: %v\n}\n", t.frmt, t.dtype, t.shape, t.stride)
 }
 
@@ -60,11 +61,9 @@ func tensorDArrayToC(input []*TensorD) []C.cudnnTensorDescriptor_t {
 	return descs
 }
 
-func createtensordescriptor(setbyotheroperations, gogc bool) (*TensorD, error) {
+func createtensordescriptor(gogc bool) (*TensorD, error) {
 	d := new(TensorD)
-	if setbyotheroperations {
-		d.frmt.Unknown()
-	}
+	d.frmt.Unknown()
 	err := Status(C.cudnnCreateTensorDescriptor(&d.descriptor)).error("NewTensor4dDescriptor-create")
 	if err != nil {
 		return nil, err
@@ -81,13 +80,15 @@ func createtensordescriptor(setbyotheroperations, gogc bool) (*TensorD, error) {
 //CreateTensorDescriptor creates an empty tensor descriptor
 func CreateTensorDescriptor() (*TensorD, error) {
 	if setfinalizer {
-		return createtensordescriptor(false, true)
+		return createtensordescriptor(true)
 	}
-	return createtensordescriptor(false, false)
+	return createtensordescriptor(false)
 
 }
 
-//Set sets the tensor accourding to the values passed.
+//Set sets the tensor accourding to the values passed.  This is all different than how cudnn does it. In cudnn stride dictates the format of the tensor.
+//Here it will be different.  if format is Unknown then strides will dictate the format.  If NHWC is chosen then gocudnn will swap things around to make TensorD behave
+//more like FilterD
 //	Basic 4D formats:
 //
 //	NCHW:
@@ -131,7 +132,7 @@ func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) e
 	t.dims = (C.int)(len(shape))
 	t.dtype = data
 	switch t.frmt {
-	case t.fflag.Strided():
+	case t.fflag.Unknown():
 		if stride == nil {
 			t.stride = stridecalc(shape)
 		} else {
@@ -141,45 +142,113 @@ func (t *TensorD) Set(frmt TensorFormat, data DataType, shape, stride []int32) e
 		shapecint := int32Tocint(shape)
 		stridecint := int32Tocint(t.stride)
 		return Status(C.cudnnSetTensorNdDescriptor(t.descriptor, C.cudnnDataType_t(data), t.dims, &shapecint[0], &stridecint[0])).error("cudnnSetTensorNdDescriptor")
-
-	default:
+	case t.fflag.NHWC():
 		t.stride = stridecalc(shape)
 		shapecint := int32Tocint(shape)
+		shapecintcopy := int32Tocint(shape)
+		shapecint[1] = shapecintcopy[len(shapecintcopy)-1]
+		for i := 2; i < len(shapecint); i++ {
+			shapecint[i] = shapecintcopy[i-1]
+		}
+		return Status(C.cudnnSetTensorNdDescriptorEx(t.descriptor, t.frmt.c(), data.c(), t.dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
+	default:
+
 		if len(shape) == 0 {
 			panic("format is: " + t.frmt.String() + " and len is zero")
 		}
+		t.stride = stridecalc(shape)
+		shapecint := int32Tocint(shape)
 		return Status(C.cudnnSetTensorNdDescriptorEx(t.descriptor, t.frmt.c(), data.c(), t.dims, &shapecint[0])).error("cudnnSetTensorNdDescriptorEx-set")
 
 	}
 
 }
+func (t *TensorD) getraw() (frmt TensorFormat, dtype DataType, shape []int32, stride []int32, err error) {
+	t.dims = C.CUDNN_DIM_MAX
+	shapec := make([]C.int, t.dims)
+	stridec := make([]C.int, t.dims)
+	var actual C.int
+	err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+	shape = cintToint32(shapec[:t.dims])
+	stride = cintToint32(stridec[:t.dims])
+	return t.frmt, dtype, shape, stride, err
+
+}
 
 //Get returns Data Type the Dims for shape and stride and error.  for Descriptors without stride it will still return junk info. so be mindful when you code.
 func (t *TensorD) Get() (frmt TensorFormat, dtype DataType, shape []int32, stride []int32, err error) {
-	if t.dims == 0 {
-		t.dims = C.CUDNN_DIM_MAX
+	frmt = t.frmt
+	switch t.frmt {
+	case t.fflag.NHWC():
+		if t.dims == 0 {
+			t.dims = C.CUDNN_DIM_MAX
+			shapec := make([]C.int, t.dims)
+			stridec := make([]C.int, t.dims)
+			var actual C.int
+			err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+			t.dims = actual
+			t.dtype = dtype
+			shape = cintToint32(shapec[:t.dims])
+			stride = cintToint32(stridec[:t.dims])
+			shapecopy := cintToint32(shapec[:t.dims])
+			stridecopy := cintToint32(stridec[:t.dims])
+			for i := 2; i < len(shape); i++ {
+				shape[i-1] = shapecopy[i]
+				stride[i-1] = stridecopy[i]
+			}
+			stride[len(stride)-1] = stridecopy[1]
+			shape[len(stride)-1] = shapecopy[1]
+			//need to fix
+			return frmt, dtype, shape, stride, err
+		}
+
 		shapec := make([]C.int, t.dims)
 		stridec := make([]C.int, t.dims)
+		frmt = t.frmt
 		var actual C.int
 		err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
-		t.dims = actual
-		t.dtype = dtype
-		shape = cintToint32(shapec[:t.dims])
-		stride = cintToint32(stridec[:t.dims])
+		if t.dims != actual {
+			panic("t.dims should be actual")
+		}
+		shape = cintToint32(shapec)
+		stride = cintToint32(stridec)
+		shapecopy := cintToint32(shapec)
+		stridecopy := cintToint32(stridec)
+		for i := 2; i < len(shape); i++ {
+			shape[i-1] = shapecopy[i]
+			stride[i-1] = stridecopy[i]
+		}
+		stride[len(stride)-1] = stridecopy[1]
+		shape[len(stride)-1] = shapecopy[1]
+
+		return frmt, dtype, shape, stride, err
+	default:
+		if t.dims == 0 {
+			t.dims = C.CUDNN_DIM_MAX
+			shapec := make([]C.int, t.dims)
+			stridec := make([]C.int, t.dims)
+			var actual C.int
+			err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+			t.dims = actual
+			t.dtype = dtype
+			shape = cintToint32(shapec[:t.dims])
+			stride = cintToint32(stridec[:t.dims])
+			return frmt, dtype, shape, stride, err
+		}
+
+		shapec := make([]C.int, t.dims)
+		stridec := make([]C.int, t.dims)
+		frmt = t.frmt
+		var actual C.int
+		err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
+		if t.dims != actual {
+			panic("t.dims should be actual")
+		}
+		shape = cintToint32(shapec)
+		stride = cintToint32(stridec)
 		return frmt, dtype, shape, stride, err
 	}
 
-	shapec := make([]C.int, t.dims)
-	stridec := make([]C.int, t.dims)
-	frmt = t.frmt
-	var actual C.int
-	err = Status(C.cudnnGetTensorNdDescriptor(t.descriptor, t.dims, dtype.cptr(), &actual, &shapec[0], &stridec[0])).error("cudnnSetTensorNdDescriptor")
-	if t.dims != actual {
-		panic("t.dims should be actual")
-	}
-	shape = cintToint32(shapec)
-	stride = cintToint32(stridec)
-	return frmt, dtype, shape, stride, err
 }
 
 /*
@@ -585,14 +654,6 @@ func (t *TensorFormat) NCHWvectC() TensorFormat {
 	return *t
 }
 
-//Strided returns  TensorFormat(127) This is custom GoCudnn flag. Read TensorFormat notes for explanation.
-//Method sets type and returns new value.
-func (t *TensorFormat) Strided() TensorFormat {
-
-	*t = TensorFormat(127)
-	return *t
-}
-
 //Unknown returns TensorFormat(128). This is custom GoCudnn flag.  Read TensorFormat notes for explanation.
 //Method sets type and returns new value.
 func (t *TensorFormat) Unknown() TensorFormat {
@@ -616,8 +677,6 @@ func (t TensorFormat) String() string {
 		x = "NHWC"
 	case flg.NCHWvectC():
 		x = "NCHWvectC"
-	case flg.Strided():
-		x = "Strided"
 	case flg.Unknown():
 		x = "Unknown"
 	default:

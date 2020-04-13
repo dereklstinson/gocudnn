@@ -28,9 +28,9 @@ func TestCreateTensorDescriptor(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	oshape := []int32{10, 3, 36, 36}
+	oshape := []int32{10, 36, 36, 3}
 	//NCHW N=Batches, C=Channels/Feature Maps, H=Height,W=Width for a tensor
-	err = tensor.Set(frmt.NCHW(), dtype.Float(), oshape, nil) //Since frmt is not set to strided then last option can be nil
+	err = tensor.Set(frmt.NHWC(), dtype.Float(), oshape, nil) //Since frmt is not set to strided then last option can be nil
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,7 +60,7 @@ func TestCreateTensorDescriptor(t *testing.T) {
 	}
 	//dtype,frmt don't need their methods recalled since their methods also change their value.
 	//N = Number of Output Feature Maps, C= Number of Input Feature Maps (C needs to be 3 because of the previous tensor), H=Height ,W=Width
-	ofshape := []int32{20, 3, 5, 5}
+	ofshape := []int32{20, 5, 5, 3}
 	err = filter.Set(dtype, frmt, ofshape)
 	if err != nil {
 		t.Error(err)
@@ -85,7 +85,7 @@ func TestCreateTensorDescriptor(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = convolution.Set(cmode.CrossCorrelation(), dtype, []int32{0, 0}, []int32{3, 3}, []int32{1, 1})
+	err = convolution.Set(cmode.CrossCorrelation(), dtype, []int32{0, 0}, []int32{1, 1}, []int32{1, 1})
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,5 +95,7 @@ func TestCreateTensorDescriptor(t *testing.T) {
 		t.Error(err)
 	}
 
+	fmt.Println(tensor.getraw())
+	fmt.Println(tensor, filter)
 	fmt.Println(outdims)
 }

@@ -19,6 +19,24 @@ func cintToint32(x []C.int) []int32 {
 	}
 	return y
 }
+func compatabilityNHWCdimsGoCudnntoCudnn(x []int32) (y []int32) {
+	y = make([]int32, len(x))
+	copy(x, y)
+	y[1] = x[len(x)-1]
+	for i := 2; i < len(y); i++ {
+		y[i] = x[i-1]
+	}
+	return y
+}
+func compatabilityNHWCdimsCudnntoGocudnn(x []int32) (y []int32) {
+	y = make([]int32, len(x))
+	copy(x, y)
+	y[len(x)-1] = x[1]
+	for i := 2; i < len(y); i++ {
+		y[i-1] = x[i]
+	}
+	return y
+}
 func comparedims(dims ...[]int32) bool {
 	totallength := len(dims)
 	if totallength == 1 {

@@ -77,6 +77,7 @@ func (p *PoolingD) String() string {
 }
 
 //GetOutputDims will return the forward output dims from the pooling desc, and the tensor passed
+//For NHWC gocudnn will take the cudnn dims (which are in NCHW) and convert it to NHWC.
 func (p *PoolingD) GetOutputDims(
 	input *TensorD,
 ) ([]int32, error) {
@@ -87,6 +88,11 @@ func (p *PoolingD) GetOutputDims(
 		input.dims,
 		&outputdims[0],
 	)).error("(p *PoolingD) GetOutputDims")
+	fflg := input.frmt
+	switch input.frmt {
+	case fflg.NHWC():
+		return compatabilityNHWCdimsCudnntoGocudnn(cintToint32(outputdims)), err
+	}
 
 	return cintToint32(outputdims), err
 }

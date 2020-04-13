@@ -760,9 +760,9 @@ func cudnnDeriveBNTensorDescriptor(xDesc *TensorD, mode BatchNormMode, gogc bool
 		return nil, errors.New("dims for descriptor must be 4 or 5")
 	}
 	if setfinalizer || gogc {
-		descriptor, err = createtensordescriptor(true, true)
+		descriptor, err = createtensordescriptor(true)
 	} else {
-		descriptor, err = createtensordescriptor(true, false)
+		descriptor, err = createtensordescriptor(false)
 	}
 
 	if err != nil {

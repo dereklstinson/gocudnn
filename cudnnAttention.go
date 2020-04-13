@@ -222,7 +222,7 @@ func (m MultiHeadAttnWeightKind) String() string {
 //GetMultiHeadAttnWeights returns a Descripter for w and its goco.Mem
 func (a *AttentionD) GetMultiHeadAttnWeights(h *Handle, wkind MultiHeadAttnWeightKind, wbuffSIB uint, wbuff cutil.Mem) (wD *TensorD, w cutil.Mem, err error) {
 	w = new(gocu.CudaPtr)
-	wD, err = createtensordescriptor(true, h.gogc)
+	wD, err = createtensordescriptor(h.gogc)
 	if err != nil {
 		return nil, nil, err
 	}

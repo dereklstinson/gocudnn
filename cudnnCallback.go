@@ -52,6 +52,7 @@ func go_call_back(sev C.cudnnSeverity_t, udata unsafe.Pointer, dbg *C.cudnnDebug
 	}
 }
 
+//Debug is Debug type
 type Debug C.cudnnDebug_t
 
 func (d *Debug) String() string {
@@ -80,6 +81,7 @@ var callbackwriter io.Writer
 
 //SetCallBack sets the debug callback function.  Callback data will be writer to the writer.
 //udata is custom user data that will write to the call back.  udata can be nil
+//Callback is not functional.
 func SetCallBack(udata fmt.Stringer, w io.Writer) error {
 	mu.Lock()
 

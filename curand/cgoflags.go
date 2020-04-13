@@ -5,4 +5,7 @@ package curand
 
 //#cgo LDFLAGS:-L/usr/local/cuda-10.1/lib64 -lcurand -lcuda -lcudart
 //#cgo CFLAGS: -I/usr/local/cuda-10.1/include/
+
+//#cgo LDFLAGS:-L/usr/local/cuda-10.2/lib64 -lcurand -lcuda -lcudart
+//#cgo CFLAGS: -I/usr/local/cuda-10.2/include/
 import "C"

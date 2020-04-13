@@ -151,7 +151,7 @@ func (t *TransformD) InitDest(src *TensorD) (dest *TensorD, destsib uint, err er
 	if err != nil {
 		return nil, 0, err
 	}
-	dest.frmt.Strided()
+	dest.frmt.Unknown()
 	destsib = (uint)(csib)
 	return dest, destsib, nil
 }

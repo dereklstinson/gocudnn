@@ -50,6 +50,9 @@ func CreateFilterDescriptor() (*FilterD, error) {
 }
 
 //Set sets the filter descriptor
+//Like with TensorD the shape put in will be not like cudnn.  cudnn will always take the shape NCHW and switch the dims
+// and change the tensor stride in order to change the format. gocudnn will change the dims to a format that cudnn likes.
+//if the format is nhwc.
 //
 //	Basic 4D filter
 //
@@ -76,23 +79,45 @@ func CreateFilterDescriptor() (*FilterD, error) {
 func (f *FilterD) Set(dtype DataType, format TensorFormat, shape []int32) error {
 	cshape := int32Tocint(shape)
 	f.dims = (C.int)(len(shape))
-
+	fflg := format
+	switch format {
+	case fflg.NHWC():
+		cshapecopy := int32Tocint(shape)
+		cshape[1] = cshapecopy[len(cshape)-1]
+		for i := 2; i < len(cshape); i++ {
+			cshape[i] = cshapecopy[i-1]
+		}
+	}
 	return Status(C.cudnnSetFilterNdDescriptor(f.descriptor, dtype.c(), format.c(), f.dims, &cshape[0])).error(" (f *FilterD) Set")
 }
 
 //Get returns a copy of the ConvolutionD
 func (f *FilterD) Get() (dtype DataType, frmt TensorFormat, shape []int32, err error) {
+
 	if f.dims == 0 {
 		f.dims = C.CUDNN_DIM_MAX
 		shape = make([]int32, f.dims)
 		var actual C.int
 		err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &actual, (*C.int)(&shape[0]))).error(" (f *FilterD) Get()")
 		f.dims = actual
-		return dtype, frmt, shape[:f.dims], err
+		shape = shape[:f.dims]
+		shapecpy := make([]int32, len(shape))
+		copy(shapecpy, shape)
+		shape[len(shape)-1] = shapecpy[1]
+		for i := 2; i < len(shape); i++ {
+			shape[i-1] = shapecpy[i]
+		}
+		return dtype, frmt, shape, err
 	}
 	var holder C.int
 	shape = make([]int32, f.dims)
+	shapecpy := make([]int32, f.dims)
 	err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error(" (f *FilterD) Get()")
+	copy(shapecpy, shape)
+	shape[len(shape)-1] = shapecpy[1]
+	for i := 2; i < len(shape); i++ {
+		shape[i-1] = shapecpy[i]
+	}
 	return dtype, frmt, shape, err
 }
 

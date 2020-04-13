@@ -135,10 +135,22 @@ func (c *ConvolutionD) SetMathType(mathtype MathType) error {
 //
 //    outputDim = 1 + ( inputDim + 2*pad - (((filterDim-1)*dilation)+1) )/convolutionStride;
 //
+//	Note if input and filter are NHWC.  cudnn would take the formats as NCHW and output an NCHW
+//  gocudnn will take that NCHW and format it to an actual NHWC.
 func (c *ConvolutionD) GetOutputDims(input *TensorD, filter *FilterD) ([]int32, error) {
-	dims := make([]C.int, int32(input.dims))
-	err := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, input.dims, &dims[0])).error("GetConvolutionNdForwardOutputDim")
-	return cintToint32(dims), err
+	cdims := make([]C.int, int32(input.dims))
+
+	err := Status(C.cudnnGetConvolutionNdForwardOutputDim(c.descriptor, input.descriptor, filter.descriptor, input.dims, &cdims[0])).error("GetConvolutionNdForwardOutputDim")
+	if err != nil {
+		return nil, err
+	}
+	fflg := input.frmt
+	dims := cintToint32(cdims)
+	switch input.frmt {
+	case fflg.NHWC():
+		dims = compatabilityNHWCdimsCudnntoGocudnn(dims)
+	}
+	return dims, err
 
 }
 
@@ -1321,7 +1333,10 @@ func (c *ConvFwdAlgo) Direct() ConvFwdAlgo {
 }
 
 //FFT sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT) and returns value of c
-func (c *ConvFwdAlgo) FFT() ConvFwdAlgo { *c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT); return *c }
+func (c *ConvFwdAlgo) FFT() ConvFwdAlgo {
+	*c = ConvFwdAlgo(C.CUDNN_CONVOLUTION_FWD_ALGO_FFT)
+	return *c
+}
 
 //FFTTiling sets c to ConvFwdAlgo( C.CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING) and returns value of c
 func (c *ConvFwdAlgo) FFTTiling() ConvFwdAlgo {

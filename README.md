@@ -111,13 +111,9 @@ gpu memory that the functions use (for the most part) need to be created on that
 
 To parallelize gpus you will need separate handles.  Check out parallel_test.go
 
-## Softmax Channel Mode bug.
+## TensorD FilterD NHWC
 
-I think there is a bug in the softmax function using channel mode (cudnn side). In cudnnSoftMax_test.go. I sent
-a NHWC tensor with dims of []int32{1,1,1,3}, and I got an output of []float32{1,1,1}.  The summation of the channel elements for each h,w should be 1 or close to it. I got 3.  It works fine for a NCHW tensor.  Just NHWC it doesn't.   I sent an error report to nvidia.
-
-
-
+I found out the for cudnn it always took NCHW as the dims even if the format was NHWC (oof). To me that didn't seem intuitive.  Especially, since it is barely mentioned in the documentation.  I am going to to have it so that if the format is chosen to be NHWC then you need to put the dims as NHWC.  We will see how that works. 
 
 
 ## CUBLAS and CUDA additions
