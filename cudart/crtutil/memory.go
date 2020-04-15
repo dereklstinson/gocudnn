@@ -120,7 +120,7 @@ func (r *ReadWriter) nonhackbuffer(b []byte) (n int, err error) {
 	if r.s != nil {
 		err = cudart.MemcpyAsync(bwrap, cutil.Offset(r, r.i), size, copyflag.Default(), r.s)
 	} else {
-		err = cudart.MemCpy(bwrap, cutil.Offset(r, r.i), size, copyflag.Default())
+		err = cudart.Memcpy(bwrap, cutil.Offset(r, r.i), size, copyflag.Default())
 	}
 
 	if err != nil {
@@ -154,7 +154,7 @@ func (r *ReadWriter) Write(b []byte) (n int, err error) {
 	if r.s != nil {
 		err = cudart.MemcpyAsync(cutil.Offset(r, r.i), bwrap, size, copyflag.Default(), r.s)
 	} else {
-		err = cudart.MemCpy(cutil.Offset(r, r.i), bwrap, size, copyflag.Default())
+		err = cudart.Memcpy(cutil.Offset(r, r.i), bwrap, size, copyflag.Default())
 	}
 	r.i += size
 	n = int(size)

@@ -27,7 +27,7 @@ package nvjpeg
 //
 //}
 */
-import "C"
+//import "C"
 
 /*
 //CreateEx uses cudaMallocManaged. The handle is used for all consecutive nvjpeg calls

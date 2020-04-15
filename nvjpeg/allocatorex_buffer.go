@@ -1,7 +1,6 @@
 package nvjpeg
 
 /*
-
 #include <nvjpeg.h>
 #include<cuda_runtime_api.h>
 
@@ -50,6 +49,7 @@ void fillhostvales_regular(nvjpegPinnedAllocator_t *devalloc){
 }
 */
 import "C"
+
 import (
 	"runtime"
 )

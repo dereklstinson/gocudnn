@@ -2,6 +2,7 @@ package cudart
 
 /*
 #include<cuda_runtime_api.h>
+#include<cuda_runtime.h>
 typedef struct cudaPointerAttributes cudaPointerAttributes;
 typedef enum cudaMemoryType cudaMemoryType;
 */
@@ -13,6 +14,219 @@ import (
 	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/cutil"
 )
+
+//Array is a cudaArray_t
+type Array struct {
+	c C.cudaArray_t
+}
+
+//Extent is a cuda struct cudaExtent
+type Extent C.struct_cudaExtent
+
+func (e Extent) c() C.struct_cudaExtent {
+	return C.struct_cudaExtent(e)
+}
+
+//MakeCudaExtent -returns a cudaExtent based on input parameters.
+func MakeCudaExtent(w, h, d uint) Extent {
+	return (Extent)(C.make_cudaExtent((C.size_t)(w), (C.size_t)(h), (C.size_t)(d)))
+}
+
+//Width returns e.width
+func (e Extent) Width() uint {
+	return (uint)(e.width)
+}
+
+//Height returns e.height
+func (e Extent) Height() uint {
+	return (uint)(e.height)
+}
+
+//Depth returns e.depth
+func (e Extent) Depth() uint {
+	return (uint)(e.depth)
+}
+
+//Pos is a cuda struct cudaPos
+type Pos C.struct_cudaPos
+
+func (p Pos) c() C.struct_cudaPos {
+	return C.struct_cudaPos(p)
+}
+
+//MakeCudaPos returns a cudaPos based on input parameters.
+func MakeCudaPos(x, y, z uint) Pos {
+	return (Pos)(C.make_cudaPos((C.size_t)(x), (C.size_t)(y), (C.size_t)(z)))
+}
+
+//X returns x position
+func (p Pos) X() uint {
+	return (uint)(p.x)
+}
+
+//Y returns y position
+func (p Pos) Y() uint {
+	return (uint)(p.y)
+}
+
+//Z returns z position
+func (p Pos) Z() uint {
+	return (uint)(p.z)
+}
+
+//PitchedPtr is a cudaPitchedPtr
+type PitchedPtr C.struct_cudaPitchedPtr
+
+//MakeCudaPitchedPtr makes a pitched pointer
+func MakeCudaPitchedPtr(ptr cutil.Pointer, pitch, xsize, ysize uint) PitchedPtr {
+	return (PitchedPtr)(C.make_cudaPitchedPtr(ptr.Ptr(), (C.size_t)(pitch), (C.size_t)(xsize), (C.size_t)(ysize)))
+}
+
+func (p PitchedPtr) c() C.struct_cudaPitchedPtr {
+	return (C.struct_cudaPitchedPtr)(p)
+}
+
+//Pointer returns the ptiched pointer
+func (p PitchedPtr) Pointer() cutil.Pointer {
+	return gocu.WrapUnsafe(p.ptr)
+}
+func (p *PitchedPtr) cptr() *C.struct_cudaPitchedPtr {
+	return (*C.struct_cudaPitchedPtr)(p)
+}
+
+//Ptr satisfies the cutil.Pointer interface
+func (p *PitchedPtr) Ptr() unsafe.Pointer {
+	return p.ptr
+}
+
+//Pitch returns the pitch
+func (p PitchedPtr) Pitch() uint {
+	return (uint)(p.pitch)
+}
+
+//Xsize returns the xsize
+func (p PitchedPtr) Xsize() uint {
+	return (uint)(p.xsize)
+}
+
+//Ysize returns the ysize
+func (p PitchedPtr) Ysize() uint {
+	return (uint)(p.ysize)
+}
+
+//ChannelFormatDesc describes a channels format
+type ChannelFormatDesc C.struct_cudaChannelFormatDesc
+
+//CreateChannelFormatDesc creates a channel format descriptor
+func CreateChannelFormatDesc(x, y, z, w int32, f ChannelFormatKind) (cfd ChannelFormatDesc) {
+
+	cfd.x = (C.int)(x)
+	cfd.y = (C.int)(y)
+	cfd.z = (C.int)(z)
+	cfd.w = (C.int)(w)
+	cfd.f = f.c()
+	return cfd
+}
+func (c ChannelFormatDesc) c() C.struct_cudaChannelFormatDesc {
+	return (C.struct_cudaChannelFormatDesc)(c)
+}
+func (c *ChannelFormatDesc) cptr() *C.struct_cudaChannelFormatDesc {
+	return (*C.struct_cudaChannelFormatDesc)(c)
+}
+
+//ArrayFlag are flags used for array
+type ArrayFlag C.uint
+
+func (a ArrayFlag) c() C.uint {
+	return (C.uint)(a)
+}
+
+//Default - This flag's value is defined to be 0 and provides default array allocation
+func (a *ArrayFlag) Default() ArrayFlag {
+	*a = (ArrayFlag)(C.cudaArrayDefault)
+	return *a
+}
+
+//Layered - Allocates a layered CUDA array, with the depth extent indicating the number of layers
+func (a *ArrayFlag) Layered() ArrayFlag {
+	*a = (ArrayFlag)(C.cudaArrayLayered)
+	return *a
+}
+
+//Cubemap - Allocates a cubemap CUDA array. Width must be equal to height, and depth must be six.
+//If the cudaArrayLayered flag is also set, depth must be a multiple of six.
+func (a *ArrayFlag) Cubemap() ArrayFlag {
+	*a = (ArrayFlag)(C.cudaArrayCubemap)
+	return *a
+}
+
+//SurfaceLoadStore - Allocates a CUDA array that could be read from or written to using a surface reference.
+func (a *ArrayFlag) SurfaceLoadStore() ArrayFlag {
+	*a = (ArrayFlag)(C.cudaArraySurfaceLoadStore)
+	return *a
+}
+
+//TextureGather -  This flag indicates that texture gather operations will be performed on the CUDA array.
+//Texture gather can only be performed on 2D CUDA arrays.
+func (a *ArrayFlag) TextureGather() ArrayFlag {
+	*a = (ArrayFlag)(C.cudaArrayTextureGather)
+	return *a
+}
+
+//ChannelFormatKind is the kind of format the channel is in
+type ChannelFormatKind C.enum_cudaChannelFormatKind
+
+//Signed - sets the channel format to Signed
+func (c *ChannelFormatKind) Signed() ChannelFormatKind {
+	*c = (ChannelFormatKind)(C.cudaChannelFormatKindSigned)
+	return *c
+}
+
+//UnSigned - sets the channel format to UnSigned
+func (c *ChannelFormatKind) UnSigned() ChannelFormatKind {
+	*c = (ChannelFormatKind)(C.cudaChannelFormatKindUnsigned)
+	return *c
+}
+
+//Float - sets the channel format to Float
+func (c *ChannelFormatKind) Float() ChannelFormatKind {
+	*c = (ChannelFormatKind)(C.cudaChannelFormatKindFloat)
+	return *c
+}
+
+// cudaChannelFormatKindSigned, cudaChannelFormatKindUnsigned, or cudaChannelFormatKindFloat
+func (c ChannelFormatKind) c() C.enum_cudaChannelFormatKind {
+	return (C.enum_cudaChannelFormatKind)(c)
+}
+
+//Malloc3dArray - Allocate an array on the device.
+func Malloc3dArray(a *Array, desc *ChannelFormatDesc, e Extent, flag ArrayFlag) error {
+
+	err := newErrorRuntime("Malloc3dArray()", C.cudaMalloc3DArray(&a.c, desc.cptr(), e.c(), flag.c()))
+	if err != nil {
+		return err
+	}
+	runtime.SetFinalizer(a, freeArray)
+	return nil
+}
+
+//MallocArray - Allocate an array on the device.
+func MallocArray(a *Array, desc *ChannelFormatDesc, width, height uint, flag ArrayFlag) error {
+	var cw, ch C.size_t
+	cw = (C.size_t)(width)
+	ch = (C.size_t)(height)
+	err := newErrorRuntime("MallocArray()", C.cudaMallocArray(&a.c, desc.cptr(), cw, ch, flag.c()))
+	if err != nil {
+		return err
+	}
+	runtime.SetFinalizer(a, freeArray)
+	return nil
+}
+
+//Malloc3D -	Allocates logical 1D, 2D, or 3D memory objects on the device.
+func Malloc3D(p *PitchedPtr, e Extent) error {
+	return newErrorRuntime("Malloc3D()", C.cudaMalloc3D(p.cptr(), e.c()))
+}
 
 //MallocManagedHost uses the Unified memory mangement system and starts it off in the host. Memory is set to 0.
 //It will also set a finalizer on the memory for GC
@@ -53,6 +267,15 @@ func MallocManagedHostEx(w *gocu.Worker, mem cutil.Mem, size uint) error {
 		return err
 	}
 	runtime.SetFinalizer(mem, hostfreemem)
+	return nil
+}
+func freeArray(a *Array) error {
+
+	err := newErrorRuntime("freeArray", C.cudaFreeArray(a.c))
+	if err != nil {
+		return err
+	}
+	a = nil
 	return nil
 }
 
@@ -207,7 +430,7 @@ func MallocHostEx(w *gocu.Worker, mem cutil.Mem, sizet uint) error {
 }
 
 //PointerGetAttributes returns the atributes
-func PointerGetAttributes(mem cutil.Mem) (Atribs, error) {
+func PointerGetAttributes(mem cutil.Pointer) (Atribs, error) {
 	var x C.cudaPointerAttributes
 	cuerr := C.cudaPointerGetAttributes(&x, mem.Ptr())
 	err := newErrorRuntime("Attributes", cuerr)

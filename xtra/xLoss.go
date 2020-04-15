@@ -186,7 +186,7 @@ func (s *SofMaxLogLoss) FindAverageLogLoss(h *Handle, alpha float64,
 		//	}
 		return s.cpuloss[0], nil
 	default:
-		return -1, errors.New("(s *SofMaxLogLoss) FindAverageLogLoss: Unsupported Tensor Type ")
+		return -1, errors.New("(s *SofMaxLogLoss) FindAverageLogLoss: Unsupported DataType ")
 	}
 
 }

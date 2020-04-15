@@ -338,7 +338,7 @@ func (s StreamCaptureStatus) String() string {
 
 }
 
-//This is a new type derived from a list of the defines for cudart
+//MemAttach - This is a new type derived from a list of the defines for cudart
 type MemAttach C.uint
 
 func (m MemAttach) c() C.uint {

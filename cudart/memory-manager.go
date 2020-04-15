@@ -57,7 +57,7 @@ func (m *MemManager) Malloc(sib uint) (cuda cutil.Mem, err error) {
 //Copy copies memory with amount of bytes passed in sib from src to dest
 func (m *MemManager) Copy(dest, src cutil.Pointer, sib uint) error {
 	return m.w.Work(func() error {
-		return MemCpy(dest, src, sib, m.flg)
+		return Memcpy(dest, src, sib, m.flg)
 	})
 
 }
