@@ -37,7 +37,7 @@ func (m *memstringer) String() string {
 		if err != nil {
 			return fmt.Sprintf("Tensor Data: {\n%v\n}\n", "Err in wrapping data::"+err.Error())
 		}
-		err = cudart.MemCpy(hptr, m.t, sib, m.kind)
+		err = cudart.Memcpy(hptr, m.t, sib, m.kind)
 		if err != nil {
 			return fmt.Sprintf("Tensor Data: {\n%v\n}\n", "Err in copy to host ::"+err.Error())
 		}
@@ -53,7 +53,7 @@ func (m *memstringer) String() string {
 		if err != nil {
 			return fmt.Sprintf("Tensor Data: {\n%v\n}\n", "Err in wrapping data::"+err.Error())
 		}
-		err = cudart.MemCpy(hptr, m.t, sib, m.kind)
+		err = cudart.Memcpy(hptr, m.t, sib, m.kind)
 		if err != nil {
 			return fmt.Sprintf("Tensor Data: {\n%v\n}\n", "Err in copy to host ::"+err.Error())
 		}
