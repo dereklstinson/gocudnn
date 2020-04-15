@@ -99,24 +99,37 @@ func (f *FilterD) Get() (dtype DataType, frmt TensorFormat, shape []int32, err e
 		shape = make([]int32, f.dims)
 		var actual C.int
 		err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &actual, (*C.int)(&shape[0]))).error(" (f *FilterD) Get()")
+		flg := frmt
+
 		f.dims = actual
 		shape = shape[:f.dims]
+
+		switch frmt {
+		case flg.NHWC():
+			shapecpy := make([]int32, len(shape))
+			copy(shapecpy, shape)
+			shape[len(shape)-1] = shapecpy[1]
+			for i := 2; i < len(shape); i++ {
+				shape[i-1] = shapecpy[i]
+			}
+		}
+
+		return dtype, frmt, shape, err
+	}
+	var holder C.int
+	shape = make([]int32, f.dims)
+
+	err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error(" (f *FilterD) Get()")
+	flg := frmt
+	shape = shape[:f.dims]
+	switch frmt {
+	case flg.NHWC():
 		shapecpy := make([]int32, len(shape))
 		copy(shapecpy, shape)
 		shape[len(shape)-1] = shapecpy[1]
 		for i := 2; i < len(shape); i++ {
 			shape[i-1] = shapecpy[i]
 		}
-		return dtype, frmt, shape, err
-	}
-	var holder C.int
-	shape = make([]int32, f.dims)
-	shapecpy := make([]int32, f.dims)
-	err = Status(C.cudnnGetFilterNdDescriptor(f.descriptor, f.dims, dtype.cptr(), frmt.cptr(), &holder, (*C.int)(&shape[0]))).error(" (f *FilterD) Get()")
-	copy(shapecpy, shape)
-	shape[len(shape)-1] = shapecpy[1]
-	for i := 2; i < len(shape); i++ {
-		shape[i-1] = shapecpy[i]
 	}
 	return dtype, frmt, shape, err
 }
