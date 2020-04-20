@@ -29,14 +29,18 @@ type Kernel struct {
 	name string
 	f    C.CUfunction
 	m    *Module
-	args []unsafe.Pointer
-	mux  sync.Mutex
+	//notconcurentargs *launchargs
+	//concurrentargs   []*launchargs
+	mux sync.Mutex
 }
 
 //Module are used to hold kernel functions on the device that is in use
 type Module struct {
 	m      C.CUmodule
 	loaded bool
+}
+type launchargs struct {
+	args []unsafe.Pointer
 }
 
 func (m *Module) c() C.CUmodule { return m.m }
@@ -155,19 +159,19 @@ func offSet(ptr unsafe.Pointer, i int) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(ptr) + pointerSize*uintptr(i))
 }
 
-//Launch will launch a kernal that is in it
+//Launch will launch a kernal that is in it.
 func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream gocu.Streamer, args ...interface{}) error {
-
-	err := k.ifacetounsafecomplete(args)
-	if err != nil {
-		return err
-	}
 	var shold unsafe.Pointer
-
 	if stream == nil {
 		shold = nil
 	} else {
 		shold = stream.Ptr()
+	}
+
+	cargs := makelaunchargs(len(args))
+	err := k.ifacetounsafecomplete(args, cargs)
+	if err != nil {
+		return err
 	}
 
 	return newErrorDriver("cuLaunchKernel",
@@ -180,9 +184,10 @@ func (k *Kernel) Launch(gx, gy, gz, bx, by, bz, shared uint32, stream gocu.Strea
 			C.uint(bz),
 			C.uint(shared),
 			(C.CUstream)(shold),
-			&k.args[0],
+			&cargs.args[0],
 			C.voiddptrnull,
 		))
+
 }
 
 /*
@@ -230,12 +235,12 @@ func (k *KernelArguments) GetShared() uint32 {
 
 //SetArguments sets the arguments
 func (k *KernelArguments) SetArguments(args ...interface{}) {
-	k.args = args
+	cargs = args
 }
 
 //GetArguments returns the empty interface array of arguments
 func (k *KernelArguments) GetArguments() []interface{} {
-	return k.args
+	return cargs
 }
 */
 func isconvertable(gotype interface{}) bool {
@@ -259,47 +264,63 @@ func isconvertable(gotype interface{}) bool {
 	}
 }
 
-func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
+func makelaunchargs(nelements int) (largs *launchargs) {
 
-	k.args = make([]unsafe.Pointer, len(args))
+	if nelements < 1 {
+		return nil
+	}
+	largs = new(launchargs)
+	largs.args = make([]unsafe.Pointer, nelements)
+	for i := range largs.args {
+		largs.args[i] = (unsafe.Pointer)(C.malloc(C.maxArgSize))
+	}
+
+	runtime.SetFinalizer(largs, destroylargs)
+	return largs
+}
+func (k *Kernel) ifacetounsafefirst(args []interface{}) (largs *launchargs, err error) {
+
+	largs.args = make([]unsafe.Pointer, len(args))
+	runtime.SetFinalizer(largs, destroylargs)
 	for i := range args {
-		k.args[i] = unsafe.Pointer(C.malloc(C.maxArgSize))
+		largs.args[i] = unsafe.Pointer(C.malloc(C.maxArgSize))
+
 		switch x := args[i].(type) {
 		case nil:
-			C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
+			C.memcpy(largs.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
 
 		case cutil.Mem:
 			if x == nil {
-				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
+				C.memcpy(largs.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
-			C.memcpy(k.args[i], unsafe.Pointer(x.DPtr()), C.ptrSize)
+			C.memcpy(largs.args[i], unsafe.Pointer(x.DPtr()), C.ptrSize)
 		case []cutil.Mem:
 			{
 				if x == nil {
-					C.memcpy(k.args[i], unsafe.Pointer(nil), C.ptrSize)
+					C.memcpy(largs.args[i], unsafe.Pointer(nil), C.ptrSize)
 				}
-				C.memcpy(k.args[i], unsafe.Pointer(x[0].DPtr()), C.ptrSize)
+				C.memcpy(largs.args[i], unsafe.Pointer(x[0].DPtr()), C.ptrSize)
 			}
 		case bool:
 			if x {
 				val := C.int(255)
-				C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+				C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 			} else {
 				val := C.int(0)
-				C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+				C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 			}
 		case int:
 			val := C.int(x)
-			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+			C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 		case uint:
 			val := C.uint(x)
-			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+			C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 		case []int32:
-			C.memcpy(k.args[i], unsafe.Pointer(&x[0]), C.size_t(4))
+			C.memcpy(largs.args[i], unsafe.Pointer(&x[0]), C.size_t(4))
 		default:
 			scalar := cutil.CScalarConversion(x)
 			if scalar == nil {
-				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
+				return nil, fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
 			}
 
 			/*
@@ -308,67 +329,58 @@ func (k *Kernel) ifacetounsafefirst(args []interface{}) error {
 				sizeof := reflect.TypeOf(x).Size()
 				y := unsafe.Pointer(val.Pointer())
 
-				C.memcpy(k.args[i], y, (C.size_t)(sizeof))
+				C.memcpy(cargs[i], y, (C.size_t)(sizeof))
 			*/
-			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.SIB()))
+			C.memcpy(largs.args[i], scalar.CPtr(), C.size_t(scalar.SIB()))
 		}
 
 	}
 
-	return nil
+	return largs, nil
 }
-func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
-	if k.args == nil {
-		return k.ifacetounsafefirst(args)
-	}
-	if len(k.args) == 0 {
-		return k.ifacetounsafefirst(args)
-	}
-	if len(k.args) != len(args) {
-		k.destroyargs()
-		return k.ifacetounsafefirst(args)
-	}
+func (k *Kernel) ifacetounsafecomplete(args []interface{}, largs *launchargs) (err error) {
+
 	for i := range args {
 
 		switch x := args[i].(type) {
 		case nil:
-			C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
+			C.memcpy(largs.args[i], unsafe.Pointer(&x), C.ptrSize) //This might need to be (C.voiddptrnull)
 
 		case cutil.Mem:
 			if x == nil {
-				C.memcpy(k.args[i], unsafe.Pointer(&x), C.ptrSize)
+				C.memcpy(largs.args[i], unsafe.Pointer(&x), C.ptrSize)
 			}
-			C.memcpy(k.args[i], unsafe.Pointer(x.DPtr()), C.ptrSize)
+			C.memcpy(largs.args[i], unsafe.Pointer(x.DPtr()), C.ptrSize)
 		case []cutil.Mem:
 			{
 				if x == nil {
-					C.memcpy(k.args[i], unsafe.Pointer(nil), C.ptrSize)
+					C.memcpy(largs.args[i], unsafe.Pointer(nil), C.ptrSize)
 				}
-				C.memcpy(k.args[i], unsafe.Pointer(x[0].Ptr()), C.ptrSize)
+				C.memcpy(largs.args[i], unsafe.Pointer(x[0].Ptr()), C.ptrSize)
 			}
 		case bool:
 			if x {
 				val := C.int(255)
-				C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+				C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 			} else {
 				val := C.int(0)
-				C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+				C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 			}
 		case int:
 			val := C.int(x)
-			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+			C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 		case uint:
 			val := C.uint(x)
-			C.memcpy(k.args[i], unsafe.Pointer(&val), C.size_t(4))
+			C.memcpy(largs.args[i], unsafe.Pointer(&val), C.size_t(4))
 		case []int32:
-			C.memcpy(k.args[i], unsafe.Pointer(&x[0]), C.size_t(4))
+			C.memcpy(largs.args[i], unsafe.Pointer(&x[0]), C.size_t(4))
 		default:
 			/*
 					val := reflect.ValueOf(x)
 					sizeof := reflect.TypeOf(x).Size()
 					y := unsafe.Pointer(val.Pointer())
 
-					C.memcpy(k.args[i], y, (C.size_t)(sizeof))
+					C.memcpy(cargs[i], y, (C.size_t)(sizeof))
 
 				}
 			*/
@@ -377,19 +389,35 @@ func (k *Kernel) ifacetounsafecomplete(args []interface{}) error {
 				return fmt.Errorf("Kernel Launch - type %T not supported .. %+v", x, x)
 			}
 
-			C.memcpy(k.args[i], scalar.CPtr(), C.size_t(scalar.SIB()))
+			C.memcpy(largs.args[i], scalar.CPtr(), C.size_t(scalar.SIB()))
 		}
 	}
 	return nil
 }
-
-func (k *Kernel) destroyargs() {
-	for i := range k.args {
-		C.free(k.args[i])
+func destroylargs(l *launchargs) {
+	for i := range l.args {
+		C.free(l.args[i])
 	}
 }
 
+/*
+func destroyargs(args []unsafe.Pointer) {
+	for i := range args {
+		if args[i] != nil {
+			C.free(args[i])
+		}
+
+	}
+}
+*/
+/*
+func (k *Kernel) destroyargs() {
+	for i := range cargs {
+		C.free(cargs[i])
+	}
+}
+*/
 func destroycudakernel(k *Kernel) {
 
-	k.destroyargs()
+	//k.destroyargs()
 }
