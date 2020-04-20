@@ -110,7 +110,7 @@ func destroycudnnhandle(handle *Handle) error {
 
 			return Status(C.cudnnDestroy(handle.x)).error("(*Handle).Destroy")
 		})
-		handle.w.Close()
+
 		return err
 	}
 	return Status(C.cudnnDestroy(handle.x)).error("(*Handle).Destroy")
