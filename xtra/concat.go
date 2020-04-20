@@ -3,6 +3,9 @@ package xtra
 import (
 	"errors"
 	"fmt"
+	"github.com/dereklstinson/GoCudnn/cudart"
+	"runtime"
+	"sync"
 
 	"github.com/dereklstinson/half"
 
@@ -14,8 +17,9 @@ import (
 
 //ConcatEx holds the concat kernels
 type ConcatEx struct {
-	fp32 *concat
-	fp16 *concat
+	fp32    *concat
+	fp16    *concat
+	streams []*cudart.Stream
 }
 type concat struct {
 	nhwc *cuda.Kernel
@@ -110,6 +114,16 @@ func (c *ConcatEx) GetOutputDimsFromInputDims(srcs [][]int32, frmt gocudnn.Tenso
 		}
 		pdims = dims
 	}
+	if len(c.streams) < len(srcs) {
+		streamdif := len(srcs) - len(c.streams)
+		for i := 0; i < streamdif; i++ {
+			stream, err := cudart.CreateNonBlockingStream()
+			if err != nil {
+				return nil, err
+			}
+			c.streams = append(c.streams, stream)
+		}
+	}
 	return outputdims, nil
 }
 
@@ -161,6 +175,16 @@ func (c *ConcatEx) GetOutputdims(srcs []*gocudnn.TensorD) (outdims []int32, err 
 		}
 		prevD, prevF, prevbatch = dtype, frmt, dims[0]
 	}
+	if len(c.streams) < len(srcs) {
+		streamdif := len(srcs) - len(c.streams)
+		for i := 0; i < streamdif; i++ {
+			stream, err := cudart.CreateNonBlockingStream()
+			if err != nil {
+				return nil, err
+			}
+			c.streams = append(c.streams, stream)
+		}
+	}
 	return outdims, err
 }
 
@@ -178,81 +202,124 @@ func (c *ConcatEx) Op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, a
 func (c *ConcatEx) op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, alpha float64, dest *gocudnn.TensorD, destmem cutil.Mem, beta float64, forward bool) error {
 
 	dfrmt, ddtype, ddims, _, err := dest.Get()
-	dflg := ddtype
-	batches := ddims[0]
-	destbatchvol := findvol(ddims[1:])
 	if err != nil {
 		return nil
 	}
-	fflg := dfrmt
+
+	batches := ddims[0]
+	destbatchvol := findvol(ddims[1:])
+
+	if len(c.streams) < len(srcs) {
+		streamdif := len(srcs) - len(c.streams)
+		for i := 0; i < streamdif; i++ {
+			stream, err := cudart.CreateNonBlockingStream()
+			if err != nil {
+				return err
+			}
+			c.streams = append(c.streams, stream)
+		}
+	}
+	nstreams := len(c.streams)
+	errs := make([]error, len(srcs))
+	var wg sync.WaitGroup
 	srcchanoffset := int32(0)
 	for i := range srcs {
-		sfrmt, sdtype, sdims, _, err := srcs[i].Get()
-		if err != nil {
-			return err
-		}
-		if sfrmt != dfrmt || sdtype != ddtype {
-			return errors.New("(c *ConcatEx) Forward --- sfrmt!=dfrmt || sdtype!=ddtype")
-		}
 
-		srcbatchvol := findvol(sdims[1:])
-		//	srctotalvol := findvol(sdims)
-		switch ddtype {
-		case dflg.Float():
-			a := float32(alpha)
-			b := float32(beta)
-			switch dfrmt {
-			case fflg.NCHW():
-				config := h.LaunchConfig(srcbatchvol)
-				err = c.fp32.nchw.Launch(config.BlockCount, 1, 1,
-					config.ThreadPerBlock, 1, 1, 0, h.s,
-					config.Elements, batches, destbatchvol, srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
-				if err != nil {
-					return err
-				}
+		pfflg := dfrmt
+		srcdims := srcs[i].Dims()
+		srcbatchvol := findvol(srcdims[1:])
+		wg.Add(1)
+		go func(i, nstreams int, srcchanoffset, srcbatchvol int32, ddtype gocudnn.DataType, dfrmt gocudnn.TensorFormat) {
+			runtime.LockOSThread()
+			dflg := ddtype
+			fflg := dfrmt
 
-				srcchanoffset += srcbatchvol
+			sfrmt, sdtype, sdims, _, err := srcs[i].Get()
+			if err != nil {
 
-			case fflg.NHWC():
-				config := h.LaunchConfig3d(sdims[1], sdims[2], sdims[3])
-				err = c.fp32.nhwc.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
-					config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
-					config.Dimx, config.Dimy, config.Dimz,
-					batches, destbatchvol, ddims[len(ddims)-1],
-					srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
-				if err != nil {
-					return err
-				}
-				srcchanoffset += sdims[len(sdims)-1]
-
+				errs[i] = err //return err
 			}
-		case dflg.Half():
-			a := half.NewFloat16(float32(alpha))
-			b := half.NewFloat16(float32(beta))
-			switch dfrmt {
-			case fflg.NCHW():
-				config := h.LaunchConfig(srcbatchvol)
-				err = c.fp16.nchw.Launch(config.BlockCount, 1, 1,
-					config.ThreadPerBlock, 1, 1, 0, h.s,
-					config.Elements, batches, destbatchvol, srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
-				if err != nil {
-					return err
-				}
-				srcchanoffset += srcbatchvol
-			case fflg.NHWC():
-				config := h.LaunchConfig3d(sdims[1], sdims[2], sdims[3])
-				err = c.fp16.nhwc.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
-					config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, h.s,
-					config.Dimx, config.Dimy, config.Dimz, batches, destbatchvol, ddims[len(ddims)-1], srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
-				if err != nil {
-					return err
-				}
-				srcchanoffset += sdims[len(sdims)-1]
+			if sfrmt != dfrmt || sdtype != ddtype {
+				errs[i] = errors.New("(c *ConcatEx) Forward --- sfrmt!=dfrmt || sdtype!=ddtype")
+				//	return errors.New("(c *ConcatEx) Forward --- sfrmt!=dfrmt || sdtype!=ddtype")
 			}
-		default:
-			return errors.New("(c *ConcatEx) Forward --unsupported TensorFormat")
+
+			//	srctotalvol := findvol(sdims)
+			switch ddtype {
+			case dflg.Float():
+				a := float32(alpha)
+				b := float32(beta)
+				switch dfrmt {
+				case fflg.NCHW():
+					config := h.LaunchConfig(srcbatchvol)
+					err = c.fp32.nchw.Launch(config.BlockCount, 1, 1,
+						config.ThreadPerBlock, 1, 1, 0, c.streams[i],
+						config.Elements, batches, destbatchvol, srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
+					if err != nil {
+
+						errs[i] = err //return err
+					}
+
+				case fflg.NHWC():
+					config := h.LaunchConfig3d(sdims[1], sdims[2], sdims[3])
+					err = c.fp32.nhwc.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
+						config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, c.streams[i],
+						config.Dimx, config.Dimy, config.Dimz,
+						batches, destbatchvol, ddims[len(ddims)-1],
+						srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
+					if err != nil {
+
+						errs[i] = err //return err
+					}
+
+				}
+			case dflg.Half():
+				a := half.NewFloat16(float32(alpha))
+				b := half.NewFloat16(float32(beta))
+				switch dfrmt {
+				case fflg.NCHW():
+					config := h.LaunchConfig(srcbatchvol)
+					err = c.fp16.nchw.Launch(config.BlockCount, 1, 1,
+						config.ThreadPerBlock, 1, 1, 0, c.streams[i],
+						config.Elements, batches, destbatchvol, srcchanoffset,
+						srcsmem[i], a, srcbatchvol, destmem, b, forward)
+					if err != nil {
+						errs[i] = err //return err
+					}
+
+				case fflg.NHWC():
+					config := h.LaunchConfig3d(sdims[1], sdims[2], sdims[3])
+					err = c.fp16.nhwc.Launch(config.BlockCountx, config.BlockCounty, config.BlockCountz,
+						config.ThreadPerBlockx, config.ThreadPerBlocky, config.ThreadPerBlockz, 0, c.streams[i],
+						config.Dimx, config.Dimy, config.Dimz, batches, destbatchvol,
+						ddims[len(ddims)-1], srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
+					if err != nil {
+						errs[i] = err //return err
+					}
+
+				}
+			default:
+				errs[i] = errors.New("(c *ConcatEx) Forward --unsupported TensorFormat")
+				//		return errors.New("(c *ConcatEx) Forward --unsupported TensorFormat")
+			}
+
+			wg.Done()
+			//c.streams[i].Sync()
+			runtime.UnlockOSThread()
+		}(i, nstreams, srcchanoffset, srcbatchvol, ddtype, dfrmt)
+		switch dfrmt {
+		case pfflg.NCHW():
+			srcchanoffset += srcbatchvol
+		case pfflg.NHWC():
+			srcchanoffset += srcdims[len(srcdims)-1]
 		}
 	}
 
+	wg.Wait()
+	for i := range errs {
+		if errs[i] != nil {
+			return errs[i]
+		}
+	}
 	return nil
 }

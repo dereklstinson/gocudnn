@@ -140,7 +140,9 @@ func SetValidDevices(devices []Device) error {
 	return newErrorRuntime("SetValidDevices", C.cudaSetValidDevices(devices[0].cptr(), C.int(len(devices))))
 }
 
-//Reset resets the device. If device isn't set on current host thread. This function will auto set it. Make sure that the device that was currently using the host thread is set back onto host
+//Reset resets the device. If device isn't set on current host thread.
+//This function will auto set it.
+//Make sure that the device that was currently using the host thread is set back onto host
 func (d Device) Reset() error {
 
 	err := d.Set()
@@ -160,16 +162,13 @@ func (d cudadeviceattribute) c() uint32 {
 }
 func (d Device) getattribute(attr cudadeviceattribute) (int32, error) {
 	var val C.int
-	err := d.Set()
-	if err != nil {
-		return 0, err
-	}
-	err = newErrorRuntime("getattribute", C.cudaDeviceGetAttribute(&val, attr.c(), d.c()))
+	err := newErrorRuntime("getattribute", C.cudaDeviceGetAttribute(&val, attr.c(), d.c()))
 	return int32(val), err
 }
 
 //MaxBlockDimXYZ returns an array of the values of blocks xyz in that order and an error
-//Will set device
+//
+//Will not set device
 func (d Device) MaxBlockDimXYZ() ([]int32, error) {
 	var err error
 	xyz := make([]int32, 3)
@@ -189,7 +188,7 @@ func (d Device) MaxBlockDimXYZ() ([]int32, error) {
 }
 
 //MaxGridDimXYZ returns an array of the values of blocks xyz in that order and an error
-//Will set device
+//Will not set device
 func (d Device) MaxGridDimXYZ() ([]int32, error) {
 	var err error
 	xyz := make([]int32, 3)
@@ -209,19 +208,19 @@ func (d Device) MaxGridDimXYZ() ([]int32, error) {
 }
 
 //MaxThreadsPerBlock returns the max number of threads per block and the rutime error
-//will set deivce
+//Will not set device
 func (d Device) MaxThreadsPerBlock() (int32, error) {
 	return d.getattribute(C.cudaDevAttrMaxThreadsPerBlock)
 }
 
 //MultiProcessorCount returns the number of multiproccessors on device and the runtime error
-//will set device
+//Will not set device
 func (d Device) MultiProcessorCount() (int32, error) {
 	return d.getattribute(C.cudaDevAttrMultiProcessorCount)
 }
 
 //MaxThreadsPerMultiProcessor returns the number of threads that run a multiprocessor on device and the runtime error
-//Will set device
+//Will not set device
 func (d Device) MaxThreadsPerMultiProcessor() (int32, error) {
 
 	return d.getattribute(C.cudaDevAttrMaxThreadsPerMultiProcessor)

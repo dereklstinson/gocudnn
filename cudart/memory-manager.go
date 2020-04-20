@@ -38,34 +38,49 @@ func (m *MemManager) SetHost(onhost bool) {
 //Malloc allocates memory to either the host or the device. sib = size in bytes
 func (m *MemManager) Malloc(sib uint) (cuda cutil.Mem, err error) {
 	cuda = new(gocu.CudaPtr)
+	if m.w != nil {
+		err = m.w.Work(func() error {
+			if m.onhost {
+				return MallocManagedHost(cuda, sib)
 
-	err = m.w.Work(func() error {
-		if m.onhost {
-			return MallocManagedHost(cuda, sib)
+			}
+			return MallocManagedGlobal(cuda, sib)
 
+		})
+		if err != nil {
+			return nil, err
 		}
-		return MallocManagedGlobal(cuda, sib)
-
-	})
-	if err != nil {
-		return nil, err
+		return cuda, err
 	}
+
+	if m.onhost {
+		err = MallocManagedHost(cuda, sib)
+
+	}
+	err = MallocManagedGlobal(cuda, sib)
+
 	return cuda, err
 
 }
 
 //Copy copies memory with amount of bytes passed in sib from src to dest
 func (m *MemManager) Copy(dest, src cutil.Pointer, sib uint) error {
-	return m.w.Work(func() error {
-		return Memcpy(dest, src, sib, m.flg)
-	})
+	if m.w != nil {
+		return m.w.Work(func() error {
+			return Memcpy(dest, src, sib, m.flg)
+		})
+	}
+	return Memcpy(dest, src, sib, m.flg)
 
 }
 
 //AsyncCopy does an AsyncCopy with the mem manager.
 func (m *MemManager) AsyncCopy(dest, src cutil.Pointer, sib uint, s gocu.Streamer) error {
-	return m.w.Work(func() error {
-		return MemcpyAsync(dest, src, sib, m.flg, s)
-	})
+	if m.w != nil {
+		return m.w.Work(func() error {
+			return MemcpyAsync(dest, src, sib, m.flg, s)
+		})
+	}
+	return MemcpyAsync(dest, src, sib, m.flg, s)
 
 }

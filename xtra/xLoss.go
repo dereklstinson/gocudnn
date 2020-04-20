@@ -164,7 +164,7 @@ func (s *SofMaxLogLoss) FindAverageLogLoss(h *Handle, alpha float64,
 			}
 		}
 
-		err = cudart.MemCpy(s.cpulossptr, s.gpuloss, 4, s.memcopykind)
+		err = cudart.Memcpy(s.cpulossptr, s.gpuloss, 4, s.memcopykind)
 		if err != nil {
 			return -1, err
 		}
@@ -338,7 +338,7 @@ func (l *XLossD) calculateErrorAndLoss(h *Handle,
 			if err != nil {
 				return -1, err
 			}
-			err = cudart.MemCpy(l.cpuptr, l.loss, 4, l.memcopykind)
+			err = cudart.Memcpy(l.cpuptr, l.loss, 4, l.memcopykind)
 
 			err = h.s.Sync()
 			if err != nil {
@@ -360,7 +360,7 @@ func (l *XLossD) calculateErrorAndLoss(h *Handle,
 			if err != nil {
 				return -1, err
 			}
-			err = cudart.MemCpy(l.cpuptrfp16, l.lossfp16, 2, l.memcopykind)
+			err = cudart.Memcpy(l.cpuptrfp16, l.lossfp16, 2, l.memcopykind)
 
 			err = h.s.Sync()
 			if err != nil {

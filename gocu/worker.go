@@ -56,5 +56,6 @@ func (w *Worker) Work(fn func() error) error {
 
 //Close closes the worker channel
 func (w *Worker) Close() {
+	//println("ClosedWorker")
 	close(w.w)
 }

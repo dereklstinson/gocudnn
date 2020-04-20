@@ -117,15 +117,21 @@ func (p PitchedPtr) Ysize() uint {
 //ChannelFormatDesc describes a channels format
 type ChannelFormatDesc C.struct_cudaChannelFormatDesc
 
-//CreateChannelFormatDesc creates a channel format descriptor
-func CreateChannelFormatDesc(x, y, z, w int32, f ChannelFormatKind) (cfd ChannelFormatDesc) {
+//CreateChannelFormatDesc - Returns a channel descriptor with format f and number of bits of each component x, y, z, and w.
+//
+//So a float needs to be 32bits.
+//
+//unsigned is 8 ,32 bits
+//
+//signed is 8,32  bits
+func CreateChannelFormatDesc(x, y, z, w int32, f ChannelFormatKind) ChannelFormatDesc {
+	return (ChannelFormatDesc)(C.cudaCreateChannelDesc(
+		(C.int)(x),
+		(C.int)(y),
+		(C.int)(z),
+		(C.int)(w),
+		f.c()))
 
-	cfd.x = (C.int)(x)
-	cfd.y = (C.int)(y)
-	cfd.z = (C.int)(z)
-	cfd.w = (C.int)(w)
-	cfd.f = f.c()
-	return cfd
 }
 func (c ChannelFormatDesc) c() C.struct_cudaChannelFormatDesc {
 	return (C.struct_cudaChannelFormatDesc)(c)
@@ -202,7 +208,8 @@ func (c ChannelFormatKind) c() C.enum_cudaChannelFormatKind {
 //Malloc3dArray - Allocate an array on the device.
 func Malloc3dArray(a *Array, desc *ChannelFormatDesc, e Extent, flag ArrayFlag) error {
 
-	err := newErrorRuntime("Malloc3dArray()", C.cudaMalloc3DArray(&a.c, desc.cptr(), e.c(), flag.c()))
+	err := newErrorRuntime("Malloc3dArray()",
+		C.cudaMalloc3DArray(&a.c, (*C.struct_cudaChannelFormatDesc)(desc), e.c(), flag.c()))
 	if err != nil {
 		return err
 	}

@@ -51,26 +51,34 @@ func (x *Handle) SetDevice() error {
 }
 
 //MakeHandleEx makes a handle that uses a worker to feed the gpu functions
+//if worker is nil then it will use the device on the current host thread this function was called on.
 func MakeHandleEx(w *gocu.Worker, unified bool) (*Handle, error) {
 	var h *Handle
+	if w != nil {
+		err := w.Work(func() error {
 
-	workerr := w.Work(func() error {
-
-		dev, err := cudart.GetDevice()
+			dev, err := cudart.GetDevice()
+			if err != nil {
+				return err
+			}
+			h, err = MakeHandle(dev, unified)
+			if err != nil {
+				return err
+			}
+			h.w = w
+			return nil
+		})
 		if err != nil {
-			return err
+			return nil, err
 		}
-		h, err = MakeHandle(dev, unified)
-		if err != nil {
-			return err
-		}
-		h.w = w
-		return nil
-	})
-	if workerr != nil {
-		return nil, workerr
+		return h, nil
 	}
-	return h, nil
+	dev, err := cudart.GetDevice()
+	if err != nil {
+		return nil, err
+	}
+	return MakeHandle(dev, unified)
+
 }
 
 //MakeHandle makes one of them there "Xtra" Handles used for the xtra functions I added to gocudnn.
