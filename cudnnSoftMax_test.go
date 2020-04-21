@@ -98,7 +98,7 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 
 	err = cudart.MallocManagedGlobal(x, xyDsib)
 	err = cudart.MallocManagedGlobal(y, xyDsib)
-	err = cudart.MemCpy(x, xvptr, xyDsib, crtmcpykind)
+	err = cudart.Memcpy(x, xvptr, xyDsib, crtmcpykind)
 
 	err = smd.Forward(h, 1.0, xD, x, 0.0, yD, y)
 	if err != nil {
@@ -108,11 +108,11 @@ func TestCreateSoftMaxDescriptor(t *testing.T) {
 	for i := range xvals {
 		xvals[i] = 0
 	}
-	err = cudart.MemCpy(yvptr, y, xyDsib, crtmcpykind)
+	err = cudart.Memcpy(yvptr, y, xyDsib, crtmcpykind)
 	if err != nil {
 		t.Error(err)
 	}
-	err = cudart.MemCpy(xvptr, x, xyDsib, crtmcpykind)
+	err = cudart.Memcpy(xvptr, x, xyDsib, crtmcpykind)
 	if err != nil {
 		t.Error(err)
 	}

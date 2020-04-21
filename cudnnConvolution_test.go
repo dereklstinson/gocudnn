@@ -2,6 +2,7 @@ package gocudnn_test
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/dereklstinson/GoCudnn/cudart"
@@ -11,6 +12,7 @@ import (
 )
 
 func TestConvolution2(t *testing.T) {
+	runtime.LockOSThread()
 	handle := gocudnn.CreateHandle(true)
 	cdesc, err := gocudnn.CreateConvolutionDescriptor()
 	if err != nil {
