@@ -94,13 +94,6 @@ func (r *ReadWriter) Size() uint {
 var copyflag cudart.MemcpyKind
 
 func (r *ReadWriter) Read(b []byte) (n int, err error) {
-	//if usehackbuffer {
-	//	return r.hackread(b)
-	//}
-	return r.nonhackbuffer(b)
-
-}
-func (r *ReadWriter) nonhackbuffer(b []byte) (n int, err error) {
 	if r.i >= r.size {
 		r.Reset()
 
@@ -134,11 +127,14 @@ func (r *ReadWriter) nonhackbuffer(b []byte) (n int, err error) {
 		return n, io.EOF
 	}
 	return n, nil
+
 }
+
 func (r *ReadWriter) Write(b []byte) (n int, err error) {
 	if r.i >= r.size {
 		r.Reset()
-		return 0, errors.New("Write Location Out of Memory")
+		return 0, errors.New("(r *ReadWriter) Write()" +
+			"Write Location Out of Memory")
 	}
 	if len(b) == 0 {
 		return 0, nil

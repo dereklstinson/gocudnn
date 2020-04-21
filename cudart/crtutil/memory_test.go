@@ -32,14 +32,14 @@ func TestReadWriter_Read(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	devallo := CreateAllocator(cstream)
+	devallo := CreateAllocator(cstream, dev)
 
 	cudamem, err := devallo.AllocateMemory(arraysize)
 	if err != nil {
 		t.Error(err)
 	}
 	var copyflag cudart.MemcpyKind
-	err = cudart.MemCpy(cudamem, gopointer, arraysize, copyflag.Default())
+	err = cudart.Memcpy(cudamem, gopointer, arraysize, copyflag.Default())
 	if err != nil {
 		t.Error(err)
 	}
@@ -49,7 +49,7 @@ func TestReadWriter_Read(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = cudart.MemCpy(gopointer2, cudamem, arraysize, kindflag.Default())
+	err = cudart.Memcpy(gopointer2, cudamem, arraysize, kindflag.Default())
 	if bytes.Compare(goslice, goslice2) != 0 {
 		fmt.Println("goslice2", goslice2)
 		fmt.Println("goslice", goslice)
