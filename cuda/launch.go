@@ -16,12 +16,13 @@ import "C"
 import (
 	"errors"
 	"fmt"
-	"github.com/dereklstinson/GoCudnn/gocu"
-	"github.com/dereklstinson/cutil"
-	"github.com/dereklstinson/half"
 	"runtime"
 	"sync"
 	"unsafe"
+
+	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/cutil"
+	"github.com/dereklstinson/half"
 )
 
 //Kernel is a function stored on the gpu.
