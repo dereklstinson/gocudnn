@@ -29,15 +29,17 @@ func NewWorker(d Device) (w *Worker) {
 	return w
 }
 
+//start locks the host thread and sets
+//and dedicates a device to that host thread.
+//Functions that use the gpu will use the gpu set by the worker.
+//Errors are returned through the error channel.
 func (w *Worker) start() {
 	runtime.LockOSThread()
 	if w.d != nil {
 		w.d.Set()
 	}
 	for x := range w.w {
-
 		w.errChan <- x()
-
 	}
 	runtime.UnlockOSThread()
 	return

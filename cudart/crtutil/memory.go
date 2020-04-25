@@ -14,6 +14,7 @@ import (
 )
 
 //ReadWriter is made to work with the golang io packages
+
 type ReadWriter struct {
 	p    unsafe.Pointer
 	i    uint
@@ -93,10 +94,10 @@ func (r *ReadWriter) Size() uint {
 
 var copyflag cudart.MemcpyKind
 
+//Read satisfies the io.Reader interface
 func (r *ReadWriter) Read(b []byte) (n int, err error) {
 	if r.i >= r.size {
 		r.Reset()
-
 		return 0, io.EOF
 	}
 	if len(b) == 0 {
@@ -115,11 +116,9 @@ func (r *ReadWriter) Read(b []byte) (n int, err error) {
 	} else {
 		err = cudart.Memcpy(bwrap, cutil.Offset(r, r.i), size, copyflag.Default())
 	}
-
 	if err != nil {
 		return 0, nil
 	}
-
 	r.i += size
 	n = int(size)
 	if len(b) == int(r.size) {
@@ -130,6 +129,7 @@ func (r *ReadWriter) Read(b []byte) (n int, err error) {
 
 }
 
+//Write satisfies the io.Writer interface
 func (r *ReadWriter) Write(b []byte) (n int, err error) {
 	if r.i >= r.size {
 		r.Reset()

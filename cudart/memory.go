@@ -296,8 +296,7 @@ func MallocManagedHostUS(mem unsafe.Pointer, size uint) error {
 }
 */
 
-//MallocManagedGlobal uses the Unified memory mangement system and starts it off in the Device
-//It will also set a finalizer on the memory for GC
+//MallocManagedGlobal Allocates memory on current devices.
 func MallocManagedGlobal(mem cutil.Mem, size uint) error {
 	err := newErrorRuntime("MallocManagedGlobal", C.cudaMallocManaged(mem.DPtr(), C.size_t(size), C.cudaMemAttachGlobal))
 	if err != nil {
