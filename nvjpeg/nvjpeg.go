@@ -8,7 +8,7 @@ import "C"
 import (
 	"runtime"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 //Handle - Opaque library handle identifier.

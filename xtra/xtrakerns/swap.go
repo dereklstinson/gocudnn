@@ -3,8 +3,8 @@ package xtrakerns
 import (
 	//"errors"
 	"fmt"
-	"github.com/dereklstinson/GoCudnn/cuda"
-	"github.com/dereklstinson/GoCudnn/nvrtc"
+	"github.com/dereklstinson/gocudnn/cuda"
+	"github.com/dereklstinson/gocudnn/nvrtc"
 	"strconv"
 	"strings"
 )

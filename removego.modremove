@@ -1,4 +1,4 @@
-module github.com/dereklstinson/GoCudnn
+module github.com/dereklstinson/gocudnn
 
 go 1.13
 

@@ -7,7 +7,7 @@ import "C"
 import (
 	"runtime"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 //DecodeParams - decode parameters structure. Used to set decode-related tweaks

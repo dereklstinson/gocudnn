@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/gocudnn/gocu"
 
-	"github.com/dereklstinson/GoCudnn/cudart"
+	"github.com/dereklstinson/gocudnn/cudart"
 
-	gocudnn "github.com/dereklstinson/GoCudnn"
+	gocudnn "github.com/dereklstinson/gocudnn"
 )
 
 //ExampleActivationD of doing the activation function

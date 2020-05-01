@@ -1,7 +1,7 @@
 package xtrakerns
 
 import (
-	"github.com/dereklstinson/GoCudnn/cuda"
+	"github.com/dereklstinson/gocudnn/cuda"
 	"runtime"
 	"testing"
 )

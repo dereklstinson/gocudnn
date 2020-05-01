@@ -6,11 +6,11 @@ import (
 
 	"github.com/dereklstinson/GoCuNets/utils"
 
-	gocudnn "github.com/dereklstinson/GoCudnn"
-	"github.com/dereklstinson/GoCudnn/cuda"
-	"github.com/dereklstinson/GoCudnn/cudart"
-	"github.com/dereklstinson/GoCudnn/gocu"
-	"github.com/dereklstinson/GoCudnn/kernels"
+	gocudnn "github.com/dereklstinson/gocudnn"
+	"github.com/dereklstinson/gocudnn/cuda"
+	"github.com/dereklstinson/gocudnn/cudart"
+	"github.com/dereklstinson/gocudnn/gocu"
+	"github.com/dereklstinson/gocudnn/kernels"
 	"github.com/dereklstinson/cutil"
 	"github.com/dereklstinson/half"
 )

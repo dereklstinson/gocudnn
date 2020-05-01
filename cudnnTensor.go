@@ -624,11 +624,11 @@ func (d Determinism) String() string {
 //Caution: Methods will also change the value of variable that calls the method.
 //		   If you need to make a case switch make another variable and call it flag and use that.  Look at ToString.
 //
-//Semi-Custom gocudnn flag.  NCHW,NHWC,NCHWvectC come from cudnn. GoCudnn adds Strided, and Unknown
+//Semi-Custom gocudnn flag.  NCHW,NHWC,NCHWvectC come from cudnn. gocudnn adds Strided, and Unknown
 //Reasonings --
 //Strided - When the tensor is set with strides there is no TensorFormat flag passed.
 //Also cudnnGetTensor4dDescriptor,and cudnnGetTensorNdDescriptor doesn't return the tensor format.
-//Which is really annoying.  GoCudnn will hide this flag in TensorD so that it can be returned with the tensor.
+//Which is really annoying.  gocudnn will hide this flag in TensorD so that it can be returned with the tensor.
 //Unknown--Was was made because with at least with the new AttentionD in cudnn V7.5 it will make a descriptor for you.
 //IDK what the tensor format will be. So lets not make an (ASSUME) and mark it with this.
 type TensorFormat C.cudnnTensorFormat_t
@@ -654,7 +654,7 @@ func (t *TensorFormat) NCHWvectC() TensorFormat {
 	return *t
 }
 
-//Unknown returns TensorFormat(128). This is custom GoCudnn flag.  Read TensorFormat notes for explanation.
+//Unknown returns TensorFormat(128). This is custom gocudnn flag.  Read TensorFormat notes for explanation.
 //Method sets type and returns new value.
 func (t *TensorFormat) Unknown() TensorFormat {
 	*t = TensorFormat(128)

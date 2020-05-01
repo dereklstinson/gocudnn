@@ -4,7 +4,7 @@ package npp
 import (
 	"errors"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 type AllocatorNpps struct {

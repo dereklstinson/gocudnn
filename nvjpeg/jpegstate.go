@@ -8,7 +8,7 @@ import "C"
 import (
 	"runtime"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 //JpegState is Opaque jpeg decoding state handle identifier - used to store intermediate information between deccding phases

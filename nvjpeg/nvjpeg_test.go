@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dereklstinson/GoCudnn/nvjpeg"
+	"github.com/dereklstinson/gocudnn/nvjpeg"
 )
 
 func TestImageInfo(t *testing.T) {

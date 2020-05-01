@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
 	"github.com/dereklstinson/cutil"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 //AttnQueryMap type is a flag for multihead attention.  Flags are exposed through type methods.

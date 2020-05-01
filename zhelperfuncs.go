@@ -19,7 +19,7 @@ func cintToint32(x []C.int) []int32 {
 	}
 	return y
 }
-func compatabilityNHWCdimsGoCudnntoCudnn(x []int32) (y []int32) {
+func compatabilityNHWCdimsgocudnntoCudnn(x []int32) (y []int32) {
 	y = make([]int32, len(x))
 	copy(x, y)
 	y[1] = x[len(x)-1]

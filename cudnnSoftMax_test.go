@@ -5,9 +5,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/dereklstinson/GoCudnn/cudart"
+	"github.com/dereklstinson/gocudnn/cudart"
 
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 func TestCreateSoftMaxDescriptor(t *testing.T) {

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"math"
 
-	gocudnn "github.com/dereklstinson/GoCudnn"
-	"github.com/dereklstinson/GoCudnn/cuda"
+	gocudnn "github.com/dereklstinson/gocudnn"
+	"github.com/dereklstinson/gocudnn/cuda"
 	"github.com/dereklstinson/half"
 
-	//"github.com/dereklstinson/GoCudnn/gocu"
-	"github.com/dereklstinson/GoCudnn/kernels"
+	//"github.com/dereklstinson/gocudnn/gocu"
+	"github.com/dereklstinson/gocudnn/kernels"
 	"github.com/dereklstinson/cutil"
 )
 
@@ -25,7 +25,7 @@ var cu gocudnn.Cuda
 
 ctx,err:= cu.CtxCreate(flag,device)
 
-Written in the style of cudnn/GoCudnn. This is an added set of functions to calculate loss.
+Written in the style of cudnn/gocudnn. This is an added set of functions to calculate loss.
 
 */
 

@@ -8,8 +8,8 @@ import (
 	"io"
 	"unsafe"
 
-	"github.com/dereklstinson/GoCudnn/cudart"
-	"github.com/dereklstinson/GoCudnn/gocu"
+	"github.com/dereklstinson/gocudnn/cudart"
+	"github.com/dereklstinson/gocudnn/gocu"
 	"github.com/dereklstinson/cutil"
 )
 
