@@ -4,14 +4,14 @@ import (
 	"C"
 	"errors"
 
-	"github.com/dereklstinson/GoCuNets/utils"
+	"github.com/dereklstinson/gocunets/utils"
 
+	"github.com/dereklstinson/cutil"
 	gocudnn "github.com/dereklstinson/gocudnn"
 	"github.com/dereklstinson/gocudnn/cuda"
 	"github.com/dereklstinson/gocudnn/cudart"
 	"github.com/dereklstinson/gocudnn/gocu"
 	"github.com/dereklstinson/gocudnn/kernels"
-	"github.com/dereklstinson/cutil"
 	"github.com/dereklstinson/half"
 )
 
