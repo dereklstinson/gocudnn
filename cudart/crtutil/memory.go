@@ -8,18 +8,18 @@ import (
 	"io"
 	"unsafe"
 
+	"github.com/dereklstinson/cutil"
 	"github.com/dereklstinson/gocudnn/cudart"
 	"github.com/dereklstinson/gocudnn/gocu"
-	"github.com/dereklstinson/cutil"
 )
 
 //ReadWriter is made to work with the golang io packages
-
 type ReadWriter struct {
-	p    unsafe.Pointer
-	i    uint
-	size uint
-	s    gocu.Streamer
+	p      unsafe.Pointer
+	i      uint
+	size   uint
+	cpyflg cudart.MemcpyKind
+	s      gocu.Streamer
 }
 
 //Allocator alocates memory to the current device
@@ -30,6 +30,7 @@ type Allocator struct {
 }
 
 //CreateAllocator creates an allocator whose memory it creates does async mem copies.
+//This creates its own worker for device passed.
 func CreateAllocator(s gocu.Streamer, d gocu.Device) (a *Allocator) {
 	a = new(Allocator)
 	a.s = s
@@ -38,7 +39,8 @@ func CreateAllocator(s gocu.Streamer, d gocu.Device) (a *Allocator) {
 	return a
 }
 
-//AllocateMemory allocates memory on the current device
+//AllocateMemory allocates memory on the current device.  Allocater allocates memory for device that was passed when
+//created onto the devices default context.
 func (a *Allocator) AllocateMemory(size uint) (r *ReadWriter, err error) {
 
 	err = a.w.Work(func() error {
@@ -46,6 +48,7 @@ func (a *Allocator) AllocateMemory(size uint) (r *ReadWriter, err error) {
 		r.size = size
 		err = cudart.MallocManagedGlobal(r, size)
 		r.s = a.s
+		r.cpyflg.Default()
 		return err
 	})
 
@@ -55,11 +58,13 @@ func (a *Allocator) AllocateMemory(size uint) (r *ReadWriter, err error) {
 //NewReadWriter returns ReadWriter from already allocated memory passed in p.  It just needs to know the size of the memory.
 //If s is nil. Then it will do a non async copy.  If it is not nil then it will do a async copy.
 func NewReadWriter(p cutil.Pointer, size uint, s gocu.Streamer) *ReadWriter {
-	return &ReadWriter{
+	r := &ReadWriter{
 		p:    p.Ptr(),
 		size: size,
 		s:    s,
 	}
+	r.cpyflg.Default()
+	return r
 }
 
 //Ptr satisfies cutil.Pointer interface.
@@ -75,8 +80,6 @@ func (r *ReadWriter) DPtr() *unsafe.Pointer {
 //Reset resets the index to 0.
 func (r *ReadWriter) Reset() {
 	r.i = 0
-	//	r.hackflag = false
-	//	r.hackbuffer = nil
 }
 
 //Len returns the remaining bytes that are not read.
@@ -91,8 +94,6 @@ func (r *ReadWriter) Len() int {
 func (r *ReadWriter) Size() uint {
 	return r.size
 }
-
-var copyflag cudart.MemcpyKind
 
 //Read satisfies the io.Reader interface
 func (r *ReadWriter) Read(b []byte) (n int, err error) {
@@ -112,9 +113,9 @@ func (r *ReadWriter) Read(b []byte) (n int, err error) {
 		return 0, err
 	}
 	if r.s != nil {
-		err = cudart.MemcpyAsync(bwrap, cutil.Offset(r, r.i), size, copyflag.Default(), r.s)
+		err = cudart.MemcpyAsync(bwrap, cutil.Offset(r, r.i), size, r.cpyflg, r.s)
 	} else {
-		err = cudart.Memcpy(bwrap, cutil.Offset(r, r.i), size, copyflag.Default())
+		err = cudart.Memcpy(bwrap, cutil.Offset(r, r.i), size, r.cpyflg)
 	}
 	if err != nil {
 		return 0, nil
@@ -148,9 +149,9 @@ func (r *ReadWriter) Write(b []byte) (n int, err error) {
 		return 0, err
 	}
 	if r.s != nil {
-		err = cudart.MemcpyAsync(cutil.Offset(r, r.i), bwrap, size, copyflag.Default(), r.s)
+		err = cudart.MemcpyAsync(cutil.Offset(r, r.i), bwrap, size, r.cpyflg, r.s)
 	} else {
-		err = cudart.Memcpy(cutil.Offset(r, r.i), bwrap, size, copyflag.Default())
+		err = cudart.Memcpy(cutil.Offset(r, r.i), bwrap, size, r.cpyflg)
 	}
 	r.i += size
 	n = int(size)

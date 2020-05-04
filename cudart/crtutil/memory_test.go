@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/dereklstinson/gocudnn/cudart"
 	"github.com/dereklstinson/cutil"
+	"github.com/dereklstinson/gocudnn/cudart"
 )
 
 func TestReadWriter_Read(t *testing.T) {
@@ -83,4 +83,24 @@ func TestReadWriter_Read(t *testing.T) {
 		fmt.Println("goslice", goslice)
 		t.Error("Not same on ioutil")
 	}
+	writermem, err := devallo.AllocateMemory(arraysize)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cudamem.Reset()
+	nwritten, err := io.Copy(writermem, cudamem)
+	if nwritten != (int64)(arraysize) {
+		t.Error("Not the same sizes", nwritten, arraysize)
+	}
+	writermem.Reset()
+	writerbytes, err := ioutil.ReadAll(writermem)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Compare(utilmem, writerbytes) != 0 {
+		fmt.Println("writerbytes", writerbytes)
+		fmt.Println("utilmem", utilmem)
+		t.Error("Not tsam on ioutil")
+	}
+
 }
