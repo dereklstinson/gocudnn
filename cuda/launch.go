@@ -16,12 +16,14 @@ import "C"
 import (
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"runtime"
 	"sync"
 	"unsafe"
 
-	"github.com/dereklstinson/gocudnn/gocu"
 	"github.com/dereklstinson/cutil"
+	"github.com/dereklstinson/gocudnn/gocu"
 	"github.com/dereklstinson/half"
 )
 
@@ -60,9 +62,14 @@ func NewModule(filename string) (module *Module, err error) {
 }
 
 //NewModuleData takes a string of the ptx data
-func NewModuleData(ptx string) (*Module, error) {
+func NewModuleData(r io.Reader) (*Module, error) {
+	ptxbytes, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil,
+			fmt.Errorf("NewModuleData() ioutil.ReadAll error, %s", err.Error())
+	}
 	var mod C.CUmodule
-	cptx := C.CString(ptx)
+	cptx := C.CString(string(ptxbytes))
 	defer C.free((unsafe.Pointer)(cptx))
 	x := C.cuModuleLoadData(&mod, (unsafe.Pointer)(cptx))
 	//x := C.cuModuleLoadDataEx(&mod, (unsafe.Pointer)(&data[0]), 0, C.nullJitOptions, C.voiddptrnull)

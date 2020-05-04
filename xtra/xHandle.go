@@ -3,6 +3,7 @@ package xtra
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/dereklstinson/gocudnn/cuda"
 	"github.com/dereklstinson/gocudnn/cudart"
@@ -98,10 +99,10 @@ func MakeHandle(dev cudart.Device, unified bool) (*Handle, error) {
 	var mod *cuda.Module
 	if majmin == 75 {
 		//	fmt.Println("going to 75")
-		mod, err = cuda.NewModuleData(both75)
+		mod, err = cuda.NewModuleData(strings.NewReader(both75))
 	} else if majmin == 61 {
 		//	fmt.Println("going to 61")
-		mod, err = cuda.NewModuleData(both61)
+		mod, err = cuda.NewModuleData(strings.NewReader(both61))
 	} else {
 		return nil, errors.New("Unsupported GPU")
 	}
