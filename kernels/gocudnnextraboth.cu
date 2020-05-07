@@ -2,11 +2,11 @@
 #include <stdbool.h>
 #include <cuda_fp16.h>
 #define StartAxis(i,axis) int i = blockIdx.axis * blockDim.axis + threadIdx.axis;
-#define CUDA_GRID_LOOP_X(i, n)                                 \
+#define GRID_LOOP_X(i, n)                                 \
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; \
          i += blockDim.x * gridDim.x)
 
-#define CUDA_GRID_AXIS_LOOP(i, n, axis)                                 \
+#define GRID_AXIS_LOOP(i, n, axis)                                 \
     for (int i = blockIdx.axis * blockDim.axis + threadIdx.axis; i < n; \
          i += blockDim.axis * gridDim.axis)
 
@@ -56,7 +56,7 @@ extern "C" __global__ void Transpose(int numthreads,
     const int *dest_strides = &buf[ndims];
     const int *perm = &buf[ndims * 2];
 
-    CUDA_GRID_LOOP_X(destIdx, numthreads)
+    GRID_LOOP_X(destIdx, numthreads)
     {
         int srcIdx = 0;
         int t = destIdx;
@@ -90,7 +90,7 @@ const int BVol = xThreads;
 
             for (int i =start;i<totalbatches;i+=stride)
         {   
-                CUDA_GRID_LOOP_X(xIdx, xThreads)
+                GRID_LOOP_X(xIdx, xThreads)
                 { 
                     const float swapper =  t1[(i*BVol)+(xIdx)];
                     t1[(i*BVol) +xIdx]=t2[(i*BVol)+xIdx];
@@ -118,7 +118,7 @@ const int BVol = yThreads;
   
     if (t1upper>0)
     {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
+        GRID_AXIS_LOOP(xIdx, xThreads/2,x)
         { 
             int t2Idx;
             if (t2upper>0){
@@ -129,7 +129,7 @@ const int BVol = yThreads;
            
             if (xIdx < xThreads && t2Idx<xThreads)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
+                GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
                     
                     const float swapper =  t1[(xIdx*BVol)+(yIdx)];
@@ -141,7 +141,7 @@ const int BVol = yThreads;
     }
     else  
     {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
+        GRID_AXIS_LOOP(xIdx, xThreads/2,x)
         {
             const int halfIdx=(xThreads/2)+xIdx;
             int t2Idx;
@@ -153,7 +153,7 @@ const int BVol = yThreads;
          
             if (halfIdx < xThreads)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
+                GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
                     const float swapper =  t1[(halfIdx*BVol)+(yIdx)];
                     t1[(halfIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
@@ -197,11 +197,11 @@ extern "C" __global__ void ShapetoBatch4DNHWC(
     {
         for (int j = 0; j < N2; j++)
         {
-            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+            GRID_AXIS_LOOP(xIdx, xThreads, x)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                GRID_AXIS_LOOP(yIdx, yThreads, y)
                 {
-                    CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                    GRID_AXIS_LOOP(zIdx, zThreads, z)
                     {
 
                         int oh = (hstride * i) + xIdx;
@@ -273,11 +273,11 @@ extern "C" __global__ void ShapetoBatch4DNCHW(
     {
         for (int j = 0; j < N2; j++)
         {
-            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+            GRID_AXIS_LOOP(xIdx, xThreads, x)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                GRID_AXIS_LOOP(yIdx, yThreads, y)
                 {
-                    CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                    GRID_AXIS_LOOP(zIdx, zThreads, z)
                     {
 
                         int oh = (hstride * i) + yIdx;
@@ -328,7 +328,7 @@ extern "C" __global__ void NearestNeighborNHWC(
     const float width_scale,
     float *dest)
 {
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int c = n % channels;
@@ -362,7 +362,7 @@ extern "C" __global__ void NearestNeighborNCHW(
     const float width_scale,
     float *dest)
 {
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int dest_x = n % dest_width;
@@ -396,7 +396,7 @@ extern "C" __global__ void NearestNeighborNCHWBack(
     const float width_scale,
     float *dest)
 {
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int src_x = n % src_width;
@@ -430,7 +430,7 @@ extern "C" __global__ void NearestNeighborNHWCBack(
     const float width_scale,
     float *dest)
 {
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int c = n % channels;
@@ -459,7 +459,7 @@ extern "C" __global__ void AdaGrad(const int length,
                                         const float eps,
                                         const float dwalpha)
 { //input
-    CUDA_GRID_LOOP_X(cell, length)
+    GRID_LOOP_X(cell, length)
     {
         gsum[cell] =  gsum[cell] + (dw[cell] * dw[cell]);
         weights[cell] += -(rate * dw[cell]) / (sqrtf(gsum[cell]) + eps);
@@ -482,7 +482,7 @@ extern "C" __global__ void Adam(const int n,
                                      const float dwalpha)
 {
 
-    CUDA_GRID_LOOP_X(i, n)
+    GRID_LOOP_X(i, n)
     {
       
         gsum[i] = (beta1 * gsum[i]) + ((1.0 - beta1) * dw[i]);
@@ -506,7 +506,7 @@ extern "C" __global__ void AdaDelta(const int length,
                                          const float dwalpha)
 {
 
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
 
         gsum[i] = (ro * gsum[i]) + ((1.0-ro)*dw[i] * dw[i]);
@@ -549,7 +549,7 @@ extern "C" __global__ void L1L2(
     const float decay2)
 { //input
 
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
 
         atomicAdd(l1, abs(w[i]) * decay1);
@@ -574,7 +574,7 @@ extern "C" __global__ void ThreshForward(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                 if (x[stride+xIdx]>threshhold[xIdx])
                 {
@@ -606,7 +606,7 @@ extern "C" __global__ void ThreshBackward(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                 if (x[stride+xIdx]>threshhold[xIdx])  
                 {
@@ -635,7 +635,7 @@ extern "C" __global__ void PreluForward(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                 if (x[stride+xIdx]>0)
                 {
@@ -662,7 +662,7 @@ extern "C" __global__ void PreluBackward(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                 if (x[stride+xIdx]>0)
                 {
@@ -690,7 +690,7 @@ extern "C" __global__ void LeakyForwardAlphaBeta(const int length,
                                               const float beta)
 {
 
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         const float previous = y[i];
         if (x[i] > 0.0)
@@ -718,7 +718,7 @@ extern "C" __global__ void LeakyBackwardAlphaBeta(const int length,
                                               const float beta)
 {
 
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         const float previous = dx[i];
         if (x[i] > 0.0)
@@ -741,7 +741,7 @@ extern "C" __global__ void LeakyForwardAlpha(const int length,
                                              const float alpha)
 {
 
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         
         if (x[i] > 0.0)
@@ -765,7 +765,7 @@ extern "C" __global__ void LeakyBackwardAlpha(const int length,
                                               const float alpha)
 {
  
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
 
         if (x[i] > 0.0)
@@ -787,7 +787,7 @@ extern "C" __global__ void LeakyForward(const int length,
                                              float *y,
                                              const float coef)
 {
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         if (x[i] > 0.0)
         {
@@ -807,7 +807,7 @@ extern "C" __global__ void LeakyBackward(const int length,
                                               const float coef)
 {
 
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
 
         if (x[i] > 0.0)
@@ -833,7 +833,7 @@ extern "C" __global__ void MSELoss(const int length,
 {
     
     loss[0]=0;
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         const float y = networkout[i] - target[i];
         errors[i] = y;
@@ -846,10 +846,10 @@ extern "C" __global__ void MSELoss(const int length,
 extern "C" __global__ void MSELossbyBatches(const int xthreads,const int ythreads, float *errors, const float *target, const float *networkout, float *loss)
 {
 
-    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    GRID_AXIS_LOOP(xIdx,xthreads,x)
     {
         const int offset=ythreads*xIdx;
-            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            GRID_AXIS_LOOP(yIdx, ythreads,y)
             {  
              const float y = networkout[offset+yIdx] - target[offset+yIdx];
              errors[offset+yIdx] = y;
@@ -877,11 +877,11 @@ extern "C" __global__ void ConcatNHWCEX(const int XThreads,
 {
 for (int i=0;i<Batches;i++){
 
-CUDA_GRID_AXIS_LOOP(idX,XThreads,x)
+GRID_AXIS_LOOP(idX,XThreads,x)
 {
-    CUDA_GRID_AXIS_LOOP(idY,YThreads,y)
+    GRID_AXIS_LOOP(idY,YThreads,y)
     {
-        CUDA_GRID_AXIS_LOOP(idZ,ZThreads,z)
+        GRID_AXIS_LOOP(idZ,ZThreads,z)
         {
         int deststride = (i*DestBatchVol)+(idX*YThreads*TotalDestChannels)+(idY*TotalDestChannels)+DestChannelOffset+idZ;
         int srcstride = (i*SrcBatchVol)+(idX*YThreads*ZThreads)+(idY*ZThreads)+idZ;
@@ -912,7 +912,7 @@ extern "C" __global__ void ConcatNCHWEX(const int XThreads,
 {
 for (int i=0;i<Batches;i++){
 
-CUDA_GRID_AXIS_LOOP(idX,XThreads,x)
+GRID_AXIS_LOOP(idX,XThreads,x)
 {
 
         int deststride = (i*DestBatchVol)+(DestChannelOffset+idX);
@@ -943,11 +943,11 @@ extern "C" __global__ void ConcatNHWCEXHalf(const int XThreads,
 {
 for (int i=0;i<Batches;i++){
 
-CUDA_GRID_AXIS_LOOP(idX,XThreads,x)
+GRID_AXIS_LOOP(idX,XThreads,x)
 {
-    CUDA_GRID_AXIS_LOOP(idY,YThreads,y)
+    GRID_AXIS_LOOP(idY,YThreads,y)
     {
-        CUDA_GRID_AXIS_LOOP(idZ,ZThreads,z)
+        GRID_AXIS_LOOP(idZ,ZThreads,z)
         {
         int deststride = (i*DestBatchVol)+(idX*YThreads*TotalDestChannels)+(idY*TotalDestChannels)+DestChannelOffset+idZ;
         int srcstride = (i*SrcBatchVol)+(idX*YThreads*ZThreads)+(idY*ZThreads)+idZ;
@@ -977,7 +977,7 @@ extern "C" __global__ void ConcatNCHWEXHalf(const int XThreads,
 {
 for (int i=0;i<Batches;i++){
 
-CUDA_GRID_AXIS_LOOP(idX,XThreads,x)
+GRID_AXIS_LOOP(idX,XThreads,x)
 {
 
         int deststride = (i*DestBatchVol)+(DestChannelOffset+idX);
@@ -1009,13 +1009,13 @@ extern "C" __global__ void ConcatForwardNCHW( const int XThreads,
         const int src2batchstride=src2vol*i;
         for (int j=0;j<Channels1;j++)
         {
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
            dest[Stride+(j*XThreads)+xIdx]  = Src1[src1batchstride+(j*XThreads)+xIdx];
             }
         }
         for (int j=0;j<Channels2;j++){
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
            dest[Stride+(j*XThreads)+src1vol+xIdx]  = Src2[src2batchstride+(j*XThreads)+xIdx];
             }
@@ -1039,13 +1039,13 @@ extern "C" __global__ void ConcatBackwardNCHW( const int XThreads,
         const int src2batchstride=src2vol*i;
         for (int j=0;j<Channels1;j++)
         {
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
                  Src1[src1batchstride+(j*XThreads)+xIdx]=  dest[Stride+(j*XThreads)+xIdx];  
             }
         }
         for (int j=0;j<Channels2;j++){
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
                 Src2[src2batchstride+(j*XThreads)+xIdx]  = dest[Stride+(j*XThreads)+src1vol+xIdx];  
             }
@@ -1071,13 +1071,13 @@ extern "C" __global__ void ConcatForwardNCHWhalf( const int XThreads,
         const int src2batchstride=src2vol*i;
         for (int j=0;j<Channels1;j++)
         {
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
            dest[Stride+(j*XThreads)+xIdx]  = Src1[src1batchstride+(j*XThreads)+xIdx];
             }
         }
         for (int j=0;j<Channels2;j++){
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
            dest[Stride+(j*XThreads)+src1vol+xIdx]  = Src2[src2batchstride+(j*XThreads)+xIdx];
             }
@@ -1101,13 +1101,13 @@ extern "C" __global__ void ConcatBackwardNCHWhalf( const int XThreads,
         const int src2batchstride=src2vol*i;
         for (int j=0;j<Channels1;j++)
         {
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
                  Src1[src1batchstride+(j*XThreads)+xIdx]=  dest[Stride+(j*XThreads)+xIdx];  
             }
         }
         for (int j=0;j<Channels2;j++){
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
                 Src2[src2batchstride+(j*XThreads)+xIdx]  = dest[Stride+(j*XThreads)+src1vol+xIdx];  
             }
@@ -1127,7 +1127,7 @@ extern "C" __global__ void MakePlanarImageBatchesUint8(const int XThreads, //Sho
     {
         for (int j = 0;j<channelsperbatch;j++)
         {
-            CUDA_GRID_LOOP_X(xIdx, XThreads)
+            GRID_LOOP_X(xIdx, XThreads)
             {
                dest[(i*batchsize)+(j*XThreads)+xIdx]=Srcs[(j*XThreads)+xIdx];
             }
@@ -1146,7 +1146,7 @@ extern "C" __global__ void TransposeFP16(int numthreads,
     const int *dest_strides = &buf[ndims];
     const int *perm = &buf[ndims * 2];
 
-    CUDA_GRID_LOOP_X(destIdx, numthreads)
+    GRID_LOOP_X(destIdx, numthreads)
     {
         int srcIdx = 0;
         int t = destIdx;
@@ -1180,7 +1180,7 @@ __half2 *t2h=(half2 *)t2;
         {
      
             
-                CUDA_GRID_LOOP_X(xIdx, BVol)
+                GRID_LOOP_X(xIdx, BVol)
                 { 
                     const __half2 swapper =  t1h[(i*BVol)+(xIdx)];
                     t1h[(i*BVol) +xIdx]=t2h[(i*BVol)+xIdx];
@@ -1208,7 +1208,7 @@ extern "C" __global__ void SwapUpperLowerFP16(
 const int BVol = yThreads;
     if (t1upper>0)
     {
-        CUDA_GRID_AXIS_LOOP(xIdx,xThreads/2,x)
+        GRID_AXIS_LOOP(xIdx,xThreads/2,x)
         { 
             int t2Idx;
             if (t2upper>0){
@@ -1219,7 +1219,7 @@ const int BVol = yThreads;
            
             if (xIdx < xThreads && t2Idx<xThreads)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, BVol,y)
+                GRID_AXIS_LOOP(yIdx, BVol,y)
                 {
                     
                     const __half swapper =  t1[(xIdx*BVol)+(yIdx)];
@@ -1232,7 +1232,7 @@ const int BVol = yThreads;
     }
     else  
     {
-        CUDA_GRID_AXIS_LOOP(xIdx, xThreads/2,x)
+        GRID_AXIS_LOOP(xIdx, xThreads/2,x)
         {
             const int halfIdx=(xThreads/2)+xIdx;
             int t2Idx;
@@ -1244,7 +1244,7 @@ const int BVol = yThreads;
          
             if (halfIdx < xThreads)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads,y)
+                GRID_AXIS_LOOP(yIdx, yThreads,y)
                 {
                     const __half swapper =  t1[(halfIdx*BVol)+(yIdx)];
                     t1[(halfIdx*BVol) +yIdx]=t2[(t2Idx*BVol)+yIdx];
@@ -1288,11 +1288,11 @@ extern "C" __global__ void ShapetoBatch4DNHWCFP16(
     {
         for (int j = 0; j < N2; j++)
         {
-            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+            GRID_AXIS_LOOP(xIdx, xThreads, x)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                GRID_AXIS_LOOP(yIdx, yThreads, y)
                 {
-                    CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                    GRID_AXIS_LOOP(zIdx, zThreads, z)
                     {
 
                         int oh = (hstride * i) + xIdx;
@@ -1361,11 +1361,11 @@ extern "C" __global__ void ShapetoBatch4DNCHWFP16(
     {
         for (int j = 0; j < N2; j++)
         {
-            CUDA_GRID_AXIS_LOOP(xIdx, xThreads, x)
+            GRID_AXIS_LOOP(xIdx, xThreads, x)
             {
-                CUDA_GRID_AXIS_LOOP(yIdx, yThreads, y)
+                GRID_AXIS_LOOP(yIdx, yThreads, y)
                 {
-                    CUDA_GRID_AXIS_LOOP(zIdx, zThreads, z)
+                    GRID_AXIS_LOOP(zIdx, zThreads, z)
                     {
 
                         int oh = (hstride * i) + yIdx;
@@ -1415,7 +1415,7 @@ extern "C" __global__ void NearestNeighborNCHWFP16(
     const float width_scale,
     __half *dest)
 {
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int dest_x = n % dest_width;
@@ -1451,7 +1451,7 @@ extern "C" __global__ void NearestNeighborNHWCBackFP16(
     const float width_scale,
     __half *dest)
 {
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int c = n % channels;
@@ -1489,7 +1489,7 @@ extern "C" __global__ void NearestNeighborNHWCBackFP16(
 {
     
       const __half zer0= __float2half(0.0);
-    CUDA_GRID_LOOP_X(i, threads-1) //minus one because I do a conversion to half2 wich is 32bit to do the atomic add and don't want to run into space outside of array 
+    GRID_LOOP_X(i, threads-1) //minus one because I do a conversion to half2 wich is 32bit to do the atomic add and don't want to run into space outside of array 
       
     {
         int n = i;
@@ -1549,7 +1549,7 @@ extern "C" __global__ void NearestNeighborNHWCFP16(
     __half *dest)
 {
     
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int c = n % channels;
@@ -1586,7 +1586,7 @@ extern "C" __global__ void NearestNeighborNCHWBackFP16(
     const float width_scale,
     __half *dest)
 {
-    CUDA_GRID_LOOP_X(i, threads)
+    GRID_LOOP_X(i, threads)
     {
         int n = i;
         int src_x = n % src_width;
@@ -1625,7 +1625,7 @@ extern "C" __global__ void NearestNeighborNCHWBackFP16(
 {
     
       const __half zer0= __float2half(0.0);
-    CUDA_GRID_LOOP_X(i, threads-1) //minus one because I do a conversion to half2 wich is 32bit to do the atomic add and don't want to run into space outside of array 
+    GRID_LOOP_X(i, threads-1) //minus one because I do a conversion to half2 wich is 32bit to do the atomic add and don't want to run into space outside of array 
       
     {
 
@@ -1685,7 +1685,7 @@ extern "C" __global__ void AdaGradFP16(const int n,
     const __half2 rate2=__halves2half2(rate,rate);
     const __half2 eps2=__halves2half2(eps,eps);
     const __half2 dwalpha2=__halves2half2(dwalpha,dwalpha);
-    CUDA_GRID_LOOP_X(i, n2)
+    GRID_LOOP_X(i, n2)
     {
         __half2 holder = gsum2[i];
         gsum2[i] = __hfma2(dw2[i],dw2[i],holder);
@@ -1725,7 +1725,7 @@ extern "C" __global__ void AdamFP16(const int n,
      const __half one1 = __float2half(1.0);
   const __half2 one2=__halves2half2(one1,one1);
     StartAxis(stx,x)
-    CUDA_GRID_LOOP_X(i, n2)
+    GRID_LOOP_X(i, n2)
     {
       gsum2[i] =__hfma2(__hsub2(one2,beta12),dw2[i],__hmul2(beta12,gsum2[i]));
      __half2 gsumt = __h2div(gsum2[i] ,__halves2half2(denombeta1,denombeta1));
@@ -1766,7 +1766,7 @@ extern "C" __global__ void AdaDeltaFP16(const int n,
    const __half one1 = __float2half(1.0);
   const __half2 one2=__halves2half2(one1,one1);
     const __half2 dwalpha2=__halves2half2(dwalpha,dwalpha);
-    CUDA_GRID_LOOP_X(i, n2)
+    GRID_LOOP_X(i, n2)
     {
        gsum2[i]= __hfma2(__hsub2(one2,ro2),__hmul2(dw2[i],dw2[i]),__hmul2(ro2,gsum2[i]));
        const __half2 dx2= __hmul2(h2sqrt(__h2div(__hadd2(xsum2[i],eps2),__hadd2(gsum2[i],eps2))),dw2[i]);
@@ -1798,7 +1798,7 @@ extern "C" __global__ void L1L2FP16(
 { //input
   const __half one1 = __float2half(1.0);
     const __half zero0 = __float2half(0);
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         __half abs = w[i];
         if (__hlt(abs,zero0)){
@@ -1833,7 +1833,7 @@ extern "C" __global__ void L1L2FP16(
     __shared__ __half2 *l1l2h2;
     __half2 *l1h2=&l1l2h2[0];
      __half2 *l2h2=&l1l2h2[1];
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         __half abs = w[i];
         if (__hlt(abs,zero0)){
@@ -1871,7 +1871,7 @@ extern "C" __global__ void ThreshForwardFP16(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                 if (__hgt(x[stride+xIdx],threshhold[xIdx]))
                 {
@@ -1900,7 +1900,7 @@ extern "C" __global__ void ThreshBackwardFP16(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                 if (__hgt(x[stride+xIdx],threshhold[xIdx]))
                 {
@@ -1930,7 +1930,7 @@ extern "C" __global__ void PreluForwardFP16(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                 if (__hgt(x[stride+xIdx],0))
                 {
@@ -1957,7 +1957,7 @@ extern "C" __global__ void PreluBackwardFP16(const int XThreads,
     for (int i=0;i<batchsize;i++)
     {
         int stride=XThreads*i;
-            CUDA_GRID_LOOP_X(xIdx,XThreads)
+            GRID_LOOP_X(xIdx,XThreads)
             {
                if (__hgt(x[stride+xIdx],zero0))
                 {
@@ -1981,7 +1981,7 @@ extern "C" __global__ void LeakyForwardAlphaBetaFP16(const int length,
                                               const __half beta)
 {
         const __half zero0 = __float2half(0);
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
        
       if (__hgt(x[i],zero0))
@@ -2006,7 +2006,7 @@ extern "C" __global__ void LeakyBackwardAlphaBetaFP16(const int length,
                                               const __half beta)
 {
     const __half zero0 = __float2half(0);
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
   
         if (__hgt(x[i],zero0))
@@ -2029,7 +2029,7 @@ extern "C" __global__ void LeakyForwardAlphaFP16(const int length,
                                              const __half alpha)
 {
     const __half zero0 = __float2half(0);
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
         
       if (__hgt(x[i],zero0))
@@ -2055,7 +2055,7 @@ extern "C" __global__ void LeakyBackwardAlphaFP16(const int length,
 {
         const __half zero0 = __float2half(0);
  
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
 
         if  (__hgt(x[i],zero0))
@@ -2078,7 +2078,7 @@ extern "C" __global__ void LeakyForwardFP16(const int length,
                                              const __half coef)
 {
         const __half zero0 = __float2half(0);
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
        if  (__hgt(x[i],zero0))
         {
@@ -2099,7 +2099,7 @@ extern "C" __global__ void LeakyBackwardFP16(const int length,
                                               const __half coef)
 {
     const __half zero0 = __float2half(0);
-    CUDA_GRID_LOOP_X(i, length)
+    GRID_LOOP_X(i, length)
     {
 
          if  (__hgt(x[i],zero0))
@@ -2124,10 +2124,10 @@ const int ythreads,
  __half *loss)
 {
   const __half htwo= __float2half(2.0);
-    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    GRID_AXIS_LOOP(xIdx,xthreads,x)
     {
         const int i=ythreads*xIdx;
-            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            GRID_AXIS_LOOP(yIdx, ythreads,y)
             {  
                 const __half y = __hsub(networkout[i] , target[i]);
         errors[i] = y;
@@ -2150,7 +2150,7 @@ extern "C" __global__ void MSELossFP16(const int n,
     const __half2 htwo2=__halves2half2(__float2half(2.0),__float2half(2.0));
      const __half htwo= __float2half(2.0);
     loss[0]=0;
-    CUDA_GRID_LOOP_X(i, n2)
+    GRID_LOOP_X(i, n2)
     {
         const __half2 y = __hsub2(networkout2[i] , target2[i]);
         errors2[i] = y;
@@ -2181,7 +2181,7 @@ const int batches,
   __shared__ __half2 *loss2;
   for (int i=0; i<batches;i++){
       loss2[i]=__floats2half2_rn(0.0,0.0);
- CUDA_GRID_AXIS_LOOP(xIdx,n,x)
+ GRID_AXIS_LOOP(xIdx,n,x)
     {
        const __half2 y = __hsub2(networkout[i*n+xIdx] , target[i*n+xIdx]);
        errors[i] = y;
@@ -2207,7 +2207,7 @@ extern "C" __global__ void MSELossFP16(const int n,
       __shared__ __half2 *loss2;
       loss2[0]= __halves2half2(__float2half(0.0),__float2half(0.0));
    
-    CUDA_GRID_LOOP_X(i, n2)
+    GRID_LOOP_X(i, n2)
     {
         const __half2 y = __hsub2(networkout[i] , target[i]);
         errors[i] = y;
@@ -2220,7 +2220,7 @@ extern "C" __global__ void MSELossFP16(const int n,
 /*
 extern "C" __global__ void SoftMaxErrAndLoss(const int xthreads, const int ntargets, const float *target, const float *softmaxoutput, float *loss, float * inputerrors){
     const float fntargets=(float)(ntargets);
-    CUDA_GRID_LOOP_X(xIdx,xthreads){
+    GRID_LOOP_X(xIdx,xthreads){
         if (target[xIdx]>0){
             atomicAdd(&loss[xIdx],-log10(softmaxoutput[xIdx]/fntargets));
         }
@@ -2229,7 +2229,7 @@ extern "C" __global__ void SoftMaxErrAndLoss(const int xthreads, const int ntarg
 */
 extern "C" __global__ void SoftMaxAverageLoss(const int xthreads, const int ntargets, const float *target, const float *softmaxoutput, float *loss){
      const float fntargets = (float)(ntargets);
-    CUDA_GRID_LOOP_X(xIdx,xthreads){
+    GRID_LOOP_X(xIdx,xthreads){
         if (target[xIdx]>0){
             atomicAdd(&loss[0],-log10(softmaxoutput[xIdx])/fntargets);
         }
@@ -2239,10 +2239,10 @@ extern "C" __global__ void SoftMaxAverageLoss(const int xthreads, const int ntar
 extern "C" __global__ void SoftMaxLossPerBatch(const int xthreads,const int ythreads, const int ntargetsperbatch,  const float *target, const float *softmaxoutput,float *loss)
 {
     const float npbtargs = (float)(ntargetsperbatch);
-    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    GRID_AXIS_LOOP(xIdx,xthreads,x)
     {       
             const int offset=ythreads*xIdx;
-            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            GRID_AXIS_LOOP(yIdx, ythreads,y)
             {  
                 if (target[offset+yIdx]>0){
                     atomicAdd(&loss[xIdx],-log10(softmaxoutput[offset+yIdx])/npbtargs);
@@ -2263,10 +2263,10 @@ const int ythreads,
  __half *loss)
 {
   const __half htwo= __float2half(2.0);
-    CUDA_GRID_AXIS_LOOP(xIdx,xthreads,x)
+    GRID_AXIS_LOOP(xIdx,xthreads,x)
     {
         const int i=ythreads*xIdx;
-            CUDA_GRID_AXIS_LOOP(yIdx, ythreads,y)
+            GRID_AXIS_LOOP(yIdx, ythreads,y)
             {  
                 const __half y = __hsub(networkout[i] , target[i]);
         errors[i] = y;
@@ -2289,7 +2289,7 @@ extern "C" __global__ void MSELossFP16(const int n,
     const __half2 htwo2=__halves2half2(__float2half(2.0),__float2half(2.0));
      const __half htwo= __float2half(2.0);
     loss[0]=0;
-    CUDA_GRID_LOOP_X(i, n2)
+    GRID_LOOP_X(i, n2)
     {
         const __half2 y = __hsub2(networkout2[i] , target2[i]);
         errors2[i] = y;
@@ -2320,7 +2320,7 @@ const int batches,
   __shared__ __half2 *loss2;
   for (int i=0; i<batches;i++){
       loss2[i]=__floats2half2_rn(0.0,0.0);
- CUDA_GRID_AXIS_LOOP(xIdx,n,x)
+ GRID_AXIS_LOOP(xIdx,n,x)
     {
        const __half2 y = __hsub2(networkout[i*n+xIdx] , target[i*n+xIdx]);
        errors[i] = y;
@@ -2346,7 +2346,7 @@ extern "C" __global__ void MSELossFP16(const int n,
       __shared__ __half2 *loss2;
       loss2[0]= __halves2half2(__float2half(0.0),__float2half(0.0));
    
-    CUDA_GRID_LOOP_X(i, n2)
+    GRID_LOOP_X(i, n2)
     {
         const __half2 y = __hsub2(networkout[i] , target[i]);
         errors[i] = y;

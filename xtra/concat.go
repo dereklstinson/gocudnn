@@ -3,16 +3,17 @@ package xtra
 import (
 	"errors"
 	"fmt"
-	"github.com/dereklstinson/gocudnn/cudart"
 	"runtime"
 	"sync"
 
+	"github.com/dereklstinson/gocudnn/cudart"
+
 	"github.com/dereklstinson/half"
 
+	"github.com/dereklstinson/cutil"
 	gocudnn "github.com/dereklstinson/gocudnn"
 	"github.com/dereklstinson/gocudnn/cuda"
 	"github.com/dereklstinson/gocudnn/kernels"
-	"github.com/dereklstinson/cutil"
 )
 
 //ConcatEx holds the concat kernels
@@ -200,15 +201,12 @@ func (c *ConcatEx) Op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, a
 
 //Op takes all the values in the srcs and concats them together into dest
 func (c *ConcatEx) op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, alpha float64, dest *gocudnn.TensorD, destmem cutil.Mem, beta float64, forward bool) error {
-
 	dfrmt, ddtype, ddims, _, err := dest.Get()
 	if err != nil {
 		return nil
 	}
-
 	batches := ddims[0]
 	destbatchvol := findvol(ddims[1:])
-
 	if len(c.streams) < len(srcs) {
 		streamdif := len(srcs) - len(c.streams)
 		for i := 0; i < streamdif; i++ {
@@ -224,7 +222,6 @@ func (c *ConcatEx) op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, a
 	var wg sync.WaitGroup
 	srcchanoffset := int32(0)
 	for i := range srcs {
-
 		pfflg := dfrmt
 		srcdims := srcs[i].Dims()
 		srcbatchvol := findvol(srcdims[1:])
@@ -254,7 +251,12 @@ func (c *ConcatEx) op(h *Handle, srcs []*gocudnn.TensorD, srcsmem []cutil.Mem, a
 					config := h.LaunchConfig(srcbatchvol)
 					err = c.fp32.nchw.Launch(config.BlockCount, 1, 1,
 						config.ThreadPerBlock, 1, 1, 0, c.streams[i],
-						config.Elements, batches, destbatchvol, srcchanoffset, srcsmem[i], a, srcbatchvol, destmem, b, forward)
+						config.Elements, batches,
+						destbatchvol,
+						srcchanoffset,
+						srcsmem[i],
+						a, srcbatchvol,
+						destmem, b, forward)
 					if err != nil {
 
 						errs[i] = err //return err

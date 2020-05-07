@@ -7,8 +7,8 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/dereklstinson/gocudnn/gocu"
 	"github.com/dereklstinson/cutil"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 //MemcpyKind are enum flags for mem copy can be passed using methdos
@@ -48,30 +48,26 @@ func (m MemcpyKind) c() C.enum_cudaMemcpyKind { return C.enum_cudaMemcpyKind(m) 
 
 //Memcpy copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
 func Memcpy(dest, src cutil.Pointer, sizet uint, kind MemcpyKind) error {
-	err := C.cudaMemcpy(dest.Ptr(), src.Ptr(), C.size_t(sizet), kind.c())
+	return status(C.cudaMemcpy(dest.Ptr(), src.Ptr(), C.size_t(sizet), kind.c())).error("cudaMemcpy")
 
-	return newErrorRuntime("cudaMemcpy", err)
 }
 
 //MemcpyUS will do a memcopy using unsafe pointers. It's a little lower level than the regular MemCpy
 func MemcpyUS(dest, src unsafe.Pointer, sizet uint, kind MemcpyKind) error {
-	err := C.cudaMemcpy(dest, src, C.size_t(sizet), kind.c())
+	return status(C.cudaMemcpy(dest, src, C.size_t(sizet), kind.c())).error("MemcpyUS")
 
-	return newErrorRuntime("cudaMemcpy-MemcpyUnsafe", err)
 }
 
 //MemcpyAsync Copies data between host and device.
 func MemcpyAsync(dest, src cutil.Pointer, sizet uint, kind MemcpyKind, stream gocu.Streamer) error {
-	err := C.cudaMemcpyAsync(dest.Ptr(), src.Ptr(), C.size_t(sizet), kind.c(), C.cudaStream_t(stream.Ptr()))
-
-	return newErrorRuntime("cudaMemcpy", err)
+	return status(C.cudaMemcpyAsync(dest.Ptr(), src.Ptr(), C.size_t(sizet), kind.c(), C.cudaStream_t(stream.Ptr()))).error("MemcpyAsync")
 }
 
 //Memcpy2D copies some memory from src to dest.  If default is selected and if the system supports unified virtual addressing then the transfer is inferred.
 func Memcpy2D(dest cutil.Pointer, dpitch uint, src cutil.Pointer, spitch uint, width, height uint, kind MemcpyKind) error {
 	err := C.cudaMemcpy2D(dest.Ptr(), C.size_t(dpitch), src.Ptr(), C.size_t(spitch), C.size_t(width), C.size_t(height), kind.c())
 
-	return newErrorRuntime("cudaMemcpy", err)
+	return newErrorRuntime("Memcpy2D", err)
 }
 
 //MemcpyPeer Copies memory between two devices.

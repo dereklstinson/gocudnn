@@ -7,8 +7,8 @@ package cudart
 */
 import "C"
 import (
-	"github.com/dereklstinson/gocudnn/gocu"
 	"github.com/dereklstinson/cutil"
+	"github.com/dereklstinson/gocudnn/gocu"
 )
 
 //Device is a struct that holds a device info.
@@ -31,7 +31,8 @@ func (d Device) DeviceSync() error {
 	if err != nil {
 		return err
 	}
-	return newErrorRuntime("cudaDeviceSynchronize: ", C.cudaDeviceSynchronize())
+	return status(C.cudaDeviceSynchronize()).error("(d Device) DeviceSync()")
+
 }
 
 //MemPrefetchAsync - Prefetches memory to the specified destination device.
@@ -59,20 +60,20 @@ func (d Device) DeviceSync() error {
 //Note that this function is asynchronous with respect to the host and all work on other devices.
 func (d Device) MemPrefetchAsync(mem cutil.Mem, size uint, s gocu.Streamer) error {
 	stream := ExternalWrapper(s.Ptr())
-	return newErrorRuntime("(d Device)MemPrefetchAsync: ", C.cudaMemPrefetchAsync(mem.Ptr(), (C.size_t)(size), d.c(), stream.c()))
+	return status(C.cudaMemPrefetchAsync(mem.Ptr(), (C.size_t)(size), d.c(), stream.c())).error("(d Device)MemPrefetchAsync: ")
 }
 
 //GetDevice gets the currently set device being used
 func GetDevice() (Device, error) {
 	var d C.int
-	err := newErrorRuntime("GetDevice(): ", C.cudaGetDevice(&d))
+	err := status(C.cudaGetDevice(&d)).error("GetDevice()")
 	return (Device)(d), err
 }
 
 //GetDeviceCount returns the number of devices.
 func GetDeviceCount() (n int32, err error) {
 	var num C.int
-	err = newErrorRuntime("Cudart-GetDeviceCount", C.cudaGetDeviceCount(&num))
+	err = status(C.cudaGetDeviceCount(&num)).error("GetDeviceCount()")
 	n = (int32)(num)
 	return n, err
 
@@ -87,7 +88,7 @@ func (d Device) MemGetInfo() (free, total int, err error) {
 	)
 
 	d.Set()
-	err = newErrorRuntime("GetMemInfo", C.cudaMemGetInfo(&x, &y))
+	err = status(C.cudaMemGetInfo(&x, &y)).error("(d Device) MemGetInfo()")
 	return int(x), int(y), err
 }
 
@@ -95,11 +96,12 @@ func (d Device) MemGetInfo() (free, total int, err error) {
 //Deivce calling method doesn't get set.
 func (d Device) CanAccessPeer(peer Device) (bool, error) {
 	var x C.int
-	rte := newErrorRuntime("CanAccessPeer", C.cudaDeviceCanAccessPeer(&x, d.c(), peer.c()))
+	err := status(C.cudaDeviceCanAccessPeer(&x, d.c(), peer.c())).error("(d Device) CanAccessPeer")
+
 	if x > 0 {
-		return true, rte
+		return true, err
 	}
-	return false, rte
+	return false, err
 }
 
 //DisablePeerAccess check cudaDeviceDisablePeerAccess
@@ -109,7 +111,8 @@ func (d Device) DisablePeerAccess(peer Device) error {
 	if err != nil {
 		return err
 	}
-	return newErrorRuntime("DisablePeerAccess", C.cudaDeviceDisablePeerAccess(peer.c()))
+	return status(C.cudaDeviceDisablePeerAccess(peer.c())).error("(d Device) DisablePeerAccess")
+
 }
 
 //EnablePeerAccess enables memory access between device
@@ -119,37 +122,38 @@ func (d Device) EnablePeerAccess(peer Device) error {
 	if err != nil {
 		return err
 	}
-	return newErrorRuntime("EnablePeerAccess", C.cudaDeviceEnablePeerAccess(peer.c(), 0))
+	return status(C.cudaDeviceEnablePeerAccess(peer.c(), 0)).error("(d Device) EnablePeerAccess")
 
 }
 
 //Set sets the device to use. This will change the device that is residing on the current host thread.  There is no sychronization, with the previous or new device on the host thread.
 func (d Device) Set() error {
-	return newErrorRuntime("Set", C.cudaSetDevice(d.c()))
+	return status(C.cudaSetDevice(d.c())).error("(d Device) Set()")
+
 }
 
 //CreateDevice just creates a device it doesn't set it
 func CreateDevice(device int32) Device {
+
 	return (Device)(device)
 
 }
 
 //SetValidDevices takes a list of devices in terms of user priority for cuda execution
 func SetValidDevices(devices []Device) error {
+	return status(C.cudaSetValidDevices(devices[0].cptr(), C.int(len(devices)))).error("SetValidDevices()")
 
-	return newErrorRuntime("SetValidDevices", C.cudaSetValidDevices(devices[0].cptr(), C.int(len(devices))))
 }
 
 //Reset resets the device. If device isn't set on current host thread.
 //This function will auto set it.
 //Make sure that the device that was currently using the host thread is set back onto host
 func (d Device) Reset() error {
-
 	err := d.Set()
 	if err != nil {
 		return err
 	}
-	return newErrorRuntime("Reset", C.cudaDeviceReset())
+	return status(C.cudaDeviceReset()).error("(d Device) Reset()")
 
 }
 
@@ -162,7 +166,8 @@ func (d cudadeviceattribute) c() uint32 {
 }
 func (d Device) getattribute(attr cudadeviceattribute) (int32, error) {
 	var val C.int
-	err := newErrorRuntime("getattribute", C.cudaDeviceGetAttribute(&val, attr.c(), d.c()))
+	err := status(C.cudaDeviceGetAttribute(&val, attr.c(), d.c())).error("(d Device) getattribute()")
+
 	return int32(val), err
 }
 

@@ -7,6 +7,15 @@ const char * nullMessagex = NULL;
 */
 import "C"
 
+type status C.cudaError_t //eventually moving error handling to this
+
+func (s status) error(message string) error {
+	if s == status(C.cudaSuccess) {
+		return nil
+	}
+	return newErrorCStr(message, C.cudaGetErrorString((C.cudaError_t)(s)))
+}
+
 func newErrorRuntime(context string, e C.cudaError_t) error {
 	if e == C.cudaSuccess {
 		return nil
