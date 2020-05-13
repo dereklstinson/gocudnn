@@ -1,9 +1,13 @@
 package nvrtc
 
-//#include <nvrtc.h>
+/*
+#include <nvrtc.h>
+*/
 import "C"
-import "errors"
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type status C.nvrtcResult
 

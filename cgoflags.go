@@ -1,10 +1,7 @@
 package gocudnn
 
-//#cgo LDFLAGS:-L/usr/local/cuda/lib64 -lcudnn -lcuda
-//#cgo CFLAGS: -I/usr/local/cuda/include/
-//#cgo LDFLAGS:-L/usr/local/cuda-10.1/lib64 -lcudnn -lcuda
-//#cgo CFLAGS: -I/usr/local/cuda-10.1/include/
-//#cgo LDFLAGS:-L/usr/local/cuda-10.2/lib64 -lcudnn -lcuda
-//#cgo CFLAGS: -I/usr/local/cuda-10.2/include/
-//#include <cuda.h>
+/*
+#cgo CFLAGS: -I/usr/local/cuda/include/
+#cgo LDFLAGS:-L/usr/local/cuda/lib64 -lcudnn -lcuda
+*/
 import "C"
